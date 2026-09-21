@@ -1,0 +1,2964 @@
+<!DOCTYPE html>
+<html lang="en" data-site="math">
+<head>
+  <script>
+    // API 走同源（Cloudflare Worker 路由 /api/*）；跨域 api.* 会被页面 CSP 拦截
+    /* ── 防"旧版一闪"(FOUC)：v10 chrome 就绪前先隐藏旧版专属骨架 ── */
+    document.documentElement.classList.add('gc-pending');
+    window.addEventListener('load', function () { document.documentElement.classList.remove('gc-pending'); });
+    setTimeout(function () { document.documentElement.classList.remove('gc-pending'); }, 10000);
+    window.API_BASE = '/api';
+    window.WS_BASE = 'wss://' + location.host;
+  </script>
+
+  <script>(function(){try{var t=localStorage.getItem('bd-theme');if(t==='dark'||t==='light'){document.documentElement.setAttribute('data-theme',t);}else if(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches){document.documentElement.setAttribute('data-theme','dark');}}catch(e){}})();</script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#0066CC">
+  <title data-i18n-title="title.auto.hc_数独数学对决_32643">Sudoku · Math Duel</title>
+  <meta name="description" data-i18n="sudoku.meta_desc" content="Classic 9×9 Sudoku — fill in 1-9 so each row, column, and 3×3 box contains every digit. Three difficulty levels. No login, free to play.">
+  <meta data-i18n="meta.auto.hc_数独在线数独数独游戏9x9数独_31239" name="keywords" content="Sudoku,online sudoku,sudoku game,9×9 sudoku,sudoku tips,Logic Deduction,Logic Training,Math Puzzles">
+  <link rel="icon" href="/assets/img/favicon.svg?v=20260921" type="image/svg+xml">
+  
+  <!-- Open Graph -->
+  <meta property="og:type" content="game">
+  <meta property="og:title" data-i18n="sudoku.meta_title" content="Sudoku · Math Duel">
+  <meta property="og:description" data-i18n="sudoku.meta_desc" content="Classic 9×9 Sudoku — fill in 1-9 so each row, column, and 3×3 box contains every digit. Three difficulty levels. No login, free to play.">
+  <meta property="og:url" content="https://mathduel.games/games/sudoku/">
+  <meta data-i18n="meta.auto.hc_数学对决_51866" property="og:site_name" content="Math Duel">
+  <meta property="og:locale" data-i18n="meta.og_locale" content="zh_CN">
+  <meta property="og:image" content="/games/sudoku/og.jpg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="632" />
+  <meta property="og:image:alt" content="Sudoku 9x9 - Free Online Math Puzzle Game" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta data-i18n="meta.auto.hc_数独经典99逻辑挑战_38609" name="twitter:title" content="🧩 Sudoku - Classic 9×9 Logic Challenge">
+  <meta data-i18n="meta.auto.hc_经典99数独填入19使每行每列_32713" name="twitter:description" content="Classic 9×9 Sudoku: fill in 1-9 so every row, column and box contains 1-9. Three difficulty levels, no login, free to play.">
+  <meta name="twitter:url" content="https://mathduel.games/games/sudoku/">
+  <meta name="twitter:image" content="/games/sudoku/og.jpg" />
+
+  <link rel="canonical" href="https://mathduel.games/games/sudoku/">
+  <link rel="stylesheet" href="/assets/css/style.css?v=blue5">
+  <style>
+    /* ===== P0: 主题色变量（浅色 / 深色）===== */
+    :root {
+      --sd-bg: #ffffff;
+      --sd-text: #1f2937;
+      --sd-cell-bg: #ffffff;
+      --sd-grid-line: #333333;
+      --sd-given-bg: #F0F0F0;
+      --sd-given-text: #1f2937;
+      --sd-selected-bg: #C7E9FF;
+      --sd-conflict-bg: #FEE2E2;
+      --sd-conflict-text: #DC2626;
+      --sd-notes-text: #6B7280;
+      --sd-btn-bg: #ffffff;
+      --sd-btn-text: #1f2937;
+      --sd-btn-border: var(--border, #E2E8F0);
+      --sd-active-bg: #0066CC;
+      --sd-active-text: #ffffff;
+    }
+    [data-theme="dark"] {
+      --sd-bg: #0f172a;
+      --sd-text: #E5E7EB;
+      --sd-cell-bg: #1e293b;
+      --sd-grid-line: #64748B;
+      --sd-given-bg: #334155;
+      --sd-given-text: #F1F5F9;
+      --sd-selected-bg: #0066CC;
+      --sd-conflict-bg: #7F1D1D;
+      --sd-conflict-text: #FCA5A5;
+      --sd-notes-text: #94A3B8;
+      --sd-btn-bg: #1e293b;
+      --sd-btn-text: #E5E7EB;
+      --sd-btn-border: #475569;
+      --sd-active-bg: #3B82F6;
+      --sd-active-text: #ffffff;
+    }
+    [data-theme="dark"] body,
+    body[data-theme-dark] { background: var(--sd-bg); color: var(--sd-text); }
+    [data-theme="dark"] .container,
+    [data-theme="dark"] .game-page { background: transparent; color: var(--sd-text); }
+    [data-theme="dark"] h1,
+    [data-theme="dark"] .game-stats,
+    [data-theme="dark"] .game-header { color: var(--sd-text); }
+    [data-theme="dark"] .btn,
+    [data-theme="dark"] .difficulty-btn {
+      background: var(--sd-btn-bg); color: var(--sd-btn-text); border-color: var(--sd-btn-border);
+    }
+    [data-theme="dark"] .difficulty-btn.active,
+    [data-theme="dark"] .btn.active {
+      background: var(--sd-active-bg); color: var(--sd-active-text);
+    }
+
+    .sudoku-board {
+      display: grid;
+      grid-template-columns: repeat(9, 1fr);
+      gap: 1px;
+      max-width: 450px;
+      width: 100%;
+      margin: 0.5rem auto;
+      /* ⚠️⚠️ 必须用 !important 压制共享样式污染！
+         棋盘同时带 .gc-boardcard（共享卡片样式），其 background 会把底色刷成
+         浅灰 #f5f5f7（实测 computed backgroundColor = rgb(245,245,247)，
+         尽管 --sd-grid-line 正确解析为 #333333）。
+         底色一浅，gap:1px 透出的缝与白色格子几乎无对比 → 内部细线全部不可见
+         （实测亮/暗两色下均只检出外框 2 条、内部 0 条），即用户反馈的「网格线不完全显示」。
+         ⚠️ 不要加 background-clip: padding-box —— 会让底色只铺到 padding 区，
+            border 区域由 border-color 补色，两者叠加使外框视觉变厚（实测 8px 深色带）。 */
+      background: var(--sd-grid-line) !important;
+      border: 2px solid var(--sd-grid-line);
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    .sudoku-cell {
+      aspect-ratio: 1;
+      background: var(--sd-cell-bg);
+      color: var(--sd-text);
+      position: relative;
+      display: flex; align-items: center; justify-content: center;
+      font-size: clamp(0.75rem, 4vw, 1.25rem); font-weight: 600;
+      cursor: pointer; user-select: none;
+      -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+    }
+    .sudoku-cell.given { background: var(--sd-given-bg); color: var(--sd-given-text); cursor: not-allowed; }
+    .sudoku-cell.selected { background: var(--sd-selected-bg); }
+    .sudoku-cell.error { color: var(--danger); }
+    /* P0-1: 冲突（重复数字）高亮 */
+    .sudoku-cell.conflict { background: var(--sd-conflict-bg); color: var(--sd-conflict-text); }
+    /* 宫格粗线（竖）：第 3、6 列后各一条（第 9 列由棋盘 border 提供，排除）。
+       ⚠️ 不用 border-right —— 会占用 content-box 缩小内容区，带粗线的格子数字偏心。
+       ::after 绝对定位不参与布局，内容区与普通格完全一致。 */
+    .sudoku-cell:nth-child(3n):not(:nth-child(9n))::after {
+      content: '';
+      position: absolute;
+      top: 0; bottom: 0; right: -1px;
+      width: 2px;
+      background: var(--sd-grid-line);
+      z-index: 3;
+      pointer-events: none;
+    }
+    /* 宫格粗线（横）：第 3 行（19~27）、第 6 行（46~54）下方各一条。
+       ⚠️ 第 9 行不加 —— 紧贴棋盘下边框，会叠加变粗。 */
+    .sudoku-cell:nth-child(n+19):nth-child(-n+27)::after,
+    .sudoku-cell:nth-child(n+46):nth-child(-n+54)::after {
+      content: '';
+      position: absolute;
+      left: 0; right: 0; bottom: -1px;
+      height: 2px;
+      background: var(--sd-grid-line);
+      z-index: 3;
+      pointer-events: none;
+    }
+    /* 交叉点：第 3/6 行中第 3/6 列的格子，需同时画右粗线 + 下粗线 */
+    .sudoku-cell:nth-child(n+19):nth-child(-n+27):nth-child(3n):not(:nth-child(9n))::after,
+    .sudoku-cell:nth-child(n+46):nth-child(-n+54):nth-child(3n):not(:nth-child(9n))::after {
+      top: 0; left: 0; right: -1px; bottom: -1px;
+      width: auto; height: auto;
+      background:
+        linear-gradient(to bottom, var(--sd-grid-line) 0 2px, transparent 2px) 0 100% / 100% 2px no-repeat,
+        linear-gradient(to right, var(--sd-grid-line) 0 2px, transparent 2px) 100% 0 / 2px 100% no-repeat;
+    }
+    /* P0-3: 笔记显示 */
+    .notes-display {
+      display: flex; flex-wrap: wrap; align-content: center;
+      width: 100%; height: 100%;
+      font-size: 10px; line-height: 1.15; font-weight: 500;
+      color: var(--sd-notes-text);
+      pointer-events: none;
+    }
+    .notes-display span { width: 33.333%; text-align: center; }
+    .numpad {
+      display: grid; grid-template-columns: repeat(9, 1fr); gap: 4px;
+      max-width: 450px; width: 100%; margin: 0.75rem auto;
+    }
+    .num-btn {
+      padding: 0.625rem 0.25rem; background: var(--sd-btn-bg); color: var(--sd-btn-text);
+      border: 2px solid var(--sd-btn-border);
+      border-radius: var(--radius-sm); font-size: clamp(0.875rem, 4vw, 1.125rem);
+      font-weight: 600; cursor: pointer; min-height: var(--touch);
+      -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+    }
+    .num-btn:active { border-color: var(--primary); background: var(--bg); transform: scale(0.95); }
+    /* P0-2 / P0-3: 开关按钮激活态 */
+    .btn.active, .btn.toggle-on {
+      background: var(--sd-active-bg) !important; color: var(--sd-active-text) !important;
+      border-color: var(--sd-active-bg) !important;
+    }
+  
+      .sudoku-cell.combo-flash { animation: sudokuCombo 0.4s; }
+      @keyframes sudokuCombo {
+        0%, 100% { background: var(--accent, #e8f5e9); }
+        50% { background: gold; transform: scale(1.1); }
+      }
+      .sudoku-cell.hint-flash { animation: sudokuHint 0.5s ease-in-out 5; }
+      @keyframes sudokuHint {
+        0%, 100% { background: #fff3cd; }
+        50% { background: #ffc107; }
+      }
+      .sudoku-cell.hint-shown { font-weight: 900; color: #d97706; }
+      body.game-paused .sudoku-board { opacity: 0.5; pointer-events: none; filter: grayscale(0.5); }
+
+      /* ===== P1: 6 difficulty levels + per-difficulty stats ===== */
+      .difficulty-btn {
+        position: relative;
+        padding: 0.5rem 0.85rem;
+        font-size: 0.9rem;
+        background: white;
+        border: 2px solid var(--border, #E2E8F0);
+        border-radius: var(--radius-sm, 6px);
+        color: var(--text, #0F172A);
+        cursor: pointer;
+        transition: all 0.15s;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.15rem;
+        min-width: 78px;
+      }
+      .difficulty-btn:active { transform: scale(0.95); }
+      .difficulty-btn .diff-label { font-weight: 600; line-height: 1.1; }
+      .difficulty-btn .diff-stats {
+        font-size: 0.7rem;
+        color: var(--text-light, #64748B);
+        line-height: 1.1;
+        min-height: 0.85em;
+        display: none;
+      }
+      .difficulty-btn .diff-stats.has-record { color: var(--success, #10B981); font-weight: 600; display: block; }
+
+      /* ===== P1: smart hint message area ===== */
+      .hint-message {
+        max-width: 450px;
+        width: 100%;
+        margin: 0.5rem auto;
+        padding: 0.6rem 0.75rem;
+        border-radius: 6px;
+        background: linear-gradient(135deg, #EFF5FD, #DCEBFB);
+        border: 1px solid var(--primary);
+        color: #78350F;
+        font-size: 0.85rem;
+        line-height: 1.4;
+        text-align: center;
+        min-height: 1em;
+        opacity: 0;
+        transition: opacity 0.25s;
+        pointer-events: none;
+      }
+      .hint-message.show { opacity: 1; }
+      .hint-message .hint-emoji { font-size: 1rem; margin-right: 0.25rem; }
+      .hint-message .hint-target { font-weight: 700; color: #B45309; }
+
+      /* ===== Battle Mode ===== */
+      .battle-info-bar { display:none; align-items:center; justify-content:center; gap:1rem; padding:0.5rem 1rem; margin:0.5rem auto; max-width:450px; width:100%; background:linear-gradient(135deg,#0066CC,#7C3AED); color:#fff; border-radius:8px; font-size:0.9rem; flex-wrap:wrap; }
+      .battle-info-bar.show { display:flex; }
+      .battle-info-bar .room-code { background:rgba(255,255,255,0.2); padding:0.25rem 0.75rem; border-radius:4px; font-weight:700; letter-spacing:2px; cursor:pointer; }
+      .battle-info-bar .turn-indicator { font-weight:700; }
+      .battle-info-bar .turn-indicator.my-turn { color:#4ADE80; }
+      .battle-info-bar .turn-indicator.opp-turn { color:#FB923C; }
+      .battle-info-bar .score-display { font-weight:600; }
+      .battle-info-bar .battle-timer { font-weight:700; font-family:monospace; padding:0.25rem 0.5rem; background:rgba(255,255,255,0.15); border-radius:4px; }
+      .battle-info-bar .battle-timer.warn { background:rgba(251,191,36,0.6); color:#fff; }
+      .battle-info-bar .battle-timer.danger { background:rgba(239,68,68,0.8); color:#fff; animation: sudokuTimerPulse 1s infinite; }
+      @keyframes sudokuTimerPulse { 0%,100% { opacity:1; } 50% { opacity:0.6; } }
+      .sudoku-cell.battle-placed { transition: background 0.3s; }
+      .sudoku-cell.battle-placed.correct { background: #D1FAE5; }
+      .sudoku-cell.battle-placed.wrong { background: #FEE2E2; }
+      .sudoku-cell.battle-filling { opacity: 0.5; }
+
+      .sudoku-battle-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 10000; display: none; align-items: center; justify-content: center; padding: 1rem; }
+      .sudoku-battle-overlay.show { display: flex; }
+      .sudoku-battle-card { background: #fff; border-radius: 12px; padding: 2rem; max-width: 380px; width: 100%; box-shadow: 0 8px 32px rgba(0,0,0,0.3); text-align: center; }
+      .sudoku-battle-card h3 { margin: 0 0 1rem; font-size: 1.5rem; }
+      .sudoku-battle-card .sudoku-result-win { color: #10B981; }
+      .sudoku-battle-card .sudoku-result-lose { color: #EF4444; }
+      .sudoku-battle-card .sudoku-result-draw { color: #F59E0B; }
+      .sudoku-battle-card .sudoku-result-timeout { color: #6B7280; }
+      .sudoku-final-scores { display: flex; justify-content: center; gap: 2rem; margin: 1rem 0; font-size: 1.1rem; }
+      .sudoku-final-scores .score-col { text-align: center; }
+      .sudoku-final-scores .score-num { font-size: 2rem; font-weight: 700; }
+      .sudoku-final-scores .score-label { font-size: 0.85rem; color: #6B7280; }
+      .sudoku-final-scores .score-col.me .score-num { color: #0066CC; }
+
+      .battle-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:9999; align-items:center; justify-content:center; padding:1rem; }
+      .battle-overlay.show { display:flex; }
+      .battle-lobby { background:#fff; border-radius:12px; padding:2rem; max-width:400px; width:100%; box-shadow:0 8px 32px rgba(0,0,0,0.2); text-align:center; position:relative; }
+      .battle-lobby h2 { margin:0 0 1rem; color:var(--text,#0F172A); }
+      .battle-lobby input { width:100%; padding:0.6rem; border:2px solid var(--border,#E2E8F0); border-radius:6px; font-size:1rem; margin-bottom:0.75rem; box-sizing:border-box; }
+      .battle-lobby .lobby-btns { display:flex; gap:0.5rem; justify-content:center; flex-wrap:wrap; margin-top:0.75rem; }
+      .battle-lobby .lobby-btns .btn { min-width:120px; }
+      .battle-lobby .status-msg { margin-top:0.5rem; color:var(--text-light,#64748B); font-size:0.9rem; min-height:1.2em; }
+      .battle-result { font-size:1.2rem; font-weight:700; margin:1rem 0; }
+      .battle-player-item { display:flex; justify-content:space-between; align-items:center; padding:.5rem .75rem; background:var(--bg,#F8FAFC); border-radius:6px; border:2px solid var(--border,#E2E8F0); }
+    .battle-player-item .p-ava{display:flex;align-items:center;flex-shrink:0}
+      .battle-player-item.me { border-color:var(--primary,#0066CC); background:#EFF5FD; }
+      .battle-player-item .p-name { font-weight:600; color:var(--text,#0F172A); }
+      .battle-player-item .p-tag { font-size:.75rem; color:var(--text-light,#64748B); background:var(--border,#E2E8F0); padding:.1rem .5rem; border-radius:1rem; }
+
+    /* ===== W5.2 Daily Banner ===== */
+    #daily-banner{background:#111;color:#fff;padding:.75rem 1rem;border-radius:12px;margin-bottom:.75rem;box-shadow:none;animation:bannerSlideDown .5s ease}
+    @keyframes bannerSlideDown{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+    .daily-banner-inner{display:flex;align-items:center;justify-content:space-between;gap:.5rem;flex-wrap:wrap}
+    .daily-banner-text{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;font-weight:600}
+    .daily-banner-emoji{font-size:1.4rem}
+    .daily-banner-title{display:inline-flex;align-items:center;flex-wrap:wrap;gap:.35em;font-size:1.05rem}
+    .daily-banner-sub{font-size:.85rem;opacity:.9;font-weight:500}
+    .daily-banner-countdown{font-size:.9rem;font-weight:600;color:#4D97E6;background:rgba(255,255,255,.1);padding:.25rem .6rem;border-radius:6px;letter-spacing:.05em}
+    @media(max-width:480px){.daily-banner-countdown{font-size:.8rem}}
+
+    /* ===== W5.3 Share Overlay ===== */
+    .share-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;z-index:1000;padding:1rem;animation:fadeIn .3s ease}
+    @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+    .share-overlay-card{background:#fff;border-radius:16px;max-width:480px;width:100%;padding:1.5rem;position:relative;box-shadow:0 20px 60px rgba(0,0,0,.3);max-height:90vh;overflow-y:auto;animation:slideUp .3s ease}
+    @keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+    .share-overlay-close{position:absolute;top:.5rem;right:.75rem;background:none;border:none;font-size:1.8rem;cursor:pointer;color:var(--text-light);width:36px;height:36px;border-radius:50%;line-height:1}
+    .share-overlay-close:hover{background:var(--bg);color:var(--text)}
+    .share-overlay-title{font-size:1.25rem;font-weight:700;margin-bottom:1rem;text-align:center;color:var(--text)}
+    .share-overlay-canvas-wrap{margin:0 auto 1rem;border-radius:8px;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,.1)}
+    .share-overlay-canvas-wrap canvas{width:100%;height:auto;display:block}
+    .share-overlay-stats{background:var(--bg);padding:.75rem;border-radius:8px;margin-bottom:1rem;text-align:center;font-size:.9rem;color:var(--text-light)}
+    .share-overlay-stats strong{color:var(--primary);font-weight:700}
+    .share-overlay-url-row{display:flex;gap:.5rem;margin-bottom:.75rem}
+    .share-overlay-url-row input{flex:1;padding:.5rem;border:1.5px solid var(--border);border-radius:6px;font-size:.8rem;font-family:monospace;background:var(--bg);color:var(--text)}
+    .share-overlay-url-row input:focus{outline:none;border-color:var(--primary)}
+    .share-overlay-url-row button{padding:.5rem 1rem;background:var(--primary);color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600;font-size:.85rem;white-space:nowrap}
+    .share-overlay-url-row button:active{transform:scale(.95)}
+    .share-overlay-actions{display:flex;gap:.5rem;justify-content:center;flex-wrap:wrap}
+    .share-overlay-actions button{padding:.6rem 1.2rem;background:#fff;border:1.5px solid var(--border);border-radius:6px;cursor:pointer;font-weight:600;font-size:.85rem;transition:all .15s}
+    .share-overlay-actions button:hover{background:var(--bg);border-color:var(--primary)}
+    .share-overlay-toast{position:absolute;bottom:1rem;left:50%;transform:translateX(-50%);background:var(--text);color:#fff;padding:.5rem 1rem;border-radius:6px;font-size:.85rem;opacity:0;transition:opacity .3s;pointer-events:none}
+    .share-overlay-toast.show{opacity:1}
+    @media(max-width:480px){.share-overlay-card{padding:1rem}.share-overlay-title{font-size:1.1rem}}
+
+    /* ===== W5.5 History Modal ===== */
+    .history-modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;z-index:1000;padding:1rem}
+    .history-modal-card{background:#fff;border-radius:16px;max-width:560px;width:100%;padding:1.5rem;position:relative;box-shadow:0 20px 60px rgba(0,0,0,.3);max-height:90vh;overflow-y:auto}
+    .history-modal-title{font-size:1.25rem;font-weight:700;margin-bottom:1rem;text-align:center}
+    .history-modal-canvas-wrap{margin:0 auto 1rem;border-radius:8px;overflow:hidden;background:var(--bg)}
+    .history-modal-canvas-wrap canvas{width:100%;height:auto;display:block}
+    .history-modal-list{font-size:.85rem;color:var(--text-light);max-height:200px;overflow-y:auto}
+    .history-modal-list-item{padding:.25rem 0;border-bottom:1px solid var(--border)}
+    .history-empty{text-align:center;color:var(--text-light);padding:1.5rem;font-style:italic}
+
+    /* ===== W5.4 Difficulty Lock ===== */
+    .difficulty-btn[disabled]{opacity:.5;cursor:not-allowed;background:var(--bg)!important;color:var(--text-light)!important;border-color:var(--border)!important}
+    .difficulty-btn .lock-badge{font-size:.7rem;margin-left:.25rem}
+  </style>
+  <!--   <!-- Tri-Sites Shared CSS -->
+  <link rel="stylesheet" href="/css/shared/tokens.css?v=p5">
+<link rel="stylesheet" href="/css/shared/components.css?v=p19">
+  <link rel="stylesheet" href="/css/shared/toast.css?v=p3">
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Game",
+    "name": "数独",
+    "alternateName": "🧩 数独 - 经典 9×9 逻辑挑战",
+    "url": "https://mathduel.games/games/sudoku/",
+    "description": "经典 9×9 数独，填入 1-9 使每行每列每宫都包含 1-9。3 档难度可选，无登录无广告。",
+    "genre": "益智",
+    "playMode": "SinglePlayer",
+    "gamePlatform": "Web Browser",
+    "applicationCategory": "GameApplication",
+    "operatingSystem": "Any",
+    "inLanguage": "zh-CN",
+    "isAccessibleForFree": true,
+    "offers": {"@type": "Offer", "price": "0", "priceCurrency": "CNY"}
+  }
+  </script>
+
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "首页", "item": "https://mathduel.games/" },
+      { "@type": "ListItem", "position": 2, "name": "数独 9×9", "item": "https://mathduel.games/games/sudoku/" }
+    ]
+  }
+  </script>
+
+  <!-- i18n -->
+  <script src="/i18n/i18n.js?v=33" defer></script>
+  <script src="/shared/game-lobby.js?v=1"></script>
+  <script src="/i18n/lang-switcher.js?v=19" defer></script>
+  <!-- hreflang for SEO/i18n -->
+  <link rel="alternate" hreflang="zh-CN" href="https://mathduel.games/zh/games/sudoku/" />
+  <link rel="alternate" hreflang="en-US" href="https://mathduel.games/en/games/sudoku/" />
+  <link rel="alternate" hreflang="ja-JP" href="https://mathduel.games/ja/games/sudoku/" />
+  <link rel="alternate" hreflang="x-default" href="https://mathduel.games/games/sudoku/" />
+    <!-- P5-1: Plausible Analytics (privacy-friendly, no cookies) -->
+  <script defer data-domain="mathduel.games" src="https://plausible.io/js/script.js"></script>
+  <script>window.plausible = window.plausible || function() { (window.plausible.q = window.plausible.q || []).push(arguments) }</script>
+    <link rel="stylesheet" href="/css/shared/brand-ds2.css?v=ds2-23">
+  <link rel="manifest" href="/manifest.zh.webmanifest">
+<style>
+/* 防 FOUC：新版 chrome（shared/game-chrome-10.js）构建完成前，隐藏"旧版专属骨架"，
+   避免浏览器先渲染旧版布局、随后被整体替换成新版所造成的闪烁 + 跳动。
+   用 visibility 而非 display（保留占位，减少布局位移）。
+   解除方式：① game-chrome-10.js 构建完成后移除 html.gc-pending（主路径）
+            ② window.load 兜底 ③ 10s 硬超时兜底（chrome 加载失败时旧 UI 仍可用）。
+   选择器清单来自 2026-09-16 逐页实测（.g24-* /.g24e-* /.pyr-* /.controls + 各统计条）。 */
+html.gc-pending .g24-controls,html.gc-pending .g24-stats,
+html.gc-pending .g24e-controls,html.gc-pending .g24e-stats,
+html.gc-pending .pyr-controls,html.gc-pending .pyr-stats,
+html.gc-pending .controls,html.gc-pending .game-stats,
+html.gc-pending .diff-stats,html.gc-pending .g24-diff{visibility:hidden!important}
+</style>
+</head>
+<body>
+
+<div id="site-header" style="min-height:65px"
+     data-brand-a="Math" data-brand-b="Duel" data-mark="duel-calculator"
+     data-nav='[{"label":"Home","href":"/","i18n":"nav.home"}]'
+     data-cta-label="Home" data-cta-href="/" data-cta-i18n="nav.home"></div>
+
+  <div class="layout">
+<div class="layout-main">
+  <div class="container" role="main">
+    <div class="game-page">
+      <!-- W5.2 Daily 横幅 (默认隐藏) -->
+      <div id="daily-banner" style="display:none;">
+        <div class="daily-banner-inner">
+          <div class="daily-banner-text">
+            <span class="daily-banner-emoji">🌟</span>
+            <span class="daily-banner-title"><span data-i18n="sudoku.daily_title_first">🎉 Today's sudoku solved!</span><span id="daily-banner-date"></span></span>
+            <span class="daily-banner-sub">· <span data-i18n="sudoku.difficulty_easy">Easy</span> <strong id="daily-banner-diff">-</strong> · <span data-i18n="site.name">Math Duel</span></span>
+          </div>
+          <div class="daily-banner-countdown" data-i18n-title="sudoku.ui.daily_countdown_title" title="Until UTC 0:00 rollover">
+            ⏳ <span id="daily-banner-countdown">--:--</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="gm-head">
+        
+        <div>
+          
+          
+        </div>
+        <h1 style="font-size:1.4rem;font-weight:800;margin:0;line-height:1.2;color:var(--text,#0F172A)">Sudoku 9×9</h1>
+        <div class="game-stats">
+          <span>⏱ <span id="timer">0</span>s</span>
+          <span><span data-i18n="sudoku.stats_mistakes" data-i18n-vars='{"n":0,"max":3}'>Mistakes: {n}/{max}</span><span id="errors">0</span>/3</span>
+          <span><span data-i18n="common.streak_count" data-i18n-vars='{"count":0}'>{count} streak</span><span id="combo">0</span></span>
+          <span><span data-i18n="sudoku.btn_hint">💡 Hint</span> <span id="hintsLeft">3</span></span>
+        </div>
+      </div>
+
+      <div class="controls">
+        <button class="difficulty-btn active" data-diff="easy">
+          <span class="diff-label" data-i18n="sudoku.difficulty.easy">Easy</span>
+          <span class="diff-stats" data-stats="easy">—</span>
+        </button>
+        <button class="difficulty-btn" data-diff="medium">
+          <span class="diff-label" data-i18n="sudoku.difficulty.medium">Medium</span>
+          <span class="diff-stats" data-stats="medium">—</span>
+        </button>
+        <button class="difficulty-btn" data-diff="hard">
+          <span class="diff-label" data-i18n="sudoku.difficulty.hard">Hard</span>
+          <span class="diff-stats" data-stats="hard">—</span>
+        </button>
+        <button class="difficulty-btn" data-diff="expert">
+          <span class="diff-label" data-i18n="sudoku.difficulty.expert">Expert</span>
+          <span class="diff-stats" data-stats="expert">—</span>
+        </button>
+        <button class="difficulty-btn" data-diff="master">
+          <span class="diff-label" data-i18n="sudoku.difficulty.master">Master</span>
+          <span class="diff-stats" data-stats="master">—</span>
+        </button>
+        <button class="difficulty-btn" data-diff="extreme">
+          <span class="diff-label" data-i18n="sudoku.difficulty.extreme">Extreme</span>
+          <span class="diff-stats" data-stats="extreme">—</span>
+        </button>
+      </div>
+      <div class="controls" style="margin-top:0.5rem;">
+        <button class="btn" id="undo" data-i18n="sudoku.ui.btn_undo" data-i18n-title="sudoku.ui.title_undo" title="Undo">↶ Undo</button>
+        <button class="btn" id="pause" data-i18n="sudoku.ui.btn_pause" data-i18n-title="sudoku.ui.title_pause" title="Pause/Resume">⏸ Pause</button>
+        <button class="btn" id="hint" data-i18n="sudoku.ui.btn_hint" data-i18n-title="sudoku.ui.title_hint" title="Show correct number">💡 Hint</button>
+        <button class="btn" id="erase" data-i18n="sudoku.ui.btn_erase" data-i18n-title="sudoku.ui.title_erase" title="Erase">🧽 Erase</button>
+        <button class="btn" id="notes-btn" data-i18n="sudoku.ui.btn_notes" data-i18n-title="sudoku.ui.title_notes" title="Notes mode (pencil candidates)">✏️ Notes</button>
+        <button class="btn active" id="auto-check-btn" data-i18n="sudoku.ui.btn_auto_check" data-i18n-title="sudoku.ui.title_auto_check" title="Auto-check (highlight errors/dupes)">✅ Auto-check</button>
+        <button class="btn" id="theme-btn" data-i18n="sudoku.ui.btn_dark_mode" data-i18n-title="sudoku.ui.title_dark_mode" title="Dark mode">🌙</button>
+        <button class="btn" id="new-game" data-i18n="sudoku.ui.btn_new_game">🔄 New Game</button>
+        <button class="btn" id="daily-btn" data-i18n="sudoku.ui.btn_daily">📅 Daily</button>
+        <button class="btn battle-btn" id="battle-btn" data-i18n="sudoku.ui.btn_battle">⚔️ Battle</button>
+      </div>
+
+      <div class="battle-info-bar" id="battle-info-bar">
+        <span data-i18n="sudoku.ui.battle_in_progress">⚔️ In battle</span>
+        <span class="room-code" id="battle-room-code" title="Click to copy room code" data-i18n-title="sudoku.ui.title_copy_code"></span>
+        <span class="score-display" id="battle-scores">0 : 0</span>
+        <span class="turn-indicator" id="battle-turn"></span>
+        <span id="battle-status"></span>
+        <span class="battle-timer" id="battle-timer">5:00</span>
+      </div>
+
+      <div class="sudoku-board" id="board"></div>
+
+      <div class="hint-message" id="hint-msg" role="status" aria-live="polite"></div>
+
+      <div class="numpad" id="numpad"></div>
+    </div>
+  </div>
+
+  <script>
+  // ── i18n helper: zh.json 中文字符串 → i18n key, fallback 原字符串 ──
+  window.__i18nZh2Key = (function() {
+    const map = new Map();
+    function walk(obj, prefix) {
+      for (const k in obj) {
+        const v = obj[k];
+        const path = prefix ? prefix + '.' + k : k;
+        if (typeof v === 'string' && /[\u4e00-\u9fff]/.test(v)) {
+          map.set(v, path);
+        } else if (typeof v === 'object') {
+          walk(v, path);
+        }
+      }
+    }
+    try {
+      const xhr = new XMLHttpRequest();
+      xhr.open('GET', '/i18n/zh.json', false);
+      xhr.send();
+      if (xhr.status === 200) {
+        const zh = JSON.parse(xhr.responseText);
+        map.clear();
+        walk(zh, '');
+        window.__i18nZh2KeyReady = true;
+      }
+    } catch (e) {}
+    return map;
+  })();
+  window.__ = function(zh, vars) {
+    if (!window.i18n) return zh;
+    const key = window.__i18nZh2Key.get(zh);
+    if (key) return window.__t(key, vars || {});
+    return zh;
+  };
+  // === 直接按 key 翻译的安全辅助(i18n 未就绪时原样返回 key,避免 init 早于 i18n 加载崩溃) ===
+  window.__t = function(key, vars) {
+    if (!window.i18n || !key) return key;
+    return window.i18n.t(key, vars || {});
+  };
+
+  let solution = [], puzzle = [], selected = null, errors = 0, timer = 0, interval;
+  let combo = 0, hintsLeft = 3, historyStack = [], paused = false;
+  // ===== P0: 自动检查 / 笔记模式 =====
+  let autoCheck = true;
+  let notesMode = false;
+  let notes = Array(81).fill(null).map(() => []);
+
+  /* P0-1: 重复数字高亮 —— 扫描全盘，把同行/列/宫内重复的已填数字标成 .conflict */
+  function highlightConflicts() {
+    const cells = document.querySelectorAll('.sudoku-cell');
+    if (!cells.length) return;
+    cells.forEach(c => c.classList.remove('conflict'));
+    if (!autoCheck) return;
+    const bad = new Set();
+    for (let i = 0; i < 81; i++) {
+      const v = puzzle[i];
+      if (!v) continue;
+      const r = Math.floor(i / 9), c = i % 9;
+      const br = Math.floor(r / 3) * 3, bc = Math.floor(c / 3) * 3;
+      for (let k = 0; k < 9; k++) {
+        const rowIdx = r * 9 + k;
+        const colIdx = k * 9 + c;
+        const boxIdx = (br + Math.floor(k / 3)) * 9 + (bc + (k % 3));
+        if (rowIdx !== i && puzzle[rowIdx] === v) { bad.add(i); bad.add(rowIdx); }
+        if (colIdx !== i && puzzle[colIdx] === v) { bad.add(i); bad.add(colIdx); }
+        if (boxIdx !== i && puzzle[boxIdx] === v) { bad.add(i); bad.add(boxIdx); }
+      }
+    }
+    bad.forEach(idx => { if (cells[idx]) cells[idx].classList.add('conflict'); });
+  }
+
+  /* P0-3: 渲染单个格子（正式数字 或 笔记候选数字） */
+  function renderCell(i) {
+    const cells = document.querySelectorAll('.sudoku-cell');
+    const cell = cells[i];
+    if (!cell) return;
+    if (puzzle[i] !== 0) {
+      cell.textContent = puzzle[i];
+      return;
+    }
+    const nts = notes[i] || [];
+    if (nts.length) {
+      cell.innerHTML = '<div class="notes-display">' +
+        [1,2,3,4,5,6,7,8,9].map(n => '<span>' + (nts.includes(n) ? n : '') + '</span>').join('') +
+        '</div>';
+    } else {
+      cell.textContent = '';
+    }
+  }
+
+  /* P0-3: 填入正式数字后，清除同行/列/宫中 notes 里的该数字 */
+  function clearNotesFor(idx, n) {
+    const r = Math.floor(idx / 9), c = idx % 9;
+    const br = Math.floor(r / 3) * 3, bc = Math.floor(c / 3) * 3;
+    const touched = new Set([idx]);
+    for (let k = 0; k < 9; k++) {
+      touched.add(r * 9 + k);
+      touched.add(k * 9 + c);
+      touched.add((br + Math.floor(k / 3)) * 9 + (bc + (k % 3)));
+    }
+    touched.forEach(t => {
+      if (notes[t] && notes[t].includes(n)) {
+        notes[t] = notes[t].filter(x => x !== n);
+        if (puzzle[t] === 0) renderCell(t);
+      }
+    });
+    notes[idx] = [];
+  }
+
+  /* P0-3: 笔记模式下切换某格的候选数字。返回 true 表示已按笔记处理 */
+  function toggleNote(idx, n) {
+    if (idx === null || puzzle[idx] !== 0) return false;
+    const cells = document.querySelectorAll('.sudoku-cell');
+    if (cells[idx] && cells[idx].classList.contains('given')) return false;
+    if (!notes[idx]) notes[idx] = [];
+    const pos = notes[idx].indexOf(n);
+    if (pos >= 0) notes[idx].splice(pos, 1);
+    else notes[idx].push(n);
+    notes[idx].sort((a, b) => a - b);
+    renderCell(idx);
+    return true;
+  }
+  let currentDifficulty = 'medium';
+
+  // ===== P1: 6 difficulty levels =====
+  // 极简：每多挖空 1 格，难度提升一个量级
+  // easy/medium/hard 保留原始体验(35/45/52)，新增 expert/master/extreme
+  // ===== W8.x 修复:硬上限 56 空格(超过无法保证唯一解)=====
+  const DIFFICULTY_EMPTIES = { easy: 35, medium: 45, hard: 52, expert: 56 };
+  const DIFFICULTY_LABELS  = {
+  easy:   () => window.__t('sudoku.difficulty_easy'),
+  medium: () => window.__t('sudoku.difficulty_medium'),
+  hard:   () => window.__t('sudoku.difficulty_hard'),
+  expert: () => window.__t('sudoku.difficulty_expert'),
+};
+const _DIFFICULTY_LABEL_FALLBACK = { easy: '简单', medium: '中等', hard: '困难', expert: '专家' };
+function _diffLabel(k) { try { return (DIFFICULTY_LABELS[k] || (() => _DIFFICULTY_LABEL_FALLBACK[k]))(); } catch(e){ return _DIFFICULTY_LABEL_FALLBACK[k] || k; } }
+
+  // ===== P1: local stats per difficulty =====
+  function loadStats() {
+    try { return JSON.parse(localStorage.getItem('sudoku_stats') || '{}'); }
+    catch (e) { return {}; }
+  }
+  function saveStats(s) {
+    try { localStorage.setItem('sudoku_stats', JSON.stringify(s)); }
+    catch (e) { /* quota or privacy mode — silent fail */ }
+  }
+  function getDifficultyStat(diff) {
+    const s = loadStats();
+    return s[diff] || { plays: 0, bestTime: Infinity, totalTime: 0, errors: 0 };
+  }
+  function formatBestTime(seconds) {
+    if (!isFinite(seconds)) return '—';
+    if (seconds < 60) return Math.round(seconds) + 's';
+    const m = Math.floor(seconds / 60);
+    const s = Math.round(seconds % 60);
+    return m + ':' + (s < 10 ? '0' + s : s);
+  }
+  function updateDifficultyStatsDisplay() {
+    const stats = loadStats();
+    Object.keys(DIFFICULTY_LABELS).forEach(function (diff) {
+      const el = document.querySelector('.diff-stats[data-stats="' + diff + '"]');
+      if (!el) return;
+      const rec = stats[diff];
+      if (!rec || !rec.plays) {
+        el.textContent = '—';
+        el.classList.remove('has-record');
+      } else {
+        el.textContent = rec.plays + __('次 · ') + formatBestTime(rec.bestTime);
+        el.classList.add('has-record');
+      }
+    });
+  }
+
+  function isValid(board, row, col, num) {
+    for (let i = 0; i < 9; i++) {
+      if (board[row*9+i] === num || board[i*9+col] === num) return false;
+      const br = Math.floor(row/3)*3 + Math.floor(i/3);
+      const bc = Math.floor(col/3)*3 + (i%3);
+      if (board[br*9+bc] === num) return false;
+    }
+    return true;
+  }
+
+  function generate(difficulty) {
+    // ===== W8.x 修复:逐步挖 + 每步唯一解校验,避免 56+ 档位 100% 多解 =====
+    // 先填充完整解
+    let solved = false;
+    for (let tryNo = 0; tryNo < 5 && !solved; tryNo++) {
+      const sol = Array(81).fill(0);
+      // 填充对角线3 个 3x3 宫(互相独立)
+      for (let b = 0; b < 9; b += 3) {
+        const nums = [1,2,3,4,5,6,7,8,9].sort(() => Math.random() - 0.5);
+        let k = 0;
+        for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++)
+          sol[(b+i)*9+(b+j)] = nums[k++];
+      }
+      // 求解器填充其余(用非破坏的 countSolutions 找到首解)
+      const b = sol.slice();
+      function findFirstSolution() {
+        for (let i = 0; i < 81; i++) {
+          if (b[i] !== 0) continue;
+          const r = Math.floor(i/9), c = i%9;
+          for (let n = 1; n <= 9; n++) {
+            if (isValid(b, r, c, n)) {
+              b[i] = n;
+              if (findFirstSolution()) return true;
+              b[i] = 0;
+            }
+          }
+          return false;
+        }
+        return true;
+      }
+      if (findFirstSolution()) {
+        solution = b.slice();
+        solved = true;
+      }
+    }
+    if (!solved) {
+      console.error('[generate] 5 次都未生成完整解');
+      return;
+    }
+
+    // 逐步挖空 + 每步唯一解校验
+    const targetEmpties = DIFFICULTY_EMPTIES[difficulty] != null
+      ? DIFFICULTY_EMPTIES[difficulty]
+      : DIFFICULTY_EMPTIES.medium;
+
+    let digged = null;
+    for (let attempt = 0; attempt < 30 && !digged; attempt++) {
+      const toDig = [];
+      const positions = [];
+      for (let i = 0; i < 81; i++) positions.push(i);
+      // shuffle
+      for (let i = positions.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [positions[i], positions[j]] = [positions[j], positions[i]];
+      }
+
+      for (const pos of positions) {
+        if (toDig.length >= targetEmpties) break;
+        // 模拟挖这一格:基于 solution + 已挖
+        const test = solution.slice();
+        for (const d of toDig) test[d] = 0;
+        test[pos] = 0;
+        if (hasUniqueSolution(test)) {
+          toDig.push(pos);
+        }
+      }
+
+      if (toDig.length >= targetEmpties) {
+        const p = solution.slice();
+        for (const pos of toDig) p[pos] = 0;
+        digged = p;
+      }
+      // else: 换一组位置重试
+    }
+
+    if (!digged) {
+      // 兜底:挖不到目标空格的合法挖法(极难档) → 自动降到 medium 档位(45 空)
+      console.warn('[generate] 30 次挖不出目标空格,降级到 medium');
+      const fallbackEmpties = Math.min(targetEmpties, DIFFICULTY_EMPTIES.medium);
+      const toDig = [];
+      const positions = [];
+      for (let i = 0; i < 81; i++) positions.push(i);
+      for (let i = positions.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [positions[i], positions[j]] = [positions[j], positions[i]];
+      }
+      for (const pos of positions) {
+        if (toDig.length >= fallbackEmpties) break;
+        const test = solution.slice();
+        for (const d of toDig) test[d] = 0;
+        test[pos] = 0;
+        if (hasUniqueSolution(test)) toDig.push(pos);
+      }
+      if (toDig.length >= fallbackEmpties) {
+        const p = solution.slice();
+        for (const pos of toDig) p[pos] = 0;
+        digged = p;
+      }
+    }
+
+    if (!digged) {
+      // 极端兜底:实在挖不到合法挖法,生成失败
+      console.error('[generate] 无法生成唯一解题');
+      return;
+    }
+    puzzle = digged;
+  }
+  function solve(board) {
+    // 标准回溯：找到第一个空格，尝试 1-9
+    for (let i = 0; i < 81; i++) {
+      if (board[i] !== 0) continue;
+      for (let n = 1; n <= 9; n++) {
+        if (isValid(board, Math.floor(i/9), i%9, n)) {
+          board[i] = n;
+          if (solve(board)) return true;
+          board[i] = 0;
+        }
+      }
+      return false;  // 无解
+    }
+    return true;  // 所有格已填，成功
+  }
+
+  /* ===== W8.x: 数解统计(非破坏)+ 唯一性校验 =====
+     用于 generate() 中每挖一格校验唯一解
+  */
+  function countSolutions2(board, limit) {
+    // 计数解,达到 limit 即停止;复制 board 避免破坏
+    const b = board.slice();
+    let count = 0;
+    function rec() {
+      for (let i = 0; i < 81; i++) {
+        if (b[i] !== 0) continue;
+        const r = Math.floor(i / 9), c = i % 9;
+        for (let n = 1; n <= 9; n++) {
+          if (isValid(b, r, c, n)) {
+            b[i] = n;
+            rec();
+            b[i] = 0;
+            if (count >= limit) return;
+          }
+        }
+        return;  // 此格无解,回溯
+      }
+      count++;
+    }
+    rec();
+    return count;
+  }
+
+  function hasUniqueSolution(board) {
+    return countSolutions2(board, 2) === 1;
+  }
+  function render() {
+    document.getElementById('board').innerHTML = puzzle.map((v, i) => {
+      const given = v !== 0;
+      let inner = v || '';
+      // P0-3: 空格若有笔记，渲染候选数字
+      if (!given && notes[i] && notes[i].length) {
+        inner = '<div class="notes-display">' +
+          [1,2,3,4,5,6,7,8,9].map(n => '<span>' + (notes[i].includes(n) ? n : '') + '</span>').join('') +
+          '</div>';
+      }
+      return `<div class="sudoku-cell ${given ? 'given' : ''}" data-idx="${i}">${inner}</div>`;
+    }).join('');
+    document.querySelectorAll('.sudoku-cell:not(.given)').forEach(c => {
+      c.addEventListener('click', () => {
+        document.querySelectorAll('.sudoku-cell').forEach(x => x.classList.remove('selected'));
+        c.classList.add('selected');
+        selected = parseInt(c.dataset.idx);
+      });
+    });
+    highlightConflicts();
+  }
+
+  function renderNumpad() {
+    const pad = document.getElementById('numpad');
+    pad.innerHTML = '';
+    for (let n = 1; n <= 9; n++) {
+      const b = document.createElement('button');
+      b.className = 'num-btn';
+      b.textContent = n;
+      b.addEventListener('click', () => {
+        if (paused || selected === null) return;
+        if (puzzle[selected] !== 0) return;
+        // P0-3: 笔记模式 —— 只在格内标记候选数字，不填正式数字
+        if (notesMode) { toggleNote(selected, n); return; }
+        const prev = puzzle[selected];
+        puzzle[selected] = n;
+        const cells = document.querySelectorAll('.sudoku-cell');
+        cells[selected].textContent = n;
+        // P0-3: 填入正式数字，清除相关格的同数字笔记
+        clearNotesFor(selected, n);
+        // P0-1: 重复数字高亮
+        highlightConflicts();
+        if (solution[selected] !== n) {
+          // P0-2: autoCheck 关闭时不即时判错，仅保留数字，完成时统一检查
+          if (!autoCheck) {
+            historyStack.push({idx: selected, prev: prev});
+            // 全盘填满 → 统一检查
+            if (puzzle.every(v => v !== 0)) {
+              const wrong = puzzle.reduce((acc, v, i) => acc + (v !== solution[i] ? 1 : 0), 0);
+              const wrongIdx = [];
+              puzzle.forEach((v, i) => { if (v !== solution[i]) wrongIdx.push(i); });
+              wrongIdx.forEach(i => { if (cells[i]) cells[i].classList.add('error'); });
+              setTimeout(() => gAlert(window.__t('sudoku.check_fail_message', {wrong: wrong}), window.__t('sudoku.check_fail_title')), 200);
+            }
+            return;
+          }
+          errors++;
+          cells[selected].classList.add('error');
+          document.getElementById('errors').textContent = errors;
+          combo = 0;
+          if (comboEl) comboEl.textContent = 0;
+          if (errors >= 3) {
+            setTimeout(() => {
+              gAlert(window.__t('sudoku.too_many_errors_alert'), window.__t('sudoku.lose_title'));
+              init('medium');
+            }, 200);
+            return;
+          }
+          // 错误后还原（不记录撤销栈，因为本来就是错的）
+          setTimeout(() => {
+            puzzle[selected] = 0;
+            cells[selected].textContent = '';
+            cells[selected].classList.remove('error');
+            highlightConflicts();
+          }, 500);
+        } else {
+          // 记录撤销栈（只对正确的）
+          historyStack.push({idx: selected, prev: prev});
+          // 连击 +1
+          combo++;
+          if (comboEl) comboEl.textContent = combo;
+          cells[selected].classList.add('combo-flash');
+          setTimeout(() => cells[selected].classList.remove('combo-flash'), 400);
+          // 检查完成
+          if (puzzle.every((v, i) => v === solution[i])) {
+            clearInterval(interval);
+            // ===== P1: 保存本地难度统计 =====
+            try {
+              const s = loadStats();
+              if (!s[currentDifficulty]) s[currentDifficulty] = { plays: 0, bestTime: Infinity, totalTime: 0, errors: 0 };
+              s[currentDifficulty].plays++;
+              s[currentDifficulty].totalTime += timer;
+              if (timer < s[currentDifficulty].bestTime) s[currentDifficulty].bestTime = timer;
+              s[currentDifficulty].errors += errors;
+              saveStats(s);
+              updateDifficultyStatsDisplay();
+            } catch (e) { /* localStorage may be unavailable */ }
+            // ===== 全局工具集成 =====
+            if (window.fireConfetti) window.fireConfetti();
+            if (window.GameStats) {
+              window.GameStats.track('sudoku', 'win');
+              if (errors === 0) window.GameStats.inc('sudoku', 'perfect_wins');
+            }
+            if (window.GameAchievements) {
+              window.GameAchievements.unlock('first_play');
+              const stats = (window.GameStats && window.GameStats.get('stats')) || {};
+              const total = (stats.sudoku && stats.sudoku.plays) || 0;
+              if (total >= 10) window.GameAchievements.unlock('play_10');
+              if (total >= 50) window.GameAchievements.unlock('play_50');
+              if (total >= 100) window.GameAchievements.unlock('play_100');
+              if (errors === 0) window.GameAchievements.unlock('no_mistakes');
+              if (timer < 60) window.GameAchievements.unlock('fast_30s');
+            }
+            if (sudDailyData) {
+              // W5 数独 daily 完成 → 记录 streak + account + 弹战绩卡
+              try { if (window.GameDaily) window.GameDaily.complete('sudoku'); } catch (e) {}
+              /* P7: 每日挑战完成 → 服务端提交(星标+金币; already 防重复) */
+              try {
+                fetch('/api/daily/submit', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ game: 'sudoku', expression: String(solution).replace(/\D/g, ''), duration_ms: timer * 1000 }) })
+                  .then(function (r) { return r.ok ? r.json() : null; })
+                  .then(function (d) { if (d && d.ok && window.__mdAnalytics) window.__mdAnalytics.track('daily_submit_ok', { game: 'sudoku', star: d.earnedStar || 0 }); })
+                  .catch(function () {});
+              } catch (e) {}
+              try { if (window.Streak) window.Streak.createStreak().recordComplete('sudoku'); } catch (e) {}
+              try {
+                if (window.Account) {
+                  const a = window.Account.createAccount();
+                  a.ensure();
+                  a.recordGame('sudoku', { duration: timer, completed: true, score: Math.max(0, 1000 - timer * 2) });
+                }
+              } catch (e) {}
+              try { sudCheckUnlocks(); } catch (e) {}
+              // W7.1 daily_complete 埋点
+              try { if (window.__mdAnalytics) window.__mdAnalytics.track('daily_complete', { game: 'sudoku', duration: timer, difficulty: sudDailyData.difficulty || 'medium' }); } catch (e) {}
+              setTimeout(() => sudShowShareOverlay({ duration: timer, difficulty: sudDailyData.difficulty || 'medium' }), 600);
+            } else if (window.__sudokuDailyMode && window.GameDaily) {
+              // 向后兼容
+              window.GameDaily.complete('sudoku');
+            }
+            // P1: 胜利时显示新纪录
+            const finalStat = loadStats()[currentDifficulty];
+            let recordMsg = '';
+            if (finalStat && finalStat.bestTime === timer && finalStat.plays === 1) {
+              recordMsg = __('\n🏆 新纪录！');
+            }
+            setTimeout(() => gAlert(window.__t('sudoku.win_message', {time: timer+'s', errors: errors, record: recordMsg}), window.__t('sudoku.win_title')), 200);
+          }
+        }
+      });
+      pad.appendChild(b);
+    }
+  }
+
+  function undo() {
+    if (historyStack.length === 0) return;
+    const {idx, prev: prevVal} = historyStack.pop();
+    puzzle[idx] = prevVal;
+    const cells = document.querySelectorAll('.sudoku-cell');
+    if (cells[idx]) {
+      cells[idx].textContent = prevVal || '';
+      cells[idx].classList.remove('error', 'combo-flash');
+      renderCell(idx);   // P0-3: 还原后若有笔记则重绘
+    }
+    highlightConflicts(); // P0-1
+  }
+
+  function erase() {
+    if (selected === null) return;
+    const cells = document.querySelectorAll('.sudoku-cell');
+    // 不能擦除 given 格子
+    if (cells[selected] && cells[selected].classList.contains('given')) return;
+    // P0-3: 空格但有笔记 → 清空笔记
+    if (puzzle[selected] === 0) {
+      if (notes[selected] && notes[selected].length) {
+        notes[selected] = [];
+        renderCell(selected);
+      }
+      return;
+    }
+    historyStack.push({idx: selected, prev: puzzle[selected]});
+    puzzle[selected] = 0;
+    if (cells[selected]) {
+      cells[selected].textContent = '';
+      cells[selected].classList.remove('error', 'combo-flash', 'conflict');
+      renderCell(selected);
+    }
+    highlightConflicts(); // P0-1
+  }
+
+  function hint() {
+    if (hintsLeft <= 0) {
+      alert(__('提示次数已用完'));
+      return;
+    }
+    let target = -1;
+    let hintMsg = '';
+
+    // P1: 优先找一个"唯一候选数"的格子（naked single）
+    // —— 排除同行/列/宫已有数字后，只剩 1 个可能数字的空格
+    if (selected !== null && puzzle[selected] === 0) {
+      const c = computeCandidates(selected);
+      if (c.length === 1) {
+        target = selected;
+        hintMsg = buildHintMessage(target, c[0], /*logical*/ true);
+      }
+    }
+    if (target === -1) {
+      // 扫描所有空格，找出第一个唯一候选格
+      const empties = [];
+      for (let i = 0; i < 81; i++) {
+        if (puzzle[i] === 0) empties.push(i);
+      }
+      if (empties.length === 0) return;
+      // 随机打乱顺序，找第一个 naked single
+      for (let i = empties.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [empties[i], empties[j]] = [empties[j], empties[i]];
+      }
+      for (const idx of empties) {
+        const c = computeCandidates(idx);
+        if (c.length === 1) {
+          target = idx;
+          hintMsg = buildHintMessage(target, c[0], /*logical*/ true);
+          break;
+        }
+      }
+    }
+    if (target === -1) {
+      // 没有 naked single，回退到随机揭示
+      const empties = [];
+      for (let i = 0; i < 81; i++) {
+        if (puzzle[i] === 0) empties.push(i);
+      }
+      if (empties.length === 0) return;
+      target = empties[Math.floor(Math.random() * empties.length)];
+      hintMsg = buildHintMessage(target, solution[target], /*logical*/ false);
+    }
+
+    historyStack.push({idx: target, prev: 0});
+    puzzle[target] = solution[target];
+    const cells = document.querySelectorAll('.sudoku-cell');
+    if (cells[target]) {
+      cells[target].textContent = solution[target];
+      cells[target].style.color = '#00529C';
+      cells[target].style.fontWeight = '900';
+    }
+    // 高亮被揭示的格子
+    if (cells[target]) {
+      cells[target].classList.add('hint-flash');
+      setTimeout(() => cells[target].classList.remove('hint-flash'), 2500);
+    }
+    hintsLeft--;
+    if (hintsEl) hintsEl.textContent = hintsLeft;
+    // P0-3 / P0-1: 提示揭示后清理笔记并刷新冲突高亮
+    clearNotesFor(target, solution[target]);
+    highlightConflicts();
+
+    showHintMsg(hintMsg);
+
+    setTimeout(() => {
+      if (cells[target]) {
+        cells[target].style.color = '';
+        cells[target].style.fontWeight = '';
+      }
+    }, 3000);
+  }
+
+  // P1: 计算某格的可能候选数（1-9 中排除同行/列/宫已占用的）
+  function computeCandidates(idx) {
+    const row = Math.floor(idx / 9);
+    const col = idx % 9;
+    const used = new Set();
+    // 行
+    for (let j = 0; j < 9; j++) used.add(puzzle[row * 9 + j]);
+    // 列
+    for (let i = 0; i < 9; i++) used.add(puzzle[i * 9 + col]);
+    // 宫
+    const br = Math.floor(row / 3) * 3;
+    const bc = Math.floor(col / 3) * 3;
+    for (let i = br; i < br + 3; i++) {
+      for (let j = bc; j < bc + 3; j++) {
+        used.add(puzzle[i * 9 + j]);
+      }
+    }
+    const cands = [];
+    for (let n = 1; n <= 9; n++) {
+      if (!used.has(n)) cands.push(n);
+    }
+    return cands;
+  }
+
+  // P1: 构造 hint 解释文字
+  function buildHintMessage(idx, value, logical) {
+    const row = Math.floor(idx / 9) + 1;
+    const col = (idx % 9) + 1;
+    if (logical) {
+      // 统计候选中还有哪些数字已占用
+      const c = computeCandidates(idx);
+      const remaining = 9 - c.length;
+      return '<span class="hint-emoji">💡</span>' + window.__t('sudoku.hint_logical', {row: row, col: col, value: value, remaining: remaining});
+    } else {
+      return '<span class="hint-emoji">💡</span>' + window.__t('sudoku.hint_fallback', {row: row, col: col, value: value});
+    }
+  }
+
+  // P1: 显示/隐藏 hint 消息
+  function showHintMsg(html) {
+    const el = document.getElementById('hint-msg');
+    if (!el) return;
+    el.innerHTML = html;
+    el.classList.add('show');
+    if (showHintMsg._t) clearTimeout(showHintMsg._t);
+    showHintMsg._t = setTimeout(() => {
+      el.classList.remove('show');
+      // 完全淡出后清空内容
+      setTimeout(() => { if (!el.classList.contains('show')) el.innerHTML = ''; }, 300);
+    }, 4000);
+  }
+  function hideHintMsg() {
+    const el = document.getElementById('hint-msg');
+    if (!el) return;
+    if (showHintMsg._t) clearTimeout(showHintMsg._t);
+    el.classList.remove('show');
+    el.innerHTML = '';
+  }
+
+  function togglePause() {
+    paused = !paused;
+    const btn = document.getElementById('pause');
+    if (btn) btn.textContent = paused ? window.__t('sudoku.resume_btn') : window.__t('sudoku.pause_btn');
+    document.body.classList.toggle('game-paused', paused);
+    // P2-fix: 暂停时冻结计时器，继续时恢复
+    if (paused) {
+      if (interval) { clearInterval(interval); interval = null; }
+    } else {
+      if (!interval) {
+        interval = setInterval(() => {
+          timer++;
+          const tEl = document.getElementById('timer');
+          if (tEl) tEl.textContent = timer;
+        }, 1000);
+      }
+    }
+  }
+
+  // ===== W5 数独 daily 模块 =====
+  let sudDailyData = null;        // 服务端拉到的今日题
+  let sudDailyActiveKey = null;    // 当前 daily 日期键
+  let sudCountdownTimer = null;
+  const SUD_UNLOCK_KEY = 'md_sud_unlocked';
+  const SUD_UNLOCK_REQ = { medium: 7, hard: 30 };
+
+  // 难度解锁管理
+  function sudGetUnlocked() {
+    try {
+      const v = JSON.parse(localStorage.getItem(SUD_UNLOCK_KEY) || '{}');
+      return {
+        easy: true, // easy 默认解锁
+        medium: v.medium === true,
+        hard: v.hard === true,
+      };
+    } catch (e) { return { easy: true, medium: false, hard: false }; }
+  }
+  function sudSetUnlocked(level, val) {
+    try {
+      const cur = sudGetUnlocked();
+      cur[level] = val;
+      localStorage.setItem(SUD_UNLOCK_KEY, JSON.stringify(cur));
+    } catch (e) {}
+  }
+  function sudCheckUnlocks() {
+    if (!window.Streak) return;
+    const s = window.Streak.createStreak().getStreak();
+    const cur = sudGetUnlocked();
+    if (!cur.medium && s.count >= SUD_UNLOCK_REQ.medium) {
+      sudSetUnlocked('medium', true);
+      try { showToast?.(window.__t('sudoku.difficulty_unlocked_medium')); } catch (e) {}
+    }
+    if (!cur.hard && s.count >= SUD_UNLOCK_REQ.hard) {
+      sudSetUnlocked('hard', true);
+      try { showToast?.(window.__t('sudoku.difficulty_unlocked_hard')); } catch (e) {}
+    }
+    sudRenderLockButtons();
+  }
+  function sudRenderLockButtons() {
+    const u = sudGetUnlocked();
+    document.querySelectorAll('.difficulty-btn').forEach(btn => {
+      const diff = btn.dataset.difficulty;
+      if (diff === 'medium' && !u.medium) {
+        btn.disabled = true;
+        btn.title = window.__t('sudoku.unlock_required_days', {days: SUD_UNLOCK_REQ.medium});
+        if (!btn.querySelector('.lock-badge')) {
+          const b = document.createElement('span');
+          b.className = 'lock-badge';
+          b.textContent = '🔒';
+          btn.appendChild(b);
+        }
+      } else if (diff === 'hard' && !u.hard) {
+        btn.disabled = true;
+        btn.title = window.__t('sudoku.unlock_required_days', {days: SUD_UNLOCK_REQ.hard});
+        if (!btn.querySelector('.lock-badge')) {
+          const b = document.createElement('span');
+          b.className = 'lock-badge';
+          b.textContent = '🔒';
+          btn.appendChild(b);
+        }
+      } else {
+        btn.disabled = false;
+        btn.title = '';
+        const lb = btn.querySelector('.lock-badge');
+        if (lb) lb.remove();
+      }
+    });
+  }
+
+  // 难度文字
+  const _SUD_DIFF_TEXT_FALLBACK = { easy: '简单', medium: '中等', hard: '困难' };
+  function _sudDiffText(d) { return window.i18n ? window.__t('sudoku.difficulty_' + d) : (_SUD_DIFF_TEXT_FALLBACK[d] || d); }
+
+  async function startDaily() {
+    const urlParams = window.DailyChallenge ? window.DailyChallenge.parseUrlParams() : { game: null, dateKey: null };
+    const explicitDate = urlParams.game === 'sud' && urlParams.dateKey ? urlParams.dateKey : null;
+    sudDailyActiveKey = explicitDate || (window.DailyChallenge ? window.DailyChallenge.getKey() : null);
+
+    if (window.DailyChallenge && sudDailyActiveKey) {
+      try {
+        sudDailyData = await window.DailyChallenge.fetch('sudoku', sudDailyActiveKey);
+      } catch (e) { sudDailyData = null; }
+    }
+
+    // W7.1 daily_open 埋点
+    if (window.__mdAnalytics) {
+      window.__mdAnalytics.track('daily_open', { game: 'sudoku', date: sudDailyActiveKey });
+    }
+
+    sudShowBanner(sudDailyActiveKey);
+
+    if (sudDailyData && Array.isArray(sudDailyData.puzzle) && sudDailyData.puzzle.length === 81) {
+      puzzle = sudDailyData.puzzle.slice();
+      solution = sudDailyData.solution.slice();
+      currentDifficulty = sudDailyData.difficulty || 'medium';
+      selected = null;
+      errors = 0; timer = 0;
+      historyStack = [];
+      notes = Array(81).fill(null).map(() => []);
+      isGameOver = false;
+      document.getElementById('errors').textContent = 0;
+      document.getElementById('timer').textContent = 0;
+      if (interval) clearInterval(interval);
+      interval = setInterval(() => {
+        timer++;
+        const tEl = document.getElementById('timer');
+        if (tEl) tEl.textContent = timer;
+      }, 1000);
+      // 隐藏难度按钮(daily 模式)
+      const diffBar = document.getElementById('difficulty-bar') || document.querySelector('.difficulty-buttons');
+      if (diffBar) diffBar.style.display = 'none';
+      render();
+      renderNumpad();
+      return true;
+    } else {
+      init('medium');
+      return false;
+    }
+  }
+
+  function sudShowBanner(dateKey) {
+    const banner = document.getElementById('daily-banner');
+    const dateEl = document.getElementById('daily-banner-date');
+    const diffEl = document.getElementById('daily-banner-diff');
+    const cdEl = document.getElementById('daily-banner-countdown');
+    if (!banner) return;
+    if (dateKey) dateEl.textContent = dateKey;
+    if (diffEl && sudDailyData) diffEl.textContent = _sudDiffText(sudDailyData.difficulty || 'medium') || '-';
+    banner.style.display = '';
+    if (sudCountdownTimer) clearInterval(sudCountdownTimer);
+    const update = () => {
+      const ms = window.DailyChallenge ? window.DailyChallenge.nextRollover() : 0;
+      if (cdEl) cdEl.textContent = window.DailyChallenge ? window.DailyChallenge.formatCountdown(ms) : '--:--';
+    };
+    update();
+    sudCountdownTimer = setInterval(update, 1000);
+  }
+
+  // W5.3 打卡风战绩卡
+  function sudShowShareOverlay(opts) {
+    const overlay = document.getElementById('share-overlay');
+    const titleEl = document.getElementById('share-overlay-title');
+    const statsEl = document.getElementById('share-overlay-stats');
+    const canvas = document.getElementById('share-canvas');
+    const urlInput = document.getElementById('share-overlay-url');
+    if (!overlay || !canvas) return;
+
+    const T = opts.duration;  // 秒
+    const diff = opts.difficulty || 'medium';
+    const diffText = _sudDiffText(diff) || _SUD_DIFF_TEXT_FALLBACK.medium;
+    const m = Math.floor(T / 60), s = T % 60;
+    const timeText = m > 0
+      ? window.__t('sudoku.time_min_sec', {min: m, sec: s})
+      : window.__t('sudoku.time_sec_only', {sec: s});
+
+    let streakCount = 0;
+    if (window.Streak) streakCount = window.Streak.createStreak().getStreak().count || 0;
+
+    titleEl.textContent = streakCount >= 1
+      ? window.__t('sudoku.daily_title_streak', {days: streakCount})
+      : window.__t('sudoku.daily_title_first');
+    titleEl.style.color = 'var(--primary)';
+
+    const meta = { duration: T, score: Math.max(0, 1000 - T * 2), solutions_count: 1 };
+    const title = streakCount >= 1
+      ? window.__t('sudoku.daily_share_streak', {days: streakCount})
+      : window.__t('sudoku.daily_share_first');
+    const subtitle = window.__t('sudoku.daily_subtitle', {days: streakCount, diff: diffText, time: timeText});
+
+    let badge = null;
+    if (streakCount >= 30) badge = { icon: '👑', text: window.__t('common.streak_days', {count: streakCount}) };
+    else if (streakCount >= 7) badge = { icon: '🔥', text: window.__t('common.streak_days', {count: streakCount}) };
+    else if (streakCount >= 3) badge = { icon: '🔥', text: window.__t('common.streak_days', {count: streakCount}) };
+
+    const baseUrl = window.location.origin + window.location.pathname;
+    const sid = 's' + Math.random().toString(36).slice(2, 10);
+    const challengeUrl = `${baseUrl}?g=sud&d=${sudDailyActiveKey}&r=${sid}&m=copy`;
+
+    const card = {
+      game: 'sudoku',
+      title, subtitle,
+      cta: window.__t('sudoku.daily_cta_share'),
+      url: challengeUrl,
+      badge,
+      meta,
+    };
+    statsEl.innerHTML = window.__t('sudoku.daily_stats_html', {time: timeText, diff: diffText, days: streakCount});
+
+    if (window.ShareCard) window.ShareCard.renderCard(canvas, card);
+    if (urlInput) urlInput.value = challengeUrl;
+    overlay.style.display = '';
+  }
+
+  function sudHideShare() {
+    const o = document.getElementById('share-overlay');
+    if (o) o.style.display = 'none';
+  }
+
+  function sudHandleUrlParams() {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const g = (params.get('g') || '').toLowerCase();
+      const d = params.get('d');
+      if (g === 'sud' && d && /^\d{8}$/.test(d)) {
+        setTimeout(() => { if (typeof startDaily === 'function') startDaily(); }, 100);
+        return true;
+      }
+    } catch (e) {}
+    return false;
+  }
+
+  // W5.5 历史趋势
+  function sudShowHistory() {
+    if (!window.Account) {
+      alert(__t('sudoku.history_module_unloaded'));
+      return;
+    }
+    const acc = window.Account.createAccount();
+    const history = acc.getHistory({ game: 'sudoku' });
+    const modal = document.getElementById('history-modal');
+    const list = document.getElementById('history-modal-list');
+    const canvas = document.getElementById('history-canvas');
+    if (!modal) return;
+
+    // 画趋势图(纯 Canvas)
+    if (canvas && window.SudHistoryChart) {
+      window.SudHistoryChart(canvas, history);
+    }
+
+    if (history.length === 0) {
+      list.innerHTML = '<div class="history-empty">' + window.__t('sudoku.history_empty_detail') + '</div>';
+    } else {
+      list.innerHTML = history.slice().reverse().slice(0, 50).map(h => {
+        const m = Math.floor((h.duration || 0) / 60), s = (h.duration || 0) % 60;
+        const time = m > 0 ? window.__t('sudoku.time_min_sec', {min: m, sec: s}) : window.__t('sudoku.time_sec_only', {sec: s});
+        return `<div class="history-modal-list-item">📅 ${h.date} · ${h.completed ? '✅' : '❌'} ${time}</div>`;
+      }).join('');
+    }
+
+    modal.style.display = '';
+  }
+  function sudHideHistory() {
+    const m = document.getElementById('history-modal');
+    if (m) m.style.display = 'none';
+  }
+
+  // 历史趋势图(纯 Canvas)
+  function sudDrawHistoryChart(canvas, history) {
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width = 540, H = canvas.height = 200;
+    ctx.clearRect(0, 0, W, H);
+    if (history.length === 0) {
+      ctx.fillStyle = '#64748B';
+      ctx.font = '14px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(window.__t('sudoku.history_empty'), W / 2, H / 2);
+      return;
+    }
+    // 按日期分组,取每天最快完成时间
+    const byDate = {};
+    for (const h of history) {
+      if (!h.completed) continue;
+      if (!byDate[h.date] || (h.duration || 0) < byDate[h.date]) byDate[h.date] = h.duration;
+    }
+    const dates = Object.keys(byDate).sort();
+    if (dates.length === 0) {
+      ctx.fillStyle = '#64748B';
+      ctx.font = '14px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(window.__t('sudoku.history_no_records'), W / 2, H / 2);
+      return;
+    }
+    const maxT = Math.max(...Object.values(byDate), 60);
+    const minT = 0;
+    const padL = 40, padR = 10, padT = 10, padB = 30;
+    const plotW = W - padL - padR;
+    const plotH = H - padT - padB;
+    // 坐标轴
+    ctx.strokeStyle = '#E5E7EB';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(padL, padT);
+    ctx.lineTo(padL, H - padB);
+    ctx.lineTo(W - padR, H - padB);
+    ctx.stroke();
+    // Y 轴刻度 (60s, 300s, 600s)
+    ctx.fillStyle = '#64748B';
+    ctx.font = '10px sans-serif';
+    ctx.textAlign = 'right';
+    for (const sec of [60, 300, 600]) {
+      const y = H - padB - ((sec - minT) / (maxT - minT)) * plotH;
+      ctx.fillText(sec + 's', padL - 4, y + 3);
+      ctx.strokeStyle = '#F3F4F6';
+      ctx.beginPath();
+      ctx.moveTo(padL, y);
+      ctx.lineTo(W - padR, y);
+      ctx.stroke();
+    }
+    // 折线
+    ctx.strokeStyle = '#4F46E5';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    dates.forEach((d, i) => {
+      const x = padL + (i / Math.max(1, dates.length - 1)) * plotW;
+      const t = byDate[d];
+      const y = H - padB - ((t - minT) / (maxT - minT)) * plotH;
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+    // 点
+    ctx.fillStyle = '#4F46E5';
+    dates.forEach((d, i) => {
+      const x = padL + (i / Math.max(1, dates.length - 1)) * plotW;
+      const t = byDate[d];
+      const y = H - padB - ((t - minT) / (maxT - minT)) * plotH;
+      ctx.beginPath();
+      ctx.arc(x, y, 3, 0, Math.PI * 2);
+      ctx.fill();
+    });
+    // X 轴首尾日期
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#64748B';
+    ctx.fillText(dates[0], padL, H - 10);
+    ctx.textAlign = 'right';
+    ctx.fillText(dates[dates.length - 1], W - padR, H - 10);
+  }
+
+  // 暴露到 window 方便测试
+  window.SudHistoryChart = sudDrawHistoryChart;
+
+  // 旧函数保留(向后兼容),内部跳转到新逻辑
+  function startDailyLocal() {
+    const today = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+    alert(window.__t('sudoku.daily_mode_alert', {date: today}));
+    init('medium');
+  }
+
+  // 初始化:挂上 streak/account 监听 + 难度解锁检查
+  try {
+    setTimeout(() => {
+      sudRenderLockButtons();
+      sudCheckUnlocks();
+    }, 200);
+  } catch (e) {}
+
+  function init(diff = 'medium') {
+    // P1: 记录当前难度，限制合法值
+    currentDifficulty = DIFFICULTY_EMPTIES[diff] != null ? diff : 'medium';
+    selected = null;
+    errors = 0;
+    timer = 0;
+    notes = Array(81).fill(null).map(() => []); // P0-3: 新局清空笔记
+    historyStack = [];
+    document.getElementById('errors').textContent = 0;
+    document.getElementById('timer').textContent = 0;
+    if (interval) clearInterval(interval);
+    interval = setInterval(() => {
+      timer++;
+      document.getElementById('timer').textContent = timer;
+    }, 1000);
+    generate(currentDifficulty);
+    render();
+    renderNumpad();
+    updateDifficultyStatsDisplay();
+  }
+
+  document.querySelectorAll('.difficulty-btn').forEach(b => {
+    b.addEventListener('click', () => {
+      document.querySelectorAll('.difficulty-btn').forEach(x => x.classList.remove('active'));
+      b.classList.add('active');
+      // P1: 关闭 hint 消息 + 切换难度
+      hideHintMsg();
+      init(b.dataset.diff);
+    });
+  });
+  document.getElementById('new-game').addEventListener('click', () => {
+    // P1: 新游戏保持当前难度而非强制 medium
+    hideHintMsg();
+    init(currentDifficulty);
+  });
+
+  // P1: 启动时加载 stats 显示
+  updateDifficultyStatsDisplay();
+  init('medium');
+
+  /* ── 模式选择落地页（与 24点 一致）：进页先选模式，选完进入游戏 ── */
+  if (window.GameLobby) {
+    GameLobby.show({
+      cover: '/games/sudoku/cover.svg',
+      title: 'Sudoku',
+      sub: 'Classic 9×9 logic grids — play the worldwide daily or free practice',
+      modes: [
+        { icon: '🌍', label: 'Daily Challenge', sub: 'Same puzzle for everyone · once a day', onClick: function () { startDaily(); } },
+        { icon: '🧩', label: 'Free Play', sub: 'Easy · Medium · Hard · Expert · Master · Extreme', onClick: function () { init(currentDifficulty); } }
+      ]
+    });
+  }
+  </script>
+
+
+<!-- 外部全局工具：SW + confetti + 统计 + 成就 + 教程 -->
+<link rel="stylesheet" href="/assets/css/game-core.css?v=blue3.1">
+  <!-- W5 shared 模块 -->
+  <script defer src="/shared/daily-challenge.js?v=20260827"></script>
+  <script defer src="/shared/avatars.js?v=1"></script>
+  <script defer src="/shared/streak.js?v=20260827"></script>
+  <script defer src="/shared/account.js?v=20260827"></script>
+  <script defer src="/shared/share-card.js?v=20260827"></script>
+  <script defer src="/shared/analytics.js?v=20260827"></script>
+<script>window.__reactionGame='sudoku';</script>
+  <script src="/shared/reactions.js?v=ep3" defer></script>
+  <script>
+    if (window.MDAnalytics) window.__mdAnalytics = window.MDAnalytics.create();
+    if (window.__mdAnalytics) window.__mdAnalytics.start();
+  </script>
+  <script defer src="/assets/js/analytics.js?v=1"></script>
+  <script defer src="/assets/js/share-card.js?v=1"></script>
+<script src="/assets/js/game-core.js?v=1.4"></script>
+<script>
+// 教程初始化（等 i18n 就绪后再绑定，避免 init 早于 i18n 加载显示 key / 崩溃）
+(function() {
+  var done = false;
+  function setupTutorial() {
+    if (done || !window.GameTutorial) return;
+    done = true;
+    const _sudSteps = () => [
+      {icon:"🔢", title: window.__t('sudoku.tutorial_step1_title'), body: window.__t('sudoku.tutorial_step1_body')},
+      {icon:"👆", title: window.__t('sudoku.tutorial_step2_title'), body: window.__t('sudoku.tutorial_step2_body')},
+      {icon:"⚠️", title: window.__t('sudoku.tutorial_step1_title').replace(/^./, ''), body: window.__t('sudoku.tutorial_step3_body')}
+    ];
+    GameTutorial.attachButton('sudoku', {
+      title: window.__t('sudoku.tutorial_title'),
+      steps: _sudSteps()
+    });
+    // 首次访问显示教程（延迟 300ms 让游戏先加载）
+    setTimeout(() => {
+      if (!GameTutorial.seen('sudoku')) {
+        GameTutorial.show({
+          gameId: 'sudoku',
+          title: window.__t('sudoku.tutorial_title'),
+          steps: _sudSteps()
+        });
+      }
+    }, 300);
+  }
+  if (window.i18n) setupTutorial();
+  else {
+    window.addEventListener('i18n:ready', setupTutorial);
+    window.addEventListener('DOMContentLoaded', function () { setTimeout(setupTutorial, 1000); });
+  }
+})();
+</script>
+
+
+
+
+<!-- ===== 自定义 Modal（替代 alert/confirm）===== -->
+<div id="g-modal-overlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:10000; align-items:center; justify-content:center; padding:1rem;">
+  <div style="background:white; padding:1.5rem; border-radius:8px; max-width:400px; width:100%; box-shadow:0 8px 32px rgba(0,0,0,0.2);">
+    <div id="g-modal-title" style="font-size:1.25rem; font-weight:700; margin-bottom:0.5rem;"></div>
+    <div id="g-modal-message" style="margin-bottom:1rem; line-height:1.6;"></div>
+    <div id="g-modal-buttons" style="display:flex; gap:0.5rem; justify-content:flex-end; flex-wrap:wrap;"></div>
+  </div>
+</div>
+<script>
+(function() {
+  let __modalResolve = null;
+  function __closeModal(result) {
+    var o = document.getElementById('g-modal-overlay');
+    if (o) o.style.display = 'none';
+    if (__modalResolve) { var r = __modalResolve; __modalResolve = null; r(result); }
+  }
+  window.gAlert = function(message, title) {
+    return new Promise(function(resolve) {
+      __modalResolve = resolve;
+      document.getElementById('g-modal-title').textContent = title || window.__t('sudoku.modal_default_title_hint');
+      document.getElementById('g-modal-message').textContent = message;
+      var btnArea = document.getElementById('g-modal-buttons');
+      btnArea.innerHTML = '';
+      var okBtn = document.createElement('button');
+      okBtn.textContent = __('确定');
+      okBtn.style.cssText = 'padding:0.5rem 1.5rem; background:var(--primary); color:white; border:none; border-radius:4px; cursor:pointer; font-weight:600;';
+      okBtn.onclick = function() { __closeModal(true); };
+      btnArea.appendChild(okBtn);
+      document.getElementById('g-modal-overlay').style.display = 'flex';
+    });
+  };
+  window.gConfirm = function(message, title) {
+    return new Promise(function(resolve) {
+      __modalResolve = resolve;
+      document.getElementById('g-modal-title').textContent = title || window.__t('sudoku.modal_default_title_confirm');
+      document.getElementById('g-modal-message').textContent = message;
+      var btnArea = document.getElementById('g-modal-buttons');
+      btnArea.innerHTML = '';
+      var cancelBtn = document.createElement('button');
+      cancelBtn.textContent = __('取消');
+      cancelBtn.style.cssText = 'padding:0.5rem 1.5rem; background:#f3f4f6; border:1px solid #d1d5db; border-radius:4px; cursor:pointer;';
+      cancelBtn.onclick = function() { __closeModal(false); };
+      var okBtn = document.createElement('button');
+      okBtn.textContent = __('确定');
+      okBtn.style.cssText = 'padding:0.5rem 1.5rem; background:var(--primary); color:white; border:none; border-radius:4px; cursor:pointer; font-weight:600;';
+      okBtn.onclick = function() { __closeModal(true); };
+      btnArea.appendChild(cancelBtn);
+      btnArea.appendChild(okBtn);
+      document.getElementById('g-modal-overlay').style.display = 'flex';
+    });
+  };
+  // 重写原生 alert/confirm
+  var __origAlert = window.alert;
+  window.alert = function(msg) { return window.gAlert(String(msg)); };
+  window.confirm = function(msg) { return window.gConfirm(String(msg)); };
+  document.addEventListener('click', function(e) {
+    if (e.target && e.target.id === 'g-modal-overlay') {
+      var btns = document.getElementById('g-modal-buttons').children;
+      if (btns.length === 1) __closeModal(true);
+    }
+  });
+})();
+</script>
+<script>
+// 键盘支持 + ARIA 增强（等 i18n 就绪后执行，避免 init 早于 i18n 加载显示 key）
+(function() {
+  function setupA11y() {
+    if (!window.GameKeyboard || !window.GameA11y) return;
+
+    // ===== 通用：所有按钮添加 aria-label（如果缺失）=====
+    GameA11y.enhanceButtons();
+
+    // ===== 键盘提示 UI =====
+    function showHint(text) {
+      let el = document.getElementById('g-kbd-hint');
+      if (!el) {
+        el = document.createElement('div');
+        el.id = 'g-kbd-hint';
+        el.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.85);color:white;padding:0.5rem 1rem;border-radius:6px;font-size:0.85rem;z-index:9998;opacity:0;transition:opacity 0.2s;pointer-events:none;';
+        document.body.appendChild(el);
+      }
+      el.textContent = text;
+      el.style.opacity = '1';
+      clearTimeout(el._timeout);
+      el._timeout = setTimeout(() => { el.style.opacity = '0'; }, 1500);
+    }
+
+    // ===== 教程按钮加 ARIA 标签 =====
+    const tutBtn = document.querySelector('.g-tutorial-btn');
+    if (tutBtn) tutBtn.setAttribute('aria-label', window.__t('sudoku.tutorial_btn_aria'));
+
+    // ===== 统计元素加 ARIA live =====
+    const stats = document.querySelector('.game-stats, .ws-info');
+    if (stats) {
+      stats.setAttribute('aria-live', 'polite');
+      stats.setAttribute('aria-atomic', 'true');
+    }
+  }
+  if (window.i18n) setupA11y();
+  else {
+    window.addEventListener('i18n:ready', setupA11y);
+    window.addEventListener('DOMContentLoaded', function () { setTimeout(setupA11y, 1200); });
+  }
+})();
+</script>
+<script>
+// sudoku 键盘支持：方向键移动 + 数字键填数 + Backspace 擦除
+if (window.GameKeyboard) {
+  GameKeyboard.register('sudoku', {
+    ...GameKeyboard.arrowHandler({}, {
+      up: () => {
+        if (selected === null) selected = 40;
+        else selected = Math.max(0, selected - 9);
+        highlightSelected();
+      },
+      down: () => {
+        if (selected === null) selected = -9;
+        else selected = Math.min(80, selected + 9);
+        highlightSelected();
+      },
+      left: () => {
+        if (selected === null) selected = 0;
+        else selected = Math.max(0, selected - 1);
+        highlightSelected();
+      },
+      right: () => {
+        if (selected === null) selected = -1;
+        else selected = Math.min(80, selected + 1);
+        highlightSelected();
+      }
+    }),
+    ...GameKeyboard.numberHandler((n) => {
+      if (selected === null) return;
+      const cells = document.querySelectorAll('.sudoku-cell');
+      const cell = cells[selected];
+      if (cell && puzzle[selected] === 0) {
+        // 模拟点击数字按钮
+        document.querySelectorAll('.num-btn').forEach(b => {
+          if (parseInt(b.textContent) === n) b.click();
+        });
+      }
+    }),
+    'Backspace': () => { if (typeof erase === 'function') erase(); },
+    'Delete': () => { if (typeof erase === 'function') erase(); },
+    'Escape': () => { if (paused) togglePause(); }
+  });
+
+  function highlightSelected() {
+    document.querySelectorAll('.sudoku-cell.g-keyboard-selected').forEach(c => c.classList.remove('g-keyboard-selected'));
+    const cells = document.querySelectorAll('.sudoku-cell');
+    if (cells[selected]) {
+      cells[selected].classList.add('g-keyboard-selected');
+      cells[selected].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      const row = Math.floor(selected / 9) + 1;
+      const col = (selected % 9) + 1;
+      if (window.GameA11y) GameA11y.announce(window.__t('sudoku.a11y_cell_selected', {row: row, col: col}));
+    }
+  }
+
+  // ARIA
+  const board = document.querySelector('.sudoku-board, .board');
+  if (board && window.GameA11y) {
+    GameA11y.setupGrid(board, { rows: 9, cols: 9, label: window.__t('sudoku.a11y_grid_label') });
+    var regrid = function () {
+      GameA11y.setupGrid(board, { rows: 9, cols: 9, label: window.__t('sudoku.a11y_grid_label') });
+    };
+    if (document.documentElement.getAttribute('data-i18n-ready') === 'true') regrid();
+    else window.addEventListener('i18n:ready', regrid, { once: true });
+    window.addEventListener('langchange', regrid);
+  }
+}
+// 变量定义 + 事件绑定（变量已在主 script 中声明）
+  const comboEl = document.getElementById('combo');
+  const hintsEl = document.getElementById('hintsLeft');
+  const pauseBtn = document.getElementById('pause');
+  const undoBtn = document.getElementById('undo');
+  const hintBtn = document.getElementById('hint');
+  const eraseBtn = document.getElementById('erase');
+  const dailyBtn = document.getElementById('daily-btn');
+  if (undoBtn) undoBtn.onclick = undo;
+  if (pauseBtn) pauseBtn.onclick = togglePause;
+  if (hintBtn) hintBtn.onclick = hint;
+  if (eraseBtn) eraseBtn.onclick = erase;
+  if (dailyBtn) dailyBtn.onclick = startDaily;
+
+  // W5.3 overlay buttons
+  const _soClose = document.getElementById('share-overlay-close');
+  if (_soClose) _soClose.onclick = sudHideShare;
+  const _soCopy = document.getElementById('share-overlay-copy');
+  if (_soCopy) _soCopy.onclick = () => {
+    const i = document.getElementById('share-overlay-url');
+    if (!i) return;
+    const v = i.value;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(v).then(() => {
+        const t = document.getElementById('share-overlay-toast');
+        if (t) { t.textContent = __('已复制,快去发给好友!'); t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2000); }
+      }).catch(() => { i.select(); document.execCommand('copy'); });
+    } else { i.select(); document.execCommand('copy'); }
+    _soCopy.textContent = __('✅ 已复制');
+    // W7.1 daily_share 埋点
+    try { if (window.__mdAnalytics) window.__mdAnalytics.track('daily_share', { game: 'sudoku', cta: 'copy' }); } catch (e) {}
+    setTimeout(() => { _soCopy.textContent = __t('share.overlay_copy_link'); }, 1500);
+  };
+  const _soDl = document.getElementById('share-overlay-download');
+  if (_soDl) _soDl.onclick = () => {
+    const c = document.getElementById('share-canvas');
+    if (c && window.ShareCard) window.ShareCard.downloadCard(c, 'sudoku-daily-' + sudDailyActiveKey + '.png');
+  };
+  const _soWc = document.getElementById('share-overlay-wechat');
+  if (_soWc) _soWc.onclick = () => {
+    const url = document.getElementById('share-overlay-url').value;
+    if (navigator.share) { navigator.share({ title: window.__t('sudoku.daily_navigator_title'), text: window.__t('sudoku.daily_navigator_text'), url }).catch(() => {}); }
+    else {
+      const t = document.getElementById('share-overlay-toast');
+      if (t) { t.textContent = __('点击右上角分享给朋友'); t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2000); }
+    }
+  };
+
+  // W5.5 history buttons
+  function __ensureHistoryBtn() {
+    var _hmClose = document.getElementById('history-modal-close');
+    if (_hmClose) _hmClose.onclick = sudHideHistory;
+    var historyBtn = document.getElementById('history-btn');
+    if (historyBtn) {
+      historyBtn.onclick = sudShowHistory;
+      // 如果已创建但文本还是 key，重新翻译
+      if (historyBtn.textContent && historyBtn.textContent.indexOf('sudoku.') === 0) {
+        historyBtn.textContent = window.__t('sudoku.history_btn');
+      }
+      return;
+    }
+    var existing = document.getElementById('sud-history-btn');
+    if (existing) { existing.remove(); }
+    var btn = document.createElement('button');
+    btn.className = 'btn';
+    btn.id = 'sud-history-btn';
+    btn.textContent = window.__t('sudoku.history_btn');
+    btn.onclick = sudShowHistory;
+    var dailyBtnEl = document.getElementById('daily-btn');
+    if (dailyBtnEl && dailyBtnEl.parentNode) {
+      dailyBtnEl.parentNode.insertBefore(btn, dailyBtnEl.nextSibling);
+    }
+  }
+  // 立即尝试 + i18n ready 后再确保一次
+  __ensureHistoryBtn();
+  window.addEventListener('i18n:ready', __ensureHistoryBtn);
+  window.addEventListener('i18n:change', __ensureHistoryBtn);
+  // URL 参数自动检测
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const g = (params.get('g') || '').toLowerCase();
+    const d = params.get('d');
+    if (g === 'sud' && d && /^\d{8}$/.test(d)) {
+      setTimeout(() => { if (typeof startDaily === 'function') startDaily(); }, 200);
+    }
+  } catch (e) {}
+
+  /* ===== P0-2 / P0-3 / P0-4: 自动检查 · 笔记模式 · 深色模式 ===== */
+  (function initP0Toggles() {
+    // --- P0-4: 深色模式（先恢复保存的主题）---
+    const themeBtn = document.getElementById('theme-btn');
+    function applyTheme(theme) {
+      if (theme === 'dark') {
+        document.documentElement.dataset.theme = 'dark';
+        if (themeBtn) { themeBtn.textContent = '☀️'; themeBtn.title = __('浅色模式'); }
+      } else {
+        delete document.documentElement.dataset.theme;
+        if (themeBtn) { themeBtn.textContent = '🌙'; themeBtn.title = __('深色模式'); }
+      }
+    }
+    let savedTheme = '';
+    try { savedTheme = localStorage.getItem('bd-theme') || localStorage.getItem('sudoku_theme') || ''; } catch (e) {}
+    applyTheme(savedTheme);
+    if (themeBtn) {
+      themeBtn.onclick = function () {
+        const next = document.documentElement.dataset.theme === 'dark' ? '' : 'dark';
+        applyTheme(next);
+        try { localStorage.setItem('bd-theme', next || 'light'); } catch (e) {}
+        try { localStorage.setItem('sudoku_theme', next); } catch (e) {}
+      };
+    }
+
+    // --- P0-2: 自动检查开关 ---
+    const acBtn = document.getElementById('auto-check-btn');
+    try {
+      const savedAC = localStorage.getItem('sudoku_autocheck');
+      if (savedAC === '0') autoCheck = false;
+    } catch (e) {}
+    function paintAC() {
+      if (!acBtn) return;
+      acBtn.textContent = autoCheck ? window.__t('sudoku.auto_check_on') : window.__t('sudoku.auto_check_off');
+      acBtn.setAttribute('aria-label', acBtn.textContent);
+      acBtn.classList.toggle('active', autoCheck);
+      acBtn.setAttribute('aria-pressed', String(autoCheck));
+    }
+    paintAC();
+    if (acBtn) {
+      acBtn.onclick = function () {
+        autoCheck = !autoCheck;
+        paintAC();
+        try { localStorage.setItem('sudoku_autocheck', autoCheck ? '1' : '0'); } catch (e) {}
+        if (autoCheck) {
+          highlightConflicts();
+        } else {
+          document.querySelectorAll('.sudoku-cell').forEach(c => c.classList.remove('conflict', 'error'));
+        }
+      };
+    }
+
+    // --- P0-3: 笔记模式开关 ---
+    const nBtn = document.getElementById('notes-btn');
+    function paintNotes() {
+      if (!nBtn) return;
+      nBtn.textContent = notesMode ? window.__t('sudoku.notes_on') : window.__t('sudoku.notes_off');
+      nBtn.setAttribute('aria-label', nBtn.textContent);
+      nBtn.classList.toggle('active', notesMode);
+      nBtn.setAttribute('aria-pressed', String(notesMode));
+    }
+    paintNotes();
+    // 字典异步加载: 就绪后重刷按钮文案与 aria(避免键名固化), 语言切换同理
+    var repaintToggles = function () { paintAC(); paintNotes(); };
+    if (document.documentElement.getAttribute('data-i18n-ready') === 'true') repaintToggles();
+    else window.addEventListener('i18n:ready', repaintToggles, { once: true });
+    window.addEventListener('langchange', repaintToggles);
+    if (nBtn) {
+      nBtn.onclick = function () {
+        notesMode = !notesMode;
+        paintNotes();
+      };
+    }
+
+    // 键盘快捷键：N 切笔记，C 切自动检查，T 切主题
+    document.addEventListener('keydown', function (e) {
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      const t = e.target;
+      if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA')) return;
+      const k = e.key.toLowerCase();
+      if (k === 'n' && nBtn) nBtn.click();
+      else if (k === 'c' && acBtn) acBtn.click();
+      else if (k === 't' && themeBtn) themeBtn.click();
+    });
+
+    // i18n 就绪/切换语言后重绘按钮文案
+    function __repaintToggles() { try { paintAC(); paintNotes(); } catch (e) {} }
+    window.addEventListener('i18n:ready', __repaintToggles);
+    window.addEventListener('i18n:change', __repaintToggles);
+  })();
+
+</script>
+
+
+<!-- Battle Lobby Overlay -->
+<div class="battle-overlay" id="battle-overlay">
+  <div class="battle-lobby">
+    <button id="battle-lobby-close" style="position:absolute;top:.75rem;right:.75rem;background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--text-light,#64748B);line-height:1;padding:0;" aria-label="Close" data-i18n-aria-label="common.close">✕</button>
+    <h2 data-i18n="sudoku.ui.battle_lobby_title">⚔️ Sudoku Battle</h2>
+    <div id="battle-lobby-form">
+      <div style="margin-bottom:.75rem;">
+        <label style="font-weight:600;display:block;margin-bottom:.25rem;font-size:.9rem;color:var(--text,#0F172A);" data-i18n="battle.enter_name_label">Your nickname</label>
+        <input id="battle-name" type="text" data-i18n-placeholder="battle.enter_name" placeholder="Enter nickname..." maxlength="10" style="width:100%;">
+      </div>
+        <div id="battle-avatar-chip" style="display:flex;align-items:center;min-height:1.9rem;margin-bottom:.5rem;font-size:.92rem;color:var(--text-2,#5a6b7f);"></div>
+      <div style="display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:.5rem;">
+        <button class="btn" id="battle-create" style="background:var(--primary,#0066CC);color:#fff;flex:1;min-width:120px;" data-i18n="battle.create_room">Create room</button>
+        <input id="battle-code-input" type="text" data-i18n-placeholder="battle.room_code" placeholder="Room code" maxlength="6" style="flex:1;min-width:100px;text-transform:uppercase;letter-spacing:.05em;text-align:center;">
+        <button class="btn" id="battle-join" style="background:var(--success,#10B981);color:#fff;" data-i18n="battle.join">Join</button>
+      </div>
+      <div id="battle-lobby-error" style="color:var(--danger,#EF4444);font-size:.85rem;min-height:1.2rem;margin-bottom:.5rem;"></div>
+    </div>
+    <!-- P0: WS 重连状态条 -->
+    <div id="ws-reconnect-banner" style="display:none; background:#FFA500; color:white; padding:8px; text-align:center; font-size:.9rem; border-radius:8px; margin-bottom:.5rem;">
+      <span id="ws-reconnect-text">Reconnecting...</span>
+    </div>
+    <div id="battle-room-info" style="display:none;">
+      <div class="battle-room-display" style="font-size:1.5rem;font-weight:700;color:var(--primary,#0066CC);background:#EFF5FD;padding:.75rem;border-radius:8px;margin-bottom:.75rem;display:flex;align-items:center;justify-content:center;gap:.5rem;letter-spacing:.1em;">
+        <span data-i18n="battle.room_code_label">Room code:</span> <span id="battle-room-code-lobby"></span>
+        <button id="battle-copy-code" class="btn-copy" data-i18n-title="battle.copy_room_code" title="Copy room code" style="background:none;border:none;cursor:pointer;font-size:1rem;padding:.25rem;">📋</button>
+      </div>
+      <div class="battle-share-link" style="margin-bottom:.75rem;text-align:center;">
+        <div style="font-size:.85rem;color:var(--text-light,#64748B);margin-bottom:.25rem;" data-i18n="battle.share_link_title">Share link with opponent</div>
+        <div style="display:flex;gap:.5rem;align-items:stretch;">
+          <input id="battle-share-url" type="text" readonly style="flex:1;padding:.5rem;border:2px solid var(--border,#E2E8F0);border-radius:6px;font-size:.85rem;background:#F8FAFC;color:var(--text-light,#64748B);font-family:monospace;overflow:hidden;text-overflow:ellipsis;cursor:pointer;">
+          <button id="battle-copy-link" class="btn" data-i18n="battle.copy_link" style="background:var(--primary,#0066CC);color:#fff;padding:.5rem 1rem;border:none;border-radius:6px;cursor:pointer;white-space:nowrap;font-weight:600;">📋 Copy link</button>
+        </div>
+      </div>
+      <div class="battle-waiting" id="battle-waiting-msg" style="color:var(--text-light,#64748B);font-weight:500;margin-bottom:.5rem;" data-i18n="battle.waiting_opponent">⏳ Waiting for opponent...</div>
+      <div id="battle-players-list" style="display:flex;flex-direction:column;gap:.5rem;margin-bottom:.5rem;"></div>
+    </div>
+    <div style="margin-top:1rem;">
+      <button class="btn" id="battle-back-btn" style="background:#f3f4f6;color:var(--text,#0F172A);border:1px solid #d1d5db;min-width:100px;" data-i18n="battle.back_to_lobby">Back</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ===== Sudoku Battle Mode (WebSocket) — 竞速模式（参考24点对战） ===== */
+(function(){
+  const WS_URL = 'wss://mathduel.games/ws';
+  let ws = null;
+  let battleMode = false;
+  let battleRoomCode = '';
+  let battleMyName = '';
+  /* ── P7 模板复制: 大厅头像/昵称预填/金币徽章 ── */
+  (function () {
+    fetch('/api/account/me', { credentials: 'same-origin' }).then(function (r) { return r.ok ? r.json() : null; }).then(function (d) {
+      if (!d) return;
+      var chipEl = document.getElementById('battle-avatar-chip');
+      if (d.avatar) window.__myAvatar = d.avatar;
+      if (chipEl && window.MDAvatars && d.avatar) MDAvatars.chip(chipEl, d.avatar, '你的头像 · 商店可换');
+      if (d.nickname && !localStorage.getItem('sudoku_battle_name')) {
+        var inp = document.getElementById('battle-name');
+        if (inp && !inp.value) inp.value = d.nickname;
+      }
+    }).catch(function () {});
+  })();
+  if (window.CoinsBar) { try { CoinsBar.init(); } catch (e) {} }
+  let battleMyIndex = -1;       // 0 or 1
+  let battleMyScore = 0;
+  let battleOppScore = 0;
+  let battleOppName = '';
+  let battleRound = 0;
+  let battleMaxRounds = 3;
+  let battleTimeLeft = 0;        // 倒计时（秒）
+  let battleLocalTimer = null;   // 本地计时器（用于 timer 消息到达前的兜底）
+  let battleWaitingForResult = false; // 提交后等服务器确认
+
+  function $(id){ return document.getElementById(id); }
+
+  /* --- 心跳 --- */
+  function startHeartbeat() {
+    if (window.__sudokuBattleHeartbeat) clearInterval(window.__sudokuBattleHeartbeat);
+    window.__sudokuBattleHeartbeat = setInterval(() => {
+      if (ws && ws.readyState === 1) {
+        try { ws.send(JSON.stringify({type:'ping'})); } catch(e){}
+      }
+    }, 30000);
+  }
+  function stopHeartbeat() {
+    if (window.__sudokuBattleHeartbeat) {
+      clearInterval(window.__sudokuBattleHeartbeat);
+      window.__sudokuBattleHeartbeat = null;
+    }
+  }
+
+  /* --- WebSocket 连接 --- */
+  // P0: 指数退避 + jitter + 消息队列状态
+  const wsReconnect = {
+    attempts: 0,
+    maxAttempts: 8,        // 2+4+8+16+30+30+30+30 = 150s 重试窗口
+    baseDelay: 2000,
+    maxDelay: 30000,
+    pending: [],           // 断线期间累积的待发送消息
+    forceClosed: false,    // 用户主动退出（不去重连）
+  };
+
+  function nextReconnectDelay() {
+    const exp = Math.min(wsReconnect.maxDelay,
+      wsReconnect.baseDelay * Math.pow(2, wsReconnect.attempts));
+    const jitter = exp * 0.3 * (Math.random() * 2 - 1);  // ±30%
+    return Math.max(500, exp + jitter);
+  }
+
+  function scheduleReconnect() {
+    if (wsReconnect.forceClosed) return;
+    if (wsReconnect.attempts >= wsReconnect.maxAttempts) {
+      console.error('[SudokuBattle] reconnect attempts exhausted, giving up');
+      showFinalDisconnect();
+      removeSudokuBattleOverlay();
+      exitBattleMode(window.__t('battle.connection_lost'));
+      return;
+    }
+    wsReconnect.attempts++;
+    const delay = nextReconnectDelay();
+    console.log(`[SudokuBattle] reconnect attempt ${wsReconnect.attempts}/${wsReconnect.maxAttempts} in ${Math.round(delay)}ms`);
+    updateReconnectUI(wsReconnect.attempts, delay);
+    setTimeout(() => {
+      if (!wsReconnect.forceClosed && battleMode) connectWS();
+    }, delay);
+  }
+
+  function flushPending() {
+    while (wsReconnect.pending.length && ws && ws.readyState === 1) {
+      const msg = wsReconnect.pending.shift();
+      try { ws.send(msg); } catch(e){ console.error('[SudokuBattle] flush send error', e); }
+    }
+  }
+
+  function updateReconnectUI(attempt, delayMs) {
+    const banner = document.getElementById('ws-reconnect-banner');
+    if (banner) {
+      banner.style.display = 'block';
+      banner.style.background = '#FFA500';
+      const txt = document.getElementById('ws-reconnect-text');
+      if (txt) txt.textContent = `Connection lost. Reconnecting (attempt ${attempt}/${wsReconnect.maxAttempts}) in ${Math.round(delayMs/1000)}s...`;
+    }
+  }
+  function hideReconnectUI() {
+    const banner = document.getElementById('ws-reconnect-banner');
+    if (banner) banner.style.display = 'none';
+  }
+  function showFinalDisconnect() {
+    const banner = document.getElementById('ws-reconnect-banner');
+    if (banner) {
+      banner.style.display = 'block';
+      banner.style.background = '#DC2626';
+      const txt = document.getElementById('ws-reconnect-text');
+      if (txt) txt.textContent = 'Connection lost. Please refresh the page.';
+    }
+  }
+
+  function connectWS(code, name) {
+    if (code) battleRoomCode = code;
+    if (name) battleMyName = name;
+    if (ws && ws.readyState <= 1) return;
+    const wsUrl = WS_URL + '?code=' + encodeURIComponent(battleRoomCode) + '&name=' + encodeURIComponent(battleMyName);
+    try { ws = new WebSocket(wsUrl); } catch(e) { console.error('[SudokuBattle] WS connect failed', e); return; }
+    ws.onopen = () => {
+      console.log('[SudokuBattle] WS connected');
+      wsReconnect.attempts = 0;          // 重置
+      hideReconnectUI();
+      startHeartbeat();
+      flushPending();                    // P0: 发送断线期间累积的消息
+    };
+    ws.onmessage = (e) => {
+      try {
+        const parsed = JSON.parse(e.data);
+        if (parsed.type === 'pong') return;
+        handleServerMsg(parsed);
+      } catch(err) { console.error('[SudokuBattle] msg parse error', err); }
+    };
+    ws.onclose = (e) => {
+      if (wsReconnect.forceClosed) return;
+      if (e && e.code === 1000) return;  // 正常关闭
+      console.warn(`[SudokuBattle] WS closed code=${e && e.code} attempts=${wsReconnect.attempts}`);
+      stopHeartbeat();
+      if (battleMode) scheduleReconnect();
+    };
+    ws.onerror = (err) => { console.error('[SudokuBattle] WS error', err); };
+  }
+
+  function wsSend(obj) {
+    const payload = JSON.stringify(obj);
+    if (!ws || ws.readyState === 3) connectWS();
+    if (ws && ws.readyState === 1) {
+      try { ws.send(payload); } catch(e){ console.error('[SudokuBattle] send error', e); }
+      return;
+    }
+    // P0: 断线/CONNECTING 入队，重连成功后由 flushPending 自动发送
+    wsReconnect.pending.push(payload);
+    if (wsReconnect.pending.length > 50) wsReconnect.pending.shift();  // 防爆
+  }
+
+  /* --- 服务器消息 --- */
+  function handleServerMsg(msg) {
+    switch(msg.type) {
+      case 'room_created':
+        battleRoomCode = msg.code;
+        battleMyIndex = 0;
+        showRoomInfo(msg.code, battleMyName);
+        break;
+      case 'room_joined':
+        battleRoomCode = msg.code;
+        showRoomInfo(msg.code, battleMyName);
+        break;
+      case 'player_joined':
+        // 对手加入：更新玩家列表，UI 会自动切到棋盘（因为服务端会发 sudoku_new_game）
+        $('battle-waiting-msg').textContent = __('✅ 对手已加入，即将开始…');
+        updatePlayersList([battleMyName, msg.players && msg.players[1] ? msg.players[1] : window.__t('battle.opponent_default')]);
+        break;
+      case 'sudoku_new_game':
+        onSudokuNewGame(msg);
+        break;
+      case 'sudoku_placed':
+        onSudokuPlaced(msg);
+        break;
+      case 'timer':
+        updateBattleTimerDisplay(msg.timeLeft);
+        break;
+      case 'sudoku_timeout':
+        onSudokuTimeout(msg);
+        break;
+      case 'sudoku_game_over':
+        onSudokuGameOver(msg);
+        break;
+      case 'game_over':
+        // 多局结束
+        onSudokuGameOver(msg);
+        break;
+      case 'opponent_leave':
+      case 'player_left': {   // P0-2 + ADR-P0-02：对手离开=暂停，显示等待重连遮罩，不退出对战
+        if (battleMode) {
+          var rm = document.getElementById('p0-rejoin-mask');
+          if (!rm) {
+            rm = document.createElement('div');
+            rm.id = 'p0-rejoin-mask';
+            rm.style.cssText = 'position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.62);color:#fff;font-size:1.05rem;text-align:center;padding:1rem;';
+            document.body.appendChild(rm);
+          }
+          rm.textContent = ((data && data.name) ? data.name : (data && data.player) ? data.player : 'Opponent') + ' 离开，等待重连…';
+          rm.style.display = 'flex';
+        }
+        break;
+      }
+      case 'opponent_rejoined':
+      case 'round_resume': {   // P0-2：对手重连 → 隐藏遮罩并续玩当前题
+        var rm2 = document.getElementById('p0-rejoin-mask');
+        if (rm2) rm2.style.display = 'none';
+        if (data && data.puzzle) onSudokuNewGame(data);
+        break;
+      }
+      case 'opponent_wrong':
+        // 暂未使用（保留以兼容）
+        break;
+      case 'error':
+        // P2-3: 用 renderError 渲染，支持 code + msg 多语言
+        $('battle-lobby-error').textContent = '⚠️ ' + (window.i18n.renderError(msg) || window.__t('battle.lobby_error_fallback'));
+        // 错误后回到表单（缩短到 1 秒，避免用户卡死感）
+        setTimeout(() => showLobbyForm(), 1000);
+        break;
+    }
+  }
+
+  function onSudokuNewGame(msg) {
+    if (!msg || !Array.isArray(msg.puzzle)) {
+      console.error('[SudokuBattle] sudoku_new_game missing puzzle');
+      return;
+    }
+    // 加载谜题
+    puzzle = msg.puzzle.slice();
+    solution = Array.isArray(msg.solution) ? msg.solution.slice() : [];
+
+    // 重置状态
+    errors = 0;
+    combo = 0;
+    selected = null;
+    historyStack = [];
+    notes = Array(81).fill(null).map(() => []);
+    battleWaitingForResult = false;
+    battleRound = msg.round || 1;
+    battleMaxRounds = msg.maxRounds || 3;
+    battleTimeLeft = msg.timeLimit || 300;
+    timer = 0;
+
+    const errorsEl = document.getElementById('errors');
+    const timerEl = document.getElementById('timer');
+    const comboElTop = document.getElementById('combo');
+    if (errorsEl) errorsEl.textContent = 0;
+    if (timerEl) timerEl.textContent = 0;
+    if (comboElTop) comboElTop.textContent = 0;
+
+    // 推断自己索引 & 对手名
+    if (Array.isArray(msg.players)) {
+      for (let i = 0; i < msg.players.length; i++) {
+        const p = msg.players[i];
+        if (!p) continue;
+        if (p.name === battleMyName) {
+          battleMyIndex = i;
+        } else {
+          battleOppName = p.name || window.__t('battle.opponent_default');
+        }
+        if (typeof p.score === 'number') {
+          if (p.name === battleMyName) battleMyScore = p.score;
+          else battleOppScore = p.score;
+        }
+      }
+    }
+    if (battleMyIndex < 0) battleMyIndex = 0;
+
+    // UI
+    closeLobby();  // 关闭大厅（已配对完成）
+    enterBattleMode(battleRoomCode);
+    $('battle-info-bar').classList.add('show');
+    $('battle-room-code').textContent = battleRoomCode;
+    $('battle-status').textContent = window.__t('sudoku.battle_round_start', {round: battleRound, max: battleMaxRounds});
+    updateBattleTimerDisplay(battleTimeLeft);
+    updateBattleScores();
+
+    // 关闭可能残留的覆盖层
+    removeSudokuBattleOverlay();
+
+    // 启动本地计时器（顶部 elapsed）
+    if (interval) clearInterval(interval);
+    interval = setInterval(() => {
+      timer++;
+      const tEl = document.getElementById('timer');
+      if (tEl) tEl.textContent = timer;
+    }, 1000);
+
+    // 渲染
+    render();
+    renderNumpad();
+  }
+
+  function onSudokuPlaced(msg) {
+    if (!msg || typeof msg.index !== 'number') return;
+    battleWaitingForResult = false;
+
+    const cells = document.querySelectorAll('.sudoku-cell');
+    const cell = cells[msg.index];
+    if (cell) {
+      if (msg.correct) {
+        cell.textContent = msg.value;
+        cell.classList.remove('battle-filling');
+        cell.classList.add('battle-placed', 'correct');
+        setTimeout(() => cell.classList.remove('correct'), 800);  // 配合填错 1.2 秒节奏
+      } else {
+        cell.textContent = msg.value;
+        cell.classList.add('battle-placed', 'wrong');
+        setTimeout(() => {
+          cell.classList.remove('battle-placed', 'wrong');
+          cell.textContent = '';
+          cell.classList.remove('battle-filling');
+        }, 1200);  // 延长到 1.2 秒，避免网络延迟下 UI 闪烁
+      }
+    }
+
+    // 更新 puzzle 数组（仅正确时）
+    if (msg.correct && Array.isArray(puzzle)) {
+      puzzle[msg.index] = msg.value;
+    }
+
+    // 更新分数
+    if (Array.isArray(msg.scores)) {
+      for (let i = 0; i < msg.scores.length; i++) {
+        const s = msg.scores[i];
+        if (!s) continue;
+        if (s.name === battleMyName) battleMyScore = s.score || 0;
+        else if (s.name === battleOppName) battleOppScore = s.score || 0;
+      }
+    }
+    updateBattleScores();
+  }
+
+  function onSudokuTimeout(msg) {
+    if (interval) clearInterval(interval);
+    showSudokuBattleResult(msg, 'timeout');
+  }
+
+  function onSudokuGameOver(msg) {
+    if (interval) clearInterval(interval);
+    showSudokuBattleResult(msg, 'complete');
+  }
+
+  function updateBattleTimerDisplay(timeLeft) {
+    battleTimeLeft = timeLeft;
+    const el = $('battle-timer');
+    if (!el) return;
+    const m = Math.floor(Math.max(0, timeLeft) / 60);
+    const s = Math.max(0, timeLeft) % 60;
+    el.textContent = m + ':' + (s < 10 ? '0' + s : s);
+    el.classList.remove('warn', 'danger');
+    if (timeLeft <= 30) el.classList.add('danger');
+    else if (timeLeft <= 60) el.classList.add('warn');
+  }
+
+  function updateBattleScores() {
+    const el = $('battle-scores');
+    if (el) el.textContent = battleMyScore + ' : ' + battleOppScore;
+  }
+
+  /* --- 结果弹窗 --- */
+  function showSudokuBattleResult(msg, reason) {
+    if (!msg) return;
+    // 同步分数
+    if (Array.isArray(msg.players)) {
+      for (let i = 0; i < msg.players.length; i++) {
+        const p = msg.players[i];
+        if (!p) continue;
+        if (p.name === battleMyName) battleMyScore = p.score || 0;
+        else if (p.name === battleOppName || (!battleOppName && i !== battleMyIndex)) {
+          battleOppScore = p.score || 0;
+          if (!battleOppName) battleOppName = p.name || window.__t('battle.opponent_default');
+        }
+      }
+    }
+    updateBattleScores();
+
+    // 判断胜负
+    const winner = msg.winner;
+    const isLastRound = battleRound >= battleMaxRounds;
+    const isDraw = winner === 'draw' || winner === -1 || winner === null;
+    const winnerName = msg.winnerName || null;
+    const isMyWin = !isDraw && (winner === battleMyIndex || (winnerName && winnerName === battleMyName));
+
+    let title, titleCls;
+    if (reason === 'timeout') {
+      title = __('⏰ 时间到！');
+      titleCls = 'sudoku-result-timeout';
+    } else if (isLastRound) {
+      if (isDraw) { title = __('🤝 总分平局！'); titleCls = 'sudoku-result-draw'; }
+      else if (isMyWin) { title = __('🏆 你赢了！'); titleCls = 'sudoku-result-win'; }
+      else { title = __('😔 你输了'); titleCls = 'sudoku-result-lose'; }
+    } else {
+      if (isDraw) { title = __('🤝 本局平局'); titleCls = 'sudoku-result-draw'; }
+      else if (isMyWin) { title = __('🎉 本局你赢了！'); titleCls = 'sudoku-result-win'; }
+      else { title = __('😔 本局对手赢'); titleCls = 'sudoku-result-lose'; }
+    }
+
+    if (isMyWin && window.fireConfetti) {
+      try { window.fireConfetti(); } catch(e){}
+    }
+
+    const myNameSafe = escapeHtml(battleMyName || window.__t('battle.me_default'));
+    const oppNameSafe = escapeHtml(battleOppName || window.__t('battle.opponent_default'));
+
+    // 如果有 solution 且 puzzle 未完成，填上正确答案
+    if (Array.isArray(msg.solution) && Array.isArray(puzzle)) {
+      for (let i = 0; i < 81; i++) {
+        if (puzzle[i] === 0 && msg.solution[i]) {
+          puzzle[i] = msg.solution[i];
+        }
+      }
+      solution = msg.solution.slice();
+      render();
+    }
+
+    const subText = isLastRound
+      ? '<p style="color:#6B7280;font-size:0.9rem;">' + window.__t('battle.all_rounds_done', {count: battleMaxRounds}) + '</p>'
+      : '<p style="color:#6B7280;font-size:0.9rem;">' + window.__t('battle.next_round_soon') + '</p>';
+
+    const buttonHtml = isLastRound
+      ? '<button class="btn" style="background:var(--primary,#0066CC);color:#fff;padding:0.5rem 1.5rem;border:none;border-radius:6px;cursor:pointer;font-weight:600;" onclick="window.__sudokuExitBattle && window.__sudokuExitBattle()">' + window.__t('battle.back_home') + '</button>'
+      : '<p style="color:#9CA3AF;font-size:0.85rem;">' + window.__t('battle.next_round_auto') + '</p>';
+
+    const html =
+      '<div class="sudoku-battle-card">' +
+        '<h3 class="' + titleCls + '">' + title + '</h3>' +
+        '<div class="sudoku-final-scores">' +
+          '<div class="score-col me"><div class="score-num">' + battleMyScore + '</div><div class="score-label">' + myNameSafe + '</div></div>' +
+          '<div class="score-col" style="font-size:1.5rem;align-self:center;color:#9CA3AF;">—</div>' +
+          '<div class="score-col"><div class="score-num">' + battleOppScore + '</div><div class="score-label">' + oppNameSafe + '</div></div>' +
+        '</div>' +
+        subText +
+        buttonHtml +
+      '</div>';
+
+    showSudokuBattleOverlay(html);
+  }
+
+  function showSudokuBattleOverlay(html) {
+    removeSudokuBattleOverlay();
+    const overlay = document.createElement('div');
+    overlay.id = 'sudoku-battle-overlay';
+    overlay.className = 'sudoku-battle-overlay show';
+    overlay.innerHTML = html;
+    document.body.appendChild(overlay);
+  }
+
+  function removeSudokuBattleOverlay() {
+    const existing = document.getElementById('sudoku-battle-overlay');
+    if (existing) existing.remove();
+  }
+
+  function escapeHtml(s) {
+    var div = document.createElement('div');
+    div.textContent = s == null ? '' : s;
+    return div.innerHTML;
+  }
+
+  /* --- numpad 拦截：在对战模式下，数字点击直接发送，禁用本地验证 --- */
+  function patchNumpadForBattle() {
+    const pad = document.getElementById('numpad');
+    if (!pad) return;
+    pad.innerHTML = '';
+    for (let n = 1; n <= 9; n++) {
+      const b = document.createElement('button');
+      b.className = 'num-btn';
+      b.textContent = n;
+      b.addEventListener('click', () => {
+        if (paused || selected === null) return;
+        if (!battleMode) return;  // 单人模式由原 numpad 处理
+        if (battleWaitingForResult) return;
+        if (puzzle[selected] === 0) {
+          battleWaitingForResult = true;
+          // 视觉反馈：占位 + 半透明
+          const cells = document.querySelectorAll('.sudoku-cell');
+          const cell = cells[selected];
+          if (cell) {
+            cell.textContent = n;
+            cell.classList.add('battle-filling');
+          }
+          wsSend({type:'sudoku_place', index: selected, value: n});
+          // 兜底：1.2 秒没收到回包就解锁
+          setTimeout(() => {
+            if (battleWaitingForResult) {
+              battleWaitingForResult = false;
+              const c = document.querySelectorAll('.sudoku-cell')[selected];
+              if (c && c.classList.contains('battle-filling')) {
+                c.classList.remove('battle-filling');
+                c.textContent = '';
+              }
+            }
+          }, 1200);
+        }
+      });
+      pad.appendChild(b);
+    }
+  }
+
+  // 重写 render：在对战模式下覆盖 numpad
+  const _origRender = render;
+  render = function() {
+    _origRender();
+    if (battleMode) patchNumpadForBattle();
+  };
+
+  /* --- 大厅 UI --- */
+  function openLobby() {
+    $('battle-overlay').classList.add('show');
+    $('battle-lobby-error').textContent = '';
+    if (!battleMyName) {
+      const saved = localStorage.getItem('sudoku_battle_name');
+      if (saved) $('battle-name').value = saved;
+    }
+    showLobbyForm();
+  }
+  function closeLobby() {
+    $('battle-overlay').classList.remove('show');
+  }
+  function showLobbyForm() {
+    $('battle-lobby-form').style.display = '';
+    $('battle-room-info').style.display = 'none';
+    $('battle-lobby-error').textContent = '';
+  }
+  function showRoomInfo(code, myName) {
+    $('battle-lobby-form').style.display = 'none';
+    $('battle-room-info').style.display = '';
+    $('battle-room-code-lobby').textContent = code;
+    // 填充分享链接
+    var shareUrl = generateShareUrl(code);
+    var shareInput = $('battle-share-url');
+    if (shareInput) {
+      shareInput.value = shareUrl;
+      shareInput.title = shareUrl;
+      bindShareUrlAutoSelect();
+    }
+    $('battle-waiting-msg').textContent = __('⏳ 等待对手加入...');
+    updatePlayersList([myName || window.__t('battle.me_default')]);
+  }
+  function updatePlayersList(players) {
+    var html = '';
+    for (var i = 0; i < players.length; i++) {
+      var raw = players[i];
+      var name = (raw && typeof raw === 'object') ? (raw.name || '') : (raw || '');
+      if (!name) name = i === 0 ? window.__t('battle.me_default') : window.__t('battle.opponent_default');
+      var isMe = i === 0;
+      var ava = (raw && typeof raw === 'object' && raw.avatar) || (isMe ? window.__myAvatar : null);
+      html += '<div class="battle-player-item' + (isMe ? ' me' : '') + '">' +
+        '<span class="p-ava">' + (window.MDAvatars ? MDAvatars.chipHtml(ava) : '') + '</span>' +
+        '<span class="p-name">' + escapeHtml(name) + '</span>' +
+        '<span class="p-tag">' + (isMe ? window.__t('battle.me_default') : window.__t('battle.waiting_join')) + '</span>' +
+        '</div>';
+    }
+    $('battle-players-list').innerHTML = html;
+  }
+  function escapeHtml(s) {
+    var div = document.createElement('div');
+    div.textContent = s == null ? '' : s;
+    return div.innerHTML;
+  }
+  function sanitizeName(raw, fallback) {
+    var s = String(raw == null ? '' : raw);
+    s = s.replace(/[\x00-\x1F\x7F]/g, '').trim();
+    if (s.length > 20) s = s.substring(0, 20);
+    if (!s) s = fallback || window.__t('battle.player_default_fallback');
+    return s;
+  }
+  function isValidRoomCode(code) {
+    return typeof code === 'string' && /^[A-Z2-9]{5}$/.test(code);
+  }
+  function copyRoomCode() {
+    var code = $('battle-room-code-lobby').textContent;
+    if (!code) return;
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(code).then(function() {
+        var btn = $('battle-copy-code');
+        if (btn) {
+          btn.textContent = '✅';
+          setTimeout(function() { btn.textContent = '📋'; }, 1500);
+        }
+      }).catch(function(){});
+    }
+  }
+
+  // 生成游客直达短链：/b/sudoku/XXXXX
+  function generateShareUrl(code) {
+    if (!code) return '';
+    return window.location.origin + '/b/sudoku/' + encodeURIComponent(code);
+  }
+  function copyShareLink() {
+    var input = $('battle-share-url');
+    if (!input) return;
+    var url = input.value;
+    if (!url) return;
+    var copy = function(text) {
+      if (navigator.clipboard) {
+        return navigator.clipboard.writeText(text);
+      }
+      // fallback：选中输入框
+      input.select();
+      try { return Promise.resolve(document.execCommand('copy')); } catch(e) { return Promise.reject(e); }
+    };
+    copy(url).then(function() {
+      var btn = $('battle-copy-link');
+      if (btn) {
+        var orig = btn.textContent;
+        btn.textContent = __('✅ 已复制');
+        setTimeout(function() { btn.textContent = orig; }, 1800);
+      }
+    }).catch(function(){});
+  }
+  // 点击输入框自动复制
+  function bindShareUrlAutoSelect() {
+    var input = $('battle-share-url');
+    if (input && !input._autoSelectBound) {
+      input._autoSelectBound = true;
+      input.addEventListener('click', function() { input.select(); });
+      input.addEventListener('focus', function() { input.select(); });
+    }
+  }
+
+  function enterBattleMode(code) {
+    // 现在只在 sudoku_new_game 收到时调用（之前是创建后立即调用）
+    battleMode = true;
+    battleRoomCode = code;
+    closeLobby();
+    document.querySelectorAll('.difficulty-btn').forEach(b => b.style.display = 'none');
+    $('battle-btn').textContent = __('🚪 退出对战');
+    $('battle-info-bar').classList.add('show');
+  }
+
+  // 暴露给结果弹窗按钮
+  window.__sudokuExitBattle = function() { exitBattleMode(); };
+
+  function exitBattleMode(reasonMsg) {
+    battleMode = false;
+    battleRoomCode = '';
+    battleMyIndex = -1;
+    battleMyScore = 0;
+    battleOppScore = 0;
+    battleOppName = '';
+    battleRound = 0;
+    battleTimeLeft = 0;
+    battleWaitingForResult = false;
+    if (interval) clearInterval(interval);
+    if (battleLocalTimer) { clearInterval(battleLocalTimer); battleLocalTimer = null; }
+    stopHeartbeat();
+    removeSudokuBattleOverlay();
+    wsReconnect.forceClosed = true;
+    wsReconnect.attempts = 0;
+    hideReconnectUI();
+    $('battle-info-bar').classList.remove('show');
+    document.querySelectorAll('.difficulty-btn').forEach(b => b.style.display = '');
+    $('battle-btn').textContent = __('⚔️ 对战');
+    // 重置大厅到表单状态
+    showLobbyForm();
+    if (ws) {
+      try { ws.send(JSON.stringify({type:'leave_room'})); } catch(e){}
+      try { ws.close(); } catch(e){}
+      ws = null;
+    }
+    if (reasonMsg && typeof gAlert === 'function') {
+      try { gAlert(reasonMsg, window.__t('battle.end_dialog_title')); } catch(e){}
+    }
+    if (typeof init === 'function') init('medium');
+  }
+
+  /* --- 启动绑定 --- */
+  document.addEventListener('DOMContentLoaded', () => {
+    // P0: 不在页面加载时自动连接 WS，只有点击"对战"按钮才连接
+    $('battle-btn').addEventListener('click', () => {
+      if (battleMode) {
+        if (confirm(__('确定退出对战？'))) exitBattleMode();
+      } else {
+        openLobby();
+      }
+    });
+
+    $('battle-create').addEventListener('click', () => {
+      var name = sanitizeName($('battle-name').value);
+      if (!name) { $('battle-lobby-error').textContent = __('请输入昵称（1-20 字符）'); return; }
+      battleMyName = name;
+      localStorage.setItem('sudoku_battle_name', name);
+      $('battle-lobby-error').textContent = '';
+      // 新协议: POST /api/rooms 建房拿码 → 连 /ws?code=X&name=Y
+      fetch((window.API_BASE || '') + '/rooms', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pool: 'standard', gameType: 'sudoku', name: name }),
+      }).then(function(r) { return r.json(); }).then(function(data) {
+        if (!data || !data.code) { $('battle-lobby-error').textContent = __('连接失败，请稍后重试'); return; }
+        connectWS(data.code, name);
+        if (window.plausible) plausible('battle_create', { props: { game: 'sudoku' } });
+      }).catch(function() {
+        $('battle-lobby-error').textContent = __('连接失败，请稍后重试');
+      });
+    });
+
+    $('battle-join').addEventListener('click', () => {
+      var name = sanitizeName($('battle-name').value);
+      var code = ($('battle-code-input').value || '').trim().toUpperCase();
+      if (!name) { $('battle-lobby-error').textContent = __('请输入昵称（1-20 字符）'); return; }
+      if (!code) { $('battle-lobby-error').textContent = __('请输入房间号'); return; }
+      if (!isValidRoomCode(code)) { $('battle-lobby-error').textContent = __('房间号格式错误（5 位大写字母+数字）'); return; }
+      battleMyName = name;
+      localStorage.setItem('sudoku_battle_name', name);
+      $('battle-name').value = name;
+      $('battle-code-input').value = code;
+      $('battle-lobby-error').textContent = '';
+      // 新协议: 房间码已由建房方创建,直接连 /ws?code=X&name=Y
+      connectWS(code, name);
+      if (window.plausible) plausible('battle_join', { props: { game: 'sudoku' } });
+    });
+
+    // Enter 键快捷：name 输入框回车 → 创建；code 输入框回车 → 加入
+    $('battle-name').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') $('battle-create').click();
+    });
+    $('battle-code-input').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') $('battle-join').click();
+    });
+
+    $('battle-back-btn').addEventListener('click', () => {
+      // 返回：取消等待、离开房间、重置大厅
+      cleanupLobbyAndLeave();
+      showLobbyForm();
+    });
+
+    $('battle-lobby-close').addEventListener('click', () => {
+      // 关闭按钮：如果在等待对手，需要离开房间
+      cleanupLobbyAndLeave();
+      closeLobby();
+    });
+
+    // 统一封装：从大厅中退出（仅当处于大厅中——battleMode=false）
+    // 作用：发 leave_room 让服务端清空房间，重置本地 battleRoomCode
+    // 不关闭 ws（玩家可能继续 join 另一个房间）
+    function cleanupLobbyAndLeave() {
+      if (battleRoomCode && ws && ws.readyState === 1) {
+        try { ws.send(JSON.stringify({type:'leave_room'})); } catch(e){}
+      }
+      battleRoomCode = '';
+    }
+
+    $('battle-copy-code').addEventListener('click', copyRoomCode);
+    $('battle-room-code-lobby').addEventListener('click', copyRoomCode);
+    $('battle-copy-link').addEventListener('click', copyShareLink);
+
+    // URL 参数处理：如果带 ?room=XXXXX，自动打开大厅并预填房间号
+    function handleUrlParams() {
+      try {
+        var params = new URLSearchParams(window.location.search);
+        var roomFromUrl = (params.get('room') || '').trim().toUpperCase();
+        if (!roomFromUrl) return;
+        // 等 openLobby 触发（用户点击 ⚔️ 对战），所以现在只预填输入框
+        if (isValidRoomCode(roomFromUrl)) {
+          var codeInput = $('battle-code-input');
+          if (codeInput) codeInput.value = roomFromUrl;
+          // 自动打开大厅（用户没点击就直接展开）
+          openLobby();
+          // 焦点到加入按钮（昵称预填后）
+          var nameInput = $('battle-name');
+          if (nameInput && !nameInput.value) {
+            var saved = localStorage.getItem('sudoku_battle_name');
+            if (saved) nameInput.value = saved;
+          }
+          // 滚动到加入按钮
+          setTimeout(function() {
+            var joinBtn = $('battle-join');
+            if (joinBtn) joinBtn.focus();
+          }, 100);
+          // 清除 URL 参数（保持地址栏干净）
+          try {
+            var cleanUrl = window.location.origin + window.location.pathname;
+            window.history.replaceState({}, document.title, cleanUrl);
+          } catch(e) {}
+        }
+      } catch(e) { /* URLSearchParams 不支持时忽略 */ }
+    }
+    handleUrlParams();
+    // 页面顶部的 battle-info-bar 房间码点击：复制当前房间号
+    $('battle-room-code').addEventListener('click', function() {
+      if (battleRoomCode && navigator.clipboard) {
+        navigator.clipboard.writeText(battleRoomCode).then(function() {
+          var orig = $('battle-room-code').textContent;
+          $('battle-room-code').textContent = '✅';
+          setTimeout(function() { $('battle-room-code').textContent = orig; }, 1200);
+        }).catch(function(){});
+      }
+    });
+  });
+})();
+</script>
+
+<!-- W5.3 Share Overlay -->
+  <div id="share-overlay" class="share-overlay" style="display:none;">
+    <div class="share-overlay-card">
+      <button class="share-overlay-close" id="share-overlay-close" aria-label="Close" data-i18n-aria-label="common.close">×</button>
+      <div class="share-overlay-title" id="share-overlay-title" data-i18n="sudoku.share_overlay_title">✅ Stats</div>
+      <div class="share-overlay-canvas-wrap">
+        <canvas id="share-canvas" width="1200" height="630"></canvas>
+      </div>
+      <div class="share-overlay-stats" id="share-overlay-stats"></div>
+      <div class="share-overlay-url-row">
+        <input type="text" id="share-overlay-url" readonly />
+        <button id="share-overlay-copy" data-i18n="share.overlay_copy_link">📋 Copy link</button>
+      </div>
+      <style>
+        .so-react{margin:.75rem 0 .25rem;text-align:center}
+        .so-react-tip{font-size:.8rem;color:var(--text-light);margin-bottom:.35rem}
+        .so-react-emojis button{font-size:1.4rem;background:#fff;border:1.5px solid var(--border);border-radius:50%;width:44px;height:44px;cursor:pointer;margin:0 .2rem;transition:transform .12s}
+        .so-react-emojis button:hover{transform:scale(1.15);border-color:var(--primary)}
+        .so-react-counts{margin-top:.5rem;display:flex;gap:.35rem;justify-content:center;flex-wrap:wrap}
+        .so-react-chip{background:var(--bg);border:1px solid var(--border-light);border-radius:999px;padding:.18rem .55rem;font-size:.78rem}
+      </style>
+  <!-- Tri-Sites Shared CSS -->
+  <link rel="stylesheet" href="/css/shared/tokens.css?v=p5">
+<link rel="stylesheet" href="/css/shared/components.css?v=20260921"
+  <link rel="stylesheet" href="/css/shared/toast.css?v=p3fix2">>
+
+      <div class="so-react">
+        <div class="so-react-tip" data-i18n="share.react_tip">⚡ React to today's game</div>
+        <div class="so-react-emojis">
+          <button onclick="window.reactE('👍')" aria-label="👍">👍</button>
+          <button onclick="window.reactE('🔥')" aria-label="🔥">🔥</button>
+          <button onclick="window.reactE('😮')" aria-label="😮">😮</button>
+          <button onclick="window.reactE('🎉')" aria-label="🎉">🎉</button>
+        </div>
+        <div class="so-react-counts" id="so-react-counts"></div>
+      </div>
+      <div class="share-overlay-actions">
+        <button onclick="location.href='/rank/'" data-i18n="share.overlay_rank">🏆 Today's ranking</button>
+        <button id="share-overlay-download" data-i18n="share.overlay_download_image">⬇️ Download image</button>
+        <button id="share-overlay-wechat" data-i18n-title="share.overlay_wechat_title" data-i18n="share.overlay_wechat">Scan with WeChat to share with friends</button>
+      </div>
+      <div class="share-overlay-toast" id="share-overlay-toast"></div>
+    </div>
+  </div>
+
+  <!-- W5.5 History Modal -->
+  <div id="history-modal" class="history-modal" style="display:none;">
+    <div class="history-modal-card">
+      <button class="history-modal-close" id="history-modal-close" style="position:absolute;top:.5rem;right:.75rem;background:none;border:none;font-size:1.8rem;cursor:pointer;color:var(--text-light);width:36px;height:36px;border-radius:50%;line-height:1;" aria-label="Close" data-i18n-aria-label="common.close">×</button>
+      <div class="history-modal-title" data-i18n="sudoku.history_modal_title">📈 Sudoku History</div>
+      <div class="history-modal-canvas-wrap">
+        <canvas id="history-canvas" width="540" height="200"></canvas>
+      </div>
+      <div class="history-modal-list" id="history-modal-list"></div>
+    </div>
+  </div>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/service-worker.js')
+        .then(reg => console.log('SW registered', reg.scope))
+        .catch(err => console.warn('SW failed', err));
+    }
+  </script>
+  </div>
+  </div>
+  <nav class="bottom-nav" style="display:none" aria-label="Mobile navigation" data-i18n-aria-label="nav.bottom_nav">
+    <div class="bottom-nav-inner">
+      <a href="/" class="bottom-nav-item" data-i18n-aria-label="nav.home">
+        <span class="bn-ico">🏠</span><span class="bn-label" data-i18n="nav.home">Home</span>
+      </a>
+      <a href="/games/24-game/" class="bottom-nav-item" data-i18n-aria-label="nav.game_24">
+        <span class="bn-ico">24</span><span class="bn-label" data-i18n="nav.game_24">24 Game</span>
+      </a>
+      <a href="/games/sudoku/" class="bottom-nav-item active" data-i18n-aria-label="nav.game_sudoku">
+        <span class="bn-ico">9²</span><span class="bn-label" data-i18n="nav.game_sudoku">Sudoku</span>
+      </a>
+      <a href="/games/equation-pyramid/" class="bottom-nav-item" data-i18n-aria-label="nav.game_equation_pyramid">
+        <span class="bn-ico">🔺</span><span class="bn-label" data-i18n="nav.game_equation_pyramid">Pyramid</span>
+      </a>
+      <a href="/stats/" class="bottom-nav-item" data-i18n-aria-label="nav.stats">
+        <span class="bn-ico">📊</span><span class="bn-label" data-i18n="nav.stats">Stats</span>
+      </a>
+    </div>
+  </nav>
+
+  <!-- Tri-Sites Sidebar -->
+<script src="/js/toast.js?v=p27" defer></script>
+  <script src="/js/coins-bar.js?v=20260925" defer></script>
+  <script src="/js/coin-exchange.js?v=20260924" defer></script>
+
+  <footer class="sites-footer">
+    <div class="wrap">
+      <div class="sf-title" data-i18n="footer.matrix_title">Explore more</div>
+      <div class="sf-matrix">
+        <a href="https://boardduel.com" class="sf-item">
+          <svg class="duel-icon sf-emoji" aria-hidden="true"><use href="/shared/icons.svg#duel-chess"></use></svg>
+          <span data-i18n="footer.boardduel_name">BoardDuel · Chess & Card Games</span>
+        </a>
+        <a href="https://mathduel.games" class="sf-item">
+          <svg class="duel-icon sf-emoji" aria-hidden="true"><use href="/shared/icons.svg#duel-calculator"></use></svg>
+          <span data-i18n="footer.mathduel_name">MathDuel · Math Puzzle Games</span>
+        </a>
+        <a href="https://memoryduel.com" class="sf-item">
+          <svg class="duel-icon sf-emoji" aria-hidden="true"><use href="/shared/icons.svg#duel-brain"></use></svg>
+          <span data-i18n="footer.memoryduel_name">MemoryDuel · Knowledge Battles</span>
+        </a>
+      </div>
+      <div class="sf-links">
+        <a href="/about/" data-i18n="nav.about">About</a>
+        <a href="/contact/" data-i18n="nav.contact">Contact</a>
+        <a href="/privacy/" data-i18n="nav.privacy">Privacy</a>
+        <a href="/terms/" data-i18n="nav.terms">Terms</a>
+      </div>
+      <div class="sf-copy" data-i18n="site.footer">© 2026 Math Duel · Pure static · Privacy-first · Free to play</div>
+    </div>
+  
+    </footer>
+  <script src="/shared/site-header.js?v=ds2-11"></script>
+  <script src="/shared/sso-bridge.js?v=1" defer></script>
+  <script src="/shared/game-chrome-10.js?v=27"></script>
+</body>
+</html>

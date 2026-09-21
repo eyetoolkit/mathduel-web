@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-labelledby="t6 d6">
+  <title id="t6">6×6 Sudoku — square icon</title>
+  <desc id="d6">Square bright indigo icon with six tiles carrying the digits 1 to 6, the last tile green.</desc>
+  <rect width="512" height="512" fill="#4F46E5"/>
+  <g fill="#FFFFFF">
+    <rect x="56" y="126" width="118" height="118" rx="27"/>
+    <rect x="197" y="126" width="118" height="118" rx="27"/>
+    <rect x="338" y="126" width="118" height="118" rx="27"/>
+    <rect x="56" y="267" width="118" height="118" rx="27"/>
+    <rect x="197" y="267" width="118" height="118" rx="27"/>
+  </g>
+  <rect x="338" y="267" width="118" height="118" rx="27" fill="#22C55E"/>
+  <g font-family="system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif" font-weight="800" text-anchor="middle">
+    <text x="115" y="185" dominant-baseline="central" font-size="62" fill="#4F46E5">1</text>
+    <text x="256" y="185" dominant-baseline="central" font-size="62" fill="#4F46E5">2</text>
+    <text x="397" y="185" dominant-baseline="central" font-size="62" fill="#4F46E5">3</text>
+    <text x="115" y="326" dominant-baseline="central" font-size="62" fill="#4F46E5">4</text>
+    <text x="256" y="326" dominant-baseline="central" font-size="62" fill="#4F46E5">5</text>
+    <text x="397" y="326" dominant-baseline="central" font-size="62" fill="#FFFFFF">6</text>
+  </g>
+</svg>

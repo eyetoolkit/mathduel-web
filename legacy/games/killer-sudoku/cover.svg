@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-labelledby="tK dK">
+  <title id="tK">Killer Sudoku — square icon</title>
+  <desc id="dK">Square deepest indigo icon with a nine-tile Sudoku grid; the two lower-right cells merge into one red cage outlined by a white dashed fence and labelled 17. Because a two-cell cage summing to 17 can only be 8+9, the eight and nine are spent inside the cage and the remaining tiles show digits from 1 to 7 only.</desc>
+  <rect width="512" height="512" fill="#312E81"/>
+  <g fill="#FFFFFF">
+    <rect x="56" y="56" width="118" height="118" rx="27"/>
+    <rect x="197" y="56" width="118" height="118" rx="27"/>
+    <rect x="338" y="56" width="118" height="118" rx="27"/>
+    <rect x="56" y="197" width="118" height="118" rx="27"/>
+    <rect x="197" y="197" width="118" height="118" rx="27"/>
+    <rect x="338" y="197" width="118" height="118" rx="27"/>
+    <rect x="56" y="338" width="118" height="118" rx="27"/>
+  </g>
+  <!-- 笼子：底部右侧两格合并为一块连续红板（笼子的语义即"圈成一体"） -->
+  <rect x="197" y="338" width="259" height="118" rx="27" fill="#DC2626"/>
+  <rect x="197" y="338" width="259" height="118" rx="27" fill="none" stroke="#FFFFFF" stroke-width="6.5" stroke-dasharray="16 13"/>
+  <g font-family="system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif" font-weight="800">
+    <!-- 🔴 笼子和 = 17 且笼子只有 2 格 ⇒ 唯一解 {8,9} ⇒ 8 与 9 已被笼子占用，
+         外面这 7 格只能出现 1–7。**改此图时切勿在笼外放 8 或 9**（会自相矛盾）。 -->
+    <g text-anchor="middle">
+      <text x="115" y="115" dominant-baseline="central" font-size="62" fill="#312E81">5</text>
+      <text x="397" y="115" dominant-baseline="central" font-size="62" fill="#312E81">6</text>
+      <text x="256" y="256" dominant-baseline="central" font-size="62" fill="#312E81">3</text>
+      <text x="115" y="397" dominant-baseline="central" font-size="62" fill="#312E81">2</text>
+    </g>
+    <!-- 笼子和：按惯例放在笼子左上角 -->
+    <text x="219" y="366" text-anchor="start" dominant-baseline="central" font-size="54" fill="#FFFFFF">17</text>
+  </g>
+</svg>

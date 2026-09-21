@@ -1,0 +1,2087 @@
+<!DOCTYPE html>
+<html lang="en" data-site="math">
+<head>
+  <script>
+    // API 走同源（Cloudflare Worker 路由 /api/*）；跨域 api.* 会被页面 CSP 拦截
+    /* ── 防"旧版一闪"(FOUC)：v10 chrome 就绪前先隐藏旧版专属骨架 ── */
+    document.documentElement.classList.add('gc-pending');
+    window.addEventListener('load', function () { document.documentElement.classList.remove('gc-pending'); });
+    setTimeout(function () { document.documentElement.classList.remove('gc-pending'); }, 10000);
+    window.API_BASE = '/api';
+    window.WS_BASE = 'wss://' + location.host;
+  </script>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#0066CC">
+  <title data-i18n-title="title.auto.hc_杀手数独笼子求和逻辑挑战数学对决_62996">Killer Sudoku - Cage Sum Logic Challenge | Math Duel</title>
+  <meta data-i18n="meta.auto.hc_杀手数独标准数独规则每行每列每宫_520" name="description" content="Killer Sudoku: standard Sudoku rules (1-9 with no repeats in each row, column and box) plus cage constraints (the sum of numbers in a cage must equal the label in its top-left corner). The two rule sets combine to test logic deduction and mental math. Three difficulty levels, real-time battle supported, no login, free to play.">
+  <meta data-i18n="meta.auto.hc_杀手数独KillerSudoku_59683" name="keywords" content="Killer Sudoku,Killer Sudoku,Sudoku,cage sudoku,Logic Deduction,Mental Math,Number Games,Puzzle Games,Free to play">
+  <link rel="icon" href="/assets/img/favicon.svg?v=20260921" type="image/svg+xml">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="game">
+  <meta data-i18n="meta.auto.hc_杀手数独KillerSudoku_33939" property="og:title" content="🧩 Killer Sudoku (Killer Sudoku)">
+  <meta data-i18n="meta.auto.hc_标准数独笼子和约束考验逻辑与心算_12155" property="og:description" content="Standard Sudoku + cage sum constraints — a test of logic and mental math.">
+  <meta property="og:url" content="https://mathduel.games/games/killer-sudoku/">
+  <meta data-i18n="meta.auto.hc_数学对决_51866" property="og:site_name" content="Math Duel">
+  <meta property="og:locale" content="zh_CN">
+  <meta property="og:image" content="/games/killer-sudoku/og.jpg" />
+  <meta property="og:image:width" content="/games/killer-sudoku/og.jpg" />
+  <meta property="og:image:height" content="/games/killer-sudoku/og.jpg" />
+  <meta property="og:image:alt" content="/games/killer-sudoku/og.jpg" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta data-i18n="meta.auto.hc_杀手数独KillerSudoku_72599" name="twitter:title" content="🧩 Killer Sudoku (Killer Sudoku)">
+  <meta data-i18n="meta.auto.hc_标准数独笼子和约束_33457" name="twitter:description" content="Standard Sudoku + cage sum constraints.">
+  <meta name="twitter:url" content="https://mathduel.games/games/killer-sudoku/">
+  <meta name="twitter:image" content="/games/sudoku/og.jpg" />
+
+  <link rel="canonical" href="https://mathduel.games/games/killer-sudoku/">
+  <link rel="stylesheet" href="/assets/css/style.css?v=blue5">
+  <link rel="stylesheet" href="/assets/css/game-core.css?v=blue3.1">
+
+  <style>
+* { box-sizing: border-box; }
+.game-container { text-align: center; }
+body { background: var(--bg, #f0f2f5); }
+#killerCanvas {
+display: block; margin: 0 auto; background: white;
+border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+cursor: pointer; touch-action: none;
+width: 100%; height: auto; aspect-ratio: 1 / 1;
+}
+/* 注：`.controls` 的网格布局与 `.btn` 系列样式统一由站点 assets/css/style.css 提供
+   （.game-page .controls{display:grid;grid-template-columns:repeat(3,1fr)}）。
+   此页原先自带一套私有 .controls{display:flex} + .btn{padding:8px 20px;font-size:15px}
+   覆盖了站点体系，导致：
+     - 按钮宽度参差、换行后出现空位（flex+wrap 不像 grid 那样等宽对齐）
+     - 🔄 New Game 因横向 padding 过大（20px vs 站点 2.4px）而折成两行
+     - Clear 等按钮用旧硬编码配色，与站点主题色不一致
+   2026-09-14 一并移除，回归统一体系。 */
+.btn-secondary:hover { background: #cbd5e1; }
+.message { margin-top: 16px; font-size: 16px; min-height: 56px; color: #0f172a; }
+.message.error { color: #dc2626; }
+.message.success { color: #16a34a; }
+.popup-overlay {
+display: none; position: fixed; top: 0; left: 0;
+width: 100%; height: 100%;
+background: rgba(0,0,0,0.4);
+justify-content: center; align-items: center; z-index: 1000;
+}
+.popup-overlay.active { display: flex; }
+.popup-box {
+background: white; border-radius: 24px; padding: 24px 28px;
+box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+text-align: center; max-width: 380px; width: 90%;
+}
+.popup-box .popup-title { font-size: 18px; font-weight: 600; margin-bottom: 12px; color: #1e293b; }
+.popup-box .popup-sub { font-size: 14px; color: #64748b; margin-bottom: 16px; }
+.popup-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 8px 0 16px; }
+.popup-grid button {
+padding: 14px 0; border: 2px solid #e2e8f0; border-radius: 12px;
+background: white; font-size: 22px; font-weight: 700;
+color: #0f172a; cursor: pointer; transition: 0.1s;
+}
+.popup-grid button:hover { background: #f1f5f9; border-color: #94a3b8; }
+.popup-grid button:active { transform: scale(0.94); }
+.popup-grid button.clear-btn { background: #fee2e2; border-color: #fca5a5; color: #b91c1c; font-size: 16px; }
+.popup-grid button.clear-btn:hover { background: #fecaca; }
+.popup-box .popup-close {
+margin-top: 6px; background: #e2e8f0; border: none; border-radius: 40px;
+padding: 8px 24px; font-size: 15px; font-weight: 600;
+cursor: pointer; color: #1e293b;
+}
+.popup-box .popup-close:hover { background: #cbd5e1; }
+.note-toggle { margin: 4px 0 10px; }
+.note-toggle label { font-size: 14px; color: #475569; cursor: pointer; }
+.note-toggle input { margin-right: 6px; }
+
+/* 按钮样式已统一到站点 assets/css/style.css 的 .btn 体系（原 .btn-tool 已移除） */
+.difficulty-bar { display: flex; justify-content: center; gap: 6px; margin: 10px 0 6px; }
+.difficulty-bar .diff-btn { padding: 5px 16px; border: 2px solid #e2e8f0; border-radius: 20px; background: #fff; font-size: 13px; font-weight: 600; color: #64748b; cursor: pointer; transition: 0.15s; min-height: 44px; }
+.difficulty-bar .diff-btn:hover { border-color: #94a3b8; color: #1e293b; }
+.difficulty-bar .diff-btn.active { background: #1E40AF; color: #fff; border-color: #1E40AF; }
+
+/* Battle Mode */
+body.game-paused #killerCanvas { opacity: 0.5; pointer-events: none; filter: grayscale(0.5); }
+.battle-info-bar { display:none; align-items:center; justify-content:center; gap:1rem; padding:0.5rem 1rem; margin:0.5rem auto; max-width:450px; width:100%; background:linear-gradient(135deg,#1E40AF,#7C3AED); color:#fff; border-radius:8px; font-size:0.9rem; flex-wrap:wrap; }
+.battle-info-bar.show { display:flex; }
+.battle-info-bar .room-code { background:rgba(255,255,255,0.2); padding:0.25rem 0.75rem; border-radius:4px; font-weight:700; letter-spacing:2px; cursor:pointer; }
+.battle-info-bar .battle-timer { font-weight:700; font-family:monospace; padding:0.25rem 0.5rem; background:rgba(255,255,255,0.15); border-radius:4px; min-width:3.5rem; text-align:center; }
+.battle-info-bar .battle-timer.warn { background:rgba(251,191,36,0.6); color:#fff; }
+.battle-info-bar .battle-timer.danger { background:rgba(239,68,68,0.8); color:#fff; animation: killerTimerPulse 1s infinite; }
+@keyframes killerTimerPulse { 0%,100% { opacity:1; } 50% { opacity:0.6; } }
+.battle-info-bar .round-indicator { font-weight:600; opacity:0.9; }
+.battle-info-bar .score-display { font-weight:600; }
+
+/* 杀手数独对战半透明占位 */
+canvas.battle-filling { opacity: 0.7; }
+/* 杀手数独已下子的格子闪烁效果 */
+@keyframes killerFlash { 0% { background:rgba(34,197,94,0.35); } 100% { background:transparent; } }
+.battle-cell-flash { animation: killerFlash 0.6s ease-out; }
+.battle-cell-wrong { animation: killerWrong 0.8s ease-out; }
+@keyframes killerWrong { 0%,100% { background:transparent; } 25%,75% { background:rgba(239,68,68,0.4); } }
+
+/* 对战 overlay */
+.battle-result-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:10000; display:none; align-items:center; justify-content:center; padding:1rem; }
+.battle-result-overlay.show { display:flex; }
+.battle-result-card { background:#fff; border-radius:12px; padding:2rem; max-width:380px; width:100%; box-shadow:0 12px 40px rgba(0,0,0,0.25); text-align:center; }
+.battle-result-card h3 { margin:0 0 0.75rem; font-size:1.5rem; }
+.battle-result-card h3.win { color:#10B981; }
+.battle-result-card h3.lose { color:#EF4444; }
+.battle-result-card h3.draw { color:#6B7280; }
+.battle-result-card h3.timeout { color:#F59E0B; }
+.battle-result-card .final-scores { display:flex; justify-content:space-around; align-items:center; margin:1rem 0; padding:1rem; background:#F3F4F6; border-radius:8px; }
+.battle-result-card .score-col { text-align:center; }
+.battle-result-card .score-col.me .score-num { color:#1E40AF; }
+.battle-result-card .score-num { font-size:2rem; font-weight:700; }
+.battle-result-card .score-label { font-size:0.85rem; color:#6B7280; margin-top:0.25rem; }
+.battle-result-card .sub-text { color:#6B7280; font-size:0.9rem; margin-bottom:0.5rem; }
+.battle-result-card .btn-primary { background:#1E40AF; color:#fff; padding:0.5rem 1.5rem; border:none; border-radius:6px; cursor:pointer; font-weight:600; font-size:1rem; margin-top:0.5rem; }
+.battle-result-card .btn-primary:hover { background:#1E3A8A; }
+
+.battle-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:9999; align-items:center; justify-content:center; padding:1rem; }
+.battle-overlay.show { display:flex; }
+.battle-lobby { background:#fff; border-radius:12px; padding:2rem; max-width:400px; width:100%; box-shadow:0 8px 32px rgba(0,0,0,0.2); text-align:center; }
+.battle-lobby h2 { margin:0 0 1rem; color:#0f172a; }
+.battle-lobby input { width:100%; padding:0.6rem; border:2px solid #e2e8f0; border-radius:6px; font-size:1rem; margin-bottom:0.75rem; box-sizing:border-box; }
+.battle-lobby .lobby-btns { display:flex; gap:0.5rem; justify-content:center; flex-wrap:wrap; margin-top:0.75rem; }
+.battle-lobby .lobby-btns .btn { min-width:120px; }
+.battle-lobby .status-msg { margin-top:0.5rem; color:#64748b; font-size:0.9rem; min-height:1.2em; }
+.battle-result { font-size:1.2rem; font-weight:700; margin:1rem 0; }
+
+/* Rules popup */
+.rules-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:9998; align-items:center; justify-content:center; padding:1rem; }
+.rules-overlay.show { display:flex; }
+.rules-box { background:#fff; border-radius:16px; padding:2rem; max-width:520px; width:100%; max-height:80vh; overflow-y:auto; box-shadow:0 8px 32px rgba(0,0,0,0.2); text-align:left; }
+.rules-box h2 { text-align:center; margin:0 0 1rem; color:#1e293b; font-size:20px; }
+.rules-box h3 { color:#1E40AF; font-size:15px; margin:1rem 0 0.4rem; }
+.rules-box p, .rules-box li { color:#334155; font-size:14px; line-height:1.6; }
+.rules-box ul { padding-left:1.2rem; margin:0.4rem 0; }
+.rules-box .rules-close { display:block; margin:1.2rem auto 0; padding:8px 32px; border:none; border-radius:20px; background:#1E40AF; color:#fff; font-size:15px; font-weight:600; cursor:pointer; }
+.rules-box .rules-close:hover { background:#1d4ed8; }
+
+@media (max-width: 500px) {
+.game-container { padding: 16px; }
+.popup-grid button { font-size: 20px; padding: 12px 0; }
+}
+
+    .battle-share{margin:.75rem 0;padding:.75rem;background:rgba(0,102,204,.06);border:1px dashed var(--primary,#0066CC);border-radius:var(--radius-sm,8px)}
+    .battle-share-title{font-size:.85rem;font-weight:600;color:var(--primary,#0066CC);margin-bottom:.5rem}
+    .battle-share-url{flex:1;padding:.4rem .6rem;border:1px solid var(--border,#e5e7eb);border-radius:4px;font-size:.8rem;background:#f8f9fa;color:var(--text,#1f2937);cursor:pointer;overflow:hidden;text-overflow:ellipsis}
+    .battle-share-url:focus{outline:2px solid var(--primary,#0066CC);outline-offset:1px}
+</style>
+  <!--   <!-- Tri-Sites Shared CSS -->
+  <link rel="stylesheet" href="/css/shared/tokens.css?v=p5">
+<link rel="stylesheet" href="/css/shared/components.css?v=p19">
+  <link rel="stylesheet" href="/css/shared/toast.css?v=p3">
+<script type="application/ld+json">
+{
+"@context": "https://schema.org",
+"@type": "Game",
+"name": "杀手数独",
+"alternateName": "Killer Sudoku",
+"url": "https://mathduel.games/games/killer-sudoku/",
+"description": "杀手数独：在标准数独基础上增加笼子约束，笼内数字之和等于左上角标识。",
+"genre": "益智",
+"playMode": "SinglePlayer,MultiPlayer",
+"gamePlatform": "Web Browser",
+"applicationCategory": "GameApplication",
+"operatingSystem": "Any",
+"inLanguage": "zh-CN",
+"isAccessibleForFree": true,
+"offers": {"@type": "Offer", "price": "0", "priceCurrency": "CNY"}
+}
+</script>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "首页", "item": "https://mathduel.games/" },
+      { "@type": "ListItem", "position": 2, "name": "杀手数独", "item": "https://mathduel.games/games/killer-sudoku/" }
+    ]
+  }
+  </script>
+
+  <!-- i18n -->
+  <script src="/i18n/i18n.js?v=33" defer></script>
+  <script src="/shared/game-lobby.js?v=1"></script>
+  <script src="/i18n/lang-switcher.js?v=19" defer></script>
+  <!-- hreflang for SEO/i18n -->
+  <link rel="alternate" hreflang="zh-CN" href="https://mathduel.games/zh/games/killer-sudoku/" />
+  <link rel="alternate" hreflang="en-US" href="https://mathduel.games/en/games/killer-sudoku/" />
+  <link rel="alternate" hreflang="ja-JP" href="https://mathduel.games/ja/games/killer-sudoku/" />
+  <link rel="alternate" hreflang="x-default" href="https://mathduel.games/games/killer-sudoku/" />
+  <script defer data-domain="mathduel.games" src="https://plausible.io/js/script.js"></script>
+  <script>window.plausible = window.plausible || function() { (window.plausible.q = window.plausible.q || []).push(arguments) }</script>
+  <link rel="stylesheet" href="/css/shared/brand-ds2.css?v=ds2-23">
+  <link rel="manifest" href="/manifest.zh.webmanifest">
+<style>
+/* 防 FOUC：新版 chrome（shared/game-chrome-10.js）构建完成前，隐藏"旧版专属骨架"，
+   避免浏览器先渲染旧版布局、随后被整体替换成新版所造成的闪烁 + 跳动。
+   用 visibility 而非 display（保留占位，减少布局位移）。
+   解除方式：① game-chrome-10.js 构建完成后移除 html.gc-pending（主路径）
+            ② window.load 兜底 ③ 10s 硬超时兜底（chrome 加载失败时旧 UI 仍可用）。
+   选择器清单来自 2026-09-16 逐页实测（.g24-* /.g24e-* /.pyr-* /.controls + 各统计条）。 */
+html.gc-pending .g24-controls,html.gc-pending .g24-stats,
+html.gc-pending .g24e-controls,html.gc-pending .g24e-stats,
+html.gc-pending .pyr-controls,html.gc-pending .pyr-stats,
+html.gc-pending .controls,html.gc-pending .game-stats,
+html.gc-pending .diff-stats,html.gc-pending .g24-diff{visibility:hidden!important}
+</style>
+</head>
+<body>
+
+<div id="site-header" style="min-height:65px"
+     data-brand-a="Math" data-brand-b="Duel" data-mark="duel-calculator"
+     data-nav='[{"label":"Home","href":"/","i18n":"nav.home"}]'
+     data-cta-label="Home" data-cta-href="/" data-cta-i18n="nav.home"></div>
+
+  <div class="layout">
+<div class="layout-main">
+  <div class="container" role="main">
+    <div class="game-page">
+      <div class="game-header">
+        <h1 style="font-size:1.4rem;font-weight:800;margin:0;line-height:1.2;color:var(--text,#0F172A)">Killer Sudoku</h1>
+        
+        
+      </div>
+      <div class="game-container">
+<canvas id="killerCanvas" width="600" height="600"></canvas>
+<div class="difficulty-bar">
+<button class="diff-btn active" data-diff="easy" data-i18n="sudoku.difficulty.easy">Easy</button>
+<button class="diff-btn" data-diff="medium" data-i18n="sudoku.difficulty.medium">Medium</button>
+<button class="diff-btn" data-diff="hard" data-i18n="sudoku.difficulty.hard">Hard</button>
+</div>
+<div class="controls">
+<button class="btn" id="btn-undo" aria-label="撤销" data-i18n="sudoku.btn_undo" data-i18n-title="sudoku.ui.title_undo">↶ Undo</button>
+<button class="btn" id="btn-pause" aria-label="暂停" data-i18n="sudoku.btn_pause" data-i18n-title="sudoku.ui.title_pause">⏸ Pause</button>
+<button class="btn" id="btn-hint" aria-label="提示" data-i18n="sudoku.btn_hint" data-i18n-title="sudoku.ui.title_hint">💡 Hint</button>
+<button class="btn" id="btn-erase" aria-label="擦除" data-i18n="sudoku.ui.btn_erase" data-i18n-title="sudoku.ui.title_erase">🧽 Erase</button>
+<button class="btn" id="btn-new-game" aria-label="新游戏" data-i18n="sudoku.ui.btn_new_game" data-i18n-title="sudoku.ui.btn_new_game">🔄 New Game</button>
+<button class="btn" id="btn-rules" aria-label="玩法说明" data-i18n="equation_pyramid.btn_help" data-i18n-title="common.rules">📖 Help</button>
+<button class="btn" id="btn-check" aria-label="检查答案" data-i18n="game_killer.btn_check">✅ Check</button>
+      <button class="btn" id="btn-daily" aria-label="每日挑战">🌟 Daily</button>
+<button class="btn" id="btn-reset" aria-label="重置游戏" data-i18n="game_killer.btn_reset">🔄 Reset</button>
+<button class="btn" id="btn-answer" aria-label="显示答案" data-i18n="game_killer.btn_answer">👁 Answer</button>
+<button class="btn" id="btn-clear" aria-label="清空所有数字" data-i18n="game_killer.btn_clear">🗑 Clear</button>
+<button class="btn battle-btn" id="battle-btn" aria-label="进入对战模式" data-i18n="sudoku.btn_battle" data-i18n-title="battle.title">⚔️ Battle</button>
+</div>
+<div class="battle-info-bar" id="battle-info-bar">
+<span data-i18n="sudoku.ui.battle_in_progress">⚔️ In battle</span>
+<span class="room-code" id="battle-room-code" title="Click to copy room code" data-i18n-title="sudoku.ui.title_copy_code"></span>
+<span class="round-indicator" id="battle-round" data-i18n="battle.round" data-i18n-vars='{"round":1,"total":3}'>Round {round}/{total}</span>
+<span class="battle-timer" id="battle-timer">5:00</span>
+<span class="score-display" id="battle-scores">0 : 0</span>
+</div>
+<div id="message" class="message"></div>
+</div>
+    </div>
+  </div>
+
+  <footer class="sites-footer">
+    <div class="wrap">
+      <div class="sf-title" data-i18n="footer.matrix_title">Explore more</div>
+      <div class="sf-matrix">
+        <a href="https://boardduel.com" class="sf-item">
+          <svg class="duel-icon sf-emoji" aria-hidden="true"><use href="/shared/icons.svg#duel-chess"></use></svg>
+          <span data-i18n="footer.boardduel_name">BoardDuel · Chess & Card Games</span>
+        </a>
+        <a href="https://mathduel.games" class="sf-item">
+          <svg class="duel-icon sf-emoji" aria-hidden="true"><use href="/shared/icons.svg#duel-calculator"></use></svg>
+          <span data-i18n="footer.mathduel_name">MathDuel · Math Puzzle Games</span>
+        </a>
+        <a href="https://memoryduel.com" class="sf-item">
+          <svg class="duel-icon sf-emoji" aria-hidden="true"><use href="/shared/icons.svg#duel-brain"></use></svg>
+          <span data-i18n="footer.memoryduel_name">MemoryDuel · Knowledge Battles</span>
+        </a>
+      </div>
+      <div class="sf-links">
+        <a href="/about/" data-i18n="nav.about">About</a>
+        <a href="/contact/" data-i18n="nav.contact">Contact</a>
+        <a href="/privacy/" data-i18n="nav.privacy">Privacy</a>
+        <a href="/terms/" data-i18n="nav.terms">Terms</a>
+      </div>
+      <div class="sf-copy" data-i18n="site.footer">© 2026 Math Duel · Pure static · Privacy-first · Free to play</div>
+    </div>
+  <div class="sf-note" data-i18n="md_games_killer_sudoku_1">© 2026 MathDuel · Static · Privacy-first · Free to play</div>
+    </footer>
+
+  </div>
+  </div>
+
+<div class="popup-overlay" id="popupOverlay">
+<div class="popup-box">
+<div class="popup-title" id="popupCellLabel" data-i18n="game_killer.popup_cell_label">Choose a number</div>
+<div class="popup-sub" id="popupCageInfo" data-i18n="game_killer.popup_cage_default">Cage sum: --</div>
+<div class="note-toggle">
+<label><input type="checkbox" id="noteModeCheckbox" aria-label="笔记模式"> <span data-i18n="game_killer.note_mode_label">✏️ Note mode (mark candidates)</span></label>
+</div>
+<div class="popup-grid" id="popupGrid" role="group" aria-label="数字选择"></div>
+<button class="popup-close" id="popupClose" aria-label="关闭" data-i18n="common.close">Close</button>
+</div>
+</div>
+
+<!-- Battle Lobby Overlay -->
+<div class="battle-overlay" id="battle-overlay">
+<div class="battle-lobby">
+<h2 data-i18n="game_killer.battle_lobby_title">⚔️ Killer Sudoku Battle</h2>
+
+<!-- 创建/加入表单 -->
+<div id="lobby-form">
+<input type="text" id="battle-name" placeholder="Your nickname" maxlength="10" data-i18n-placeholder="battle.enter_name_label">
+<div class="lobby-btns">
+<button class="btn" id="battle-create" style="background:#1E40AF;color:#fff;" data-i18n="battle.create_room">Create room</button>
+<button class="btn" id="battle-join" style="background:#10B981;color:#fff;" data-i18n="battle.join_room">Join room</button>
+<button class="btn" id="battle-close-lobby" style="background:#f3f4f6;border:1px solid #d1d5db;" data-i18n="common.cancel">Cancel</button>
+</div>
+<input type="text" id="battle-code-input" placeholder="Enter room code (to join)" maxlength="6" style="display:none;text-transform:uppercase;text-align:center;font-size:1.2rem;font-weight:700;letter-spacing:3px;margin-top:0.5rem;" data-i18n-placeholder="game_killer.enter_room_code_join">
+</div>
+
+<!-- 等待对手视图（创建/加入成功后展示） -->
+<div id="lobby-waiting" style="display:none;">
+<div style="margin:1rem 0 0.5rem;font-size:0.85rem;color:#6B7280;" data-i18n="battle.room_code">Room code</div>
+<div class="lobby-room-code" id="lobby-room-code-display" title="Click to copy" data-i18n-title="common.click_copy" style="font-size:2.5rem;font-weight:800;letter-spacing:6px;color:#1E40AF;cursor:pointer;user-select:all;padding:0.5rem;background:#EFF6FF;border-radius:8px;">·····</div>
+<div style="margin:0.75rem 0;font-size:0.85rem;color:#6B7280;" data-i18n="battle.waiting_opponent">⏳ Waiting for opponent...</div>
+<div class="battle-share" id="battle-share-section" style="margin-top:0.75rem;">
+  <div class="battle-share-title" data-i18n="battle.share_link_title">Share link with opponent</div>
+  <div style="display:flex;gap:.5rem;align-items:center;">
+    <input type="text" id="battle-share-url" readonly class="battle-share-url">
+    <button id="battle-copy-link" style="background:#1E40AF;color:white;border:none;border-radius:6px;padding:.5rem .75rem;cursor:pointer;font-size:.85rem;font-weight:600;white-space:nowrap;" data-i18n="battle.copy_link">📋 Copy link</button>
+  </div>
+</div>
+<button class="btn" id="battle-cancel-waiting" style="background:#f3f4f6;border:1px solid #d1d5db;margin-top:1rem;" data-i18n="game_killer.cancel_waiting">Cancel waiting</button>
+</div>
+
+<div class="status-msg" id="battle-status"></div>
+</div>
+</div>
+
+<!-- Rules Popup -->
+<div class="rules-overlay" id="rules-overlay">
+<div class="rules-box">
+<h2 data-i18n="game_killer.rules_title">📖 Killer Sudoku Rules</h2>
+<h3 data-i18n="game_killer.rules_goal_title">🎯 Basic Objective</h3>
+<p data-i18n="game_killer.rules_goal_body">Fill the 9×9 grid with digits 1–9 so that no digit repeats in any row, column or 3×3 box.</p>
+<h3 data-i18n="game_killer.rules_std_title">📐 Standard Sudoku Rules</h3>
+<ul>
+<li data-i18n-html="game_killer.rules_row_constraint"><strong>Row constraint:</strong> each row must contain 1–9 exactly once</li>
+<li data-i18n-html="game_killer.rules_col_constraint"><strong>Column constraint:</strong> each column must contain 1–9 exactly once</li>
+<li data-i18n-html="game_killer.rules_box_constraint"><strong>Box constraint:</strong> each 3×3 box must contain 1–9 exactly once</li>
+</ul>
+<h3 data-i18n="game_killer.rules_cage_title">🔲 Cage Rules (Killer Sudoku)</h3>
+<ul>
+<li data-i18n-html="game_killer.rules_cage_1">Cells are grouped into dashed-line "cages"; each cage shows a <strong>target sum</strong> in its top-left corner</li>
+<li data-i18n-html="game_killer.rules_cage_2">The digits in a cage must add up <strong>exactly</strong> to its target sum</li>
+<li data-i18n-html="game_killer.rules_cage_3">Digits within a cage <strong>cannot repeat</strong> (even across rows, columns or boxes)</li>
+<li data-i18n-html="game_killer.rules_cage_4">A cage may span multiple rows, columns or boxes</li>
+</ul>
+<h3 data-i18n="game_killer.rules_tips_title">💡 Solving Tips</h3>
+<ul>
+<li data-i18n-html="game_killer.rules_tip_1"><strong>Start with single-cell cages:</strong> the cell equals its target sum</li>
+<li data-i18n-html="game_killer.rules_tip_2"><strong>Use combination exclusion:</strong> two cells summing to 3 can only be 1+2; summing to 17 can only be 8+9</li>
+<li data-i18n-html="game_killer.rules_tip_3"><strong>Cross-analyze rows, columns and boxes:</strong> combine standard and cage constraints to narrow candidates</li>
+<li data-i18n-html="game_killer.rules_tip_4"><strong>Use the "45 rule":</strong> each row/column/box sums to 45, which helps deduce cage boundaries</li>
+<li data-i18n-html="game_killer.rules_tip_5"><strong>Note mode:</strong> use ✏️ notes to mark each cell's candidates and aid reasoning</li>
+</ul>
+<h3 data-i18n="game_killer.rules_battle_title">⚔️ Battle Mode</h3>
+<p data-i18n="game_killer.rules_battle_body">Invite a friend for real-time battles! Take turns filling digits — correct moves keep your turn, mistakes pass it. First to finish wins.</p>
+<button class="rules-close" id="rules-close-btn" data-i18n="game_killer.rules_close">Got it, let's play!</button>
+</div>
+</div>
+
+<script>
+// === i18n helper: zh.json 中文字符串 → i18n key, fallback 原字符串 ===
+window.__i18nZh2Key = (function() {
+  const map = new Map();
+  function walk(obj, prefix) {
+    for (const k in obj) {
+      const v = obj[k];
+      const path = prefix ? prefix + '.' + k : k;
+      if (typeof v === 'string' && /[\u4e00-\u9fff]/.test(v)) {
+        map.set(v, path);
+      } else if (typeof v === 'object') {
+        walk(v, path);
+      }
+    }
+  }
+  try {
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', '/i18n/zh.json', false);
+    xhr.send();
+    if (xhr.status === 200) {
+      const zh = JSON.parse(xhr.responseText);
+      map.clear();
+      walk(zh, '');
+      window.__i18nZh2KeyReady = true;
+    }
+  } catch (e) {}
+  return map;
+})();
+window.__ = function(zh, vars) {
+  if (!window.i18n) return zh;
+  const key = window.__i18nZh2Key.get(zh);
+  if (key) return window.i18n.t(key, vars || {});
+  return zh;
+};
+// === 直接按 key 翻译的安全辅助(i18n 未就绪时原样返回 key) ===
+window.__t = function(key, vars) {
+  if (!window.i18n || !key) return key;
+  return window.i18n.t(key, vars || {});
+};
+// ============================================================
+// 1. 预设谜题数据（可解的杀手数独，自动生成保证一致性）
+// 笼子定义: 每个笼子 { sum: 和, cells: [[r,c], ...] }
+// 坐标: 0-based (行,列)
+// 验证：每个 cage 内数字不重复 + 和 = cage.sum
+// ============================================================
+let CAGES = []; // populated by newGame()
+
+// 正确答案（与 CAGES 完全兼容）
+let SOLUTION = []; // populated by newGame()
+
+// ============================================================
+// 2. 游戏状态
+// ============================================================
+let grid = Array(9).fill().map(() => Array(9).fill(0));
+let given = Array(9).fill().map(() => Array(9).fill(false)); // 标记预填的格(玩家不可擦除)
+let noteGrid = Array(9).fill().map(() => Array(9).fill().map(() => new Set()));
+let selectedRow = -1, selectedCol = -1;
+const canvas = document.getElementById('killerCanvas');
+const ctx = canvas.getContext('2d');
+const cellSize = canvas.width / 9;
+
+// === New state ===
+let undoStack = [];
+let timer = 0;
+let timerInterval = null;
+let isPaused = false;
+let difficulty = 'easy';
+let battleMode = false;
+let battleRoomCode = '';
+let battleMyName = '';
+let battleMyIndex = -1;
+let battleMyScore = 0;
+let battleOppScore = 0;
+let battleOppName = '';
+let battleMyId = '';
+let battleWs = null;
+let battleRound = 1;
+let battleMaxRounds = 3;
+let battleTimeLeft = 300;
+let battleWaitingForResult = false;
+let battleResultSent = false;
+let battleReconnectTimer = null;
+
+// === Puzzle generator (与服务端 generateKillerSudoku 同一套算法) ===
+// 步骤: 1) generateSudoku 生成完整数独解
+//       2) flood-fill 划分 cages (每个 cage 1-5 格)
+//       3) cages 必须 81 格全覆盖, 单格/多格 sum = 该格数字之和
+//       4) 校验: 重试直到所有约束满足 (数独合法 + 所有 cage sum 正确 + 81 格覆盖)
+function generateSudoku() {
+  const sol = Array(81).fill(0);
+  // 1. 填对角线 3 个 3x3 宫(互不相关)
+  for (let b = 0; b < 9; b += 3) {
+    const nums = [1,2,3,4,5,6,7,8,9].sort(() => Math.random() - 0.5);
+    let k = 0;
+    for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++)
+      sol[(b+i)*9+(b+j)] = nums[k++];
+  }
+  // 2. 回溯填满
+  function isValid(board, row, col, num) {
+    for (let k = 0; k < 9; k++) {
+      if (board[row*9+k] === num || board[k*9+col] === num) return false;
+      const br = Math.floor(row/3)*3 + Math.floor(k/3);
+      const bc = Math.floor(col/3)*3 + (k%3);
+      if (board[br*9+bc] === num) return false;
+    }
+    return true;
+  }
+  function solve(board) {
+    for (let i = 0; i < 81; i++) {
+      if (board[i] === 0) {
+        const row = Math.floor(i/9), col = i%9;
+        const cands = [1,2,3,4,5,6,7,8,9].sort(() => Math.random() - 0.5);
+        for (const n of cands) {
+          if (isValid(board, row, col, n)) {
+            board[i] = n;
+            if (solve(board)) return true;
+            board[i] = 0;
+          }
+        }
+        return false;
+      }
+    }
+    return true;
+  }
+  if (!solve(sol)) return null;
+  return sol;
+}
+
+function buildCombos(k, sum) {
+  const results = [];
+  const nums = [1,2,3,4,5,6,7,8,9];
+  const perm = (arr, pool, depth) => {
+    if (depth === k) {
+      const s = arr.reduce((a, b) => a + b, 0);
+      if (s === sum) results.push([...arr]);
+      return;
+    }
+    for (let i = 0; i < pool.length; i++) {
+      arr.push(pool[i]);
+      perm(arr, pool.filter((_,j)=>j!==i), depth+1);
+      arr.pop();
+    }
+  };
+  perm([], nums.slice(0, k), 0);
+  return results;
+}
+
+function generateKillerPuzzle(diff) {
+  diff = diff || 'medium';
+  // 难度参数
+  const params = {
+    easy:   { givensMin: 32, givensMax: 40, minCageSize: 2, maxCageSize: 5, singleProb: 0 },
+    medium: { givensMin: 22, givensMax: 30, minCageSize: 2, maxCageSize: 4, singleProb: 0.05 },
+    hard:   { givensMin: 18, givensMax: 28, minCageSize: 1, maxCageSize: 4, singleProb: 0.10 },
+  }[diff] || { givensMin: 22, givensMax: 30, minCageSize: 2, maxCageSize: 4, singleProb: 0.05 };
+
+  // 重试直到生成合格 puzzle (最多 30 次)
+  for (let attempt = 0; attempt < 30; attempt++) {
+    const sol = generateSudoku();
+    if (!sol) continue;
+    // 转 2D
+    const sol2d = [];
+    for (let r = 0; r < 9; r++) sol2d.push(sol.slice(r*9, r*9+9));
+    // flood-fill 划分 cages (按难度调整:简单偏大 cage,困难偏小 cage 多单格)
+    const owner = Array(9).fill().map(() => Array(9).fill(-1));
+    const cages = [];
+    let cageId = 0;
+    const cells = [];
+    for (let r = 0; r < 9; r++) for (let c = 0; c < 9; c++) cells.push([r, c]);
+    cells.sort(() => Math.random() - 0.5);
+    const dirs = [[-1,0],[1,0],[0,-1],[0,1]];
+    for (const [sr, sc] of cells) {
+      if (owner[sr][sc] !== -1) continue;
+      // 目标 cage 大小: 难度影响分布
+      // 简单: 大 cage 2-5, 单格 5% 概率
+      // 中等: 2-4, 单格 15% 概率
+      // 困难: 1-3, 单格 30% 概率
+      let targetSize;
+      const r = Math.random();
+      if (r < params.singleProb) {
+        targetSize = 1;
+      } else {
+        targetSize = params.minCageSize + Math.floor(Math.random() * (params.maxCageSize - params.minCageSize + 1));
+      }
+      const cellsList = [[sr, sc]];
+      owner[sr][sc] = cageId;
+      const cands = [];
+      function pushN(r, c) {
+        for (const [dr, dc] of dirs) {
+          const nr = r+dr, nc = c+dc;
+          if (nr<0||nr>=9||nc<0||nc>=9) continue;
+          if (owner[nr][nc] !== -1) continue;
+          cands.push([nr, nc]);
+        }
+      }
+      pushN(sr, sc);
+      while (cellsList.length < targetSize && cands.length > 0) {
+        const idx = Math.floor(Math.random() * cands.length);
+        const [nr, nc] = cands.splice(idx, 1)[0];
+        if (owner[nr][nc] !== -1) continue;
+        owner[nr][nc] = cageId;
+        cellsList.push([nr, nc]);
+        pushN(nr, nc);
+      }
+      const sum = cellsList.reduce((s, [r, c]) => s + sol2d[r][c], 0);
+      // 标准 Killer Sudoku 规则: cage 内不能有重复数字(2 格以上时)
+      if (cellsList.length > 1) {
+        const vals = cellsList.map(([r, c]) => sol2d[r][c]);
+        if (new Set(vals).size !== vals.length) {
+          // 回滚 owner: 让这些 cells 在后续遍历时作为新 cage 的起点被接管
+          for (const [rr, cc] of cellsList) owner[rr][cc] = -1;
+          cageId++;
+          continue;
+        }
+      }
+      cages.push({ sum, cells: cellsList });
+      cageId++;
+    }
+    // Cage 颜色分配（图染色，贪心，同色不相邻）
+    // 饱和色板（参考 sudoku.com/minisudoku 配色，明度适中，相邻差异大）
+    const CAGE_COLORS = [
+      '#FFB3BA','#BAE1FF','#FFFFBA','#BAFFC9','#E2BAFF',  // 粉/蓝/黄/绿/紫
+      '#FFDBA4','#C9BAFF','#BAFFEE','#FFBAC3','#B5DEFF',  // 橙/靛/青/玫/天蓝
+      '#D4FFB3','#FFB3D4','#B3D4FF','#FFD4FF','#FFFFB3',  // 浅绿/桃/蓝紫/洋红/柠檬
+    ];
+    cages.forEach((cage, i) => { cage.color = CAGE_COLORS[i % CAGE_COLORS.length]; });
+    // 校验: 81 格全覆盖
+    let covered = 0;
+    const seen = new Set();
+    let dup = false;
+    for (const cage of cages) {
+      for (const [r, c] of cage.cells) {
+        const k = r*9+c;
+        if (seen.has(k)) { dup = true; break; }
+        seen.add(k);
+        covered++;
+      }
+      if (dup) break;
+    }
+    if (dup || covered !== 81) continue;
+
+    // 挖空:随机选 N 个位置作为"玩家需填",剩余作为"预填提示"
+    const givensCount = params.givensMin + Math.floor(Math.random() * (params.givensMax - params.givensMin + 1));
+    const allPositions = [];
+    for (let r = 0; r < 9; r++) for (let c = 0; c < 9; c++) allPositions.push([r, c]);
+    // Fisher-Yates 洗牌
+    for (let i = allPositions.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [allPositions[i], allPositions[j]] = [allPositions[j], allPositions[i]];
+    }
+    const empties = new Set(allPositions.slice(givensCount).map(([r,c]) => r*9+c));
+    // 构建 puzzle (挖空后的网格,空位置为 0)
+    const puzzle = [];
+    for (let r = 0; r < 9; r++) {
+      const row = [];
+      for (let c = 0; c < 9; c++) {
+        row.push(empties.has(r*9+c) ? 0 : sol2d[r][c]);
+      }
+      puzzle.push(row);
+    }
+    // ── 唯一解验证 ──────────────────────────────────────
+    const verifyUnique = (board2d) => {
+      const N = 9, BN = 3;
+      const b = board2d.map(r => r.slice());
+      const getPeers = (pr, pc) => {
+        const peers = [];
+        for (let ci = 0; ci < N; ci++) { if (ci !== pc) peers.push([pr, ci]); if (ci !== pr) peers.push([ci, pc]); }
+        for (let bi = Math.floor(pr/BN)*BN, ii = 0; ii < BN; ii++)
+          for (let bj = Math.floor(pc/BN)*BN, jj = 0; jj < BN; jj++, bj++)
+            if (bi+ii !== pr || bj !== pc) peers.push([bi+ii, bj]);
+        const cgCell = CAGES.find(cg => cg.cells.some(([cr,cc]) => cr===pr && cc===pc));
+        if (cgCell) cgCell.cells.forEach(([cr,cc]) => { if (cr!==pr||cc!==pc) peers.push([cr,cc]); });
+        return peers;
+      };
+      const solve = (flat) => {
+        const i = flat.indexOf(0);
+        if (i === -1) return 1;
+        const r = Math.floor(i/N), c = i%N;
+        for (let v = 1; v <= N; v++) {
+          if (getPeers(r,c).every(([pr,pc]) => b[pr][pc] !== v)) {
+            b[r][c] = v; flat[i] = v;
+            if (solve(flat)) return 1;
+            b[r][c] = 0; flat[i] = 0;
+          }
+        }
+        return 0;
+      };
+      const flat = b.map(r => r.slice());
+      return solve(flat);
+    };
+    if (verifyUnique(puzzle) !== 1) continue;
+    // ── 唯一解验证 END ───────────────────────────────
+
+    return { cages, solution: sol2d, puzzle, givensCount };
+  }
+  return null;
+}
+
+// 3. 绘图函数
+// ============================================================
+function drawGrid() {
+ctx.clearRect(0, 0, canvas.width, canvas.height);
+// 背景
+ctx.fillStyle = '#ffffff';
+ctx.fillRect(0, 0, canvas.width, canvas.height);
+// Cage 颜色填充（先画底色，再画网格线）
+if (typeof CAGES !== 'undefined' && CAGES.length) {
+  CAGES.forEach(cage => {
+    const color = cage.color || '#fff';
+    ctx.fillStyle = color + 'CC'; // 80% 透明度
+    cage.cells.forEach(([r, c]) => {
+      ctx.fillRect(c * cellSize, r * cellSize, cellSize, cellSize);
+    });
+  });
+}
+// 浅灰网格
+ctx.lineWidth = 0.8;
+ctx.setLineDash([]);
+ctx.strokeStyle = '#d1d5db';
+for (let i = 0; i <= 9; i++) {
+ctx.beginPath();
+ctx.moveTo(i * cellSize, 0);
+ctx.lineTo(i * cellSize, canvas.height);
+ctx.stroke();
+ctx.beginPath();
+ctx.moveTo(0, i * cellSize);
+ctx.lineTo(canvas.width, i * cellSize);
+ctx.stroke();
+}
+// 粗宫格线
+ctx.lineWidth = 2.5;
+ctx.strokeStyle = '#1e293b';
+for (let i = 0; i <= 9; i += 3) {
+ctx.beginPath();
+ctx.moveTo(i * cellSize, 0);
+ctx.lineTo(i * cellSize, canvas.height);
+ctx.stroke();
+ctx.beginPath();
+ctx.moveTo(0, i * cellSize);
+ctx.lineTo(canvas.width, i * cellSize);
+ctx.stroke();
+}
+// 笼子虚线
+ctx.lineWidth = 2.5;
+ctx.setLineDash([6, 6]);
+ctx.strokeStyle = '#334155';
+CAGES.forEach(cage => {
+const cells = cage.cells;
+const segments = [];
+cells.forEach(([r, c]) => {
+if (r === 0 || !cells.some(([rr, cc]) => rr === r-1 && cc === c)) {
+segments.push({x1: c*cellSize, y1: r*cellSize, x2: (c+1)*cellSize, y2: r*cellSize});
+}
+if (r === 8 || !cells.some(([rr, cc]) => rr === r+1 && cc === c)) {
+segments.push({x1: c*cellSize, y1: (r+1)*cellSize, x2: (c+1)*cellSize, y2: (r+1)*cellSize});
+}
+if (c === 0 || !cells.some(([rr, cc]) => rr === r && cc === c-1)) {
+segments.push({x1: c*cellSize, y1: r*cellSize, x2: c*cellSize, y2: (r+1)*cellSize});
+}
+if (c === 8 || !cells.some(([rr, cc]) => rr === r && cc === c+1)) {
+segments.push({x1: (c+1)*cellSize, y1: r*cellSize, x2: (c+1)*cellSize, y2: (r+1)*cellSize});
+}
+});
+segments.forEach(seg => {
+ctx.beginPath();
+ctx.moveTo(seg.x1, seg.y1);
+ctx.lineTo(seg.x2, seg.y2);
+ctx.stroke();
+});
+});
+ctx.setLineDash([]);
+// 笼子提示和 + 部分格进度
+ctx.font = 'bold 16px "Segoe UI", sans-serif';
+ctx.fillStyle = '#1e293b';
+ctx.textAlign = 'left';
+ctx.textBaseline = 'top';
+CAGES.forEach(cage => {
+  const [r, c] = cage.cells[0];
+  const x = c * cellSize + 4;
+  const y = r * cellSize + 2;
+  ctx.fillText(cage.sum, x, y);
+  // 部分和提示：已填 + 已填 sum / 目标 sum
+  const filled = cage.cells.filter(([fr, fc]) => grid[fr][fc] !== 0);
+  const partial = filled.reduce((s, [fr, fc]) => s + grid[fr][fc], 0);
+  if (filled.length > 0 && filled.length < cage.cells.length) {
+    ctx.font = '10px "Segoe UI", sans-serif';
+    ctx.fillStyle = '#94a3b8';
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'bottom';
+    ctx.fillText(partial + '/' + cage.sum, (c+1)*cellSize - 2, (r+1)*cellSize - 2);
+  }
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'top';
+});
+// 绘制数字
+ctx.font = 'bold 28px "Segoe UI", sans-serif';
+ctx.textAlign = 'center';
+ctx.textBaseline = 'middle';
+for (let r = 0; r < 9; r++) {
+for (let c = 0; c < 9; c++) {
+const val = grid[r][c];
+if (val !== 0) {
+const isError = !isValidPlacement(r, c, val);
+if (given[r][c]) {
+// 预填的提示: 深蓝色 + 粗体
+ctx.fillStyle = isError ? '#dc2626' : '#1e40af';
+ctx.font = 'bold 28px "Segoe UI", sans-serif';
+} else {
+// 玩家填入: 黑色普通
+ctx.fillStyle = isError ? '#dc2626' : '#0f172a';
+ctx.font = '500 28px "Segoe UI", sans-serif';
+}
+const x = c * cellSize + cellSize/2;
+const y = r * cellSize + cellSize/2;
+ctx.fillText(val, x, y);
+} else {
+const notes = noteGrid[r][c];
+if (notes.size > 0) {
+ctx.font = '11px "Segoe UI", sans-serif';
+ctx.fillStyle = '#64748b';
+const sorted = Array.from(notes).sort();
+const offsetX = cellSize / 6;
+const offsetY = cellSize / 6;
+sorted.forEach((num, idx) => {
+const col = idx % 3;
+const row = Math.floor(idx / 3);
+const nx = c * cellSize + offsetX + col * (cellSize/3);
+const ny = r * cellSize + offsetY + row * (cellSize/3);
+ctx.fillText(num, nx, ny);
+});
+}
+}
+}
+}
+// 选中高亮
+if (selectedRow >= 0 && selectedCol >= 0) {
+ctx.fillStyle = 'rgba(59, 130, 246, 0.2)';
+ctx.fillRect(selectedCol * cellSize, selectedRow * cellSize, cellSize, cellSize);
+ctx.strokeStyle = '#3b82f6';
+ctx.lineWidth = 3;
+ctx.strokeRect(selectedCol * cellSize, selectedRow * cellSize, cellSize, cellSize);
+}
+}
+
+function isValidPlacement(row, col, num) {
+if (num === 0) return true;
+for (let c = 0; c < 9; c++) if (c !== col && grid[row][c] === num) return false;
+for (let r = 0; r < 9; r++) if (r !== row && grid[r][col] === num) return false;
+const startR = Math.floor(row / 3) * 3;
+const startC = Math.floor(col / 3) * 3;
+for (let r = startR; r < startR + 3; r++) {
+for (let c = startC; c < startC + 3; c++) {
+if ((r !== row || c !== col) && grid[r][c] === num) return false;
+}
+}
+const cage = CAGES.find(c => c.cells.some(([rr, cc]) => rr === row && cc === col));
+if (cage) {
+for (let [rr, cc] of cage.cells) {
+if ((rr !== row || cc !== col) && grid[rr][cc] === num) return false;
+}
+}
+return true;
+}
+
+// ============================================================
+// 4. 交互逻辑
+// ============================================================
+let popupTargetRow = -1, popupTargetCol = -1;
+
+canvas.addEventListener('click', (e) => {
+if (isPaused) return;
+const rect = canvas.getBoundingClientRect();
+const scaleX = canvas.width / rect.width;
+const scaleY = canvas.height / rect.height;
+const mx = (e.clientX - rect.left) * scaleX;
+const my = (e.clientY - rect.top) * scaleY;
+const col = Math.floor(mx / cellSize);
+const row = Math.floor(my / cellSize);
+if (row >= 0 && row < 9 && col >= 0 && col < 9) {
+selectedRow = row;
+selectedCol = col;
+const cageInfo = document.getElementById('popupCageInfo');
+if (cageInfo) {
+  const cage = CAGES.find(cg => cg.cells.some(([r,c]) => r===selectedRow && c===selectedCol));
+  if (cage) {
+    cageInfo.textContent = `Cage ${cage.sum} = ${cage.cells.length} cells`;
+    cageInfo.style.display = '';
+  } else { cageInfo.textContent = ''; }
+}
+drawGrid();
+openPopup(row, col);
+}
+});
+
+function openPopup(row, col) {
+popupTargetRow = row;
+popupTargetCol = col;
+const overlay = document.getElementById('popupOverlay');
+overlay.classList.add('active');
+document.getElementById('popupCellLabel').textContent = __t('game_killer.popup_cell_coord', {row: row+1, col: col+1});
+const cage = CAGES.find(c => c.cells.some(([rr, cc]) => rr === row && cc === col));
+document.getElementById('popupCageInfo').textContent = cage ? __t('game_killer.popup_cage_sum', {sum: cage.sum, n: cage.cells.length}) : __('无笼子');
+const popupGrid = document.getElementById('popupGrid');
+popupGrid.innerHTML = '';
+for (let i = 1; i <= 9; i++) {
+const btn = document.createElement('button');
+btn.textContent = i;
+btn.addEventListener('click', () => {
+if (given[row][col]) { showMessage(__('提示数字不能修改'), 'error'); closePopup(); return; }
+const noteMode = document.getElementById('noteModeCheckbox').checked;
+const prevVal = grid[row][col];
+const prevNotes = new Set(noteGrid[row][col]);
+if (noteMode) {
+const notes = noteGrid[row][col];
+if (notes.has(i)) notes.delete(i);
+else notes.add(i);
+grid[row][col] = 0;
+undoStack.push({r:row, c:col, prevVal, prevNotes, isNote:true, noteNum:i});
+} else {
+grid[row][col] = i;
+noteGrid[row][col].clear();
+// 自动笔记：填入后从同 row/col/box/cage 删除候选
+if (i >= 1 && i <= 9) {
+  for (let k = 0; k < 9; k++) { noteGrid[row][k].delete(i); noteGrid[k][col].delete(i); }
+  const br = Math.floor(row/3)*3, bc = Math.floor(col/3)*3;
+  for (let dr = 0; dr < 3; dr++) for (let dc = 0; dc < 3; dc++) noteGrid[br+dr][bc+dc].delete(i);
+  CAGES.forEach(cg => {
+    if (cg.cells.some(([cr,cc]) => cr===row && cc===col)) {
+      cg.cells.forEach(([cr,cc]) => { if (!(cr===row && cc===col)) noteGrid[cr][cc].delete(i); });
+    }
+  });
+}
+undoStack.push({r:row, c:col, prevVal, prevNotes, isNote:false});
+}
+if (battleMode) {
+// 对战模式：竞速作答（无 isMyTurn 限制）
+if (!battleWaitingForResult) {
+battleWaitingForResult = true;
+wsSend({type:'sudoku_place', row:row, col:col, value:i});
+// 兜底：1.2 秒没收到回包就解锁（防止丢消息卡死）
+setTimeout(() => { battleWaitingForResult = false; }, 1200);
+}
+}
+drawGrid();
+});
+popupGrid.appendChild(btn);
+}
+const clearBtn = document.createElement('button');
+clearBtn.textContent = '✖';
+clearBtn.className = 'clear-btn';
+clearBtn.addEventListener('click', () => {
+const prevVal = grid[row][col];
+const prevNotes = new Set(noteGrid[row][col]);
+grid[row][col] = 0;
+noteGrid[row][col].clear();
+undoStack.push({r:row, c:col, prevVal, prevNotes, isNote:false});
+drawGrid();
+});
+popupGrid.appendChild(clearBtn);
+}
+
+function closePopup() {
+document.getElementById('popupOverlay').classList.remove('active');
+}
+
+// ============================================================
+// 5. 功能按钮（含补全逻辑）
+// ============================================================
+function checkSolution() {
+const errors = [];
+// 检查空格
+for (let r = 0; r < 9; r++) {
+for (let c = 0; c < 9; c++) {
+if (grid[r][c] === 0) {
+errors.push(__t('game_killer.err_empty_cell', {row: r+1, col: c+1}));
+}
+}
+}
+if (errors.length > 0) {
+showMessage(errors[0], 'error');
+return;
+}
+// 检查行
+for (let r = 0; r < 9; r++) {
+const seen = new Set();
+for (let c = 0; c < 9; c++) {
+const v = grid[r][c];
+if (seen.has(v)) {
+showMessage(__t('game_killer.err_row_dup', {row: r+1, v: v}), 'error');
+return;
+}
+seen.add(v);
+}
+}
+// 检查列
+for (let c = 0; c < 9; c++) {
+const seen = new Set();
+for (let r = 0; r < 9; r++) {
+const v = grid[r][c];
+if (seen.has(v)) {
+showMessage(__t('game_killer.err_col_dup', {col: c+1, v: v}), 'error');
+return;
+}
+seen.add(v);
+}
+}
+// 检查宫
+for (let br = 0; br < 3; br++) {
+for (let bc = 0; bc < 3; bc++) {
+const seen = new Set();
+for (let r = br*3; r < br*3+3; r++) {
+for (let c = bc*3; c < bc*3+3; c++) {
+const v = grid[r][c];
+if (seen.has(v)) {
+showMessage(__t('game_killer.err_box_dup', {br: br+1, bc: bc+1, v: v}), 'error');
+return;
+}
+seen.add(v);
+}
+}
+}
+}
+// 检查笼内数字不重复（杀手数独核心规则）
+for (const cage of CAGES) {
+const vals = cage.cells.map(([r, c]) => grid[r][c]).filter(v => v !== 0);
+if (new Set(vals).size !== vals.length) {
+showMessage(__t('game_killer.err_cage_dup'), 'error');
+return;
+}
+}
+// 检查笼子和
+for (const cage of CAGES) {
+const sum = cage.cells.reduce((s, [r, c]) => s + grid[r][c], 0);
+const allFilled = cage.cells.every(([r, c]) => grid[r][c] !== 0);
+if (allFilled && sum !== cage.sum) {
+showMessage(__t('game_killer.err_cage_sum', {sum: cage.sum, actual: sum}), 'error');
+return;
+}
+}
+// 全部通过
+showMessage(__('🎉 答案正确！'), 'success');
+/* P7: 每日挑战完成 → 服务端提交(星标+金币+30; already 防重复) */
+if (window.__kDailyKey) {
+  try {
+    fetch('/api/daily/submit', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ game: 'killer-sudoku', expression: SOLUTION.flat().join(''), duration_ms: Date.now() - window.__kDailyStart }) })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (d) {
+        if (d && d.ok) {
+          window.__kDailyKey = null;
+          showMessage(__('🌟 每日挑战完成！金币已到账'), 'success');
+          if (window.CoinsBar) try { window.CoinsBar.refresh(); } catch (e) {}
+        }
+      })
+      .catch(function () {});
+  } catch (e) {}
+}
+}
+
+function resetGrid() {
+// 重新开始：清空玩家填入（保留 given 提示和 notes 状态以便参考）
+if (confirm(__('确定重置当前进度吗？所有玩家填入的数字将清空，提示数字保留。'))) {
+grid = Array(9).fill().map(() => Array(9).fill(0));
+// 恢复 given 提示
+for (let r = 0; r < 9; r++) for (let c = 0; c < 9; c++) {
+  if (given[r][c]) grid[r][c] = SOLUTION[r][c];
+}
+noteGrid = Array(9).fill().map(() => Array(9).fill().map(() => new Set()));
+selectedRow = -1;
+selectedCol = -1;
+drawGrid();
+showMessage(__('已重置（提示保留）'), 'success');
+}
+}
+
+function showAnswer() {
+if (confirm(__('显示答案会覆盖当前进度，确定吗？'))) {
+grid = SOLUTION.map(row => row.slice());
+noteGrid = Array(9).fill().map(() => Array(9).fill().map(() => new Set()));
+// 全部标记为非 given (因为是覆盖)
+given = Array(9).fill().map(() => Array(9).fill(false));
+drawGrid();
+showMessage(__('已显示正确答案'), 'success');
+}
+}
+
+function clearAll() {
+if (confirm(__('清空所有数字和笔记？'))) {
+grid = Array(9).fill().map(() => Array(9).fill(0));
+// 恢复 given 提示
+for (let r = 0; r < 9; r++) for (let c = 0; c < 9; c++) {
+  if (given[r][c]) grid[r][c] = SOLUTION[r][c];
+}
+noteGrid = Array(9).fill().map(() => Array(9).fill().map(() => new Set()));
+selectedRow = -1;
+selectedCol = -1;
+drawGrid();
+showMessage(__('已清空（提示保留）'), 'success');
+}
+}
+
+function showMessage(msg, type) {
+const el = document.getElementById('message');
+el.textContent = msg;
+el.className = 'message ' + (type || '');
+clearTimeout(el._timer);
+el._timer = setTimeout(() => {
+el.textContent = '';
+el.className = 'message';
+}, 4000);
+}
+
+const KILLER_SAVE_KEY = 'killer_progress';
+function saveKillerState() {
+try {
+const data = {
+grid: grid.map(r => r.slice()),
+noteGrid: noteGrid.map(r => r.map(c => Array.from(c))),
+timer: timer,
+difficulty: difficulty,
+};
+localStorage.setItem(KILLER_SAVE_KEY, JSON.stringify(data));
+} catch(e) {}
+}
+function loadKillerState() {
+try {
+const raw = localStorage.getItem(KILLER_SAVE_KEY);
+if (!raw) return false;
+const data = JSON.parse(raw);
+if (!data.grid || !data.noteGrid) return false;
+grid = data.grid;
+noteGrid = data.noteGrid.map(r => r.map(c => new Set(c)));
+given = Array(9).fill().map(() => Array(9).fill(false));
+for (let r = 0; r < 9; r++) for (let c = 0; c < 9; c++) {
+if (grid[r][c] !== 0) given[r][c] = true;
+}
+timer = data.timer || 0;
+difficulty = data.difficulty || 'easy';
+undoStack = [];
+selectedRow = -1;
+selectedCol = -1;
+drawGrid();
+document.querySelectorAll('.diff-btn').forEach(b => {
+b.classList.toggle('active', b.dataset.diff === difficulty);
+});
+return true;
+} catch(e) { return false; }
+}
+
+// 按钮事件绑定
+document.getElementById('btn-check').onclick = checkSolution;
+document.getElementById('btn-reset').onclick = resetGrid;
+document.getElementById('btn-answer').onclick = showAnswer;
+document.getElementById('btn-clear').onclick = clearAll;
+document.getElementById('popupClose').onclick = closePopup;
+document.getElementById('popupOverlay').addEventListener('click', (e) => {
+if (e.target === e.currentTarget) closePopup();
+});
+
+// ============================================================
+// 6. 新增功能按钮
+// ============================================================
+
+// 撤销
+function undoMove() {
+if (undoStack.length === 0) { showMessage(__('没有可撤销的操作'), 'error'); return; }
+const last = undoStack.pop();
+grid[last.r][last.c] = last.prevVal;
+noteGrid[last.r][last.c] = last.prevNotes;
+drawGrid();
+saveKillerState();
+showMessage(__('已撤销'), 'success');
+}
+document.getElementById('btn-undo').onclick = undoMove;
+
+// 暂停
+function togglePause() {
+isPaused = !isPaused;
+const btn = document.getElementById('btn-pause');
+if (isPaused) {
+btn.textContent = __('▶ 继续');
+document.body.classList.add('game-paused');
+closePopup();
+} else {
+btn.textContent = __('⏸ 暂停');
+document.body.classList.remove('game-paused');
+}
+}
+document.getElementById('btn-pause').onclick = togglePause;
+
+// 提示
+function showHint() {
+const emptyCells = [];
+for (let r = 0; r < 9; r++) for (let c = 0; c < 9; c++)
+  if (grid[r][c] === 0) emptyCells.push([r, c]);
+if (emptyCells.length === 0) { showMessage(__('没有空格需要提示'), 'error'); return; }
+
+// 策略 1: cage 唯一组合 → 直接填入
+for (const cage of CAGES) {
+  const emptyInCage = cage.cells.filter(([r,c]) => grid[r][c] === 0);
+  if (emptyInCage.length === 0) continue;
+  const filled = cage.cells.filter(([r,c]) => grid[r][c] !== 0);
+  const partial = filled.reduce((s,[r,c]) => s+grid[r][c], 0);
+  const remaining = cage.sum - partial;
+  const k = emptyInCage.length;
+  const minSum = k*(k+1)/2, maxSum = k*9 - k*(k-1)/2;
+  if (remaining < minSum || remaining > maxSum) continue;
+  const combos = buildCombos(k, remaining);
+  if (combos.length === 1) {
+    const combo = combos[0];
+    if (combo.length === 1) {
+      const digit = combo[0];
+      const filledSet = new Set(filled.map(([r,c]) => grid[r][c]));
+      if (filledSet.has(digit)) continue;
+      // 找 cage 中唯一能填这个数的格子（row/col/box/cage 排他）
+      for (const [r, c] of emptyInCage) {
+        if (isValidPlacement(r, c, digit)) {
+          grid[r][c] = digit;
+          noteGrid[r][c].clear();
+          undoStack.push({r, c, prevVal:0, prevNotes:new Set(noteGrid[r][c]), isNote:false});
+          selectedRow = r; selectedCol = c;
+          drawGrid();
+          showMessage(__t('game_killer.hint_cell', {row:r+1, col:c+1, v:digit}), 'success');
+          return;
+        }
+      }
+    }
+  }
+}
+
+// 策略 2: 45 Rule — innie（宫/行/列内唯一未覆盖格）
+for (let br = 0; br < 3; br++) for (let bc = 0; bc < 3; bc++) {
+  const boxCells = [];
+  for (let r = br*3; r < br*3+3; r++) for (let c = bc*3; c < bc*3+3; c++) boxCells.push([r,c]);
+  const boxFilled = boxCells.filter(([r,c]) => grid[r][c] !== 0);
+  const boxSum = boxFilled.reduce((s,[r,c]) => s+grid[r][c], 0);
+  const boxEmpty = boxCells.filter(([r,c]) => grid[r][c] === 0);
+  if (boxEmpty.length === 1) {
+    const [r, c] = boxEmpty[0];
+    const cage = CAGES.find(cg => cg.cells.some(([cr,cc]) => cr===r && cc===c));
+    if (cage) {
+      const cageFilled = cage.cells.filter(([cr,cc]) => grid[cr][cc] !== 0);
+      const cageSum = cageFilled.reduce((s,[cr,cc])=>s+grid[cr][cc],0);
+      const target = 45 - boxSum;
+      if (target >= 1 && target <= 9 && cage.sum - cageSum === target) {
+        grid[r][c] = target; noteGrid[r][c].clear();
+        undoStack.push({r,c,prevVal:0,prevNotes:new Set(noteGrid[r][c]),isNote:false});
+        selectedRow=r; selectedCol=c; drawGrid();
+        showMessage(__t('game_killer.hint_cell',{row:r+1,col:c+1,v:target}),'success');
+        return;
+      }
+    }
+  }
+}
+
+// 策略 3: 随机填一个空格（兜底）
+const [r, c] = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+grid[r][c] = SOLUTION[r][c]; noteGrid[r][c].clear();
+undoStack.push({r, c, prevVal:0, prevNotes:new Set(noteGrid[r][c]), isNote:false});
+selectedRow = r; selectedCol = c; drawGrid();
+showMessage(__t('game_killer.hint_cell', {row:r+1, col:c+1, v:SOLUTION[r][c]}), 'success');
+}
+document.getElementById('btn-hint').onclick = showHint;
+
+// 擦除
+function eraseCell() {
+if (selectedRow < 0 || selectedCol < 0) { showMessage(__('请先选中一个格子'), 'error'); return; }
+const r = selectedRow, c = selectedCol;
+if (given[r][c]) { showMessage(__('提示数字不能擦除'), 'error'); return; }
+const prevVal = grid[r][c];
+const prevNotes = new Set(noteGrid[r][c]);
+grid[r][c] = 0;
+noteGrid[r][c].clear();
+undoStack.push({r, c, prevVal, prevNotes, isNote:false});
+drawGrid();
+saveKillerState();
+}
+document.getElementById('btn-erase').onclick = eraseCell;
+
+// 新游戏
+// 最近一次开局的信息（供 i18n 就绪后重刷横幅文案，避免 __t 在 i18n 未就绪时泄漏原始 key）
+let _lastNewGameInfo = null;
+// 按当前 i18n 状态渲染新游戏横幅；i18n 未就绪时 __t 会原样返回 key，
+// 故 i18n:ready / i18n:change 时需用同一份参数重刷一次。
+function renderNewGameMsg() {
+  if (!_lastNewGameInfo) return;
+  const {diffName, cages, given, fill} = _lastNewGameInfo;
+  showMessage(__t('game_killer.new_game_msg', {diff: diffName, cages: cages, given: given, fill: fill}), 'success');
+}
+function newGame(diff) {
+if (diff) difficulty = diff;
+const puz = generateKillerPuzzle(difficulty);
+if (!puz) {
+  showMessage(__('生成谜题失败，请重试'), 'error');
+  return;
+}
+CAGES = puz.cages.map(c => ({sum:c.sum, cells:c.cells.map(cc => cc.slice())}));
+SOLUTION = puz.solution.map(r => r.slice());
+// 用 puzzle 初始化 grid + given(预填的格不可擦除)
+grid = puz.puzzle.map(r => r.slice());
+given = Array(9).fill().map(() => Array(9).fill(false));
+for (let r = 0; r < 9; r++) for (let c = 0; c < 9; c++) {
+  if (grid[r][c] !== 0) given[r][c] = true;
+}
+noteGrid = Array(9).fill().map(() => Array(9).fill().map(() => new Set()));
+undoStack = [];
+selectedRow = -1;
+selectedCol = -1;
+drawGrid();
+document.querySelectorAll('.diff-btn').forEach(b => {
+b.classList.toggle('active', b.dataset.diff === difficulty);
+});
+saveKillerState();
+const diffName = difficulty === 'easy' ? __('简单') : difficulty === 'medium' ? __('中等') : __('困难');
+_lastNewGameInfo = {diffName: diffName, cages: CAGES.length, given: puz.givensCount, fill: 81-puz.givensCount};
+renderNewGameMsg();
+}
+document.getElementById('btn-new-game').onclick = () => newGame();
+
+/* ── P7 模板复制 #4: 每日挑战（全球同题 → 完成提交星标+金币）── */
+window.__kDailyKey = null;
+window.__kDailyStart = 0;
+function loadKillerDaily() {
+  if (!window.DailyChallenge) { showMessage(__('每日挑战组件未就绪'), 'error'); return; }
+  window.DailyChallenge.fetch('killer-sudoku').then(function (p) {
+    if (!p || !p.cages || !p.solution) { showMessage(__('今日挑战尚未生成，请稍后再试'), 'error'); return; }
+    CAGES = p.cages.map(c => ({ sum: c.sum, cells: c.cells.map(cc => cc.slice()) }));
+    SOLUTION = p.solution.map(r => r.slice());
+    grid = p.puzzle.map(r => r.slice());
+    given = Array(9).fill().map(() => Array(9).fill(false));
+    for (let r = 0; r < 9; r++) for (let c = 0; c < 9; c++) if (grid[r][c] !== 0) given[r][c] = true;
+    noteGrid = Array(9).fill().map(() => Array(9).fill().map(() => new Set()));
+    undoStack = []; selectedRow = -1; selectedCol = -1;
+    window.__kDailyKey = window.DailyChallenge.getKey();
+    window.__kDailyStart = Date.now();
+    document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active'));
+    drawGrid();
+    showMessage(__('🌟 每日挑战已载入！完成后点「✅ Check」领取星标和金币'), 'success');
+  }).catch(function () { showMessage(__('每日挑战加载失败'), 'error'); });
+}
+document.getElementById('btn-daily').onclick = loadKillerDaily;
+
+/* ── 模式选择落地页（与 24点 一致）：进页先选模式 ── */
+if (window.GameLobby) {
+  GameLobby.show({
+    cover: '/games/killer-sudoku/cover.svg',
+    title: 'Killer Sudoku',
+    sub: 'Sudoku + cage sums — play the worldwide daily or free play',
+    modes: [
+      { icon: '🌍', label: 'Daily Challenge', sub: 'Same puzzle for everyone · once a day', onClick: function () { loadKillerDaily(); } },
+      { icon: '🧩', label: 'Free Play', sub: 'Easy · Medium · Hard', onClick: function () { newGame(); } }
+    ]
+  });
+}
+
+// 难度选择
+document.querySelectorAll('.diff-btn').forEach(btn => {
+btn.addEventListener('click', () => {
+newGame(btn.dataset.diff);
+});
+});
+
+// 玩法说明
+document.getElementById('btn-rules').onclick = () => {
+document.getElementById('rules-overlay').classList.add('show');
+};
+document.getElementById('rules-close-btn').onclick = () => {
+document.getElementById('rules-overlay').classList.remove('show');
+};
+document.getElementById('rules-overlay').addEventListener('click', (e) => {
+if (e.target === e.currentTarget) e.target.classList.remove('show');
+});
+
+// ============================================================
+// 7. 对战模式 (WebSocket)
+// ============================================================
+// 新协议: POST /api/rooms 建房拿码 → 连 /ws?code=X&name=Y
+const WS_URL = 'wss://mathduel.games/ws';
+const wsReconnect = {
+  attempts: 0,
+  maxAttempts: 8,
+  baseDelay: 2000,
+  maxDelay: 30000,
+  pending: [],
+  forceClosed: false
+};
+let battleHeartbeat = null;
+
+function $(id) { return document.getElementById(id); }
+
+function nextReconnectDelay() {
+  const exp = Math.min(wsReconnect.maxDelay, wsReconnect.baseDelay * Math.pow(2, wsReconnect.attempts));
+  const jitter = exp * 0.3 * (Math.random() * 2 - 1);
+  return Math.max(500, exp + jitter);
+}
+function scheduleReconnect() {
+  if (wsReconnect.forceClosed) return;
+  if (wsReconnect.attempts >= wsReconnect.maxAttempts) {
+    exitBattleMode();
+    showMessage(__('连接断开，对战已结束'), 'error');
+    return;
+  }
+  wsReconnect.attempts++;
+  const delay = nextReconnectDelay();
+  setTimeout(function() { if (!wsReconnect.forceClosed && battleMode) connectWS(null); }, delay);
+}
+function flushPending() {
+  while (wsReconnect.pending.length && battleWs && battleWs.readyState === WebSocket.OPEN) {
+    battleWs.send(wsReconnect.pending.shift());
+  }
+}
+function startHeartbeat() {
+  if (battleHeartbeat) { clearInterval(battleHeartbeat); battleHeartbeat = null; }
+  battleHeartbeat = setInterval(function() {
+    if (battleWs && battleWs.readyState === 1) {
+      try { battleWs.send(JSON.stringify({type:'ping'})); } catch (e) {}
+    }
+  }, 30000);
+}
+function stopHeartbeat() {
+  if (battleHeartbeat) { clearInterval(battleHeartbeat); battleHeartbeat = null; }
+}
+function connectWS(code) {
+  if (code) battleRoomCode = code;
+  if (battleWs && battleWs.readyState === WebSocket.OPEN) return;
+  const wsUrl = WS_URL + '?code=' + encodeURIComponent(battleRoomCode || '') + '&name=' + encodeURIComponent(battleMyName || '');
+  try {
+    battleWs = new WebSocket(wsUrl);
+  } catch (e) {
+    $('battle-status').textContent = __('无法连接服务器');
+    return;
+  }
+  battleWs.onopen = function() {
+    wsReconnect.attempts = 0;
+    startHeartbeat();
+    flushPending();
+  };
+  battleWs.onmessage = function(evt) {
+    let data;
+    try { data = JSON.parse(evt.data); } catch (e) { return; }
+    if (data && data.type === 'pong') return;
+    handleBattleMsg(data);
+  };
+  battleWs.onclose = function(e) {
+    stopHeartbeat();
+    if (wsReconnect.forceClosed) return;
+    if (e && e.code === 1000) return;
+    if (battleMode) scheduleReconnect();
+  };
+  battleWs.onerror = function() {
+    $('battle-status').textContent = __('连接失败，请稍后重试');
+  };
+}
+function sendMsg(obj) {
+  const payload = JSON.stringify(obj);
+  if (battleWs && battleWs.readyState === WebSocket.OPEN) {
+    battleWs.send(payload);
+    return;
+  }
+  // 断线/CONNECTING 入队，重连成功后 flushPending 自动发送
+  wsReconnect.pending.push(payload);
+  if (wsReconnect.pending.length > 50) wsReconnect.pending.shift();
+}
+
+function handleBattleMsg(msg) {
+switch(msg.type) {
+case 'room_created':
+battleRoomCode = msg.code;
+battleMyId = msg.playerId || '';
+battleMyIndex = 0;
+enterBattleMode(msg.code);
+$('battle-room-code').textContent = msg.code;
+// 切换到「等待对手」视图：展示大字号房间号 + 分享链接
+showLobbyWaiting(msg.code);
+showShareUrl();
+$('battle-status').textContent = __('房间已创建！请把房间号或链接发给对手');
+break;
+case 'room_joined':
+battleRoomCode = msg.code;
+battleMyId = msg.playerId || '';
+battleMyIndex = msg.playerIndex != null ? msg.playerIndex : 1;
+enterBattleMode(msg.code);
+$('battle-room-code').textContent = msg.code;
+// 加入者也看到等待视图（确认已加入 + 等创建者开始）
+showLobbyWaiting(msg.code);
+$('battle-status').textContent = __('✅ 已加入房间，等待游戏开始…');
+break;
+case 'room_full':
+$('battle-status').textContent = __('❌ 房间已满');
+resetLobbyFormState();
+break;
+case 'room_not_found':
+$('battle-status').textContent = __('❌ 房间不存在');
+resetLobbyFormState();
+break;
+case 'player_joined':
+$('battle-status').textContent = __('✅ 对手已加入！游戏即将开始…');
+break;
+case 'opponent_leave':
+case 'player_left': {   // P0-2 + ADR-P0-02：对手离开=暂停，显示等待重连遮罩，不退出对战
+  if (battleMode) {
+    var rm = document.getElementById('p0-rejoin-mask');
+    if (!rm) {
+      rm = document.createElement('div');
+      rm.id = 'p0-rejoin-mask';
+      rm.style.cssText = 'position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.62);color:#fff;font-size:1.05rem;text-align:center;padding:1rem;';
+      document.body.appendChild(rm);
+    }
+    rm.textContent = ((data && data.name) ? data.name : (data && data.player) ? data.player : 'Opponent') + ' 离开，等待重连…';
+    rm.style.display = 'flex';
+  }
+  break;
+}
+case 'opponent_rejoined':
+case 'round_resume': {   // P0-2：对手重连 → 隐藏遮罩并续玩当前题
+  var rm2 = document.getElementById('p0-rejoin-mask');
+  if (rm2) rm2.style.display = 'none';
+  if (data && data.puzzle) onKillerNewGame(data);
+  break;
+}
+case 'round_cancelled':
+$('battle-status').textContent = __('⚠️ 对手离开，本局已取消');
+break;
+case 'sudoku_new_game':
+onKillerNewGame(msg);
+break;
+case 'sudoku_placed':
+onKillerPlaced(msg);
+break;
+case 'timer':
+updateBattleTimerDisplay(msg.timeLeft);
+break;
+case 'sudoku_timeout':
+onKillerGameOver(msg, 'timeout');
+break;
+case 'sudoku_game_over':
+onKillerGameOver(msg, 'complete');
+break;
+case 'game_over':
+onKillerGameOver(msg, 'complete');
+break;
+case 'error':
+$('battle-status').textContent = '❌ ' + (msg.msg || __('未知错误'));
+// 出错时重置 lobby 回表单
+resetLobbyFormState();
+break;
+}
+}
+
+function onKillerNewGame(msg) {
+if (!battleMode) return;
+if (!msg || !Array.isArray(msg.puzzle)) {
+console.error('[KillerBattle] sudoku_new_game missing puzzle');
+return;
+}
+
+// 加载谜题
+grid = msg.puzzle.map(r => r.slice());
+// 同步 given：服务端预填的格为提示格，锁定不可改（与单机 newGame 一致）
+given = Array(9).fill().map(() => Array(9).fill(false));
+for (let r = 0; r < 9; r++) for (let c = 0; c < 9; c++) {
+  if (grid[r][c] !== 0) given[r][c] = true;
+}
+// 记录服务端 solution（用于结果显示正确答案）
+SOLUTION = Array.isArray(msg.solution) ? msg.solution.map(r => r.slice()) : SOLUTION;
+// 加载 cages（杀手数独用）
+if (Array.isArray(msg.cages)) {
+CAGES = msg.cages.map(c => ({ sum: c.sum, cells: c.cells.map(cc => cc.slice()) }));
+}
+
+// 重置状态
+undoStack = [];
+noteGrid = Array(9).fill().map(() => Array(9).fill().map(() => new Set()));
+selectedRow = -1;
+selectedCol = -1;
+battleRound = msg.round || 1;
+battleMaxRounds = msg.maxRounds || 3;
+battleTimeLeft = msg.timeLimit || 300;
+battleWaitingForResult = false;
+battleResultSent = false;
+battleMyScore = 0;
+battleOppScore = 0;
+battleOppName = '';
+
+// 推断自己索引 & 对手名
+if (Array.isArray(msg.players)) {
+for (let i = 0; i < msg.players.length; i++) {
+const p = msg.players[i];
+if (!p) continue;
+if (p.name === battleMyName) {
+battleMyIndex = i;
+} else {
+battleOppName = p.name || __('对手');
+battleOppScore = p.score || 0;
+}
+if (typeof p.score === 'number' && p.name === battleMyName) {
+battleMyScore = p.score;
+}
+}
+}
+if (battleMyIndex < 0) battleMyIndex = 0;
+
+// 关闭 lobby + 显示对战信息条
+closeLobby();
+$('battle-info-bar').classList.add('show');
+$('battle-room-code').textContent = battleRoomCode;
+$('battle-round').textContent = __t('battle.round', {round: battleRound, total: battleMaxRounds});
+updateBattleTimerDisplay(battleTimeLeft);
+updateBattleScores();
+
+// 关闭结果弹窗（如有）
+removeBattleResultOverlay();
+
+drawGrid();
+}
+
+function onKillerPlaced(msg) {
+if (!msg) return;
+battleWaitingForResult = false;
+
+// 兼容两种协议：row/col 或 index
+let r, c;
+if (typeof msg.row === 'number' && typeof msg.col === 'number') {
+r = msg.row;
+c = msg.col;
+} else if (typeof msg.index === 'number') {
+r = Math.floor(msg.index / 9);
+c = msg.index % 9;
+} else {
+return;
+}
+
+if (msg.correct) {
+grid[r][c] = msg.value;
+noteGrid[r][c].clear();
+// 闪烁效果
+flashKillerCell(r, c, 'correct');
+} else {
+// 错误：显示一下再清空（服务端不会真的写进去，但视觉上要反馈）
+const prev = grid[r][c];
+grid[r][c] = msg.value;
+flashKillerCell(r, c, 'wrong');
+setTimeout(() => {
+grid[r][c] = prev;
+drawGrid();
+}, 800);
+}
+
+// 更新分数
+if (Array.isArray(msg.scores)) {
+for (let i = 0; i < msg.scores.length; i++) {
+const s = msg.scores[i];
+if (!s) continue;
+if (s.name === battleMyName) battleMyScore = s.score || 0;
+else if (s.name === battleOppName) battleOppScore = s.score || 0;
+}
+}
+updateBattleScores();
+drawGrid();
+}
+
+function flashKillerCell(r, c, kind) {
+// 用一个临时 overlay 元素覆盖在格子位置显示闪烁
+const canvas = document.getElementById('killerCanvas');
+if (!canvas) return;
+const rect = canvas.getBoundingClientRect();
+const cellW = rect.width / 9;
+const cellH = rect.height / 9;
+const flash = document.createElement('div');
+flash.style.cssText = 'position:fixed;left:' + (rect.left + c*cellW) + 'px;top:' + (rect.top + r*cellH) + 'px;width:' + cellW + 'px;height:' + cellH + 'px;pointer-events:none;border-radius:2px;z-index:1000;';
+flash.className = kind === 'correct' ? 'battle-cell-flash' : 'battle-cell-wrong';
+document.body.appendChild(flash);
+setTimeout(() => flash.remove(), kind === 'correct' ? 600 : 800);
+}
+
+function onKillerGameOver(msg, reason) {
+if (!msg) return;
+if (battleResultSent) return;
+battleResultSent = true;
+
+// 同步分数（最终）
+if (Array.isArray(msg.players)) {
+for (let i = 0; i < msg.players.length; i++) {
+const p = msg.players[i];
+if (!p) continue;
+if (p.name === battleMyName) battleMyScore = p.score || 0;
+else if (p.name === battleOppName || (!battleOppName && i !== battleMyIndex)) {
+battleOppScore = p.score || 0;
+if (!battleOppName) battleOppName = p.name || __('对手');
+}
+}
+}
+updateBattleScores();
+
+// 服务端补全未填格子
+if (Array.isArray(msg.solution)) {
+for (let i = 0; i < 81; i++) {
+const r = Math.floor(i / 9), c = i % 9;
+if (grid[r][c] === 0) grid[r][c] = msg.solution[r][c];
+}
+SOLUTION = msg.solution.map(row => row.slice());
+drawGrid();
+}
+
+const winner = msg.winner;
+const isLastRound = battleRound >= battleMaxRounds;
+const isDraw = winner === 'draw' || winner === -1 || winner === null;
+const winnerName = msg.winnerName || null;
+const isMyWin = !isDraw && (winner === battleMyIndex || (winnerName && winnerName === battleMyName));
+
+let title, titleCls;
+if (reason === 'timeout') {
+title = __('⏰ 时间到！');
+titleCls = 'timeout';
+} else if (isLastRound) {
+if (isDraw) { title = __('🤝 总分平局！'); titleCls = 'draw'; }
+else if (isMyWin) { title = __('🏆 你赢了！'); titleCls = 'win'; }
+else { title = __('😔 你输了'); titleCls = 'lose'; }
+} else {
+if (isDraw) { title = __('🤝 本局平局'); titleCls = 'draw'; }
+else if (isMyWin) { title = __('🎉 本局你赢了！'); titleCls = 'win'; }
+else { title = __('😔 本局对手赢'); titleCls = 'lose'; }
+}
+
+if (isMyWin && window.fireConfetti) {
+try { window.fireConfetti(); } catch(e) {}
+}
+
+showBattleResult({ title, titleCls, isLastRound });
+}
+
+function updateBattleTimerDisplay(timeLeft) {
+battleTimeLeft = timeLeft;
+const el = $('battle-timer');
+if (!el) return;
+const m = Math.floor(Math.max(0, timeLeft) / 60);
+const s = Math.max(0, timeLeft) % 60;
+el.textContent = m + ':' + (s < 10 ? '0' + s : s);
+el.classList.remove('warn', 'danger');
+if (timeLeft <= 30) el.classList.add('danger');
+else if (timeLeft <= 60) el.classList.add('warn');
+}
+
+function updateBattleScores() {
+const el = $('battle-scores');
+if (el) el.textContent = battleMyScore + ' : ' + battleOppScore;
+}
+
+function showBattleResult({ title, titleCls, isLastRound }) {
+const myNameSafe = escapeHtml(battleMyName || __('你'));
+const oppNameSafe = escapeHtml(battleOppName || __('对手'));
+const subText = isLastRound
+? '<p class="sub-text">' + __t('battle.all_rounds_done', {count: battleMaxRounds}) + '</p>'
+: '<p class="sub-text">' + __('下一局即将开始…') + '</p>';
+const buttonHtml = isLastRound
+? '<button class="btn-primary" id="battle-result-exit">' + __('返回主页') + '</button>'
+: '<p class="sub-text" style="margin-top:0.5rem;">' + __('3 秒后自动开始下一局') + '</p>';
+
+const html =
+'<div class="battle-result-card">' +
+'<h3 class="' + titleCls + '">' + title + '</h3>' +
+'<div class="final-scores">' +
+'<div class="score-col me"><div class="score-num">' + battleMyScore + '</div><div class="score-label">' + myNameSafe + '</div></div>' +
+'<div class="score-col" style="font-size:1.5rem;align-self:center;color:#9CA3AF;">—</div>' +
+'<div class="score-col"><div class="score-num">' + battleOppScore + '</div><div class="score-label">' + oppNameSafe + '</div></div>' +
+'</div>' +
+subText +
+buttonHtml +
+'</div>';
+
+showBattleResultOverlay(html);
+
+if (isLastRound) {
+const exitBtn = document.getElementById('battle-result-exit');
+if (exitBtn) exitBtn.onclick = () => {
+removeBattleResultOverlay();
+exitBattleMode();
+newGame();
+};
+}
+}
+
+function showBattleResultOverlay(html) {
+removeBattleResultOverlay();
+const overlay = document.createElement('div');
+overlay.id = 'killer-battle-result-overlay';
+overlay.className = 'battle-result-overlay show';
+overlay.innerHTML = html;
+document.body.appendChild(overlay);
+}
+
+function removeBattleResultOverlay() {
+const existing = document.getElementById('killer-battle-result-overlay');
+if (existing) existing.remove();
+}
+
+function escapeHtml(s) {
+var div = document.createElement('div');
+div.textContent = s == null ? '' : String(s);
+return div.innerHTML;
+}
+
+function openLobby() {
+$('battle-overlay').classList.add('show');
+$('battle-status').textContent = '';
+$('battle-code-input').style.display = 'none';
+// 重置表单视图
+showLobbyForm();
+if (!battleMyName) {
+const saved = localStorage.getItem('killer_battle_name');
+if (saved) $('battle-name').value = saved;
+}
+// 如果 URL 带 ?room=XXXXX，预填房间码
+try {
+const params = new URLSearchParams(window.location.search);
+const roomParam = params.get('room');
+if (roomParam && $('battle-code-input')) {
+$('battle-code-input').value = roomParam.toUpperCase();
+$('battle-code-input').style.display = 'block';
+$('battle-status').textContent = __('已预填房间码，按下方「加入房间」直接进入');
+}
+} catch(e) {}
+}
+
+function closeLobby() {
+$('battle-overlay').classList.remove('show');
+// 关闭 lobby 时重置回表单视图，下次再开时是干净的
+showLobbyForm();
+resetLobbyFormState();
+}
+
+function showLobbyForm() {
+const form = document.getElementById('lobby-form');
+const waiting = document.getElementById('lobby-waiting');
+if (form) form.style.display = '';
+if (waiting) waiting.style.display = 'none';
+}
+
+function showLobbyWaiting(roomCode) {
+const form = document.getElementById('lobby-form');
+const waiting = document.getElementById('lobby-waiting');
+const display = document.getElementById('lobby-room-code-display');
+if (form) form.style.display = 'none';
+if (waiting) waiting.style.display = 'block';
+if (display && roomCode) display.textContent = roomCode;
+}
+
+function resetLobbyFormState() {
+// 解锁输入控件
+$('battle-name').disabled = false;
+$('battle-create').disabled = false;
+$('battle-join').disabled = false;
+$('battle-status').textContent = '';
+// 重置 lobby 为初始表单状态
+showLobbyForm();
+}
+
+function enterBattleMode(code) {
+// 只更新内部状态 — lobby 的开关由具体游戏事件驱动
+battleMode = true;
+battleRoomCode = code || battleRoomCode;
+document.querySelectorAll('.diff-btn').forEach(b => b.style.display = 'none');
+$('battle-btn').textContent = __('🚪 退出对战');
+}
+
+function exitBattleMode() {
+battleMode = false;
+battleRoomCode = '';
+battleRound = 1;
+battleMaxRounds = 3;
+battleTimeLeft = 300;
+battleWaitingForResult = false;
+battleResultSent = false;
+battleMyScore = 0;
+battleOppScore = 0;
+battleOppName = '';
+removeBattleResultOverlay();
+$('battle-info-bar').classList.remove('show');
+document.querySelectorAll('.diff-btn').forEach(b => b.style.display = '');
+$('battle-btn').textContent = __('⚔️ 对战');
+// 如果 lobby 还开着，重置回表单状态
+resetLobbyFormState();
+if (window.__battleHeartbeat) { clearInterval(window.__battleHeartbeat); window.__battleHeartbeat = null; }
+window.__battleReconnectAttempts = 0;
+if (battleWs) {
+try { battleWs.close(); } catch(e) {}
+battleWs = null;
+}
+}
+
+// Battle button bindings
+document.getElementById('battle-btn').addEventListener('click', () => {
+if (battleMode) {
+exitBattleMode();
+newGame();
+} else {
+openLobby();
+}
+});
+
+document.getElementById('battle-create').addEventListener('click', () => {
+const name = $('battle-name').value.trim() || __('玩家') + Math.floor(Math.random()*1000);
+battleMyName = name;
+localStorage.setItem('killer_battle_name', name);
+// 锁定输入,展示「正在创建」状态
+$('battle-name').disabled = true;
+$('battle-create').disabled = true;
+$('battle-join').disabled = true;
+$('battle-status').textContent = __('正在创建房间…');
+// 新协议: POST /api/rooms 建房拿码 → 连 /ws?code=X&name=Y
+// (服务端已无 create_room 消息分支; 旧回调式 connectWS 会把函数源码拼进 URL 导致握手 400)
+fetch((window.API_BASE || '') + '/rooms', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ pool: 'standard', gameType: 'killer-sudoku', name: name }),
+}).then(function(r) { return r.json(); }).then(function(data) {
+if (!data || !data.code) {
+$('battle-status').textContent = __('连接失败，请稍后重试');
+resetLobbyFormState();
+return;
+}
+connectWS(data.code);
+}).catch(function() {
+$('battle-status').textContent = __('连接失败，请稍后重试');
+resetLobbyFormState();
+});
+});
+
+document.getElementById('battle-join').addEventListener('click', () => {
+$('battle-code-input').style.display = 'block';
+$('battle-code-input').focus();
+$('battle-status').textContent = __('输入房间代码后按回车');
+});
+
+document.getElementById('battle-code-input').addEventListener('keydown', (e) => {
+if (e.key === 'Enter') {
+const code = $('battle-code-input').value.trim().toUpperCase();
+if (!code) return;
+const name = $('battle-name').value.trim() || __('玩家') + Math.floor(Math.random()*1000);
+battleMyName = name;
+localStorage.setItem('killer_battle_name', name);
+$('battle-name').disabled = true;
+$('battle-create').disabled = true;
+$('battle-join').disabled = true;
+$('battle-status').textContent = __('正在加入房间…');
+// 新协议: 房间码已由建房方创建,直接连 /ws?code=X&name=Y (服务器按连接顺序自动分配座位)
+connectWS(code);
+}
+});
+
+
+  /* ── 分享链接 ── */
+  function generateShareUrl() {
+    return window.location.origin + '/games/killer-sudoku/?room=' + document.getElementById('battle-room-code').textContent;
+  }
+  function copyShareLink() {
+    var url = generateShareUrl();
+    if (navigator.clipboard) { navigator.clipboard.writeText(url); }
+    var btn = document.getElementById('battle-copy-link');
+    if (btn) { btn.textContent = __('✅ 已复制'); setTimeout(function() { btn.textContent = __('📋 复制链接'); }, 1500); }
+  }
+  document.getElementById('battle-copy-link').addEventListener('click', copyShareLink);
+
+  // 显示分享链接区域（创建房间后调用）
+  function showShareUrl() {
+    var el = document.getElementById('battle-share-url');
+    if (el) el.value = generateShareUrl();    var shareSec = document.getElementById('battle-share-section');
+    if (shareSec) shareSec.style.display = 'block';
+
+  }
+
+document.getElementById('battle-close-lobby').addEventListener('click', closeLobby);
+
+// 「取消等待」按钮 — 创建/加入后想退出等对手状态
+document.getElementById('battle-cancel-waiting').addEventListener('click', () => {
+exitBattleMode();
+});
+
+// 大字号房间号点击复制
+document.getElementById('lobby-room-code-display').addEventListener('click', (e) => {
+const code = e.target.textContent.trim();
+if (code && code !== '·····') {
+navigator.clipboard.writeText(code).then(() => {
+$('battle-status').textContent = __('✅ 房间码已复制');
+setTimeout(() => { $('battle-status').textContent = ''; }, 1500);
+}).catch(() => {});
+}
+});
+
+// Copy room code
+$('battle-room-code').addEventListener('click', () => {
+if (battleRoomCode) {
+navigator.clipboard.writeText(battleRoomCode).then(() => {
+$('battle-status').textContent = __('✅ 房间码已复制');
+setTimeout(() => $('battle-status').textContent = '', 1500);
+});
+}
+});
+
+// 键盘快捷键：1-9 填入，0/Backspace 清除，Esc 关闭弹窗
+document.addEventListener('keydown', (e) => {
+if (e.key === 'Escape') { closePopup(); return; }
+if (isPaused) return;
+if (popupTargetRow < 0) return;
+const r = popupTargetRow, c = popupTargetCol;
+if (e.key >= '1' && e.key <= '9') {
+const n = parseInt(e.key);
+if (given[r][c]) return; // 给定格不可修改
+const noteMode = document.getElementById('noteModeCheckbox').checked;
+const prevVal = grid[r][c];
+const prevNotes = new Set(noteGrid[r][c]);
+if (noteMode) {
+if (noteGrid[r][c].has(n)) noteGrid[r][c].delete(n);
+else noteGrid[r][c].add(n);
+grid[r][c] = 0;
+} else {
+grid[r][c] = n;
+noteGrid[r][c].clear();
+}
+undoStack.push({r, c, prevVal, prevNotes, isNote:noteMode, noteNum:noteMode?n:undefined});
+if (battleMode) {
+// 对战模式：竞速作答
+if (!battleWaitingForResult) {
+battleWaitingForResult = true;
+wsSend({type:'sudoku_place', row:r, col:c, value:n});
+setTimeout(() => { battleWaitingForResult = false; }, 1200);
+}
+}
+drawGrid();
+saveKillerState();
+} else if (e.key === 'Backspace' || e.key === 'Delete' || e.key === '0') {
+if (given[r][c]) return; // 给定格不可擦除
+const prevVal = grid[r][c];
+const prevNotes = new Set(noteGrid[r][c]);
+grid[r][c] = 0;
+noteGrid[r][c].clear();
+undoStack.push({r, c, prevVal, prevNotes, isNote:false});
+drawGrid();
+saveKillerState();
+}
+});
+
+// 首次绘制
+drawGrid();
+// 尝试恢复存档；无存档则开新游戏
+if (!loadKillerState()) {
+  newGame();
+}
+// i18n.js 以 defer 加载，晚于本段内联脚本执行：此时 newGame() 里的 __t 只能拿到原始 key。
+// i18n 就绪（或用户切语言）后，用同一份开局参数重刷横幅文案。
+function _refreshKillerBannerOnI18n() {
+  renderNewGameMsg();
+}
+window.addEventListener('i18n:ready', _refreshKillerBannerOnI18n);
+window.addEventListener('i18n:change', _refreshKillerBannerOnI18n);
+if (document.documentElement.getAttribute('data-i18n-ready') === 'true') {
+  _refreshKillerBannerOnI18n();
+}
+</script>
+  <nav class="bottom-nav" style="display:none" aria-label="Mobile navigation" data-i18n-aria-label="nav.bottom_nav">
+    <div class="bottom-nav-inner">
+      <a href="/" class="bottom-nav-item" data-i18n-aria-label="nav.home">
+        <span class="bn-ico">🏠</span><span class="bn-label" data-i18n="nav.home">Home</span>
+      </a>
+      <a href="/games/sudoku/" class="bottom-nav-item" data-i18n-aria-label="nav.game_sudoku">
+        <span class="bn-ico">9²</span><span class="bn-label" data-i18n="nav.game_sudoku">Sudoku</span>
+      </a>
+      <a href="/games/killer-sudoku/" class="bottom-nav-item active" data-i18n-aria-label="nav.game_killer_sudoku">
+        <span class="bn-ico">☠️</span><span class="bn-label" data-i18n="nav.game_killer_sudoku">Killer Sudoku</span>
+      </a>
+      <a href="/games/sudoku-6x6/" class="bottom-nav-item" data-i18n-aria-label="nav.game_sudoku_6x6">
+        <span class="bn-ico">6²</span><span class="bn-label" data-i18n="nav.game_sudoku_6x6">6x6 Sudoku</span>
+      </a>
+      <a href="/stats/" class="bottom-nav-item" data-i18n-aria-label="nav.stats">
+        <span class="bn-ico">📊</span><span class="bn-label" data-i18n="nav.stats">Stats</span>
+      </a>
+    </div>
+  </nav>
+<!-- Tri-Sites Sidebar -->
+<script src="/js/toast.js?v=p27" defer></script>
+  <script src="/shared/daily-challenge.js?v=20260827" defer></script>
+  <script src="/shared/avatars.js?v=1" defer></script>
+  <script src="/js/coins-bar.js?v=20260925" defer></script>
+
+  
+  <script src="/shared/site-header.js?v=ds2-11"></script>
+  <script src="/shared/sso-bridge.js?v=1" defer></script>
+  <script src="/shared/game-chrome-10.js?v=27"></script>
+<script>newGame('medium');</script>
+</body>
+</html>

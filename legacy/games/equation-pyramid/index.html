@@ -1,0 +1,1772 @@
+<!DOCTYPE html>
+<html lang="en" data-site="math">
+<head>
+  <script>
+    // API 走同源（Cloudflare Worker 路由 /api/*）；跨域 api.* 会被页面 CSP 拦截
+    /* ── 防"旧版一闪"(FOUC)：v10 chrome 就绪前先隐藏旧版专属骨架 ── */
+    document.documentElement.classList.add('gc-pending');
+    window.addEventListener('load', function () { document.documentElement.classList.remove('gc-pending'); });
+    setTimeout(function () { document.documentElement.classList.remove('gc-pending'); }, 10000);
+    window.API_BASE = '/api';
+    window.WS_BASE = 'wss://' + location.host;
+  </script>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#0066CC">
+  <title data-i18n-title="title.auto.hc_方程式金字塔数学解谜游戏数学对决_79720">Equation Pyramid · Math Puzzle Games | Math Duel</title>
+  <meta name="description" data-i18n="equation_pyramid.meta_desc" content="Equation Pyramid — pick 3 of 9 cells to build an equation equal to the target at the top. Multiply and divide first, then add and subtract — test your number sense and operator precedence. Inspired by classic math puzzles. No login, free to play.">
+  <meta data-i18n="meta.auto.hc_方程式金字塔EquationPyr_49495" name="keywords" content="Equation Pyramid,Equation Pyramid,Math Games,Number Games,Mental Math,Logic Deduction,Operation Order,Devil's Strategy,Number Sensitivity,Math Puzzle,Puzzle Games,free to play games">
+  <link rel="icon" href="/assets/img/favicon.svg?v=20260921" type="image/svg+xml">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="game">
+  <meta property="og:title" data-i18n="equation_pyramid.meta_title" content="Equation Pyramid · Math Puzzle | Math Duel">
+  <meta property="og:description" data-i18n="equation_pyramid.meta_desc" content="Equation Pyramid — pick 3 of 9 cells to build an equation equal to the target at the top. Multiply and divide first, then add and subtract — test your number sense and operator precedence. Inspired by classic math puzzles. No login, free to play.">
+  <meta property="og:url" content="https://mathduel.games/games/equation-pyramid/">
+  <meta data-i18n="meta.auto.hc_数学对决_51866" property="og:site_name" content="Math Duel">
+  <meta property="og:locale" data-i18n="meta.og_locale" content="zh_CN">
+  <meta property="og:image" content="/games/equation-pyramid/og.jpg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="632" />
+  <meta property="og:image:alt" content="Equation Pyramid - Free Online Math Puzzle" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta data-i18n="meta.auto.hc_方程式金字塔数学解谜_54544" name="twitter:title" content="🔺 Equation Pyramid - Math Puzzle">
+  <meta data-i18n="meta.auto.hc_从9个格子中选3个组成算式顶部目标_54884" name="twitter:description" content="Pick 3 cells from 9 to build an equation equal to the target at the top — a test of operation order and mental math.">
+  <meta name="twitter:url" content="https://mathduel.games/games/equation-pyramid/">
+  <meta name="twitter:image" content="/games/equation-pyramid/og.jpg" />
+
+  <link rel="canonical" href="https://mathduel.games/games/equation-pyramid/">
+  <link rel="stylesheet" href="/assets/css/style.css?v=blue5">
+  <style>
+    /* 方程式金字塔专属样式 */
+    :root {
+      --primary: #0066CC;
+      --primary-dark: #00529C;
+      --accent: #FBBF24;
+      --success: #10B981;
+      --danger: #EF4444;
+      --text: #0F172A;
+      --text-light: #475569;
+      --border: #E2E8F0;
+      --bg: #F8FAFC;
+      --radius: 0.75rem;
+      --radius-sm: 0.5rem;
+      --touch: 44px;
+    }
+    .pyr-page {
+      display: flex; flex-direction: column; align-items: center;
+      gap: 1rem; padding: 0.5rem;
+    }
+    /* 顶部目标 */
+    .pyr-target {
+      width: 100px; height: 100px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: white;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      border-radius: var(--radius);
+      font-weight: 700; box-shadow: 0 4px 12px rgba(0,102,204,0.3);
+    }
+    .pyr-target-label { font-size: 0.7rem; opacity: 0.85; margin-bottom: 0.25rem; }
+    .pyr-target-value { font-size: 2.5rem; line-height: 1; }
+
+    /* 当前算式显示 */
+    .pyr-formula {
+      background: white; border: 2px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem; min-width: 280px;
+      display: flex; align-items: center; justify-content: center;
+      gap: 0.5rem; font-size: 1.4rem; font-weight: 600;
+      font-family: 'Courier New', monospace; min-height: 70px;
+    }
+    .pyr-formula-empty { color: var(--text-light); font-size: 1rem; font-family: inherit; }
+    .pyr-fslot {
+      display: inline-flex; align-items: center; justify-content: center;
+      min-width: 36px; min-height: 36px; padding: 0.25rem 0.5rem;
+      border-radius: var(--radius-sm);
+    }
+    .pyr-fslot.filled { background: var(--bg); border: 1px solid var(--border); color: var(--text); }
+    .pyr-fslot.pending { background: repeating-linear-gradient(45deg, transparent, transparent 5px, var(--bg) 5px, var(--bg) 10px); color: var(--text-light); }
+    .pyr-fop { color: var(--accent); font-size: 1.5rem; }
+
+    /* 3x3 网格 */
+    .pyr-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 0.75rem; max-width: 360px; width: 100%;
+      aspect-ratio: 1;  /* P1: 预留 3×3 棋盘尺寸，消除 JS 渲染后的布局偏移 */
+    }
+    .pyr-cell {
+      aspect-ratio: 1; background: white;
+      border: 3px solid var(--border); border-radius: var(--radius);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      cursor: pointer; user-select: none;
+      transition: all 0.15s;
+      -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+      color: var(--text);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    .pyr-cell:active { transform: scale(0.95); }
+    .pyr-cell:hover { border-color: var(--accent); box-shadow: 0 4px 8px rgba(251,191,36,0.15); }
+    .pyr-cell.selected-1 {
+      border-color: var(--primary); background: #DCEBFB;
+      box-shadow: 0 0 0 4px rgba(0,102,204,0.1);
+    }
+    .pyr-cell.selected-2 { border-color: var(--accent); background: #FEF3C7; }
+    .pyr-cell.selected-3 {
+      border-color: var(--success); background: #D1FAE5;
+    }
+    .pyr-cell.disabled { opacity: 0.4; cursor: not-allowed; }
+    .pyr-cell .op { font-size: 1rem; color: var(--text-light); font-weight: 600; }
+    .pyr-cell .num { font-size: 1.75rem; font-weight: 700; color: var(--primary); }
+    .pyr-cell.selected-1 .num, .pyr-cell.selected-2 .num, .pyr-cell.selected-3 .num { color: inherit; }
+
+    /* 操作区 */
+    .pyr-controls {
+      display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap;
+    }
+    .pyr-btn {
+      padding: 0.5rem 0.875rem; background: white; color: var(--text);
+      border: 2px solid var(--border); border-radius: var(--radius-sm);
+      cursor: pointer; font-size: 0.875rem; min-height: var(--touch);
+      font-weight: 500;
+    }
+    .pyr-btn:hover { background: var(--bg); border-color: var(--accent); }
+    .pyr-btn:active { transform: scale(0.95); }
+    .pyr-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+    .pyr-btn-primary { background: var(--primary); color: white; border-color: var(--primary); }
+    .pyr-btn-primary:hover { background: var(--primary-dark); }
+    .pyr-btn-success { background: var(--success); color: white; border-color: var(--success); }
+    .pyr-btn-success:hover { background: #059669; }
+
+    /* 统计 */
+    .pyr-stats {
+      display: flex; gap: 0.5rem; justify-content: center;
+      flex-wrap: wrap; font-size: 0.9rem; font-weight: 600;
+    }
+    .pyr-stats span {
+      background: var(--bg); padding: 0.4rem 0.8rem;
+      border-radius: var(--radius-sm);
+    }
+
+    /* 结果提示 */
+    .pyr-result {
+      text-align: center; font-size: 1.1rem; font-weight: 700;
+      min-height: 1.5rem;
+    }
+    .pyr-result.win { color: var(--success); animation: pyrFlash 0.5s; }
+    .pyr-result.error { color: var(--danger); }
+    .pyr-result.hint { color: var(--text-light); }
+    @keyframes pyrFlash { 0%, 100% { background: transparent; } 50% { background: #D1FAE5; } }
+
+    /* 教程模态框 */
+    .pyr-modal-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.5); z-index: 10000;
+      align-items: center; justify-content: center; padding: 1rem;
+      cursor: pointer;
+    }
+    .pyr-modal-overlay.show { display: flex; }
+    .pyr-modal {
+      background: white; padding: 1.5rem; border-radius: var(--radius);
+      max-width: 480px; width: 100%; max-height: 90vh; overflow-y: auto;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+    }
+    .pyr-modal h2 { margin-top: 0; color: var(--primary); }
+    .pyr-modal ol { line-height: 1.8; padding-left: 1.5rem; }
+    .pyr-modal-close {
+      margin-top: 1rem; padding: 0.5rem 1.5rem;
+      background: var(--primary); color: white;
+      border: none; border-radius: var(--radius-sm);
+      cursor: pointer; font-weight: 600;
+      width: 100%;
+    }
+
+    body.paused .pyr-grid { opacity: 0.5; pointer-events: none; filter: grayscale(0.5); }
+    /* Battle Mode */
+    .battle-lobby { background: white; padding: 1.5rem; border-radius: var(--radius); max-width: 420px; width: 100%; box-shadow: 0 8px 32px rgba(0,0,0,0.3); text-align: center; position: relative; }
+    .battle-lobby h2 { margin: 0 0 1rem; color: var(--text); font-size: 1.4rem; }
+    .battle-lobby input[type="text"] { padding: 0.5rem; border: 2px solid var(--border); border-radius: var(--radius-sm); font-size: 1rem; box-sizing: border-box; outline: none; width: 100%; }
+    .battle-lobby input[type="text"]:focus { border-color: var(--primary); }
+    #battle-info { color: white; padding: 0.75rem 1rem; border-radius: var(--radius); margin-bottom: 0.5rem; text-align: center; }
+    .battle-scores { display: flex; justify-content: space-around; font-size: 1.1rem; font-weight: 600; }
+    .battle-scores .winning { color: #FCD34D; }
+    /* Battle overlay (round result + game over) */
+    .battle-result-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:10000;display:flex;align-items:center;justify-content:center;padding:1rem}
+    .battle-result-card{background:#fff;padding:2rem;border-radius:var(--radius);text-align:center;max-width:360px;width:100%;box-shadow:0 8px 32px rgba(0,0,0,.3)}
+    .battle-result-card h3{margin:0 0 .5rem;font-size:1.3rem}
+    .battle-result-card .result-win{color:#10B981}
+    .battle-result-card .result-lose{color:#EF4444}
+    .battle-result-card .result-timeout{color:#F59E0B}
+    .battle-game-over{background:#fff;padding:2rem;border-radius:var(--radius);text-align:center;max-width:380px;width:100%;box-shadow:0 8px 32px rgba(0,0,0,.3)}
+    .battle-game-over h3{margin:0 0 1rem;font-size:1.5rem}
+    .battle-final-scores{display:flex;justify-content:center;gap:2rem;margin:1rem 0;font-size:1.2rem}
+    .battle-final-scores .score-col{text-align:center}
+    .battle-final-scores .score-num{font-size:2rem;font-weight:700}
+    .battle-final-scores .score-label{font-size:.85rem;color:#6b7280}
+    .btn-battle{padding:.5rem 1.5rem;border:none;border-radius:4px;cursor:pointer;font-weight:600;font-size:1rem}
+    .btn-create{background:linear-gradient(135deg,#7C3AED,#4F46E5);color:#fff}
+
+    /* ===== W4.3 Daily Banner ===== */
+    #daily-banner{background:#111;color:#fff;padding:.75rem 1rem;border-radius:12px;margin-bottom:.75rem;box-shadow:none;animation:bannerSlideDown .5s ease}
+    /* P7 模板复制: 对战玩家列表(带头像) */
+    .battle-player-item{display:flex;justify-content:space-between;align-items:center;padding:.5rem .75rem;background:var(--bg);border-radius:var(--radius-sm);border:2px solid var(--border)}
+    .battle-player-item.me{border-color:var(--primary);background:#EFF5FD}
+    .battle-player-item .p-name{font-weight:600}
+    .battle-player-item .p-tag{font-size:.75rem;color:var(--text-light);background:var(--border);padding:.1rem .5rem;border-radius:1rem}
+    .battle-player-item .p-ava{display:flex;align-items:center}
+    @keyframes bannerSlideDown{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+    .daily-banner-inner{display:flex;align-items:center;justify-content:space-between;gap:.5rem;flex-wrap:wrap}
+    .daily-banner-text{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;font-weight:600}
+    .daily-banner-emoji{font-size:1.4rem}
+    .daily-banner-title{display:inline-flex;align-items:center;flex-wrap:wrap;gap:.35em;font-size:1.05rem}
+    .daily-banner-sub{font-size:.85rem;opacity:.9;font-weight:500}
+    .daily-banner-countdown{font-size:.9rem;font-weight:600;color:#4D97E6;background:rgba(255,255,255,.1);padding:.25rem .6rem;border-radius:6px;letter-spacing:.05em}
+    @media(max-width:480px){.daily-banner-countdown{font-size:.8rem}}
+
+    /* ===== W4.4 Share Overlay ===== */
+    .share-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;z-index:1000;padding:1rem;animation:fadeIn .3s ease}
+    @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+    .share-overlay-card{background:#fff;border-radius:16px;max-width:480px;width:100%;padding:1.5rem;position:relative;box-shadow:0 20px 60px rgba(0,0,0,.3);max-height:90vh;overflow-y:auto;animation:slideUp .3s ease}
+    @keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+    .share-overlay-close{position:absolute;top:.5rem;right:.75rem;background:none;border:none;font-size:1.8rem;cursor:pointer;color:var(--text-light);width:36px;height:36px;border-radius:50%;line-height:1}
+    .share-overlay-close:hover{background:var(--bg);color:var(--text)}
+    .share-overlay-title{font-size:1.25rem;font-weight:700;margin-bottom:1rem;text-align:center;color:var(--text)}
+    .share-overlay-canvas-wrap{margin:0 auto 1rem;border-radius:8px;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,.1)}
+    .share-overlay-canvas-wrap canvas{width:100%;height:auto;display:block}
+    .share-overlay-stats{background:var(--bg);padding:.75rem;border-radius:8px;margin-bottom:1rem;text-align:center;font-size:.9rem;color:var(--text-light)}
+    .share-overlay-stats strong{color:var(--primary);font-weight:700}
+    .share-overlay-url-row{display:flex;gap:.5rem;margin-bottom:.75rem}
+    .share-overlay-url-row input{flex:1;padding:.5rem;border:1.5px solid var(--border);border-radius:6px;font-size:.8rem;font-family:monospace;background:var(--bg);color:var(--text)}
+    .share-overlay-url-row input:focus{outline:none;border-color:var(--primary)}
+    .share-overlay-url-row button{padding:.5rem 1rem;background:var(--primary);color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600;font-size:.85rem;white-space:nowrap}
+    .share-overlay-url-row button:active{transform:scale(.95)}
+    .share-overlay-actions{display:flex;gap:.5rem;justify-content:center;flex-wrap:wrap}
+    .share-overlay-actions button{padding:.6rem 1.2rem;background:#fff;border:1.5px solid var(--border);border-radius:6px;cursor:pointer;font-weight:600;font-size:.85rem;transition:all .15s}
+    .share-overlay-actions button:hover{background:var(--bg);border-color:var(--primary)}
+    .share-overlay-toast{position:absolute;bottom:1rem;left:50%;transform:translateX(-50%);background:var(--text);color:#fff;padding:.5rem 1rem;border-radius:6px;font-size:.85rem;opacity:0;transition:opacity .3s;pointer-events:none}
+    .share-overlay-toast.show{opacity:1}
+    @media(max-width:480px){.share-overlay-card{padding:1rem}.share-overlay-title{font-size:1.1rem}}
+  </style>
+  <!--   <!-- Tri-Sites Shared CSS -->
+  <link rel="stylesheet" href="/css/shared/tokens.css?v=p5">
+<link rel="stylesheet" href="/css/shared/components.css?v=p19">
+  <link rel="stylesheet" href="/css/shared/toast.css?v=p3">
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Game",
+    "name": "方程式金字塔",
+    "alternateName": "Equation Pyramid",
+    "url": "https://mathduel.games/games/equation-pyramid/",
+    "description": "从 9 个格子中选 3 个组成算式让结果等于顶部目标数。先乘除后加减，考验数字敏感度与运算顺序。",
+    "genre": "益智",
+    "playMode": "SinglePlayer",
+    "gamePlatform": "Web Browser",
+    "applicationCategory": "GameApplication",
+    "operatingSystem": "Any",
+    "inLanguage": "zh-CN",
+    "isAccessibleForFree": true,
+    "offers": {"@type": "Offer", "price": "0", "priceCurrency": "CNY"}
+  }
+  </script>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "首页", "item": "https://mathduel.games/" },
+      { "@type": "ListItem", "position": 2, "name": "方程式金字塔", "item": "https://mathduel.games/games/equation-pyramid/" }
+    ]
+  }
+  </script>
+
+  <!-- i18n -->
+  <script src="/i18n/i18n.js?v=33" defer></script>
+  <script src="/shared/game-lobby.js?v=1"></script>
+  <script src="/i18n/lang-switcher.js?v=19" defer></script>
+  <!-- hreflang for SEO/i18n -->
+  <link rel="alternate" hreflang="zh-CN" href="https://mathduel.games/zh/games/equation-pyramid/" />
+  <link rel="alternate" hreflang="en-US" href="https://mathduel.games/en/games/equation-pyramid/" />
+  <link rel="alternate" hreflang="ja-JP" href="https://mathduel.games/ja/games/equation-pyramid/" />
+  <link rel="alternate" hreflang="x-default" href="https://mathduel.games/games/equation-pyramid/" />
+    <!-- P5-1: Plausible Analytics (privacy-friendly, no cookies) -->
+  <script defer data-domain="mathduel.games" src="https://plausible.io/js/script.js"></script>
+  <script>window.plausible = window.plausible || function() { (window.plausible.q = window.plausible.q || []).push(arguments) }</script>
+    <link rel="stylesheet" href="/css/shared/brand-ds2.css?v=ds2-23">
+  <link rel="manifest" href="/manifest.zh.webmanifest">
+<style>
+/* 防 FOUC：新版 chrome（shared/game-chrome-10.js）构建完成前，隐藏"旧版专属骨架"，
+   避免浏览器先渲染旧版布局、随后被整体替换成新版所造成的闪烁 + 跳动。
+   用 visibility 而非 display（保留占位，减少布局位移）。
+   解除方式：① game-chrome-10.js 构建完成后移除 html.gc-pending（主路径）
+            ② window.load 兜底 ③ 10s 硬超时兜底（chrome 加载失败时旧 UI 仍可用）。
+   选择器清单来自 2026-09-16 逐页实测（.g24-* /.g24e-* /.pyr-* /.controls + 各统计条）。 */
+html.gc-pending .g24-controls,html.gc-pending .g24-stats,
+html.gc-pending .g24e-controls,html.gc-pending .g24e-stats,
+html.gc-pending .pyr-controls,html.gc-pending .pyr-stats,
+html.gc-pending .controls,html.gc-pending .game-stats,
+html.gc-pending .diff-stats,html.gc-pending .g24-diff{visibility:hidden!important}
+</style>
+</head>
+<body>
+
+<div id="site-header" style="min-height:65px"
+     data-brand-a="Math" data-brand-b="Duel" data-mark="duel-calculator"
+     data-nav='[{"label":"Home","href":"/","i18n":"nav.home"}]'
+     data-cta-label="Home" data-cta-href="/" data-cta-i18n="nav.home"></div>
+
+  <div class="layout">
+<div class="layout-main">
+  <div class="container" role="main">
+    <div class="game-page">
+      <!-- W4.3 Daily 横幅 (默认隐藏) -->
+      <div id="daily-banner" style="display:none;">
+        <div class="daily-banner-inner">
+          <div class="daily-banner-text">
+            <span class="daily-banner-emoji">🌟</span>
+            <span class="daily-banner-title"><span data-i18n="equation_pyramid.daily_title" data-i18n-vars='{"date":""}'>Daily Pyramid #{date}</span><span id="daily-banner-date"></span></span>
+            <span class="daily-banner-sub" data-i18n="equation_pyramid.daily_sub">· Same worldwide · Streak mode</span>
+          </div>
+          <div class="daily-banner-countdown" data-i18n-title="game_24.daily_countdown_title" title="Until UTC midnight reset">
+            ⏳ <span id="daily-banner-countdown">--:--</span>
+          </div>
+        </div>
+        <div id="daily-banner-progress" style="margin-top:.5rem;font-size:.85rem;opacity:.95;">
+          <span><span data-i18n="equation_pyramid.daily_progress_prefix">Found </span><strong id="daily-banner-found">0</strong> / <strong id="daily-banner-total">0</strong> <span data-i18n="equation_pyramid.daily_progress_suffix"> solutions</span></span>
+        </div>
+      </div>
+
+      <div class="gm-head">
+        
+        <div>
+          
+          
+        </div>
+        <h1 style="font-size:1.4rem;font-weight:800;margin:0;line-height:1.2;color:var(--text,#0F172A)">Equation Pyramid</h1>
+        <div class="pyr-stats" aria-live="polite" aria-atomic="true">
+          <span><span data-i18n="equation_pyramid.stats_level" data-i18n-vars='{"n":""}'>Level: {n}</span><span id="level">1</span></span>
+          <span><span data-i18n="equation_pyramid.stats_score" data-i18n-vars='{"n":""}'>Score: {n}</span><span id="score">0</span></span>
+          <span><span data-i18n="equation_pyramid.stats_time" data-i18n-vars='{"n":""}'>Time: {n}</span><span id="timer">0:00</span></span>
+          <span><span data-i18n="equation_pyramid.stats_solutions_left" data-i18n-vars='{"n":""}'>Solutions left: {n}</span><span id="remaining">-</span></span>
+        </div>
+      </div>
+
+      <div class="pyr-page">
+        <div class="pyr-target">
+          <div class="pyr-target-label" data-i18n="equation_pyramid.target_label">Target</div>
+          <div class="pyr-target-value" id="target">--</div>
+        </div>
+
+        <div class="pyr-formula" id="formula">
+          <span class="pyr-formula-empty" data-i18n="equation_pyramid.prompt_default">Tap three cells to start</span>
+        </div>
+
+        <div class="pyr-grid" id="grid"></div>
+
+        <div class="pyr-result" id="result">&nbsp;</div>
+
+        <div class="pyr-controls">
+          <button class="pyr-btn" id="help" data-i18n="equation_pyramid.btn_help">📖 Help</button>
+          <button class="pyr-btn" id="undo" data-i18n="equation_pyramid.btn_undo">↶ Undo</button>
+          <button class="pyr-btn" id="clear" data-i18n="equation_pyramid.btn_clear">🧹 Clear</button>
+          <button class="pyr-btn" id="hint" data-i18n="equation_pyramid.btn_hint">💡 Hint</button>
+          <button class="pyr-btn" id="pause" data-i18n="equation_pyramid.btn_pause">⏸ Pause</button>
+          <button class="pyr-btn pyr-btn-primary" id="next" data-i18n="equation_pyramid.btn_new_level">Next level ➡</button>
+          <button class="pyr-btn" id="battle-btn" style="background:var(--accent);color:white;border-color:var(--accent);font-weight:600;" data-i18n="equation_pyramid.btn_battle">⚔️ Battle</button>
+        </div>
+      </div>
+    </div>
+
+  <div id="battle-info" style="display:none;background:linear-gradient(135deg,#7C3AED,#4F46E5);color:white;padding:0.75rem 1rem;border-radius:var(--radius);margin-bottom:0.5rem;text-align:center;">
+    <div style="font-size:0.8rem;opacity:0.9;margin-bottom:0.25rem;"><span data-i18n="equation_pyramid.battle_round_prefix">Room: </span><span id="battle-room-code"></span><span data-i18n="equation_pyramid.battle_round_mid"> · Round </span><span id="battle-round-num">1</span>/<span id="battle-round-total">10</span><span data-i18n="equation_pyramid.battle_round_suffix"></span></div>
+    <div class="battle-scores">
+      <span id="battle-my-score" data-i18n="battle.your_score" data-i18n-vars='{"score":0}'>You: {score}</span>
+      <span style="font-size:1.2rem;">VS</span>
+      <span id="battle-opp-score" data-i18n="battle.opponent_score" data-i18n-vars='{"score":0}'>Opponent: {score}</span>
+    </div>
+    <div style="background:rgba(255,255,255,0.2);border-radius:4px;height:8px;margin-top:0.5rem;overflow:hidden;">
+      <div id="battle-timer-fill" style="background:linear-gradient(90deg,#10b981,#34d399);height:100%;width:100%;transition:width 0.3s;"></div>
+    </div>
+    <div id="battle-turn" style="font-size:0.85rem;margin-top:0.25rem;">⏱ --</div>
+  </div>
+  <div id="battle-lobby-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:10001;align-items:center;justify-content:center;padding:1rem;overflow:auto;box-sizing:border-box;">
+    <div class="battle-lobby">
+      <h2 data-i18n="equation_pyramid.battle_lobby_title">⚔️ Equation Pyramid Battle</h2>
+      <button id="battle-lobby-close" style="position:absolute;top:0.75rem;right:0.75rem;background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--text-light)" aria-label="Close" data-i18n-aria-label="common.close">✕</button>
+      <div id="battle-lobby-form">
+        <div style="margin-bottom:0.75rem;">
+          <label style="font-weight:600;display:block;margin-bottom:0.25rem;font-size:0.9rem;" data-i18n="battle.enter_name_label">Your nickname</label>
+          <input id="battle-name-input" type="text" data-i18n-placeholder="battle.enter_name" placeholder="Enter nickname..." maxlength="10">
+        </div>
+        <div id="battle-avatar-chip" style="display:flex;align-items:center;min-height:1.9rem;margin-bottom:.5rem;font-size:.92rem;color:var(--text-2,#5a6b7f);"></div>
+        <div style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.75rem;">
+          <button id="battle-create-btn" style="flex:1;min-width:120px;padding:0.5rem 1rem;background:var(--primary);color:white;border:none;border-radius:var(--radius-sm);cursor:pointer;font-weight:600;" data-i18n="battle.create_room">Create room</button>
+          <input id="battle-join-input" type="text" data-i18n-placeholder="battle.room_code" placeholder="Room code" maxlength="6" style="flex:1;min-width:100px;text-transform:uppercase;text-align:center;">
+          <button id="battle-join-btn" style="padding:0.5rem 1rem;background:var(--success);color:white;border:none;border-radius:var(--radius-sm);cursor:pointer;font-weight:600;" data-i18n="battle.join">Join</button>
+        </div>
+        <div id="battle-lobby-error" style="color:var(--danger);font-size:0.85rem;min-height:1.2rem;margin-bottom:0.5rem;"></div>
+      </div>
+      <!-- P0: WS 重连状态条 -->
+      <div id="ws-reconnect-banner" style="display:none; background:#FFA500; color:white; padding:8px; text-align:center; font-size:.9rem; border-radius:var(--radius-sm); margin-bottom:0.5rem;">
+        <span id="ws-reconnect-text">Reconnecting...</span>
+      </div>
+      <div id="battle-room-info" style="display:none;">
+        <div style="font-size:1.5rem;font-weight:700;color:var(--primary);background:#EFF5FD;padding:0.75rem;border-radius:var(--radius-sm);margin-bottom:0.75rem;display:flex;align-items:center;justify-content:center;gap:0.5rem;letter-spacing:0.1em;">
+          <span data-i18n="battle.room_code_label">Room code:</span> <span id="battle-room-display"></span>
+          <button id="battle-copy-code" style="background:none;border:none;cursor:pointer;font-size:1rem;" data-i18n-title="battle.copy_room_code" title="Copy room code">📋</button>
+        </div>
+        <div style="margin-bottom:0.75rem;">
+          <div style="font-size:0.8rem;color:var(--text-light);font-weight:600;margin-bottom:0.35rem;" data-i18n="battle.share_link_title">Share link with opponent</div>
+          <div style="display:flex;gap:0.5rem;align-items:center;">
+            <input id="battle-share-url" readonly style="flex:1;padding:0.4rem 0.6rem;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:0.8rem;background:var(--bg);color:var(--text);cursor:pointer;overflow:hidden;text-overflow:ellipsis;box-sizing:border-box;">
+            <button id="battle-copy-link" style="padding:0.4rem 0.75rem;background:var(--primary);color:#fff;border:none;border-radius:var(--radius-sm);cursor:pointer;font-weight:600;font-size:0.8rem;white-space:nowrap;" data-i18n="battle.copy_link">📋 Copy link</button>
+          </div>
+        </div>
+        <div id="battle-waiting-msg" style="color:var(--text-light);font-weight:500;margin-bottom:0.5rem;" data-i18n="battle.waiting_opponent">⏳ Waiting for opponent...</div>
+        <div id="battle-players-list"></div>
+      </div>
+      <div style="margin-top:1rem;">
+        <button id="battle-back-btn" style="padding:0.5rem 1rem;background:var(--border);color:var(--text);border:none;border-radius:var(--radius-sm);cursor:pointer;font-weight:600;" data-i18n="common.back">Back</button>
+      </div>
+    </div>
+  </div>
+  <footer class="sites-footer">
+    <div class="wrap">
+      <div class="sf-title" data-i18n="footer.matrix_title">Explore more</div>
+      <div class="sf-matrix">
+        <a href="https://boardduel.com" class="sf-item">
+          <svg class="duel-icon sf-emoji" aria-hidden="true"><use href="/shared/icons.svg#duel-chess"></use></svg>
+          <span data-i18n="footer.boardduel_name">BoardDuel · Chess & Card Games</span>
+        </a>
+        <a href="https://mathduel.games" class="sf-item">
+          <svg class="duel-icon sf-emoji" aria-hidden="true"><use href="/shared/icons.svg#duel-calculator"></use></svg>
+          <span data-i18n="footer.mathduel_name">MathDuel · Math Puzzle Games</span>
+        </a>
+        <a href="https://memoryduel.com" class="sf-item">
+          <svg class="duel-icon sf-emoji" aria-hidden="true"><use href="/shared/icons.svg#duel-brain"></use></svg>
+          <span data-i18n="footer.memoryduel_name">MemoryDuel · Knowledge Battles</span>
+        </a>
+      </div>
+      <div class="sf-links">
+        <a href="/about/" data-i18n="nav.about">About</a>
+        <a href="/contact/" data-i18n="nav.contact">Contact</a>
+        <a href="/privacy/" data-i18n="nav.privacy">Privacy</a>
+        <a href="/terms/" data-i18n="nav.terms">Terms</a>
+      </div>
+      <div class="sf-copy" data-i18n="site.footer">© 2026 Math Duel · Pure static · Privacy-first · Free to play</div>
+    </div>
+  <div class="sf-note" data-i18n="md_games_equation_pyramid_1">© 2026 MathDuel · Static · Privacy-first · Free to play</div>
+    </footer>
+  </div>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/service-worker.js')
+        .then(reg => console.log('SW registered', reg.scope))
+        .catch(err => console.warn('SW failed', err));
+    }
+  </script>
+
+  <!-- 玩法说明 -->
+  <div class="pyr-modal-overlay" id="help-modal">
+    <div class="pyr-modal">
+      <h2 data-i18n="equation_pyramid.help_title">📖 How to Play</h2>
+      <ol>
+        <li><span data-i18n="equation_pyramid.help_step1">From the 3×3 grid, </span><strong data-i18n="equation_pyramid.help_step1_bold">pick 3 different cells</strong></li>
+        <li><span data-i18n="equation_pyramid.help_step2">Arrange in click order:</span><code>num op num op num</code></li>
+        <li><strong data-i18n="equation_pyramid.help_step3">First cell: ignore operator</strong><span data-i18n="equation_pyramid.help_step3_suffix">, only the number</span></li>
+        <li><span data-i18n="equation_pyramid.help_step4">Follow</span><strong data-i18n="equation_pyramid.help_step4_bold">multiply/divide first, then add/subtract</strong></li>
+        <li><span data-i18n="equation_pyramid.help_step5">Equation result must equal</span><strong data-i18n="equation_pyramid.help_step5_bold">the target</strong></li>
+        <li data-i18n="equation_pyramid.help_step6">Each level has at least 3 correct solutions. Find them all for max score!</li>
+      </ol>
+      <p style="color:var(--text-light); font-size:0.85rem;" data-i18n="equation_pyramid.help_tip">💡 Tip: use division/multiplication first to adjust, then fine-tune with +/-.</p>
+      <button class="pyr-modal-close" id="help-close" data-i18n="equation_pyramid.help_start">Start Game</button>
+    </div>
+  </div>
+
+  <!-- W4 shared 模块 -->
+  <script defer src="/shared/daily-challenge.js?v=20260827"></script>
+  <script defer src="/shared/avatars.js?v=1"></script>
+  <script defer src="/js/coins-bar.js?v=20260925"></script>
+  <script defer src="/shared/streak.js?v=20260827"></script>
+  <script defer src="/shared/account.js?v=20260827"></script>
+  <script defer src="/shared/share-card.js?v=20260827"></script>
+  <script defer src="/shared/analytics.js?v=20260827"></script>
+<script>window.__reactionGame='equation-pyramid';</script>
+  <script src="/shared/reactions.js?v=ep3" defer></script>
+  <script>
+    if (window.MDAnalytics) window.__mdAnalytics = window.MDAnalytics.create();
+    if (window.__mdAnalytics) window.__mdAnalytics.start();
+  </script>
+  <script>
+    // === i18n helper: zh.json 中文字符串 → i18n key, fallback 原字符串 ===
+    window.__i18nZh2Key = (function() {
+      const map = new Map();
+      function walk(obj, prefix) {
+        for (const k in obj) {
+          const v = obj[k];
+          const path = prefix ? prefix + '.' + k : k;
+          if (typeof v === 'string' && /[\u4e00-\u9fff]/.test(v)) {
+            map.set(v, path);
+          } else if (typeof v === 'object') {
+            walk(v, path);
+          }
+        }
+      }
+      try {
+        const xhr = new XMLHttpRequest();
+        xhr.open('GET', '/i18n/zh.json', false);
+        xhr.send();
+        if (xhr.status === 200) {
+          const zh = JSON.parse(xhr.responseText);
+          map.clear();
+          walk(zh, '');
+          window.__i18nZh2KeyReady = true;
+        }
+      } catch (e) {}
+      return map;
+    })();
+    window.__ = function(zh, vars) {
+      if (!window.i18n) return zh;
+      const key = window.__i18nZh2Key.get(zh);
+      if (key) return window.i18n.t(key, vars || {});
+      return zh;
+    };
+    // === 直接按 key 翻译的安全辅助(i18n 未就绪时原样返回 key) ===
+    window.__t = function(key, vars) {
+      if (!window.i18n || !key) return key;
+      return window.i18n.t(key, vars || {});
+    };
+
+    // === gAlert 全局函数 ===
+    function gAlert(msg, title) {
+      alert((title ? title + "\n\n" : "") + msg);
+    }
+  // ===== 方程式金字塔核心 =====
+  const OPS = ['+', '-', '×', '÷'];
+  let cells, target, solutions, selected, timer, interval, score, level, foundSolutions, paused;
+
+  /* === Seeded RNG (W4.1) === */
+  function mulberry32(seed) {
+    let s = seed >>> 0;
+    return function() {
+      s = (s + 0x6D2B79F5) >>> 0;
+      let t = s;
+      t = Math.imul(t ^ (t >>> 15), t | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+  function hashSeed(s) {
+    let h = 0;
+    if (typeof s === 'string') {
+      for (let i = 0; i < s.length; i++) h = ((h << 5) - h + s.charCodeAt(i)) | 0;
+    } else if (typeof s === 'number') {
+      h = s | 0;
+    }
+    return h >>> 0;
+  }
+  let _rng = null;
+  function _r() { return _rng ? _rng() : Math.random(); }
+  function rand(min, max) { return Math.floor(_r() * (max - min + 1)) + min; }
+  function pick(arr) { return arr[Math.floor(_r() * arr.length)]; }
+
+  function evalExpr(a, op2, b, op3, c) {
+    // a OP2 b OP3 c 严格遵循"先乘除后加减"
+    // 优先级：× ÷(高) > + -(低)
+    // 规则：
+    //   1. 如果 op2 是 ×÷ 且 op3 是 +−：先算 a OP2 b = r1，再算 r1 OP3 c
+    //   2. 如果 op2 是 +− 且 op3 是 ×÷：先算 b OP3 c = r2，再算 a OP2 r2
+    //   3. 如果两个都是 ×÷ 或都是 +−：从左到右 (a OP2 b) OP3 c
+    function apply(x, op, y) {
+      if (op === '*' || op === '×') return x * y;
+      if (op === '/' || op === '÷') return x / y;
+      if (op === '+') return x + y;
+      if (op === '-') return x - y;
+      return y;
+    }
+    const p2 = (op2 === '×' || op2 === '*' || op2 === '÷' || op2 === '/') ? 1 : 0;
+    const p3 = (op3 === '×' || op3 === '*' || op3 === '÷' || op3 === '/') ? 1 : 0;
+    let result;
+    if (p2 === 1 && p3 === 0) {
+      // 规则 1：先 a OP2 b，再 OP3 c
+      result = apply(apply(a, op2, b), op3, c);
+    } else if (p2 === 0 && p3 === 1) {
+      // 规则 2：先 b OP3 c，再 a OP2
+      result = apply(a, op2, apply(b, op3, c));
+    } else {
+      // 规则 3：同优先级，从左到右
+      result = apply(apply(a, op2, b), op3, c);
+    }
+    return Math.abs(result - Math.round(result)) < 1e-6 ? Math.round(result) : result;
+  }
+
+  function findSolutions(t, cs) {
+    const N = cs.length;
+    const sols = [];
+    for (let i = 0; i < N; i++) {
+      for (let j = 0; j < N; j++) {
+        if (j === i) continue;
+        for (let k = 0; k < N; k++) {
+          if (k === i || k === j) continue;
+          const v = evalExpr(cs[i].num, cs[j].op, cs[j].num, cs[k].op, cs[k].num);
+          if (v === t) sols.push([cs[i], cs[j], cs[k]]);
+        }
+      }
+    }
+    // 去重（同 3 格子同顺序算一次）
+    const seen = new Set();
+    return sols.filter(s => {
+      const key = s.map(c => c.id).join(',');
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }
+
+  // W4.1: generatePuzzle(seed) — seed=null 用 Math.random,seed=string/number 用 mulberry32
+  function generatePuzzle(seed) {
+    const prevRng = _rng;
+    if (seed != null) {
+      _rng = mulberry32(hashSeed('pyramid:' + seed));
+    } else {
+      _rng = null;
+    }
+    try {
+      for (let attempt = 0; attempt < 500; attempt++) {
+        const cs = [];
+        for (let i = 0; i < 9; i++) {
+          cs.push({
+            id: String.fromCharCode(65 + i),
+            num: rand(1, 9),
+            op: pick(OPS)
+          });
+        }
+        const t = rand(-9, 9);
+        const sols = findSolutions(t, cs);
+        if (sols.length >= 3 && sols.length <= 12) {
+          return { cells: cs, target: t, solutions: sols, seed: seed || null };
+        }
+      }
+      return null;
+    } finally {
+      _rng = prevRng;
+    }
+  }
+
+  function init() {
+    const puzzle = generatePuzzle();
+    if (!puzzle) {
+      document.getElementById('result').textContent = __('题目生成失败，请重试');
+      return;
+    }
+    cells = puzzle.cells;
+    target = puzzle.target;
+    solutions = puzzle.solutions;
+    selected = [];
+    foundSolutions = [];
+    paused = false;
+    try {
+      const data = localStorage.getItem('pyr_stats');
+      if (data) {
+        const s = JSON.parse(data);
+        score = s.score || 0;
+        level = (s.level || 0) + 1;
+      } else {
+        score = 0;
+        level = 1;
+      }
+    } catch (e) {
+      score = 0;
+      level = 1;
+    }
+    document.getElementById('level').textContent = level;
+    document.getElementById('score').textContent = score;
+    document.getElementById('remaining').textContent = solutions.length;
+    document.getElementById('target').textContent = target;
+    if (interval) clearInterval(interval);
+    timer = 0;
+    interval = setInterval(() => {
+      if (paused) return;
+      timer++;
+      const m = Math.floor(timer / 60);
+      const s = timer % 60;
+      document.getElementById('timer').textContent = m + ':' + String(s).padStart(2, '0');
+    }, 1000);
+    render();
+    document.getElementById('result').textContent = __('点击 3 个格子，按顺序组成算式');
+    document.getElementById('result').className = 'pyr-result hint';
+  }
+
+  function render() {
+    document.getElementById('grid').innerHTML = cells.map((c, i) => {
+      const idx = selected.indexOf(i);
+      const cls = 'pyr-cell' +
+        (idx === 0 ? ' selected-1' : '') +
+        (idx === 1 ? ' selected-2' : '') +
+        (idx === 2 ? ' selected-3' : '');
+      return `<div class="${cls}" data-i="${i}"><div class="op">${c.op}</div><div class="num">${c.num}</div></div>`;
+    }).join('');
+    renderFormula();
+  }
+
+  function renderFormula() {
+    const f = document.getElementById('formula');
+    if (selected.length === 0) {
+      f.innerHTML = window.__t("equation_pyramid.prompt_empty_html");
+      return;
+    }
+    let html = '';
+    for (let i = 0; i < 3; i++) {
+      if (i < selected.length) {
+        const c = cells[selected[i]];
+        if (i === 0) {
+          // 首格：忽略运算符，只显示数字 + "起" 标签
+          html += `<span class="pyr-fslot filled"><span style="font-size:0.7rem;color:var(--text-light);margin-right:0.25rem;">${window.__t('equation_pyramid.first_cell_label')}</span>${c.num}</span>`;
+        } else {
+          html += `<span class="pyr-fop">${c.op}</span><span class="pyr-fslot filled">${c.num}</span>`;
+        }
+      } else {
+        html += `<span class="pyr-fslot pending">?</span>`;
+        if (i < 2) html += '<span style="color:var(--text-light);">?</span>';
+      }
+    }
+    html += ` <span class="pyr-fop" style="color:var(--text-light);">=</span> <span class="pyr-fslot filled" style="background:var(--primary);color:white;">${target}</span>`;
+    f.innerHTML = html;
+  }
+
+  function clickCell(i) {
+    if (paused) return;
+    const idx = selected.indexOf(i);
+    if (idx >= 0) {
+      // 取消选中
+      selected.splice(idx, 1);
+    } else if (selected.length < 3) {
+      selected.push(i);
+    } else {
+      // 已选 3 个：替换最后一个
+      selected[2] = i;
+    }
+    render();
+    if (selected.length === 3) {
+      window.checkAnswer();
+    }
+  }
+
+  function checkAnswer() {
+    const [a, b, c] = selected;
+    const val = evalExpr(cells[a].num, cells[b].op, cells[b].num, cells[c].op, cells[c].num);
+    const resultEl = document.getElementById('result');
+    if (val === target) {
+      // 正确！标记为已找到
+      const solKey = selected.map(i => cells[i].id).join(',');
+      if (!foundSolutions.some(s => s.join(',') === solKey)) {
+        foundSolutions.push([...selected]);
+        // 计分：基础 100 + 剩余时间奖励 + 解的稀有度
+        score += 100;
+        document.getElementById('score').textContent = score;
+        resultEl.textContent = window.i18n.t('equation_pyramid.result_correct_with_remaining', { a: cells[a].num, op1: cells[b].op, b: cells[b].num, op2: cells[c].op, c: cells[c].num, val: val, left: solutions.length - foundSolutions.length });
+        resultEl.className = 'pyr-result win';
+        document.getElementById('remaining').textContent = solutions.length - foundSolutions.length;
+        // 检查全部找到
+        if (foundSolutions.length >= solutions.length) {
+          /* P7: 每日挑战完成 → 服务端提交(星标+金币+排行; 服务端 already 防重复) */
+          if (pyrDailyData) {
+            try {
+              fetch('/api/daily/submit', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ game: 'equation-pyramid', expression: JSON.stringify(foundSolutions), duration_ms: timer * 1000 }) })
+                .then(function (r) { return r.ok ? r.json() : null; })
+                .then(function (d) { if (d && d.ok && window.__mdAnalytics) window.__mdAnalytics.track('daily_complete', { game: 'pyramid', star: d.earnedStar || 0 }); })
+                .catch(function () {});
+            } catch (e) {}
+          }
+          setTimeout(() => {
+            resultEl.textContent = window.i18n.t('equation_pyramid.result_all_found_with_score', { count: solutions.length, score: score });
+            setTimeout(() => init(), 2500);
+          }, 500);
+        } else {
+          // 找到后清空已选项，让玩家继续找其他解
+          setTimeout(() => {
+            selected = [];
+            render();
+            resultEl.textContent = window.i18n.t('equation_pyramid.result_partial_continue', { found: foundSolutions.length, total: solutions.length });
+            resultEl.className = 'pyr-result hint';
+          }, 1200);
+        }
+      } else {
+        resultEl.textContent = __('这个解已经找过了，换个组合试试');
+        resultEl.className = 'pyr-result hint';
+        selected = [];
+        render();
+      }
+    } else {
+      resultEl.textContent = window.i18n.t('equation_pyramid.result_wrong_format', { a: cells[a].num, op1: cells[b].op, b: cells[b].num, op2: cells[c].op, c: cells[c].num, val: val, target: target });
+      resultEl.className = 'pyr-result error';
+      setTimeout(() => {
+        selected = [];
+        render();
+        resultEl.textContent = __('已清空，继续尝试');
+        resultEl.className = 'pyr-result hint';
+      }, 1500);
+    }
+  }
+
+  function undo() {
+    if (selected.length > 0) selected.pop();
+    render();
+  }
+
+  function clearSel() {
+    selected = [];
+    render();
+    document.getElementById('result').textContent = __('已清空');
+    document.getElementById('result').className = 'pyr-result hint';
+  }
+
+  function showHint() {
+    // 找一个未找到的解
+    const remain = solutions.filter(s => !foundSolutions.some(f => f.join(',') === s.map(c=>c.id).join(',')));
+    if (remain.length === 0) {
+      document.getElementById('result').textContent = __('所有解都找到了！');
+      return;
+    }
+    const hint = remain[0];
+    // 找这 3 个格子的索引
+    const idxs = hint.map(c => cells.findIndex(x => x.id === c.id));
+    selected = idxs;
+    render();
+    const [a, b, c] = idxs;
+    document.getElementById('result').textContent = window.i18n.t('equation_pyramid.hint_step', { n: '', max: '', step: `${cells[a].num} ${cells[b].op} ${cells[b].num} ${cells[c].op} ${cells[c].num} = ${target}` });
+    document.getElementById('result').className = 'pyr-result hint';
+  }
+
+  function togglePause() {
+    paused = !paused;
+    document.getElementById('pause').textContent = paused ? __('▶ 继续') : __('⏸ 暂停');
+    document.body.classList.toggle('paused', paused);
+  }
+
+  // 事件绑定
+  document.getElementById('grid').addEventListener('click', e => {
+    const cell = e.target.closest('.pyr-cell');
+    if (!cell) return;
+    clickCell(parseInt(cell.dataset.i));
+  });
+  document.getElementById('undo').onclick = undo;
+  document.getElementById('clear').onclick = clearSel;
+  document.getElementById('hint').onclick = showHint;
+  document.getElementById('pause').onclick = togglePause;
+  document.getElementById('next').onclick = () => {
+    saveStats();
+    init();
+  };
+  document.getElementById('help').onclick = () => document.getElementById('help-modal').classList.add('show');
+  document.getElementById('help-close').onclick = () => document.getElementById('help-modal').classList.remove('show');
+  document.getElementById('help-modal').addEventListener('click', e => {
+    if (e.target === document.getElementById('help-modal')) {
+      document.getElementById('help-modal').classList.remove('show');
+    }
+  });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      // 优先关闭模态框
+      const modal = document.getElementById('help-modal');
+      if (modal.classList.contains('show')) {
+        modal.classList.remove('show');
+        return;
+      }
+      togglePause();
+    } else if (e.key === 'Backspace') {
+      undo();
+    } else if (e.key === 'h' || e.key === 'H') {
+      showHint();
+    } else if (e.key === 'c' || e.key === 'C') {
+      clearSel();
+    }
+  });
+
+  // 保存分数
+  function saveStats() {
+    try {
+      localStorage.setItem('pyr_stats', JSON.stringify({score, level}));
+    } catch (e) {}
+  }
+  window.addEventListener('beforeunload', saveStats);
+
+  // 不再首屏自动弹教程，让用户先体验；点"📖 玩法"按钮随时查看
+
+  init();
+
+  // i18n 就绪/切换语言后重渲染动态文案（修复 init 早于 i18n 加载导致显示 key 的问题）
+  window.addEventListener('i18n:ready', () => { try { render(); } catch (e) {} });
+  window.addEventListener('i18n:change', () => { try { render(); } catch (e) {} });
+
+  /* ═══ WebSocket Battle Mode ═══ */
+  var ws = null, battleMode = false, battleRoom = null, myName = "";
+  /* ── P7 模板复制: 大厅展示当前账号头像; 首次进入用服务端昵称预填; 金币徽章 ── */
+  (function () {
+    fetch('/api/account/me', { credentials: 'same-origin' }).then(function (r) { return r.ok ? r.json() : null; }).then(function (d) {
+      if (!d) return;
+      var chipEl = document.getElementById('battle-avatar-chip');
+      if (d.avatar) window.__myAvatar = d.avatar;
+      if (chipEl && window.MDAvatars && d.avatar) MDAvatars.chip(chipEl, d.avatar, '你的头像 · 商店可换');
+      if (d.nickname && !localStorage.getItem('eqpyr_battle_name')) {
+        var inp = document.getElementById('battle-name-input');
+        if (inp && !inp.value) inp.value = d.nickname;
+      }
+    }).catch(function () {});
+  })();
+  if (window.CoinsBar) { try { CoinsBar.init(); } catch (e) {} }
+  var myPlayerNum = 0, battlePlayers = {}, battleTimeLimit = 60;
+  var WS_URL = "wss://mathduel.games/ws";
+
+  var lobbyOverlay = document.getElementById("battle-lobby-overlay");
+  var lobbyForm = document.getElementById("battle-lobby-form");
+  var roomInfo = document.getElementById("battle-room-info");
+  var lobbyError = document.getElementById("battle-lobby-error");
+  var battleNameInput = document.getElementById("battle-name-input");
+  var battleJoinInput = document.getElementById("battle-join-input");
+  var battleRoomDisplay = document.getElementById("battle-room-display");
+  var battleInfoBar = document.getElementById("battle-info");
+  var battleMyScoreEl = document.getElementById("battle-my-score");
+  var battleOppScoreEl = document.getElementById("battle-opp-score");
+  var battleTurnEl = document.getElementById("battle-turn");
+  var battleTimerFill = document.getElementById("battle-timer-fill");
+  var battleRoundNum = document.getElementById("battle-round-num");
+  var battleRoundTotal = document.getElementById("battle-round-total");
+  var battleRoomCodeText = document.getElementById("battle-room-code");
+
+  var savedName = localStorage.getItem("eqpyr_battle_name");
+  if (savedName && battleNameInput) battleNameInput.value = savedName;
+
+  document.getElementById("battle-btn").addEventListener("click", function() {
+    lobbyOverlay.style.display = "flex";
+    lobbyForm.style.display = "";
+    roomInfo.style.display = "none";
+    lobbyError.textContent = "";
+  });
+  document.getElementById("battle-lobby-close").addEventListener("click", function() {
+    // P1-5 修复：关闭 lobby 时如在 lobby 阶段（未开战）需发 leave_room 释放服务端房间
+    closeLobby();
+  });
+  document.getElementById("battle-back-btn").addEventListener("click", function() {
+    // P1-5 修复：返回时如在 lobby 阶段需发 leave_room
+    closeLobby();
+  });
+
+  function closeLobby() {
+    lobbyOverlay.style.display = "none";
+    lobbyError.textContent = "";
+    if (!battleMode && ws) {
+      // 在 lobby 阶段关闭 → 主动离开房间（如已创建/加入）
+      try {
+        if (ws.readyState === 1 && battleRoom) {
+          ws.send(JSON.stringify({ type: 'leave_room' }));
+        }
+      } catch (e) {}
+      try { ws.close(); } catch (e) {}
+      ws = null;
+      battleRoom = null;
+    }
+  }
+  document.getElementById("battle-copy-code").addEventListener("click", function() {
+    if (navigator.clipboard) navigator.clipboard.writeText(battleRoomCodeText.textContent || battleRoomDisplay.textContent);
+  });
+
+  // 游客直达短链：/b/equation-pyramid/XXXXX
+  function showShareUrl() {
+    var el = document.getElementById("battle-share-url");
+    if (el && battleRoom) el.value = window.location.origin + '/b/equation-pyramid/' + encodeURIComponent(battleRoom);
+  }
+  document.getElementById("battle-copy-link").addEventListener("click", function() {
+    var el = document.getElementById("battle-share-url");
+    if (!el || !el.value) showShareUrl();
+    if (el && navigator.clipboard) navigator.clipboard.writeText(el.value);
+    var btn = document.getElementById("battle-copy-link");
+    if (btn) { btn.textContent = __('✅ 已复制'); setTimeout(function() { btn.textContent = __('📋 复制链接'); }, 1500); }
+  });
+
+  document.getElementById("battle-create-btn").addEventListener("click", function() {
+    var name = battleNameInput.value.trim();
+    if (!name) { lobbyError.textContent = __('请输入昵称'); return; }
+    myName = name;
+    localStorage.setItem("eqpyr_battle_name", name);
+    lobbyError.textContent = "";
+    // 新协议: POST /api/rooms 建房拿码 → 连 /ws?code=X&name=Y
+    fetch((window.API_BASE || '') + '/rooms', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pool: 'standard', gameType: 'eqpyr', name: myName }),
+    }).then(function(r) { return r.json(); }).then(function(data) {
+      if (!data || !data.code) { lobbyError.textContent = __('连接失败，请稍后重试'); return; }
+      connectWS(data.code, function() {
+        if (window.plausible) plausible('battle_create', { props: { game: 'eqpyr' } });
+      });
+    }).catch(function() {
+      lobbyError.textContent = __('连接失败，请稍后重试');
+    });
+  });
+
+  document.getElementById("battle-join-btn").addEventListener("click", function() {
+    var name = battleNameInput.value.trim();
+    var code = battleJoinInput.value.trim().toUpperCase();
+    if (!name) { lobbyError.textContent = __('请输入昵称'); return; }
+    if (!code) { lobbyError.textContent = __('请输入房间号'); return; }
+    myName = name;
+    localStorage.setItem("eqpyr_battle_name", name);
+    lobbyError.textContent = "";
+    // 新协议: 房间码已由建房方创建,直接连 /ws?code=X&name=Y
+    connectWS(code, function() {
+      if (window.plausible) plausible('battle_join', { props: { game: 'eqpyr' } });
+    });
+  });
+  battleJoinInput.addEventListener("keydown", function(e) {
+    if (e.key === "Enter") document.getElementById("battle-join-btn").click();
+  });
+
+  // P0: 指数退避 + jitter + 消息队列状态
+  var wsReconnect = {
+    attempts: 0,
+    maxAttempts: 8,
+    baseDelay: 2000,
+    maxDelay: 30000,
+    pending: [],
+    forceClosed: false
+  };
+
+  function nextReconnectDelay() {
+    var exp = Math.min(wsReconnect.maxDelay,
+      wsReconnect.baseDelay * Math.pow(2, wsReconnect.attempts));
+    var jitter = exp * 0.3 * (Math.random() * 2 - 1);
+    return Math.max(500, exp + jitter);
+  }
+
+  function scheduleReconnect() {
+    if (wsReconnect.forceClosed) return;
+    if (wsReconnect.attempts >= wsReconnect.maxAttempts) {
+      showFinalDisconnect();
+      gAlert(__('连接断开'), __('对战中断'));
+      exitBattle();
+      return;
+    }
+    wsReconnect.attempts++;
+    var delay = nextReconnectDelay();
+    updateReconnectUI(wsReconnect.attempts, delay);
+    setTimeout(function() { if (!wsReconnect.forceClosed && battleMode) connectWS(); }, delay);
+  }
+
+  function flushPending() {
+    while (wsReconnect.pending.length && ws && ws.readyState === WebSocket.OPEN) {
+      ws.send(wsReconnect.pending.shift());
+    }
+  }
+
+  function updateReconnectUI(attempt, delayMs) {
+    var banner = document.getElementById("ws-reconnect-banner");
+    if (banner) {
+      banner.style.display = "block";
+      banner.style.background = "#FFA500";
+      var txt = document.getElementById("ws-reconnect-text");
+      if (txt) txt.textContent = "Connection lost. Reconnecting (attempt " + attempt + "/" + wsReconnect.maxAttempts + ") in " + Math.round(delayMs / 1000) + "s...";
+    }
+  }
+  function hideReconnectUI() {
+    var banner = document.getElementById("ws-reconnect-banner");
+    if (banner) banner.style.display = "none";
+  }
+  function showFinalDisconnect() {
+    var banner = document.getElementById("ws-reconnect-banner");
+    if (banner) {
+      banner.style.display = "block";
+      banner.style.background = "#DC2626";
+      var txt = document.getElementById("ws-reconnect-text");
+      if (txt) txt.textContent = "Connection lost. Please refresh the page.";
+    }
+  }
+
+  function connectWS(code, onOpen) {
+    if (code) battleRoom = code;
+    if (ws && ws.readyState === WebSocket.OPEN) { if (onOpen) onOpen(); return; }
+    var wsUrl = WS_URL + "?code=" + encodeURIComponent(battleRoom || "") + "&name=" + encodeURIComponent(myName || "");
+    try { ws = new WebSocket(wsUrl); } catch(e) { lobbyError.textContent = __('连接失败'); return; }
+    ws.onopen = function() {
+      wsReconnect.attempts = 0;
+      hideReconnectUI();
+      window.__battleHeartbeat = setInterval(function() {
+        if (ws && ws.readyState === 1) {
+          try { ws.send(JSON.stringify({type:"ping"})); } catch(e) {}
+        }
+      }, 30000);
+      flushPending();
+      if (onOpen) onOpen();
+    };
+    ws.onmessage = function(evt) {
+      var data; try { data = JSON.parse(evt.data); } catch(e) { return; }
+      handleServerMsg(data);
+    };
+    ws.onclose = function(e) {
+      if (wsReconnect.forceClosed) return;
+      if (e && e.code === 1000) return;
+      if (window.__battleHeartbeat) { clearInterval(window.__battleHeartbeat); window.__battleHeartbeat = null; }
+      if (battleMode) scheduleReconnect();
+    };
+    ws.onerror = function() { lobbyError.textContent = __('连接失败，请重试'); };
+  }
+
+  function sendMsg(obj) {
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify(obj));
+      return;
+    }
+    // P0: 断线/CONNECTING 入队，重连成功后 flushPending 自动发送
+    wsReconnect.pending.push(JSON.stringify(obj));
+    if (wsReconnect.pending.length > 50) wsReconnect.pending.shift();
+  }
+
+  function handleServerMsg(data) {
+    switch (data.type) {
+      case "room_created":
+        battleRoom = data.code;
+        battleRoomCodeText.textContent = data.code;
+        battleRoomDisplay.textContent = data.code;
+        lobbyForm.style.display = "none";
+        roomInfo.style.display = "";
+        document.getElementById("battle-waiting-msg").textContent = __('⏳ 等待对手加入...');
+        battlePlayers = {}; battlePlayers[myName] = { score: 0, avatar: window.__myAvatar || null }; renderBattlePlayers();
+        showShareUrl();
+        break;
+      case "room_joined":
+        battleRoom = data.code;
+        battleRoomCodeText.textContent = data.code;
+        battleRoomDisplay.textContent = data.code;
+        lobbyForm.style.display = "none";
+        roomInfo.style.display = "";
+        showShareUrl();
+        break;
+      case "player_joined":
+        document.getElementById("battle-waiting-msg").textContent = __('✅ 对手已加入！即将开始...');
+        if (data.players) {
+          battlePlayers = {};
+          for (var pj = 0; pj < data.players.length; pj++) {
+            var pp = data.players[pj];
+            var pn = typeof pp === 'string' ? pp : pp.name;
+            battlePlayers[pn] = { score: 0, avatar: (typeof pp === 'object' && pp.avatar) || null, nickname: (typeof pp === 'object' && pp.nickname) || null };
+          }
+        }
+        if (!battlePlayers[myName]) battlePlayers[myName] = { score: 0, avatar: window.__myAvatar || null };
+        renderBattlePlayers();
+        break;
+      case "eqpyr_new_game":
+        onEqpyrNewGame(data);
+        break;
+      case "timer":
+        updateBattleTimer(data.timeLeft);
+        break;
+      case "eqpyr_solved":
+        // 服务端已广播全量 players（含自己的最新分数）
+        if (data.players) {
+          battlePlayers = {};
+          for (var si = 0; si < data.players.length; si++) {
+            var p = data.players[si];
+            var pName = typeof p === 'string' ? p : p.name;
+            var pScore = typeof p === 'object' ? (p.score || 0) : 0;
+            battlePlayers[pName] = { score: pScore, avatar: (typeof p === 'object' && p.avatar) || null, nickname: (typeof p === 'object' && p.nickname) || null };
+          }
+        }
+        updateBattleScoreDisplay();
+        // 显示反馈
+        if (data.solver === myName) {
+          battleTurnEl.textContent = window.i18n.t('battle.you_found_solution');
+        } else if (data.solver) {
+          battleTurnEl.textContent = window.i18n.t('battle.opponent_found_solution');
+        }
+        break;
+      case "eqpyr_timeout":
+        // 服务端带 winner 字段（P1-3/P1-6 修复：用服务端算的赢家，不要客户端比）
+        if (data.players) {
+          battlePlayers = {};
+          for (var ti = 0; ti < data.players.length; ti++) {
+            var p = data.players[ti];
+            var pName = typeof p === 'string' ? p : p.name;
+            var pScore = typeof p === 'object' ? (p.score || 0) : 0;
+            battlePlayers[pName] = { score: pScore, avatar: (typeof p === 'object' && p.avatar) || null, nickname: (typeof p === 'object' && p.nickname) || null };
+          }
+        }
+        updateBattleScoreDisplay();
+        showRoundResult({
+          winner: data.winner,
+          isTimeout: true,
+          message: data.winner === myName ? __('⏰ 时间到！你领先！') : (data.winner === 'draw' ? __('⏰ 时间到！平局') : __('⏰ 时间到！对手领先')),
+          nextText: __('下一题即将开始...')
+        });
+        break;
+      case "round_cancelled":
+        // P1-2 修复：对手离开导致回合取消
+        battleMode = false;
+        gAlert(data.reason || __('对手已离开，对战结束'), __('⚔️ 对战结束'));
+        exitBattle();
+        break;
+      case "opponent_leave":
+      case "player_left": {   // P0-2 + ADR-P0-02：对手离开=暂停，显示等待重连遮罩，不退出对战
+        if (battleMode) {
+          var rm = document.getElementById('p0-rejoin-mask');
+          if (!rm) {
+            rm = document.createElement('div');
+            rm.id = 'p0-rejoin-mask';
+            rm.style.cssText = 'position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.62);color:#fff;font-size:1.05rem;text-align:center;padding:1rem;';
+            document.body.appendChild(rm);
+          }
+          rm.textContent = ((data && data.name) ? data.name : (data && data.player) ? data.player : 'Opponent') + ' 离开，等待重连…';
+          rm.style.display = 'flex';
+        }
+        break;
+      }
+      case "opponent_rejoined":
+      case "round_resume": {   // P0-2：对手重连 → 隐藏遮罩并续玩当前题
+        var rm2 = document.getElementById('p0-rejoin-mask');
+        if (rm2) rm2.style.display = 'none';
+        if (data && data.target) onEqpyrNewGame(data);
+        break;
+      }
+      case "game_over":
+        // P0-2 修复：处理游戏结束
+        showGameOver(data);
+        break;
+      case "error":
+        // P2-3: 用 renderError 渲染，支持 code + msg 多语言
+        const errRendered = window.i18n.renderError(data) || __('发生错误');
+        lobbyError.textContent = errRendered;
+        // 1 秒后清空错误（避免永久卡住）
+        setTimeout(function() { if (lobbyError.textContent === errRendered) lobbyError.textContent = ''; }, 2500);
+        break;
+    }
+  }
+
+  function onEqpyrNewGame(data) {
+    // 重置对战状态（每局开始）— P0-2：新局/对手重连续玩共用
+    battleMode = true;
+    lobbyOverlay.style.display = "none";
+    // 显示信息条（P0-1 修复：必须 block/flex，不能 ""）
+    battleInfoBar.style.display = "block";
+    // 重置分数
+    if (data.players) {
+      battlePlayers = {};
+      for (var pi = 0; pi < data.players.length; pi++) {
+        var p = data.players[pi];
+        var pName = typeof p === 'string' ? p : p.name;
+        var pScore = typeof p === 'object' ? (p.score || 0) : 0;
+        battlePlayers[pName] = { score: pScore, avatar: (typeof p === 'object' && p.avatar) || null, nickname: (typeof p === 'object' && p.nickname) || null };
+      }
+    }
+    renderBattlePlayers();
+    // 计算 myPlayerNum
+    myPlayerNum = -1;
+    var idx = 0;
+    for (var name in battlePlayers) {
+      if (name === myName) { myPlayerNum = idx; break; }
+      idx++;
+    }
+    if (myPlayerNum < 0) myPlayerNum = 0;
+    battleTimeLimit = data.timeLimit || 60;
+    battleRoundNum.textContent = data.round || 1;
+    battleRoundTotal.textContent = data.maxRounds || 10;
+    document.getElementById("battle-room-code").textContent = battleRoom;
+    updateBattleScoreDisplay();
+    loadPuzzleFromServer({ target: data.target, cells: data.cells, solutionsCount: data.solutionsCount || 0 });
+    // 重置计时器
+    battleTurnEl.textContent = __t('equation_pyramid.battle_timer', {n: battleTimeLimit});
+    battleTimerFill.style.width = "100%";
+    battleTimerFill.style.background = "linear-gradient(90deg,#10b981,#34d399)";
+  }
+
+  function updateBattleTimer(timeLeft) {
+    if (!battleMode) return;
+    var pct = Math.max(0, (timeLeft / battleTimeLimit) * 100);
+    battleTimerFill.style.width = pct + '%';
+    if (pct < 25) battleTimerFill.style.background = 'linear-gradient(90deg,#ef4444,#f87171)';
+    else if (pct < 50) battleTimerFill.style.background = 'linear-gradient(90deg,#f59e0b,#fbbf24)';
+    else battleTimerFill.style.background = 'linear-gradient(90deg,#10b981,#34d399)';
+    battleTurnEl.textContent = __t('equation_pyramid.battle_timer', {n: Math.max(0, timeLeft)});
+  }
+
+  /* P7 模板复制: 大厅玩家列表渲染（带头像，24 点模板同款） */
+  function escName(sv) { var d = document.createElement('div'); d.textContent = sv; return d.innerHTML; }
+  function renderBattlePlayers() {
+    var box = document.getElementById('battle-players-list');
+    if (!box) return;
+    var html = '';
+    for (var name in battlePlayers) {
+      var isMe = name === myName;
+      var meta = battlePlayers[name] || {};
+      var ava = isMe ? (window.__myAvatar || meta.avatar) : meta.avatar;
+      html += '<div class="battle-player-item ' + (isMe ? 'me' : '') + '">' +
+        '<span class="p-ava">' + (window.MDAvatars ? MDAvatars.chipHtml(ava) : '') + '</span>' +
+        '<span class="p-name">' + escName(name) + '</span>' +
+        '<span class="p-tag">' + (isMe ? 'Me' : 'Opponent') + '</span></div>';
+    }
+    box.innerHTML = html;
+  }
+
+  function updateBattleScoreDisplay() {
+    var myScore = 0, oppScore = 0, oppName = '';
+    for (var name in battlePlayers) {
+      if (name === myName) {
+        myScore = battlePlayers[name].score || 0;
+      } else {
+        oppScore = battlePlayers[name].score || 0;
+        oppName = name;
+      }
+    }
+    battleMyScoreEl.textContent = __t('battle.your_score', {score: myScore});
+    battleOppScoreEl.textContent = __t('battle.score_opponent', {name: oppName || __('对手'), score: oppScore});
+    battleMyScoreEl.classList.toggle("winning", myScore > oppScore);
+    battleOppScoreEl.classList.toggle("winning", oppScore > myScore);
+  }
+
+  function showRoundResult(opts) {
+    var message = opts.message || '';
+    var nextText = opts.nextText || __('下一题即将开始...');
+    showBattleOverlay(
+      '<div class="battle-result-card">' +
+      '<h3 class="result-timeout">' + escapeHtml(message) + '</h3>' +
+      '<p style="color:var(--text-light);font-size:0.9rem;">' + escapeHtml(nextText) + '</p>' +
+      '</div>'
+    );
+  }
+
+  function showGameOver(data) {
+    battleMode = false;
+    if (window.__battleHeartbeat) { clearInterval(window.__battleHeartbeat); window.__battleHeartbeat = null; }
+    if (data.players) {
+      battlePlayers = {};
+      for (var gi = 0; gi < data.players.length; gi++) {
+        var p = data.players[gi];
+        var pName = typeof p === 'string' ? p : p.name;
+        var pScore = typeof p === 'object' ? (p.score || 0) : 0;
+        battlePlayers[pName] = { score: pScore, avatar: (typeof p === 'object' && p.avatar) || null, nickname: (typeof p === 'object' && p.nickname) || null };
+      }
+    }
+    var myScore = 0, oppScore = 0, oppName = '', winner = data.winner;
+    for (var nm in battlePlayers) {
+      if (nm === myName) myScore = battlePlayers[nm].score || 0;
+      else { oppScore = battlePlayers[nm].score || 0; oppName = nm; }
+    }
+    var resultTitle, resultCls;
+    if (!winner || winner === 'draw') {
+      resultTitle = __('🤝 平局！');
+      resultCls = 'result-timeout';
+    } else if (winner === myName) {
+      resultTitle = __('🏆 你赢了！');
+      resultCls = 'result-win';
+    } else {
+      resultTitle = __('😢 你输了');
+      resultCls = 'result-lose';
+    }
+    showBattleOverlay(
+      '<div class="battle-game-over">' +
+      '<h3 class="' + resultCls + '">' + resultTitle + '</h3>' +
+      '<div class="battle-final-scores">' +
+      '<div class="score-col"><div class="score-num">' + myScore + '</div><div class="score-label">' + escapeHtml(myName) + '</div></div>' +
+      '<div class="score-col" style="font-size:1.5rem;align-self:center;color:var(--text-light);">—</div>' +
+      '<div class="score-col"><div class="score-num">' + oppScore + '</div><div class="score-label">' + escapeHtml(oppName || __('对手')) + '</div></div>' +
+      '</div>' +
+      '<p style="color:var(--text-light);font-size:0.9rem;">' + __t('game_24.battle_total_rounds', {n: battleRoundTotal.textContent}) + '</p>' +
+      '<button class="btn-battle btn-create" onclick="exitBattle()" style="margin-top:0.75rem;">' + __('返回主页') + '</button>' +
+      '</div>'
+    );
+  }
+
+  function showBattleOverlay(html) {
+    var existing = document.getElementById('battle-result-overlay');
+    if (existing) existing.remove();
+    var overlay = document.createElement('div');
+    overlay.id = 'battle-result-overlay';
+    overlay.className = 'battle-result-overlay';
+    overlay.innerHTML = html;
+    document.body.appendChild(overlay);
+  }
+
+  function removeBattleOverlay() {
+    var existing = document.getElementById('battle-result-overlay');
+    if (existing) existing.remove();
+  }
+
+  function escapeHtml(s) {
+    var div = document.createElement('div');
+    div.textContent = s == null ? '' : s;
+    return div.innerHTML;
+  }
+
+  function loadPuzzleFromServer(gs) {
+    cells = gs.cells;
+    target = gs.target;
+    // Bug6-fix: 使用服务端下发的解数，而非空数组
+    var solCount = gs.solutionsCount || gs.solutions?.length || 0;
+    solutions = { length: solCount }; // 只保留 length 用于进度判断
+    foundSolutions = [];
+    selected = [];
+    score = 0;
+    document.getElementById("score").textContent = "0";
+    document.getElementById("target").textContent = target;
+    document.getElementById("remaining").textContent = solCount;
+    render();
+  }
+
+  function updateBattleScores() {
+    var myScore = battleScore[myPlayerNum] || 0;
+    var oppScore = battleScore[myPlayerNum === 0 ? 1 : 0] || 0;
+    battleMyScoreEl.textContent = __t('battle.your_score', {score: myScore});
+    battleOppScoreEl.textContent = __t('battle.opponent_score', {score: oppScore});
+    battleMyScoreEl.classList.toggle("winning", myScore > oppScore);
+    battleOppScoreEl.classList.toggle("winning", oppScore > myScore);
+  }
+
+  function exitBattle() {
+    battleMode = false;
+    // 清所有定时器
+    if (window.__battleHeartbeat) { clearInterval(window.__battleHeartbeat); window.__battleHeartbeat = null; }
+    wsReconnect.forceClosed = true;
+    wsReconnect.attempts = 0;
+    hideReconnectUI();
+    // 关 overlay
+    removeBattleOverlay();
+    // 发 leave_room 后关 ws
+    if (ws) {
+      try {
+        if (ws.readyState === 1 && battleRoom) {
+          ws.send(JSON.stringify({ type: 'leave_room' }));
+        }
+      } catch (e) {}
+      try { ws.close(); } catch (e) {}
+      ws = null;
+    }
+    // 隐藏信息条
+    if (battleInfoBar) battleInfoBar.style.display = "none";
+    // P1-3/P1-4 修复：清理所有对战变量（**不要调单机 init()**，会覆盖 score/cells）
+    battleRoom = null;
+    battlePlayers = {};
+    myPlayerNum = 0;
+    // 不要重置 myName —— 让玩家退出后能直接开战另一个房间
+  }
+
+  // 保留 window.checkAnswer override（重写时已更新逻辑）
+  var origCheckAnswer = window.checkAnswer;
+  window.checkAnswer = function() {
+    if (!battleMode) { origCheckAnswer(); return; }
+    if (selected.length !== 3) return;
+    var [a, b, c] = selected;
+    var val = evalExpr(cells[a].num, cells[b].op, cells[b].num, cells[c].op, cells[c].num);
+    if (val === target) {
+      var solKey = selected.map(function(i) { return cells[i].id; }).join(",");
+      if (!foundSolutions.some(function(s) { return s.join(",") === solKey; })) {
+        foundSolutions.push([].concat(selected));
+        // 不本地加分（避免与服务端广播冲突）—— 服务端会广播 eqpyr_solved 包含最新分数
+        sendMsg({ type: "eqpyr_solve", equation: selected.map(function(i) { return cells[i].id; }) });
+        if (solutions.length > 0 && foundSolutions.length >= solutions.length) {
+          sendMsg({ type: "eqpyr_all_found" });
+        }
+        setTimeout(function() { selected = []; render(); }, 1200);
+      }
+    }
+  };
+  </script>
+  <script>
+/* W4.4 战绩卡 Overlay + 双 CTA */
+  let pyrDailyData = null;
+  let pyrDailyActiveKey = null;
+  let pyrCountdownTimer = null;
+  const PYR_PROGRESS_KEY = 'md_pyr_progress';
+  // 暴露到 window 方便测试 + 调试
+  try { Object.defineProperty(window, 'pyrDailyActiveKey', { get: () => pyrDailyActiveKey, set: v => pyrDailyActiveKey = v, configurable: true }); } catch(e) {}
+
+  function pyrLoadProgress(dateKey) {
+    try {
+      const raw = localStorage.getItem(PYR_PROGRESS_KEY);
+      if (!raw) return { date: null, found: [] };
+      const p = JSON.parse(raw);
+      if (p.date !== dateKey) return { date: dateKey, found: [] };
+      return p;
+    } catch (e) { return { date: dateKey, found: [] }; }
+  }
+  function pyrSaveProgress(p) {
+    try { localStorage.setItem(PYR_PROGRESS_KEY, JSON.stringify(p)); } catch (e) {}
+  }
+  function pyrAppendFound(indices) {
+    if (!pyrDailyActiveKey) return;
+    const p = pyrLoadProgress(pyrDailyActiveKey);
+    const sig = indices.slice().sort((a, b) => a - b).join(',');
+    if (p.found.some(f => f.slice().sort((a, b) => a - b).join(',') === sig)) return;
+    p.found = p.found.concat([indices]);
+    pyrSaveProgress(p);
+  }
+
+  async function startDaily() {
+    const urlParams = (window.DailyChallenge && window.DailyChallenge.parseUrlParams) ? window.DailyChallenge.parseUrlParams() : { game: null, dateKey: null };
+    const explicitDate = urlParams.game === 'pyr' && urlParams.dateKey ? urlParams.dateKey : null;
+    pyrDailyActiveKey = explicitDate || (window.DailyChallenge ? window.DailyChallenge.getKey() : null);
+
+    if (window.DailyChallenge && pyrDailyActiveKey) {
+      try {
+        pyrDailyData = await window.DailyChallenge.fetch('equation-pyramid', pyrDailyActiveKey);
+      } catch (e) { pyrDailyData = null; }
+    }
+
+    // W7.1 daily_open 埋点
+    if (window.__mdAnalytics) {
+      window.__mdAnalytics.track('daily_open', { game: 'pyramid', date: pyrDailyActiveKey });
+    }
+
+    pyrShowBanner(pyrDailyActiveKey);
+
+    if (pyrDailyData && pyrDailyData.puzzle && Array.isArray(pyrDailyData.puzzle.cells)) {
+      cells = pyrDailyData.puzzle.cells.map(c => ({...c}));
+      target = pyrDailyData.puzzle.target;
+      solutions = (pyrDailyData.solutions || []).map(s => s.indices || s);
+      selected = []; timer = 0; level = 1; score = 0; foundSolutions = []; paused = false;
+      isGameOver = false;
+
+      const p = pyrLoadProgress(pyrDailyActiveKey);
+      foundSolutions = (p.found || []).slice();
+      render();
+      pyrUpdateProgress();
+
+      if (interval) clearInterval(interval);
+      interval = setInterval(function() {
+        if (paused) return;
+        timer++;
+        const m = Math.floor(timer / 60), s = timer % 60;
+        const timerEl = document.getElementById('timer');
+        if (timerEl) timerEl.textContent = m + ':' + String(s).padStart(2, '0');
+      }, 1000);
+      return true;
+    } else {
+      init();
+      return false;
+    }
+  }
+
+  function pyrShowBanner(dateKey) {
+    const banner = document.getElementById('daily-banner');
+    const dateEl = document.getElementById('daily-banner-date');
+    const cdEl = document.getElementById('daily-banner-countdown');
+    if (!banner) return;
+    if (dateKey) dateEl.textContent = dateKey;
+    banner.style.display = '';
+    if (pyrCountdownTimer) clearInterval(pyrCountdownTimer);
+    const update = function() {
+      const ms = window.DailyChallenge ? window.DailyChallenge.nextRollover() : 0;
+      if (cdEl) cdEl.textContent = window.DailyChallenge ? window.DailyChallenge.formatCountdown(ms) : '--:--';
+    };
+    update();
+    pyrCountdownTimer = setInterval(update, 1000);
+    pyrUpdateProgress();
+  }
+
+  function pyrUpdateProgress() {
+    const foundEl = document.getElementById('daily-banner-found');
+    const totalEl = document.getElementById('daily-banner-total');
+    if (foundEl) foundEl.textContent = (foundSolutions || []).length;
+    if (totalEl && pyrDailyData) totalEl.textContent = pyrDailyData.solutionCount || 0;
+  }
+
+  function pyrShowShareOverlay(opts) {
+    const overlay = document.getElementById('share-overlay');
+    const titleEl = document.getElementById('share-overlay-title');
+    const statsEl = document.getElementById('share-overlay-stats');
+    const canvas = document.getElementById('share-canvas');
+    const urlInput = document.getElementById('share-overlay-url');
+    if (!overlay || !canvas) return;
+
+    const a = opts.found, K = opts.total, T = opts.duration;
+    const b = Math.max(0, K - a);
+    const isComplete = a >= K;
+
+    titleEl.textContent = isComplete ? window.i18n.t('equation_pyramid.daily_title_complete') : window.i18n.t('equation_pyramid.daily_title_partial', { found: a, total: K });
+    titleEl.style.color = isComplete ? 'var(--primary)' : 'var(--text)';
+
+    const meta = { duration: T, solutions_count: a, score: a * 20 };
+    const title = isComplete
+      ? window.i18n.t('equation_pyramid.daily_share_complete', { total: K })
+      : window.i18n.t('equation_pyramid.daily_share_partial', { found: a, total: K });
+    const subtitle = isComplete
+      ? window.i18n.t('equation_pyramid.daily_subtitle_complete', { min: Math.floor(T/60), sec: T%60 })
+      : window.i18n.t('equation_pyramid.daily_subtitle_partial', { min: Math.floor(T/60), found: a, left: b });
+
+    let badge = null;
+    if (window.Streak) {
+      const s = window.Streak.createStreak().getStreak();
+      if (s.count >= 3) badge = { icon: '🔥', text: window.i18n.t('common.streak_count', { count: s.count }) };
+    }
+
+    const baseUrl = window.location.origin + window.location.pathname;
+    const sid = 's' + Math.random().toString(36).slice(2, 10);
+    const challengeUrl = `${baseUrl}?g=pyr&d=${pyrDailyActiveKey}&r=${sid}&m=copy`;
+
+    const card = {
+      game: 'pyramid',
+      title, subtitle,
+      cta: window.i18n.t('equation_pyramid.daily_cta_share'),
+      url: challengeUrl,
+      badge,
+      meta,
+    };
+    statsEl.innerHTML = window.i18n.t('equation_pyramid.daily_stats_html', { min: Math.floor(T/60), sec: T%60, found: a, total: K });
+
+    if (window.ShareCard) window.ShareCard.renderCard(canvas, card);
+    if (urlInput) urlInput.value = challengeUrl;
+    overlay.style.display = '';
+  }
+
+  function pyrHideShare() {
+    const overlay = document.getElementById('share-overlay');
+    if (overlay) overlay.style.display = 'none';
+  }
+
+  function handlePyrUrlParams() {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const g = (params.get('g') || '').toLowerCase();
+      const d = params.get('d');
+      if (g === 'pyr' && d && /^\d{8}$/.test(d)) {
+        setTimeout(() => { if (typeof startDaily === 'function') startDaily(); }, 100);
+        return true;
+      }
+    } catch (e) {}
+    return false;
+  }
+
+  /* ── 模式选择落地页（与 24点 一致）：进页先选模式 ── */
+  if (window.GameLobby) {
+    GameLobby.show({
+      cover: '/games/equation-pyramid/cover.svg',
+      title: 'Equation Pyramid',
+      sub: 'Stack the blocks so every equation balances — daily or free play',
+      modes: [
+        { icon: '🌍', label: 'Daily Challenge', sub: 'Same puzzle for everyone · once a day', onClick: function () { startDaily(); } },
+        { icon: '🧩', label: 'Free Play', sub: 'Unlimited random pyramids', onClick: function () { init(); } }
+      ]
+    });
+  }
+  </script>
+
+  <!-- W4.4 战绩卡 Overlay -->
+  <div id="share-overlay" class="share-overlay" style="display:none;">
+    <div class="share-overlay-card">
+      <button class="share-overlay-close" id="share-overlay-close" aria-label="Close" data-i18n-aria-label="common.close">×</button>
+      <div class="share-overlay-title" id="share-overlay-title" data-i18n="equation_pyramid.share_overlay_title">🧩 Stats</div>
+      <div class="share-overlay-canvas-wrap">
+        <canvas id="share-canvas" width="1200" height="630"></canvas>
+      </div>
+      <div class="share-overlay-stats" id="share-overlay-stats"></div>
+      <div class="share-overlay-url-row">
+        <input type="text" id="share-overlay-url" readonly />
+        <button id="share-overlay-copy" data-i18n="share.overlay_copy_link">📋 Copy link</button>
+      </div>
+      <div class="share-overlay-actions" style="display:flex;gap:.5rem;justify-content:center;flex-wrap:wrap;margin-top:.5rem;">
+        <button id="share-overlay-replay" data-i18n="share.overlay_replay" style="background:var(--primary);color:#fff;border:none;">🔁 Try again</button>
+        <button id="share-overlay-challenge" data-i18n="share.overlay_challenge">⚔️ Challenge me</button>
+      </div>
+      <style>
+        .so-react{margin:.75rem 0 .25rem;text-align:center}
+        .so-react-tip{font-size:.8rem;color:var(--text-light);margin-bottom:.35rem}
+        .so-react-emojis button{font-size:1.4rem;background:#fff;border:1.5px solid var(--border);border-radius:50%;width:44px;height:44px;cursor:pointer;margin:0 .2rem;transition:transform .12s}
+        .so-react-emojis button:hover{transform:scale(1.15);border-color:var(--primary)}
+        .so-react-counts{margin-top:.5rem;display:flex;gap:.35rem;justify-content:center;flex-wrap:wrap}
+        .so-react-chip{background:var(--bg);border:1px solid var(--border-light);border-radius:999px;padding:.18rem .55rem;font-size:.78rem}
+      </style>
+  <!-- Tri-Sites Shared CSS -->
+  <link rel="stylesheet" href="/css/shared/tokens.css?v=p5">
+<link rel="stylesheet" href="/css/shared/components.css?v=20260921"
+  <link rel="stylesheet" href="/css/shared/toast.css?v=p3fix2">>
+
+      <div class="so-react">
+        <div class="so-react-tip" data-i18n="share.react_tip">⚡ React to today's game</div>
+        <div class="so-react-emojis">
+          <button onclick="window.reactE('👍')" aria-label="👍">👍</button>
+          <button onclick="window.reactE('🔥')" aria-label="🔥">🔥</button>
+          <button onclick="window.reactE('😮')" aria-label="😮">😮</button>
+          <button onclick="window.reactE('🎉')" aria-label="🎉">🎉</button>
+        </div>
+        <div class="so-react-counts" id="so-react-counts"></div>
+      </div>
+      <div class="share-overlay-actions" style="display:flex;gap:.5rem;justify-content:center;flex-wrap:wrap;margin-top:.25rem;">
+        <button onclick="location.href='/rank/'" data-i18n="share.overlay_rank">🏆 Today's ranking</button>
+        <button id="share-overlay-download" data-i18n="share.overlay_download_image">⬇️ Download image</button>
+        <button id="share-overlay-wechat" data-i18n-title="share.overlay_wechat_title" data-i18n="share.overlay_wechat">Scan with WeChat to share with friends</button>
+      </div>
+      <div class="share-overlay-toast" id="share-overlay-toast"></div>
+    </div>
+  </div>
+  <script>
+    /* W7.1 绑定 share overlay 按钮 + 埋点 */
+    (function(){
+      const c = document.getElementById('share-overlay-copy');
+      const d = document.getElementById('share-overlay-download');
+      const x = document.getElementById('share-overlay-close');
+      const r = document.getElementById('share-overlay-replay');
+      const ch = document.getElementById('share-overlay-challenge');
+      const wc = document.getElementById('share-overlay-wechat');
+      if (x) x.onclick = function(){ pyrHideShare && pyrHideShare(); };
+      if (c) c.onclick = function(){
+        const i = document.getElementById('share-overlay-url');
+        if (i && navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(i.value).then(function(){
+            const t = document.getElementById('share-overlay-toast');
+            if (t) { t.textContent = __('已复制,快去发给好友!'); t.classList.add('show'); setTimeout(function(){ t.classList.remove('show'); }, 2000); }
+          }).catch(function(){ i.select(); document.execCommand('copy'); });
+        }
+        if (window.__mdAnalytics) window.__mdAnalytics.track('daily_share', { game: 'pyramid', cta: 'copy' });
+      };
+      if (r) r.onclick = function(){ pyrHideShare && pyrHideShare(); };
+      if (ch) ch.onclick = function(){
+        const i = document.getElementById('share-overlay-url');
+        if (i) i.select();
+        if (window.__mdAnalytics) window.__mdAnalytics.track('daily_share', { game: 'pyramid', cta: 'challenge' });
+      };
+      if (wc) wc.onclick = function(){
+        const url = (document.getElementById('share-overlay-url') || {}).value;
+        if (navigator.share) navigator.share({ title: __('方程式金字塔挑战'), text: __('来挖一挖!'), url }).catch(function(){});
+        if (window.__mdAnalytics) window.__mdAnalytics.track('daily_share', { game: 'pyramid', cta: 'wechat' });
+      };
+      if (d) d.onclick = function(){
+        const cv = document.getElementById('share-canvas');
+        if (cv && window.ShareCard) window.ShareCard.downloadCard(cv, 'pyramid-daily-' + (pyrDailyActiveKey || 'unknown') + '.png');
+        if (window.__mdAnalytics) window.__mdAnalytics.track('daily_share', { game: 'pyramid', cta: 'download' });
+      };
+    })();
+  </script>
+  </div>
+  </div>
+  <nav class="bottom-nav" style="display:none" aria-label="Mobile navigation" data-i18n-aria-label="nav.bottom_nav">
+    <div class="bottom-nav-inner">
+      <a href="/" class="bottom-nav-item" data-i18n-aria-label="nav.home">
+        <span class="bn-ico">🏠</span><span class="bn-label" data-i18n="nav.home">Home</span>
+      </a>
+      <a href="/games/24-game/" class="bottom-nav-item" data-i18n-aria-label="nav.game_24">
+        <span class="bn-ico">24</span><span class="bn-label" data-i18n="nav.game_24">24 Game</span>
+      </a>
+      <a href="/games/sudoku/" class="bottom-nav-item" data-i18n-aria-label="nav.game_sudoku">
+        <span class="bn-ico">9²</span><span class="bn-label" data-i18n="nav.game_sudoku">Sudoku</span>
+      </a>
+      <a href="/games/equation-pyramid/" class="bottom-nav-item active" data-i18n-aria-label="nav.game_equation_pyramid">
+        <span class="bn-ico">🔺</span><span class="bn-label" data-i18n="nav.game_equation_pyramid">Pyramid</span>
+      </a>
+      <a href="/stats/" class="bottom-nav-item" data-i18n-aria-label="nav.stats">
+        <span class="bn-ico">📊</span><span class="bn-label" data-i18n="nav.stats">Stats</span>
+      </a>
+    </div>
+  </nav>
+
+  <!-- Tri-Sites Sidebar -->
+<script src="/js/toast.js?v=p27" defer></script>
+
+  
+  <script src="/shared/site-header.js?v=ds2-11"></script>
+  <script src="/shared/sso-bridge.js?v=1" defer></script>
+  <script src="/shared/game-chrome-10.js?v=27"></script>
+</body>
+</html>

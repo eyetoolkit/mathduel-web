@@ -12,6 +12,15 @@ const here = dirname(fileURLToPath(import.meta.url));
 export default defineConfig({
   root: '.',
   base: '/',
+  plugins: [
+    {
+      // 生产环境未注入变量时，Vite 会保留 %VITE_XXX% 占位符，这里统一清掉
+      name: 'strip-env-placeholders',
+      transformIndexHtml(html) {
+        return html.replace(/%VITE_[A-Z0-9_]+%/g, '');
+      },
+    },
+  ],
   build: {
     outDir: 'dist',
     emptyOutDir: true,

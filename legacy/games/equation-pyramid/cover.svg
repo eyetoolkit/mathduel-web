@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-labelledby="tP dP">
+  <title id="tP">Equation Pyramid — square icon</title>
+  <desc id="dP">Square deep indigo icon with an amber target tile reading 20 on top of a nine-cell grid in which three cells read 4, multiply, 5.</desc>
+  <rect width="512" height="512" fill="#3730A3"/>
+  <rect x="214" y="48" width="84" height="84" rx="19" fill="#F59E0B"/>
+  <g fill="#FFFFFF" fill-opacity="0.16">
+    <rect x="98" y="148" width="96" height="96" rx="22"/>
+    <rect x="208" y="148" width="96" height="96" rx="22"/>
+    <rect x="318" y="148" width="96" height="96" rx="22"/>
+    <rect x="98" y="258" width="96" height="96" rx="22"/>
+    <rect x="318" y="258" width="96" height="96" rx="22"/>
+    <rect x="98" y="368" width="96" height="96" rx="22"/>
+    <rect x="208" y="368" width="96" height="96" rx="22"/>
+    <rect x="318" y="368" width="96" height="96" rx="22"/>
+  </g>
+  <g fill="#FFFFFF">
+    <rect x="98" y="258" width="96" height="96" rx="22"/>
+    <rect x="208" y="258" width="96" height="96" rx="22"/>
+    <rect x="318" y="258" width="96" height="96" rx="22"/>
+  </g>
+  <g font-family="system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif" font-weight="800" text-anchor="middle">
+    <text x="256" y="90" dominant-baseline="central" font-size="40" fill="#1E1B39">20</text>
+    <text x="146" y="306" dominant-baseline="central" font-size="48" fill="#3730A3">4</text>
+    <text x="256" y="306" dominant-baseline="central" font-size="48" fill="#3730A3">&#215;</text>
+    <text x="366" y="306" dominant-baseline="central" font-size="48" fill="#3730A3">5</text>
+  </g>
+</svg>

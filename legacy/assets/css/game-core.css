@@ -1,0 +1,303 @@
+
+/* === 全局防横向滚动溢出 === */
+html, body { overflow-x: hidden; max-width: 100%; }
+img, video, canvas, svg { max-width: 100%; }
+* { box-sizing: border-box; }
+
+/* ═══════════════════════════════════════════════════════════════════
+   game-core.css · 游戏核心工具样式 v1.0
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ─── Confetti 彩纸 ─── */
+.g-confetti-container {
+  position: fixed; inset: 0; pointer-events: none;
+  z-index: 9999; overflow: hidden;
+}
+.g-confetti-piece {
+  position: absolute; top: -20px;
+  border-radius: 2px;
+  opacity: 0.9;
+  will-change: transform, opacity;
+}
+
+/* ─── Achievement Toast ─── */
+.g-achievement-toast {
+  position: fixed; top: 20px; left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, #ffd700, #ff6b6b);
+  color: white;
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+  z-index: 9999;
+  font-weight: 600;
+  text-align: center;
+  max-width: 90vw;
+  pointer-events: none;
+}
+
+/* ─── Tutorial Modal ─── */
+.g-tutorial-btn {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  padding: 0.4rem 0.8rem;
+  background: var(--bg-alt, #f5f5f5);
+  border: 1px solid var(--border, #ddd);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  margin: 0.5rem 0;
+  transition: all 0.2s;
+}
+.g-tutorial-btn:hover {
+  background: var(--primary, #0066CC);
+  color: white;
+  border-color: var(--primary, #0066CC);
+}
+
+.g-tutorial-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.6);
+  z-index: 10000;
+  display: flex; align-items: center; justify-content: center;
+  padding: 1rem;
+  backdrop-filter: blur(4px);
+}
+.g-tutorial-modal {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  max-width: 420px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  animation: gTutorialIn 0.3s ease-out;
+}
+@keyframes gTutorialIn {
+  from { opacity: 0; transform: translateY(20px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.g-tutorial-modal h2 {
+  margin: 0 0 1rem;
+  font-size: 1.25rem;
+  color: var(--primary, #0066CC);
+}
+.g-tutorial-steps {
+  min-height: 200px;
+  margin: 1rem 0;
+}
+.g-tutorial-step {
+  text-align: center;
+}
+.g-tutorial-icon {
+  font-size: 4rem;
+  margin-bottom: 0.5rem;
+}
+.g-tutorial-step h3 {
+  margin: 0.5rem 0;
+  font-size: 1.1rem;
+}
+.g-tutorial-step p {
+  margin: 0;
+  color: var(--text-light, #666);
+  line-height: 1.6;
+}
+.g-tutorial-nav {
+  display: flex; align-items: center; gap: 0.5rem;
+  border-top: 1px solid var(--border, #eee);
+  padding-top: 1rem;
+}
+.g-tutorial-progress {
+  flex: 1;
+  color: var(--text-light, #888);
+  font-size: 0.85rem;
+}
+.g-btn {
+  padding: 0.5rem 1rem;
+  background: transparent;
+  border: 1px solid var(--border, #ddd);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: var(--text, #333);
+}
+.g-btn:hover {
+  background: var(--bg-alt, #f5f5f5);
+}
+.g-btn-primary {
+  background: var(--primary, #0066CC);
+  color: white;
+  border-color: var(--primary, #0066CC);
+}
+.g-btn-primary:hover {
+  background: #00529C;
+}
+
+/* ─── 暗色模式 ─── */
+@media (prefers-color-scheme: dark) {
+  .g-tutorial-modal {
+    background: #1e1e2e;
+    color: #f0f0f0;
+  }
+  .g-tutorial-btn {
+    background: #2a2a3a;
+    color: #f0f0f0;
+    border-color: #444;
+  }
+  .g-tutorial-step p {
+    color: #b0b0c0;
+  }
+  .g-btn {
+    background: transparent;
+    color: #f0f0f0;
+    border-color: #444;
+  }
+}
+
+/* ─── 减少动画偏好 ─── */
+@media (prefers-reduced-motion: reduce) {
+  .g-tutorial-modal { animation: none; }
+  .g-achievement-toast { animation: none; }
+  .g-confetti-piece { display: none; }
+}
+
+/* ─── Stats Page 样式 ─── */
+.g-stats-page {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+.g-stats-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+  box-shadow: var(--shadow-sm, 0 1px 3px rgba(0,0,0,0.08));
+  border: 1px solid var(--border-light, #f0f0f0);
+}
+.g-stats-card h3 {
+  margin: 0 0 0.75rem;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.g-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 0.75rem;
+}
+.g-stats-item {
+  padding: 0.75rem;
+  background: var(--bg-alt, #f8f9fa);
+  border-radius: 8px;
+  text-align: center;
+}
+.g-stats-item .label {
+  font-size: 0.75rem;
+  color: var(--text-light, #888);
+  margin-bottom: 0.25rem;
+}
+.g-stats-item .value {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--primary, #0066CC);
+}
+.g-stats-progress-bar {
+  height: 8px;
+  background: var(--bg-alt, #f0f0f0);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-top: 0.5rem;
+}
+.g-stats-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary, #0066CC), var(--accent, #06b6d4));
+  transition: width 0.5s ease;
+}
+.g-achievement-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 0.5rem;
+}
+.g-achievement-item {
+  padding: 0.75rem;
+  background: var(--bg-alt, #f8f9fa);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: 1px solid transparent;
+}
+.g-achievement-item.unlocked {
+  background: linear-gradient(135deg, #fff7e6, #fef3c7);
+  border-color: #ffd700;
+}
+.g-achievement-item.locked {
+  opacity: 0.5;
+  filter: grayscale(1);
+}
+.g-achievement-icon {
+  font-size: 1.5rem;
+}
+.g-achievement-info {
+  flex: 1;
+  min-width: 0;
+}
+.g-achievement-info .name {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+.g-achievement-info .desc {
+  font-size: 0.75rem;
+  color: var(--text-light, #888);
+}
+
+@media (prefers-color-scheme: dark) {
+  .g-stats-card { background: #1e1e2e; border-color: #333; }
+  .g-stats-item, .g-achievement-item { background: #2a2a3a; }
+  .g-achievement-item.unlocked { background: linear-gradient(135deg, #3a3a1e, #4a4a2e); }
+  .g-stats-progress-bar { background: #2a2a3a; }
+}
+
+
+/* ─── A11y: 键盘焦点可见 ─── */
+*:focus-visible {
+  outline: 3px solid var(--primary, #0066CC);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+button:focus-visible,
+.btn:focus-visible,
+.g-btn:focus-visible {
+  outline: 3px solid var(--primary, #0066CC);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(0, 102, 204, 0.2);
+}
+/* 游戏元素：被键盘选中时高亮 */
+.g-keyboard-selected {
+  outline: 3px solid gold !important;
+  outline-offset: 2px;
+  background: rgba(255, 215, 0, 0.15) !important;
+  transform: scale(1.05);
+  transition: transform 0.15s;
+}
+/* 屏幕阅读器专用类（仅视觉隐藏） */
+.g-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ─── 减少动画（继承自 style.css，并扩展） ─── */
+@media (prefers-reduced-motion: reduce) {
+  .g-confetti-piece { display: none !important; }
+  .g-tutorial-modal { animation: none !important; }
+  .g-achievement-toast { animation: none !important; }
+}
