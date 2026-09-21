@@ -86,7 +86,7 @@ const GAMES: GameDef[] = [
     title: 'Guess the Number',
     desc: 'Crack the hidden code using bulls and cows feedback — logic over luck.',
     href: '/games/bulls/',
-    stage: 'beta',
+    stage: 'live',
     modes: ['Practice', 'Competition'],
   },
 ];
