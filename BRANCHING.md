@@ -102,7 +102,39 @@ git checkout main && git merge beta && git push
 
 ---
 
-## 六、注意事项
+## 六、实战案例：bulls（猜数字 1A2B）全流程
+
+已完整跑通一次，可作为后续 4 款游戏的模板。
+
+| 步骤 | 分支 | 提交 | 结果 |
+|---|---|---|---|
+| 1. 新架构重写 | `game/bulls` | `4617d0e` | 预览地址自动生成 |
+| 2. 进入公开测试 | `beta` | `67153bd` | beta.mathduel.games 可玩 |
+| 3. 提升上线 | `main` | `80e875c` | mathduel.games 出现该游戏 |
+
+**新增文件**：`src/games/bulls/{engine.ts,index.ts,styles.css}`、`games/bulls/index.html`
+**删除**：`legacy/games/bulls`（18KB 旧页面）
+
+关键顺序：**先 `main` 合并 `beta`（拿到新代码），再把 `stage` 改成 `live` 提交。**
+反过来的话，`main` 上只有开关没有代码。
+
+### 如何验证"是否真的上线"
+
+首页卡片是**客户端渲染**的，`curl` 首页 HTML 里 grep 不到游戏标题。要验两处：
+
+```bash
+# 1. 编译时开关是否被正确内联
+curl -s https://mathduel.games/assets/home-*.js | grep -oE 'const v=!{0,1}'
+# 主站应为 !1（关），beta 站应为 !0（开）
+
+# 2. 该游戏的 stage 字段
+curl -s https://mathduel.games/assets/home-*.js | grep -oE 'href:"/games/bulls/".{0,200}'
+# 应含 stage:"live"
+```
+
+---
+
+## 七、注意事项
 
 1. **改环境变量后必须重新部署才生效** —— 已有部署不会回溯应用新变量。
 2. **`pnpm build` 与 `pnpm build:beta`**：前者按当前环境变量构建，后者强制注入 `VITE_SHOW_BETA=1` 用于本地验证。
