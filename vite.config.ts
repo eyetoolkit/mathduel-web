@@ -30,6 +30,7 @@ export default defineConfig({
       input: {
         home: resolve(here, 'index.html'),
         '24-game': resolve(here, 'games/24-game/index.html'),
+        bulls: resolve(here, 'games/bulls/index.html'),
       },
     },
   },
