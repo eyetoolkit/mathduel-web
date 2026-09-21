@@ -1,0 +1,4 @@
+/* Tri-Sites Design System · 入口样式（按层次导入，顺序即层叠顺序） */
+@import './tokens.css';
+@import './base.css';
+@import './components.css';

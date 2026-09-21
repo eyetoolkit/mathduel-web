@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en" data-site="mathduel">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0066CC" />
+  <title>MathDuel — Race the world to make 24</title>
+  <meta name="description" content="Six brain games. Four cards, one target: make 24. Race up to 99 players worldwide on the same cards, or take on today's global daily challenge." />
+  <link rel="canonical" href="https://mathduel.games/" />
+  <meta property="og:title" content="MathDuel — Race the world to make 24" />
+  <meta property="og:description" content="Same cards, same clock. Race up to 99 players to make 24." />
+  <meta property="og:type" content="website" />
+  <link rel="preload" href="/fonts/space-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="/fonts/sora-latin.woff2" as="font" type="font/woff2" crossorigin />
+</head>
+<body class="atmos">
+  <div id="header"></div>
+
+  <main id="main">
+    <!-- ============ Hero：记忆点 —— 「算式流动」背景 + 巨型数字 ============ -->
+    <section class="hero" aria-labelledby="heroTitle">
+      <div class="hero-flow" id="heroFlow" aria-hidden="true"></div>
+      <div class="container hero-grid">
+        <div class="hero-copy">
+          <p class="eyebrow" data-i18n="hero.eyebrow">Global multiplayer math</p>
+          <h1 id="heroTitle" class="display-1 hero-title" data-i18n="hero.title">Race the world to make 24.</h1>
+          <p class="lead hero-lead" data-i18n="hero.lead">Four cards. Four operators. One target.</p>
+          <div class="row wrap gap-3 hero-cta">
+            <a class="btn btn-primary btn-lg" href="/games/24-game/" data-i18n="hero.cta.play">Play now</a>
+            <a class="btn btn-ghost btn-lg" href="/games/24-game/?mode=daily" data-i18n="hero.cta.daily">Today's challenge</a>
+          </div>
+          <dl class="hero-stats">
+            <div><dt data-i18n="hero.stat.games">Games</dt><dd class="num-mono">6</dd></div>
+            <div><dt data-i18n="hero.stat.players">Players online</dt><dd class="num-mono" id="statPlayers">1,248</dd></div>
+            <div><dt data-i18n="hero.stat.room">Per room</dt><dd class="num-mono">99</dd></div>
+          </dl>
+        </div>
+
+        <!-- 舞台预览：4 张牌 + 算式，纯 CSS 动画，营造"正在对局"的临场感 -->
+        <div class="hero-stage" aria-hidden="true">
+          <div class="stage-cards">
+            <span class="scard">3</span>
+            <span class="scard red">6</span>
+            <span class="scard">11</span>
+            <span class="scard red">12</span>
+          </div>
+          <div class="stage-formula">
+            <span>( 11 − 3 ) × 6 ÷ <b>2</b> = <b class="ok">24</b></span>
+          </div>
+          <div class="stage-race">
+            <div class="sr-row r1"><span class="sr-rk">1</span><span class="sr-nm">Nova</span><span class="sr-tm">4.2s</span></div>
+            <div class="sr-row me"><span class="sr-rk">2</span><span class="sr-nm">You</span><span class="sr-tm">6.8s</span></div>
+            <div class="sr-row r3"><span class="sr-rk">3</span><span class="sr-nm">Luna</span><span class="sr-tm">9.1s</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 每日挑战横幅：题数 / 每题时间（沿用原站 5 题 · 60s 设计） ============ -->
+    <section class="container section" aria-labelledby="dailyTitle">
+      <div class="daily-banner" id="dailyBanner">
+        <div class="db-left">
+          <span class="badge badge-warning" data-i18n="daily.badge">Daily Challenge</span>
+          <h2 id="dailyTitle" class="display-3">What is 24?</h2>
+          <p class="lead">Same puzzle for everyone on Earth today. Race the clock across a run of puzzles.</p>
+        </div>
+        <div class="db-right">
+          <div class="db-setting">
+            <span class="db-label" data-i18n="daily.count">Puzzles</span>
+            <div class="seg" id="dailyCount" role="group" aria-label="Puzzle count"></div>
+          </div>
+          <div class="db-setting">
+            <span class="db-label" data-i18n="daily.time">Per puzzle</span>
+            <div class="seg" id="dailyTime" role="group" aria-label="Seconds per puzzle"></div>
+          </div>
+          <a class="btn btn-primary btn-lg btn-block" id="dailyStart" href="/games/24-game/?mode=daily" data-i18n="daily.start">Start daily</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 游戏网格：移动单列 → 平板 2 列 → 桌面 3 列 ============ -->
+    <section class="container section" aria-labelledby="gamesTitle">
+      <header class="section-head">
+        <h2 id="gamesTitle" class="display-2" data-i18n="section.games.title">Pick your game</h2>
+        <p class="lead" data-i18n="section.games.lead">Six brain games.</p>
+      </header>
+      <div class="grid-cards" id="gameGrid"></div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container row between wrap gap-4">
+      <span>© <span id="year"></span> MathDuel</span>
+      <a class="btn btn-ghost btn-sm" href="/games/24-game/" data-i18n="hero.cta.play">Play now</a>
+    </div>
+  </footer>
+
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>

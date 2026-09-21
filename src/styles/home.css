@@ -1,0 +1,170 @@
+/* ============================================================
+   MathDuel 首页样式
+   记忆点：Hero 区「算式流动」背景 —— 由真实 24 点算式构成的
+           缓慢上浮的算式流，叠加巨型数字，形成"数学在流动"的观感。
+   ============================================================ */
+
+/* ---------- Hero 布局 ---------- */
+.hero { position: relative; overflow: hidden; padding: var(--s-16) 0 var(--s-12); }
+@media (min-width: 1024px) { .hero { padding: var(--s-20) 0 var(--s-16); } }
+
+.hero-grid {
+  position: relative; z-index: 2;
+  display: grid; grid-template-columns: 1fr; gap: var(--s-10); align-items: center;
+}
+@media (min-width: 1024px) { .hero-grid { grid-template-columns: 1.05fr 0.95fr; gap: var(--s-12); } }
+
+.hero-copy { max-width: 620px; }
+.hero-title {
+  margin: var(--s-3) 0 var(--s-5);
+  background: linear-gradient(120deg, var(--text-strong) 18%, var(--brand-600) 92%);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  text-wrap: balance;
+}
+.hero-lead { margin-bottom: var(--s-6); max-width: 52ch; }
+.hero-cta { margin-bottom: var(--s-10); }
+@media (max-width: 480px) {
+  .hero-cta { flex-direction: column; align-items: stretch; }
+  .hero-cta .btn { width: 100%; }
+}
+
+.hero-stats {
+  display: flex; flex-wrap: wrap; gap: var(--s-8);
+  padding-top: var(--s-6); border-top: 1px solid var(--border);
+}
+.hero-stats dt {
+  font-family: var(--font-mono); font-size: 0.6875rem; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-muted);
+}
+.hero-stats dd {
+  font-family: var(--font-display); font-size: 1.75rem; font-weight: 700;
+  color: var(--text-strong); line-height: 1.2; margin-top: var(--s-1);
+}
+
+/* ---------- 记忆点：算式流动背景层 ---------- */
+.hero-flow {
+  position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  overflow: hidden; opacity: 0.5;
+  -webkit-mask-image: linear-gradient(105deg, transparent 30%, #000 68%);
+  mask-image: linear-gradient(105deg, transparent 30%, #000 68%);
+}
+.hero-flow .fl {
+  position: absolute;
+  font-family: var(--font-mono); font-weight: 700; white-space: nowrap;
+  color: var(--brand-600); opacity: 0;
+  animation: fl-rise linear infinite;
+  will-change: transform, opacity;
+}
+@keyframes fl-rise {
+  0%   { transform: translateY(30px) scale(0.96); opacity: 0; }
+  14%  { opacity: 0.5; }
+  82%  { opacity: 0.32; }
+  100% { transform: translateY(-120px) scale(1.04); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-flow { display: none; }   /* 尊重降级：直接撤掉整层动效 */
+}
+
+/* ---------- Hero 舞台预览 ---------- */
+.hero-stage {
+  position: relative;
+  display: flex; flex-direction: column; gap: var(--s-5);
+  padding: var(--s-6);
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  border: 1px solid var(--border); border-radius: var(--r-2xl);
+  box-shadow: var(--shadow-xl);
+}
+.stage-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--s-3); }
+.scard {
+  aspect-ratio: 3 / 4; display: grid; place-items: center;
+  border-radius: var(--r-md); border: 1px solid var(--border);
+  background: var(--surface-raised);
+  font-family: var(--font-display); font-size: clamp(1.5rem, 4.5vw, 2rem); font-weight: 700;
+  color: var(--text-strong); box-shadow: var(--shadow-sm);
+  animation: scard-in var(--dur-slower) var(--ease-spring) both;
+}
+.scard:nth-child(1) { animation-delay: 0.05s; }
+.scard:nth-child(2) { animation-delay: 0.13s; }
+.scard:nth-child(3) { animation-delay: 0.21s; }
+.scard:nth-child(4) { animation-delay: 0.29s; }
+.scard.red { color: var(--danger); }
+@keyframes scard-in { from { opacity: 0; transform: translateY(18px) rotate(-6deg) scale(0.9); } to { opacity: 1; transform: none; } }
+
+.stage-formula {
+  padding: var(--s-3) var(--s-4); border-radius: var(--r);
+  background: var(--bg-subtle); border: 1px solid var(--border);
+  font-family: var(--font-mono); font-size: clamp(0.95rem, 2.4vw, 1.15rem); font-weight: 700;
+  color: var(--text-muted); text-align: center; letter-spacing: 0.02em;
+}
+.stage-formula .ok { color: var(--success); }
+
+.stage-race { display: flex; flex-direction: column; gap: var(--s-2); }
+.sr-row {
+  display: grid; grid-template-columns: 26px 1fr auto; align-items: center; gap: var(--s-3);
+  padding: var(--s-2) var(--s-3); border-radius: var(--r-sm);
+  background: var(--bg-subtle); font-size: 0.875rem;
+}
+.sr-row .sr-rk { font-family: var(--font-mono); font-weight: 700; color: var(--text-muted); text-align: right; }
+.sr-row .sr-tm { font-family: var(--font-mono); font-size: 0.8125rem; color: var(--text-muted); }
+.sr-row.me { background: var(--brand-subtle); border: 1px solid var(--brand-200); font-weight: 700; }
+.sr-row.me .sr-tm { color: var(--brand-text); font-weight: 700; }
+
+/* ---------- 区块 ---------- */
+.section { padding: var(--s-12) var(--s-5); }
+@media (min-width: 1024px) { .section { padding: var(--s-16) var(--s-8); } }
+.section-head { max-width: 640px; margin-bottom: var(--s-10); }
+.section-head .lead { margin-top: var(--s-3); }
+
+/* ---------- 每日挑战横幅 ---------- */
+.daily-banner {
+  display: grid; grid-template-columns: 1fr; gap: var(--s-6);
+  padding: var(--s-6); border-radius: var(--r-2xl);
+  background:
+    radial-gradient(600px 300px at 100% 0%, var(--warning-l), transparent 70%),
+    var(--surface);
+  border: 1px solid var(--border); box-shadow: var(--shadow);
+}
+@media (min-width: 900px) { .daily-banner { grid-template-columns: 1.2fr 1fr; align-items: center; padding: var(--s-8); } }
+.db-left h2 { margin: var(--s-3) 0 var(--s-3); }
+.db-right { display: flex; flex-direction: column; gap: var(--s-4); }
+.db-setting { display: flex; align-items: center; justify-content: space-between; gap: var(--s-4); flex-wrap: wrap; }
+.db-label {
+  font-family: var(--font-mono); font-size: 0.6875rem; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-muted);
+}
+
+/* ---------- 游戏卡 ---------- */
+.game-card { display: flex; flex-direction: column; gap: var(--s-3); position: relative; overflow: hidden; }
+.game-card .gc-top { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--s-3); }
+.game-card .gc-icon {
+  width: 52px; height: 52px; flex: none; border-radius: var(--r-md);
+  display: grid; place-items: center; font-size: 1.6rem;
+  background: var(--brand-subtle); border: 1px solid var(--brand-200);
+}
+.game-card h3 { font-family: var(--font-display); font-size: 1.2rem; font-weight: 700; color: var(--text-strong); }
+.game-card p { font-size: 0.9rem; color: var(--text-muted); line-height: 1.55; }
+.game-card .gc-foot { display: flex; align-items: center; justify-content: space-between; gap: var(--s-3); margin-top: auto; padding-top: var(--s-4); border-top: 1px solid var(--border); }
+.game-card .gc-modes { display: flex; gap: var(--s-1); flex-wrap: wrap; }
+.game-card.flagship { border-color: var(--brand-200); box-shadow: var(--shadow); }
+.game-card.flagship::after {
+  content: "FLAGSHIP"; position: absolute; top: 12px; right: -34px;
+  transform: rotate(38deg); width: 120px; text-align: center;
+  padding: 3px 0; background: var(--brand-600); color: var(--on-brand);
+  font-family: var(--font-mono); font-size: 0.5625rem; font-weight: 700; letter-spacing: 0.12em;
+}
+.game-card.coming { opacity: 0.62; }
+
+/* ---------- 页脚 ---------- */
+.site-footer {
+  margin-top: var(--s-12); padding: var(--s-8) var(--s-5);
+  border-top: 1px solid var(--border);
+  font-size: 0.875rem; color: var(--text-muted);
+}
+
+/* ---------- 语言选择器 ---------- */
+.lang-select {
+  min-height: var(--tap); padding: 0 var(--s-3);
+  border-radius: var(--r-sm); border: 1px solid var(--border);
+  background: var(--surface); color: var(--text);
+  font-family: var(--font-sans); font-size: 0.875rem; font-weight: 600;
+}

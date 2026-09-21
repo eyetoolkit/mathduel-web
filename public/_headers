@@ -1,0 +1,16 @@
+/*
+  Cloudflare Pages 响应头
+  关键：style-src 'self' 不允许外链样式表 → 所有字体必须同源自托管（见 /fonts/）
+  这条 CSP 正是此前「预览美、上线走样」的根因之一，此处显式固化。
+*/
+/*
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob: https:; connect-src 'self' https://mathduel.games wss://mathduel.games; frame-ancestors 'self'; base-uri 'self'; form-action 'self'
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: geolocation=(), microphone=(), camera=()
+
+/fonts/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable

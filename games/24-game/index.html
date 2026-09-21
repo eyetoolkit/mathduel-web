@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en" data-site="mathduel">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0066CC" />
+  <title>24 · Card Table — Make 24 Multiplayer Race | MathDuel</title>
+  <meta name="description" content="Make 24 from four cards. Practice solo, take the global daily challenge, or race up to 99 players on identical cards." />
+  <link rel="canonical" href="https://mathduel.games/games/24-game/" />
+  <link rel="preload" href="/fonts/space-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="/fonts/sora-latin.woff2" as="font" type="font/woff2" crossorigin />
+</head>
+<body data-mode="practice">
+  <div id="header"></div>
+
+  <main class="g24" id="main">
+    <section class="board" id="board" aria-label="Game board">
+      <div class="g24-bar">
+        <nav class="tabs" id="tabs" aria-label="Game modes">
+          <button class="tab active" data-mode="practice">Practice</button>
+          <button class="tab" data-mode="daily">Daily Challenge</button>
+          <button class="tab" data-mode="battle">Competition</button>
+        </nav>
+        <div class="top-stats">
+          <span class="chip">Solved <b id="stSolved">0</b></span>
+          <span class="chip">🔥 Streak <b id="stCombo">0</b></span>
+        </div>
+      </div>
+
+      <div id="modeBanner"></div>
+
+      <!-- 竞赛顶栏（仅对局中显示） -->
+      <div id="compHead" class="comp-head hidden">
+        <div class="comp-room">
+          <span class="lbl">Room</span>
+          <span class="comp-code" id="compCode">·····</span>
+          <button class="icon-btn" id="copyCode" title="Copy room code">📋 Copy</button>
+        </div>
+        <div class="comp-mid">
+          <div class="comp-timer" id="compTimer"><i></i></div>
+          <div class="comp-status" id="compStatus">Waiting to start…</div>
+        </div>
+        <button class="icon-btn" id="leaveBtn" title="Leave competition">🚪 Leave</button>
+      </div>
+
+      <div class="table-head">
+        <div class="target"><span class="lbl">Target</span><b>24</b></div>
+        <div class="diff-pick" id="diffPick" role="group" aria-label="Difficulty">
+          <button data-d="easy">Easy</button>
+          <button data-d="standard" class="active">Standard</button>
+          <button data-d="hard">Hard</button>
+        </div>
+      </div>
+
+      <div class="cards" id="cards"></div>
+      <div class="formula" id="formula" aria-live="polite"><span class="ph">Pick cards + operators to make 24</span></div>
+      <div class="result" id="result" role="status">Use each card once — make 24</div>
+
+      <div class="pad" id="pad">
+        <button class="op-btn op" data-v="+">+</button>
+        <button class="op-btn op" data-v="-">−</button>
+        <button class="op-btn op" data-v="*">×</button>
+        <button class="op-btn op" data-v="/">÷</button>
+        <button class="op-btn" data-v="(">(</button>
+        <button class="op-btn" data-v=")">)</button>
+        <button class="op-btn special" data-act="undo">⌫</button>
+        <button class="op-btn special" data-act="clear">Clear</button>
+      </div>
+
+      <div class="actions" id="actions">
+        <button class="btn primary" id="newBtn">🂠 New Deal</button>
+        <button class="btn ghost" id="hintBtn">💡 Hint</button>
+        <button class="btn ghost" id="answerBtn">Show Answer</button>
+        <button class="btn primary hidden" id="enterBtn">🏆 Enter Competition</button>
+      </div>
+    </section>
+
+    <aside class="side" id="side"></aside>
+  </main>
+
+  <!-- Lobby -->
+  <div class="lobby" id="lobby" role="dialog" aria-modal="true" aria-labelledby="lobbyTitle">
+    <div class="lobby-card">
+      <button class="lobby-close" id="lobbyClose" aria-label="Close lobby">✕</button>
+      <h2 id="lobbyTitle">🏆 Math Competition</h2>
+      <p class="ldesc" id="lobbyDesc">Create a room or enter a code to race players worldwide on the same cards. Up to 99 players per room.</p>
+
+      <div id="lobbyForm">
+        <div class="field">
+          <label for="nameInput">Name</label>
+          <input id="nameInput" type="text" maxlength="14" placeholder="Your name" autocomplete="off" />
+        </div>
+        <div class="lobby-actions">
+          <button class="btn primary" id="createBtn">🚀 Create Competition</button>
+          <button class="btn ghost" id="joinToggle">Have a code? Join</button>
+        </div>
+        <div id="joinRow" class="field hidden">
+          <label for="joinInput">Room code (5 chars)</label>
+          <input id="joinInput" type="text" maxlength="5" placeholder="e.g. A7K2M" class="upcase" />
+          <button class="btn primary btn-block mt-2" id="joinBtn">Join Room</button>
+        </div>
+        <div class="lobby-divider">Competition Size</div>
+        <div class="size-row" id="sizeRow" role="group" aria-label="Competition size">
+          <button class="size-chip" data-max="2">2</button>
+          <button class="size-chip" data-max="10">10</button>
+          <button class="size-chip" data-max="25">25</button>
+          <button class="size-chip" data-max="50">50</button>
+          <button class="size-chip on" data-max="99">99</button>
+        </div>
+      </div>
+
+      <div id="roomView" class="room-view">
+        <div class="room-code-box">
+          <div class="rc-lbl">Room code · share with friends</div>
+          <div class="rc-code" id="roomCode">·····</div>
+          <button class="btn ghost btn-block" id="shareBtn">🔗 Copy Invite Link</button>
+        </div>
+        <div class="room-players" id="roomPlayers"></div>
+        <div class="room-hint" id="roomHint">⏳ Waiting for players…</div>
+        <button class="btn primary btn-block" id="startBtn" disabled>🚀 Start Competition (2+ players)</button>
+      </div>
+
+      <div class="lobby-err" id="lobbyErr" role="alert"></div>
+    </div>
+  </div>
+
+  <div class="overlay" id="overlay"><div class="modal" id="modal" role="dialog" aria-modal="true"></div></div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <!-- 成绩分享（链接 + 二维码） -->
+  <div class="share-overlay" id="shareOverlay" role="dialog" aria-modal="true" aria-labelledby="shareTitle">
+    <div class="share-card">
+      <div class="share-head">
+        <h3 id="shareTitle">🏆 My Score</h3>
+        <button class="share-close" id="shareClose" aria-label="Close">✕</button>
+      </div>
+      <div class="share-canvas-wrap"><canvas id="shareCanvas" width="600" height="760"></canvas></div>
+      <div class="share-qr-row">
+        <img class="share-qr" id="shareQr" width="92" height="92" alt="Score QR code" />
+        <div class="share-qr-txt">📱 <b>Scan or tap the link</b><br>Share your score with friends</div>
+      </div>
+      <div class="share-url-row">
+        <input id="shareUrl" type="text" readonly aria-label="Share link" />
+        <button class="btn primary" id="shareCopy">📋 Copy</button>
+      </div>
+      <div class="share-actions">
+        <button class="btn ghost" id="shareDownload">⬇ Save Image</button>
+        <button class="btn ghost" id="shareWechat">💬 Share</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="qrcode.min.js"></script>
+  <script type="module" src="/src/games/24-game/index.ts"></script>
+</body>
+</html>
