@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en" data-site="mathduel">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0066CC" />
+  <title>Guess the Number 1A2B — Bulls &amp; Cows | MathDuel</title>
+  <meta name="description" content="Set a 4-digit number with no repeats (1-9) and take turns guessing. Right digit and position is A, right digit wrong position is B. First to 4A wins." />
+  <link rel="canonical" href="https://mathduel.games/games/bulls/" />
+  <link rel="preload" href="/fonts/space-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="/fonts/sora-latin.woff2" as="font" type="font/woff2" crossorigin />
+</head>
+<body>
+  <div id="header"></div>
+
+  <main class="gb" id="main">
+    <section class="board" id="board" aria-label="Game board">
+      <div class="gb-bar">
+        <nav class="tabs" id="tabs" aria-label="Game modes">
+          <button class="tab active" data-mode="pva">vs Computer</button>
+        </nav>
+        <div class="top-stats">
+          <span class="chip">Moves <b id="stMoves">0</b></span>
+          <span class="chip">Left <b id="stLeft">3024</b></span>
+        </div>
+      </div>
+
+      <!-- 阶段一：设密 -->
+      <div class="gb-panel" id="setupBox">
+        <h2 class="gb-h">Set your secret number</h2>
+        <p class="gb-sub">4 digits from 1-9, no repeats. The computer sets its own.</p>
+        <div class="gb-row">
+          <input
+            id="secretInput"
+            class="gb-input num"
+            inputmode="numeric"
+            maxlength="4"
+            placeholder="1234"
+            aria-label="Your secret number"
+          />
+          <button class="btn btn-primary" id="secretBtn">Start</button>
+          <button class="btn" id="randomBtn">Random</button>
+        </div>
+        <div class="gb-row">
+          <label class="gb-label" for="aiDiff">Difficulty</label>
+          <select id="aiDiff" class="gb-select" aria-label="Difficulty">
+            <option value="easy">Easy</option>
+            <option value="normal" selected>Normal</option>
+            <option value="hard">Hard</option>
+          </select>
+        </div>
+        <p class="gb-msg" id="setupMsg"></p>
+      </div>
+
+      <!-- 阶段二：对战 -->
+      <div class="gb-panel" id="playBox" hidden>
+        <div class="gb-phase" id="phaseTag">Your turn</div>
+        <div class="gb-row">
+          <input
+            id="guessInput"
+            class="gb-input num"
+            inputmode="numeric"
+            maxlength="4"
+            placeholder="Your guess"
+            aria-label="Your guess"
+          />
+          <button class="btn btn-primary" id="guessBtn">Guess</button>
+        </div>
+        <p class="gb-msg" id="playMsg"></p>
+      </div>
+
+      <!-- 历史 -->
+      <div class="gb-history">
+        <h3 class="gb-h3">History</h3>
+        <table class="gb-table" id="hisTable">
+          <thead>
+            <tr><th>#</th><th>Who</th><th>Guess</th><th>Result</th></tr>
+          </thead>
+          <tbody id="hisBody"></tbody>
+        </table>
+      </div>
+
+      <!-- 结果 -->
+      <div class="gb-panel gb-result" id="resultBox" hidden>
+        <div class="gb-result-title" id="resultTitle">You win</div>
+        <div class="gb-result-sub" id="resultSub"></div>
+        <button class="btn btn-primary" id="restartBtn">Play again</button>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="/src/games/bulls/index.ts"></script>
+</body>
+</html>
