@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  mathduel.games sitemap
+  重要：本文件此前不存在，/sitemap.xml 在被 SPA fallback 接管后返回首页 HTML，
+  导致 health.json 里出现 "sitemap.status=200 但 urls=0" 的矛盾读数。
+  修复方式：把本文件放入 public/sitemap.xml + 同时补 public/404.html。
+
+  规则：只收录【线上真实存在】的页面，避免 sitemap 里出现软 404 URL。
+  当前线上的游戏只有 24-game 与 bulls；
+  sudoku / sudoku-6x6 / killer-sudoku / equation-pyramid 尚未部署（访问会软 404 回首页），
+  等它们真正上线后，再把对应 <url> 追加进来。
+-->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+
+  <url>
+    <loc>https://mathduel.games/</loc>
+    <lastmod>2026-09-22</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+  <url>
+    <loc>https://mathduel.games/games/24-game/</loc>
+    <lastmod>2026-09-22</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://mathduel.games/games/bulls/</loc>
+    <lastmod>2026-09-22</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+</urlset>
