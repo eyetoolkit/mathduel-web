@@ -1,0 +1,40 @@
+/* ============================================================
+   NUMBER PYRAMID · Lobby 专属样式
+   骨架 / 顶栏 / 模式卡 / 页脚 / 难度行全部复用 ../24-game/lobby.css（arb-*），
+   本文件只放 pyramid 独有：hero 装饰塔 SVG。
+   ============================================================ */
+
+.p1-pyr-deco {
+  position: relative;
+  width: min(360px, 100%);
+  height: 200px;
+  margin: 20px 0 6px;
+  background: var(--a-ink);
+  border: 2px solid var(--a-line);
+  border-radius: 14px;
+  padding: 8px;
+  overflow: hidden;
+}
+
+.p1-pyr-deco .brick {
+  position: absolute;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--a-ink-2);
+  border: 1px solid var(--a-mute-2);
+  color: var(--a-mute-2);
+  font-family: var(--a-ui); font-weight: 600;
+  font-size: 0.92rem;
+  font-variant-numeric: tabular-nums;
+  border-radius: 5px;
+}
+.p1-pyr-deco .brick.given {
+  background: var(--a-paper); color: var(--a-ink); border-color: var(--a-paper);
+  font-weight: 700;
+}
+
+@media (max-width: 560px) {
+  .p1-pyr-deco {
+    height: 160px;
+    margin: 14px 0 4px;
+  }
+}

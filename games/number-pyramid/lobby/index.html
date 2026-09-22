@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en" data-site="mathduel">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0E1419" />
+  <title>Choose Your Mode — Number Pyramid | MathDuel</title>
+  <meta name="description" content="Every brick is the sum of the two beneath it. Three tower heights (Swift 4 / Standard 5 / Deep 6), daily seeded, four modes." />
+  <link rel="canonical" href="https://mathduel.games/games/number-pyramid/lobby/" />
+  <link rel="preload" href="/fonts/space-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="/fonts/sora-latin.woff2" as="font" type="font/woff2" crossorigin />
+</head>
+<body class="arena">
+  <header class="arbar">
+    <div class="arbar-in">
+      <a class="arb-logo" href="/">PYRAMID<span>SUM</span></a>
+      <nav class="arb-nav" aria-label="Site">
+        <a href="/">Home</a>
+        <a href="/games/number-pyramid/">Play now</a>
+        <a href="/leaderboard/">Leaderboard</a>
+      </nav>
+      <a class="arb-top-cta" href="/games/number-pyramid/?mode=daily">Today's tower →</a>
+    </div>
+  </header>
+
+  <main class="arb-main" id="main">
+    <section class="arb-hero">
+      <h1 class="arb-big">Build the <em>tower</em></h1>
+      <div class="p1-pyr-deco" id="heroPyr" aria-hidden="true"></div>
+      <p class="arb-sub">Every brick is the sum of the two beneath it. Pick a tower height — the taller the climb, the bigger the apex.</p>
+    </section>
+
+    <div class="arb-cols">
+      <div>
+        <h2 class="arb-h2">Game modes</h2>
+        <div class="arb-modes" id="modeGrid">
+          <a class="arb-mode feat" href="/games/number-pyramid/?mode=daily" data-mode="daily">
+            <div class="mi" aria-hidden="true">🌐</div>
+            <div class="mt">Daily Tower <span class="arb-tag" id="dailyTag" hidden>Done today</span></div>
+            <div class="md">Same seeded tower worldwide, one shot a day. Log your time.</div>
+          </a>
+          <a class="arb-mode" href="/games/number-pyramid/?mode=duel" data-mode="duel">
+            <div class="mi" aria-hidden="true">🤖</div>
+            <div class="mt">Duel Bot</div>
+            <div class="md">Climb your half of the bricks first. Wrong digits cost +2.5s.</div>
+          </a>
+          <a class="arb-mode" href="/games/number-pyramid/?mode=timed" data-mode="timed">
+            <div class="mi" aria-hidden="true">⏱️</div>
+            <div class="mt">Timed Practice</div>
+            <div class="md">60 seconds, as many towers as you can. Chain solves for streaks.</div>
+          </a>
+          <a class="arb-mode" href="/games/number-pyramid/?mode=solo" data-mode="solo">
+            <div class="mi" aria-hidden="true">🎯</div>
+            <div class="mt">Solo Practice</div>
+            <div class="md">No clock, no pressure. Three heights, best times saved.</div>
+          </a>
+          <div class="arb-mode ghost">
+            <div class="mi" aria-hidden="true">👥</div>
+            <div class="mt">Friend 1v1</div>
+            <div class="md">Coming soon — private rooms arrive with the live API.</div>
+          </div>
+          <div class="arb-mode ghost">
+            <div class="mi" aria-hidden="true">🎲</div>
+            <div class="mt">Random Match</div>
+            <div class="md">Coming soon — get matched with a stranger instantly.</div>
+          </div>
+        </div>
+
+        <div class="arb-diff-block">
+          <div class="arb-dl">Tower height · applies to every mode</div>
+          <div class="arb-diff" id="lobbyDiff" role="group" aria-label="Tower height">
+            <button class="arb-dbtn" type="button" data-h="4">Swift<small>4 levels · 10</small></button>
+            <button class="arb-dbtn" type="button" data-h="5">Standard<small>5 levels · 15</small></button>
+            <button class="arb-dbtn" type="button" data-h="6">Deep<small>6 levels · 21</small></button>
+          </div>
+        </div>
+      </div>
+
+      <div class="arb-side">
+        <section class="arb-card" aria-labelledby="boardTitle">
+          <h3 id="boardTitle">Global Daily Tower</h3>
+          <div class="arb-cd">Ends in <b class="num" id="boardCountdown">--:--:--</b></div>
+          <div id="boardRows" aria-live="polite">
+            <div class="arb-empty">Loading today's board…</div>
+          </div>
+          <a class="arb-btn ghost block" href="/games/number-pyramid/?mode=daily" id="boardPlay">Play today's tower</a>
+        </section>
+
+        <section class="arb-card" aria-labelledby="howTitle">
+          <h3 id="howTitle">How it works</h3>
+          <div class="arb-rules">
+            <div class="arb-rule"><b>1</b><span>Each brick equals the sum of the two bricks directly beneath it</span></div>
+            <div class="arb-rule"><b>2</b><span>Given bricks (paper) are fixed — only the blanks are yours to fill</span></div>
+            <div class="arb-rule"><b>3</b><span>Pencil marks let you note candidates; toggle Notes (✏) to jot them</span></div>
+            <div class="arb-rule"><b>4</b><span>Duel: you and the bot each own half the bricks — first side done wins</span></div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <footer class="arb-foot">
+    <span><b>PYRAMID SUM</b> · mode select</span>
+    <span class="arb-foot-links">
+      <a href="/">MathDuel home</a>
+      <a href="/games/number-pyramid/">Play now</a>
+      <a href="/leaderboard/">Leaderboard</a>
+    </span>
+  </footer>
+
+  <script type="module" src="/src/games/number-pyramid/lobby.ts"></script>
+</body>
+</html>

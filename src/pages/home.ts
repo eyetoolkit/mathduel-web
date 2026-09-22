@@ -72,6 +72,15 @@ const GAMES: GameDef[] = [
     modes: ['Practice', 'Daily'],
   },
   {
+    id: 'number-pyramid',
+    icon: '▲',
+    title: 'Number Pyramid',
+    desc: 'Every brick is the sum of the two beneath it. Build the apex in seconds — pure deduction.',
+    href: '/games/number-pyramid/lobby/',
+    stage: 'beta',
+    modes: ['Practice', 'Daily', 'Duel'],
+  },
+  {
     id: 'equation-pyramid',
     icon: '△',
     title: 'Equation Pyramid',

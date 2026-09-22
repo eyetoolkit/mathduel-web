@@ -38,6 +38,8 @@ export default defineConfig({
         'sudoku-lobby': resolve(here, 'games/sudoku/lobby/index.html'),
         'killer-sudoku': resolve(here, 'games/killer-sudoku/index.html'),
         'killer-sudoku-lobby': resolve(here, 'games/killer-sudoku/lobby/index.html'),
+        'number-pyramid': resolve(here, 'games/number-pyramid/index.html'),
+        'number-pyramid-lobby': resolve(here, 'games/number-pyramid/lobby/index.html'),
       },
     },
   },

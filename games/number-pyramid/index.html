@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en" data-site="mathduel">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0E1419" />
+  <title>Number Pyramid · Build the Tower | MathDuel</title>
+  <meta name="description" content="Every brick is the sum of the two beneath it. Race to fill the apex before your opponent. Three tower heights, daily seeded." />
+  <link rel="canonical" href="https://mathduel.games/games/number-pyramid/" />
+  <link rel="preload" href="/fonts/space-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="/fonts/sora-latin.woff2" as="font" type="font/woff2" crossorigin />
+</head>
+<body class="arena">
+  <div id="header"></div>
+
+  <main class="p1-arena">
+    <div class="p1-top">
+      <div class="p1-tabs" id="tabs">
+        <button class="p1-tab" data-mode="solo">Solo</button>
+        <button class="p1-tab" data-mode="daily">Daily</button>
+        <button class="p1-tab" data-mode="timed">Timed</button>
+        <button class="p1-tab" data-mode="duel">Duel Bot</button>
+      </div>
+      <button class="p1-back" id="backLobby" type="button" title="Mode select">← Mode select</button>
+    </div>
+
+    <div class="p1-opp" id="oppHead" hidden>
+      <div class="p1-player">
+        <div class="p1-av" aria-hidden="true"></div>
+        <div>
+          <div class="p1-pn">Bot <span class="p1-side opp"><span class="d"></span>Opponent</span></div>
+          <div class="p1-ps" id="oppPace">— pace</div>
+        </div>
+      </div>
+      <div class="p1-status" id="oppStatus"><span class="d"></span>Filled · 0 / 0</div>
+    </div>
+
+    <div id="modeBanner"></div>
+
+    <div class="p1-diff" id="diffPick" role="group" aria-label="Tower height">
+      <button class="p1-pk" data-h="4">Swift<small>4 levels · 10</small></button>
+      <button class="p1-pk active" data-h="5">Standard<small>5 levels · 15</small></button>
+      <button class="p1-pk" data-h="6">Deep<small>6 levels · 21</small></button>
+    </div>
+
+    <!-- ============ 金字塔：容器 + SVG 连线 + 多行 brick ============ -->
+    <div class="p1-board-wrap" id="boardWrap">
+      <svg class="p1-dep" id="p1dep" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"></svg>
+      <div class="p1-board" id="p1board" role="grid" aria-label="Number pyramid"></div>
+    </div>
+
+    <div class="p1-hud" id="hud" aria-live="polite">
+      <div class="p1-hud-row"><span class="p1-hl">Apex target</span><span class="p1-arith num" id="hudApex">—</span></div>
+      <div class="p1-hud-row"><span class="p1-hl">Bricks filled</span><span class="p1-arith num" id="hudFilled">0 / 0</span></div>
+    </div>
+
+    <div class="p1-pad" id="p1pad">
+      <button class="p1-pk" data-v="1">1</button>
+      <button class="p1-pk" data-v="2">2</button>
+      <button class="p1-pk" data-v="3">3</button>
+      <button class="p1-pk" data-v="4">4</button>
+      <button class="p1-pk" data-v="5">5</button>
+      <button class="p1-pk" data-v="6">6</button>
+      <button class="p1-pk" data-v="7">7</button>
+      <button class="p1-pk" data-v="8">8</button>
+      <button class="p1-pk" data-v="9">9</button>
+      <div class="p1-padfoot">
+        <button class="p1-pk erase" data-act="erase" id="eraseBtn">⌫ Erase</button>
+        <button class="p1-pk notes" data-act="notes" id="notesBtn">✎ Notes</button>
+      </div>
+    </div>
+
+    <div class="p1-tools" id="padTools">
+      <button class="p1-tool" id="hintBtn" title="Find the next determinable brick">💡 Hint</button>
+      <button class="p1-tool" id="newBtn" title="Fresh tower">🔄 New</button>
+    </div>
+
+    <div id="result" class="p1-result" hidden></div>
+
+    <div class="p1-you" id="youHead">
+      <div class="p1-player">
+        <div class="p1-av you" aria-hidden="true"></div>
+        <div>
+          <div class="p1-pn">You <span class="p1-side you"><span class="d"></span>You</span></div>
+          <div class="p1-ps" id="youPace">— pace</div>
+        </div>
+      </div>
+      <div class="p1-status you" id="youStatus"><span class="d"></span>Filled · 0 / 0</div>
+    </div>
+
+    <div class="p1-chatdock" id="chatDock" hidden>
+      <div class="p1-chatlog" id="chatLog" aria-live="polite"></div>
+      <div class="p1-quickline">
+        <button class="p1-qb" data-msg="nice">nice</button>
+        <button class="p1-qb" data-msg="close">close</button>
+        <button class="p1-qb" data-msg="think">thinking…</button>
+        <button class="p1-qb" data-msg="oof">oof</button>
+      </div>
+    </div>
+
+    <div class="p1-overlay" id="overlay" hidden>
+      <div class="p1-modal" id="modal" role="dialog" aria-modal="true"></div>
+    </div>
+    <div class="p1-toast" id="toast" hidden></div>
+  </main>
+
+  <script type="module" src="/src/games/number-pyramid/index.ts"></script>
+</body>
+</html>

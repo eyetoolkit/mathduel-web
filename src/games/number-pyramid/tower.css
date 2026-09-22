@@ -1,0 +1,318 @@
+/* ============================================================
+   NUMBER PYRAMID · 牌桌样式（深色 ARENA 皮肤）
+   与 9×9 / killer 共享 .arena 作用域 + --a-* token；
+   自有前缀 `p1-`（pyramid）以避免冲突。
+   设计稿要点：
+     · 容器：brick 绝对定位，每行用 --rt%（每行高度）下移；
+     · 每层 brick 数 = levels - level，最顶层居中 1 个；
+     · SVG 连线：每个 brick 连到下一层两格（--gw%、--gh% 几何）。
+     · "hot" 线 = ember（玩家刚填的下层）→ 提示「这格就是上层之和」
+   ============================================================ */
+
+.p1-arena {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 18px 14px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  --a-teal-soft: rgba(47, 196, 201, 0.14);
+  --a-mute-2: #5c6b74;
+}
+
+/* ===== 顶部 tab + back ===== */
+.p1-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.p1-tabs {
+  display: inline-flex; gap: 4px;
+  background: var(--a-ink-2);
+  border: 1px solid var(--a-line);
+  border-radius: var(--a-r-pill, 999px);
+  padding: 4px;
+}
+.p1-tab {
+  appearance: none; cursor: pointer; background: transparent; border: 0;
+  color: var(--a-mute); font-family: var(--a-ui); font-size: 0.84rem; font-weight: 600;
+  padding: 7px 13px; border-radius: var(--a-r-pill, 999px);
+  transition: color 0.12s, background 0.12s;
+}
+.p1-tab:hover { color: var(--a-paper); }
+.p1-tab.active { background: var(--a-ember); color: #160a04; }
+.p1-back {
+  appearance: none; cursor: pointer; background: transparent;
+  border: 1px solid var(--a-line); color: var(--a-mute);
+  font-family: var(--a-ui); font-size: 0.8rem;
+  padding: 7px 12px; border-radius: var(--a-r-pill, 999px);
+}
+.p1-back:hover { color: var(--a-paper); border-color: var(--a-ember); }
+
+/* ===== 对手条（duel） ===== */
+.p1-opp {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  background: var(--a-ink-2); border: 1px solid var(--a-line);
+  border-radius: var(--a-r-card); padding: 10px 14px;
+}
+.p1-player { display: flex; align-items: center; gap: 10px; }
+.p1-av {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--a-teal), var(--a-ink-3));
+  border: 2px solid var(--a-ink);
+}
+.p1-av.you { background: linear-gradient(135deg, var(--a-ember), var(--a-ink-3)); }
+.p1-pn {
+  font-weight: 600; color: var(--a-paper); font-size: 0.95rem;
+  display: flex; align-items: center; gap: 8px;
+}
+.p1-ps { color: var(--a-mute); font-size: 0.78rem; margin-top: 2px; }
+.p1-side {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 0.7rem; font-weight: 600;
+  border-radius: var(--a-r-pill, 999px); padding: 3px 9px;
+}
+.p1-side .d { width: 6px; height: 6px; border-radius: 50%; }
+.p1-side.you { background: var(--a-ember-soft); color: var(--a-ember); }
+.p1-side.you .d { background: var(--a-ember); }
+.p1-side.opp { background: var(--a-teal-soft); color: var(--a-teal); }
+.p1-side.opp .d { background: var(--a-teal); }
+.p1-status {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-size: 0.82rem; color: var(--a-paper);
+  background: var(--a-ink-3); border: 1px solid var(--a-line);
+  border-radius: var(--a-r-pill, 999px); padding: 5px 11px;
+}
+.p1-status .d { width: 7px; height: 7px; border-radius: 50%; background: var(--a-teal); }
+.p1-status.you .d { background: var(--a-ember); }
+
+/* ===== 高度行 ===== */
+.p1-diff {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+}
+.p1-diff .p1-pk {
+  flex-direction: column; align-items: flex-start;
+  padding: 9px 11px;
+}
+.p1-diff .p1-pk small {
+  font-size: 0.7rem; font-weight: 400; color: var(--a-mute);
+}
+.p1-diff .p1-pk.active small { color: var(--a-ember-dim); }
+
+/* ===== 金字塔 ===== */
+.p1-board-wrap {
+  position: relative;
+  width: min(520px, 100%);
+  margin: 0 auto;
+  background: var(--a-ink);
+  border: 2px solid var(--a-line);
+  border-radius: 14px;
+  padding: 14px;
+}
+.p1-board {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+}
+.p1-dep {
+  position: absolute; inset: 0;
+  pointer-events: none;
+  overflow: visible;
+}
+.p1-dep path {
+  fill: none; stroke: var(--a-mute-2); stroke-width: 0.45;
+  stroke-linecap: round;
+}
+.p1-dep path.hot { stroke: var(--a-ember); stroke-width: 0.9; }
+.p1-dep path.bad { stroke: var(--a-teal-dim); stroke-width: 0.9; }
+
+/* brick */
+.p1-cell {
+  position: absolute;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--a-ink-2);
+  border: 1px solid var(--a-mute-2);
+  color: var(--a-mute-2);
+  font-family: var(--a-ui); font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  border-radius: 6px;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.1s, color 0.1s, border-color 0.1s;
+}
+.p1-cell.d2 { font-size: 1rem; }
+.p1-cell.d3 { font-size: 1.6rem; }
+.p1-cell.given {
+  background: var(--a-paper); color: var(--a-ink); font-weight: 700; border-color: var(--a-paper);
+}
+.p1-cell.entry { color: var(--a-ember); border-color: var(--a-ember-dim); }
+.p1-cell.bot { color: var(--a-teal); border-color: var(--a-teal-dim); }
+.p1-cell.sel {
+  background: var(--a-ember-soft); color: var(--a-ember);
+  box-shadow: inset 0 0 0 2px var(--a-ember);
+}
+.p1-cell.conflict {
+  color: var(--a-teal);
+  box-shadow: inset 0 0 0 2px var(--a-teal-dim);
+  background: rgba(47, 196, 201, 0.12);
+}
+.p1-cell.lock {
+  cursor: not-allowed;
+  opacity: 0.85;
+}
+
+/* pencil marks */
+.p1-cell .p1-n3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  width: 100%; height: 100%;
+  padding: 2px;
+  pointer-events: none;
+}
+.p1-cell .p1-n3 i {
+  display: flex; align-items: center; justify-content: center;
+  font-style: normal; font-family: var(--a-ui); font-weight: 500;
+  font-size: 0.46em; color: transparent; line-height: 1;
+}
+.p1-cell .p1-n3 i.on { color: var(--a-ember-dim); }
+
+/* ===== HUD ===== */
+.p1-hud {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+  background: var(--a-ink-2); border: 1px solid var(--a-line);
+  border-radius: var(--a-r-card); padding: 10px 14px;
+}
+.p1-hud-row {
+  display: flex; justify-content: space-between;
+  font-size: 0.82rem; color: var(--a-mute); gap: 8px;
+}
+.p1-hl { color: var(--a-mute); }
+.p1-arith { color: var(--a-paper); font-weight: 600; font-variant-numeric: tabular-nums; }
+
+/* ===== 数字键盘 ===== */
+.p1-pad {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+  max-width: 360px; margin: 0 auto; width: 100%;
+}
+.p1-padfoot { grid-column: 1 / -1; display: flex; gap: 8px; }
+.p1-padfoot .p1-pk { flex: 1; }
+.p1-pk {
+  appearance: none; cursor: pointer;
+  font-family: var(--a-ui); font-size: 1.15rem; font-weight: 600;
+  color: var(--a-paper); background: var(--a-ink-2);
+  border: 1px solid var(--a-line); border-radius: var(--a-r-btn);
+  padding: 12px 8px;
+  display: flex; align-items: center; justify-content: center; gap: 4px;
+  font-variant-numeric: tabular-nums;
+  transition: border-color 0.12s, color 0.12s, background 0.12s;
+  aspect-ratio: 1.15;
+}
+.p1-pk:hover { border-color: var(--a-ember); color: var(--a-ember); }
+.p1-pk.on { border-color: var(--a-ember); background: var(--a-ember-soft); color: var(--a-ember); }
+.p1-pk.erase, .p1-pk.notes {
+  font-size: 0.86rem; color: var(--a-mute);
+  aspect-ratio: auto; padding: 10px 8px;
+}
+.p1-pk.erase:hover, .p1-pk.notes:hover { color: var(--a-paper); border-color: var(--a-mute); }
+.p1-pk.notes.on { color: var(--a-ember); border-color: var(--a-ember); background: var(--a-ember-soft); }
+
+/* ===== 工具栏 ===== */
+.p1-tools { display: flex; justify-content: center; gap: 8px; }
+.p1-tool {
+  appearance: none; cursor: pointer; background: transparent;
+  border: 1px solid var(--a-line); color: var(--a-mute);
+  font-family: var(--a-ui); font-size: 0.82rem;
+  padding: 7px 14px; border-radius: var(--a-r-pill, 999px);
+}
+.p1-tool:hover { color: var(--a-paper); border-color: var(--a-ember); }
+
+/* ===== 我方条 ===== */
+.p1-you {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  background: var(--a-ink-2); border: 1px solid var(--a-line);
+  border-radius: var(--a-r-card); padding: 10px 14px;
+}
+
+/* ===== 结果横幅 ===== */
+.p1-result {
+  text-align: center; padding: 14px 12px;
+  background: var(--a-ink-2); border: 1px solid var(--a-line);
+  border-radius: var(--a-r-card);
+  color: var(--a-paper); font-size: 1rem;
+}
+.p1-result.win { border-color: var(--a-ember); background: var(--a-ember-soft); color: var(--a-ember); }
+
+/* ===== Chat dock（duel） ===== */
+.p1-chatdock {
+  background: var(--a-ink-2); border: 1px solid var(--a-line);
+  border-radius: var(--a-r-card); padding: 10px 12px;
+}
+.p1-chatlog {
+  display: flex; flex-direction: column; gap: 6px;
+  max-height: 110px; overflow-y: auto;
+  font-size: 0.82rem; margin-bottom: 8px;
+}
+.p1-chatlog .p1-bub {
+  max-width: 80%; padding: 6px 10px; border-radius: 12px;
+}
+.p1-chatlog .p1-bub.you {
+  align-self: flex-end; background: var(--a-ember); color: #160a04;
+  border-bottom-right-radius: 3px;
+}
+.p1-chatlog .p1-bub.opp {
+  align-self: flex-start; background: var(--a-ink-3);
+  border: 1px solid var(--a-line); border-bottom-left-radius: 3px;
+}
+.p1-quickline { display: flex; gap: 6px; flex-wrap: wrap; }
+.p1-qb {
+  appearance: none; cursor: pointer; background: var(--a-ink-3);
+  border: 1px solid var(--a-line); color: var(--a-mute);
+  font-size: 0.78rem; padding: 5px 10px; border-radius: var(--a-r-pill, 999px);
+}
+.p1-qb:hover { color: var(--a-paper); border-color: var(--a-mute); }
+
+/* ===== Modal / Toast ===== */
+.p1-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 100; padding: 16px;
+}
+.p1-modal {
+  background: var(--a-ink); border: 1px solid var(--a-line);
+  border-radius: var(--a-r-card);
+  padding: 22px 22px 18px;
+  max-width: 360px; width: 100%; text-align: center;
+}
+.p1-modal .p1-verdict { font-family: var(--a-disp); font-weight: 800; font-size: 1.3rem; color: var(--a-paper); }
+.p1-modal .p1-scores { display: flex; gap: 12px; justify-content: center; margin: 10px 0; }
+.p1-modal .p1-scores > div { text-align: center; }
+.p1-modal .p1-scores .num { font-size: 1.4rem; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--a-paper); }
+.p1-modal .p1-scores small { font-size: 0.74rem; color: var(--a-mute); display: block; }
+.p1-modal .p1-me .num { color: var(--a-ember); }
+.p1-modal .p1-op .num { color: var(--a-teal); }
+.p1-modal .p1-extra { color: var(--a-mute); font-size: 0.84rem; margin: 8px 0; }
+.p1-modal .p1-acts { display: flex; gap: 8px; justify-content: center; margin-top: 14px; }
+.p1-modal .p1-acts button {
+  appearance: none; cursor: pointer;
+  font-family: var(--a-ui); font-weight: 600; font-size: 0.88rem;
+  padding: 9px 16px; border-radius: var(--a-r-btn);
+  border: 1px solid var(--a-line); background: var(--a-ink-2);
+  color: var(--a-paper);
+}
+.p1-modal .p1-acts .p1-prim { background: var(--a-ember); color: #160a04; border-color: transparent; }
+
+.p1-toast {
+  position: fixed; left: 50%; bottom: 32px;
+  transform: translateX(-50%);
+  background: var(--a-ink-2); border: 1px solid var(--a-line);
+  color: var(--a-paper);
+  padding: 10px 14px; border-radius: var(--a-r-pill, 999px);
+  font-size: 0.86rem; z-index: 110;
+}
+
+/* ===== 自适应 ===== */
+@media (max-width: 560px) {
+  .p1-arena { padding: 12px 8px 28px; }
+  .p1-hud { grid-template-columns: 1fr; }
+  .p1-pad { max-width: 320px; }
+  .p1-pk { font-size: 1rem; padding: 10px 6px; }
+  .p1-pk.erase, .p1-pk.notes { font-size: 0.78rem; }
+}
