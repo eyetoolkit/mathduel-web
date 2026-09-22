@@ -8,7 +8,7 @@
  * 因此以「目录整体复制」的方式原样发布，不做构建，避免破坏内联脚本。
  */
 import { cp, stat } from 'node:fs/promises';
-import { resolve, dirname } from 'node:path';
+import { resolve, dirname, relative, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -17,6 +17,13 @@ const legacyDir = resolve(root, 'legacy');
 const distDir = resolve(root, 'dist');
 
 const showBeta = process.env.VITE_SHOW_BETA === '1';
+
+/**
+ * 已用新架构重写并拥有 MPA 入口的 legacy 游戏 —— 不再拷贝，
+ * 避免旧页面覆盖 vite build 产出的同名目录（dist/games/<id>/）。
+ * 重写新游戏后把它加进这里。
+ */
+const REWRITTEN_LEGACY_GAMES = ['games/sudoku-6x6'];
 
 async function exists(p) {
   try {
@@ -41,5 +48,13 @@ if (!(await exists(legacyDir))) {
   process.exit(1);
 }
 
-await cp(legacyDir, distDir, { recursive: true });
-console.log('[legacy] copied into dist (beta build)');
+await cp(legacyDir, distDir, {
+  recursive: true,
+  filter: (src) => {
+    // Windows 下 relative() 返回反斜杠路径，统一成正斜杠再匹配
+    const rel = relative(legacyDir, src).split(sep).join('/');
+    if (REWRITTEN_LEGACY_GAMES.some((g) => rel === g || rel.startsWith(g + '/'))) return false;
+    return true;
+  },
+});
+console.log('[legacy] copied into dist (beta build), excluded:', REWRITTEN_LEGACY_GAMES.join(', '));
