@@ -16,6 +16,7 @@ export interface ShareData {
   avg?: number;
   best?: number;
   rank?: number;
+  success?: boolean;
 }
 
 declare const qrcode: (typeNumber: number, errorCorrectLevel: string) => {
@@ -33,6 +34,7 @@ export function buildShareUrl(d: ShareData): string {
   const p = new URLSearchParams();
   p.set('g', '24');
   if (d.daily) p.set('d', d.key.replace('#', ''));
+  if (d.success) p.set('c', '1');
   if (d.competition) p.set('r', String(d.rank ?? 0));
   p.set('s', d.session);
   p.set('n', String(d.solved || 0));
@@ -86,6 +88,7 @@ export function renderShareCard(canvas: HTMLCanvasElement, d: ShareData, streak:
   x.textAlign = 'center';
 
   const isComp = !!d.competition;
+  const isDaily = !!d.daily;
   const big = isComp ? `#${d.rank || 0}` : `${d.solved} / ${d.total}`;
   const bigLabel = isComp ? 'My Rank' : 'Solved';
 
@@ -104,6 +107,12 @@ export function renderShareCard(canvas: HTMLCanvasElement, d: ShareData, streak:
   x.fillStyle = 'rgba(203,213,225,.85)';
   x.font = '600 22px "Sora", system-ui, sans-serif';
   x.fillText(bigLabel, W / 2, 304);
+
+  if (isDaily && d.success) {
+    x.fillStyle = '#34D399';
+    x.font = '700 20px "Sora", system-ui, sans-serif';
+    x.fillText('✓ CHALLENGE CLEARED', W / 2, 332);
+  }
 
   const stats: [string, string][] = isComp
     ? [['Solved', String(d.solved || 0)], ['Players', String(d.total || 0)], ['Streak', String(streak)]]
@@ -170,8 +179,8 @@ export function openShareOverlay(d: ShareData, streak: number): void {
     title.textContent = d.competition
       ? '🏆 Competition Results'
       : d.daily
-        ? d.solved === d.total
-          ? '🎉 Daily Challenge cleared!'
+        ? d.success || d.solved === d.total
+          ? '🎉 今日挑战成功!'
           : '📅 Daily Challenge Results'
         : '🏆 My 24 Score';
   }

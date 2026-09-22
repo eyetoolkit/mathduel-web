@@ -10,8 +10,8 @@ import { initI18n, mountHeader, toast } from '@tri-sites/design-system';
 import {
   countSolutions,
   dailyKeyStr,
-  dailySeed,
   generate24Puzzle,
+  hashString,
   isCompleteExpr,
   normalize24,
   safeEval,
@@ -275,19 +275,42 @@ function showAnswer(): void {
   resultEl.textContent = 'Answer: ' + p.replace(/\*/g, '×').replace(/\//g, '÷').replace(/-/g, '−') + ' = 24';
 }
 
-/* ===================== 每日挑战（题数 + 每题时间；默认 5 题 · 60s） ===================== */
+/* ===================== 每日挑战（规则 v2：5 题难度梯度 · 每题 60s · 点开始才揭牌 · 排名按完成数→总用时） ===================== */
 const DAILY_COUNTS = [5, 10, 15];
 const DAILY_TIMES = [60, 90, 120];
+// 难度梯度（5 题递进：暖身 → 冲刺）；题数 >5 时循环复用
+const DAILY_DIFFS: Difficulty[] = ['easy', 'standard', 'standard', 'hard', 'hard'];
+const diffForIndex = (i: number): Difficulty => DAILY_DIFFS[i % DAILY_DIFFS.length];
+const diffLabel = (d: Difficulty): string => (d === 'easy' ? 'Easy' : d === 'hard' ? 'Hard' : 'Medium');
+// 上海时间(UTC+8)的 YYYYMMDD：确保全球玩家"同一天"一致，不依赖浏览器本地时区
+function shanghaiDateKey(d = new Date()): string {
+  const utc = d.getTime() + d.getTimezoneOffset() * 60000;
+  const sh = new Date(utc + 8 * 3600000);
+  return `${sh.getFullYear()}${String(sh.getMonth() + 1).padStart(2, '0')}${String(sh.getDate()).padStart(2, '0')}`;
+}
+function seedFromDateKey(dk: string): number {
+  const y = parseInt(dk.slice(0, 4), 10);
+  const m = parseInt(dk.slice(4, 6), 10);
+  const d = parseInt(dk.slice(6, 8), 10);
+  return (y * 10000 + m * 100 + d) * 1000 + (hashString('24-game') % 1000);
+}
 const daily = {
   active: false,
+  started: false,
+  canSubmit: false,
   total: 5,
   idx: 0,
   limit: 60,
   timeLeft: 60,
   solved: 0,
   times: [] as (number | null)[],
+  puzzles: [] as { idx: number; diff: Difficulty; cards: number[] }[],
+  submits: [] as ({ solved: boolean; solution: string | null; time: number } | null)[],
+  curDiff: 'standard' as Difficulty,
   key: '',
+  dateKey: '',
   session: '',
+  startTs: 0,
   _iv: null as number | null,
 };
 
@@ -327,7 +350,7 @@ function dailyComplete(): void {
   localStorage.setItem('twentyfour_daily', JSON.stringify(o));
 }
 
-function startDaily(): void {
+async function startDaily(): Promise<void> {
   daily.active = true;
   mode = 'daily';
   daily.total = loadDailyCount();
@@ -335,9 +358,13 @@ function startDaily(): void {
   daily.idx = 0;
   daily.solved = 0;
   daily.times = [];
+  daily.submits = [];
   daily.session = genSession();
   daily.key = dailyKeyStr();
-  dailySeedVal = dailySeed();
+  daily.dateKey = shanghaiDateKey();
+  dailySeedVal = seedFromDateKey(daily.dateKey);
+  daily.started = false;
+  daily.canSubmit = false;
 
   $('diffPick')!.style.display = 'none';
   $('hintBtn')!.style.display = 'none';
@@ -345,8 +372,65 @@ function startDaily(): void {
   $('enterBtn')!.classList.add('hidden');
   $('newBtn')!.classList.add('hidden');
 
-  dealDailyPuzzle();
+  await loadDailyPuzzles();
+  renderDailyPreStart();
   renderSide();
+}
+
+async function loadDailyPuzzles(): Promise<void> {
+  // 优先从后端取今日 5 题（全球同题 + 可上榜）；失败则客户端确定性兜底（不参与全球榜）
+  try {
+    const res = await fetch(`/api/daily/24-game/challenge?d=${daily.dateKey}`, { credentials: 'include' });
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data.puzzles) && data.puzzles.length === daily.total) {
+        daily.puzzles = data.puzzles.map((p: any) => ({ idx: p.idx, diff: p.diff, cards: p.cards }));
+        daily.canSubmit = true;
+        return;
+      }
+    }
+  } catch {
+    /* 离线兜底 */
+  }
+  daily.puzzles = [];
+  for (let i = 0; i < daily.total; i++) {
+    const diff = diffForIndex(i);
+    const rng = SeededRandom(dailySeedVal + i * 7919 + 1);
+    let cards = generate24Puzzle(rng, diff);
+    let guard = 0;
+    while (!solve(cards.map((n) => ({ value: n, expr: String(n) }))) && guard++ < 80) cards = generate24Puzzle(rng, diff);
+    daily.puzzles.push({ idx: i, diff, cards });
+  }
+  daily.canSubmit = false;
+}
+
+function renderDailyPreStart(): void {
+  const diffChips = daily.puzzles
+    .map((p) => `<span class="diff-chip d-${p.diff}">${diffLabel(p.diff)}</span>`)
+    .join('');
+  $('modeBanner')!.innerHTML =
+    '<div class="banner daily">' +
+    '<div class="daily-top"><div class="daily-meta">' +
+    `<div class="b-title">📅 Daily Challenge ${daily.key}</div>` +
+    '<div class="b-sub">5 道不同难度 · 全球同题 · 每题 60 秒</div>' +
+    '</div></div>' +
+    '<div class="db-diffs">' + diffChips + '</div>' +
+    '<button class="btn primary db-start" id="dbStart">🂠 开始挑战</button>' +
+    '<p class="db-hint">点击开始后将同时揭牌并启动计时；5 题全部在限时内解出即「挑战成功」</p>' +
+    '</div>';
+  cardsEl.innerHTML = daily.puzzles.map(() => '<div class="cb"><span class="cb-q">?</span></div>').join('');
+  resultEl.className = 'result';
+  resultEl.textContent = '准备开始每日挑战';
+  const sb = $('dbStart');
+  if (sb) sb.onclick = beginDaily;
+}
+
+function beginDaily(): void {
+  if (!daily.active || daily.started) return;
+  daily.started = true;
+  daily.startTs = Date.now();
+  renderSide();
+  dealDailyPuzzle();
 }
 
 function renderDailyBanner(): void {
@@ -354,7 +438,7 @@ function renderDailyBanner(): void {
     '<div class="banner daily">' +
     '<div class="daily-top"><div class="daily-meta">' +
     `<div class="b-title">📅 Daily Challenge ${daily.key}</div>` +
-    `<div class="b-sub">Puzzle <b id="dbIdx">${daily.idx + 1}</b> / ${daily.total} · Global same puzzle</div>` +
+    `<div class="b-sub">Puzzle <b id="dbIdx">${daily.idx + 1}</b> / ${daily.total} · <b>${diffLabel(daily.curDiff)}</b> · Global same puzzle</div>` +
     '</div></div>' +
     '<div class="db-set">' +
     '<div class="db-set-row"><span class="db-lbl">Count</span><div class="seg" id="dbCount">' +
@@ -382,14 +466,11 @@ function renderDailyBanner(): void {
 }
 
 function dealDailyPuzzle(): void {
-  const rng = SeededRandom(dailySeedVal + daily.idx * 7919 + 1);
-  let puzzle = generate24Puzzle(rng, 'standard');
-  let guard = 0;
-  while (!solve(puzzle.map((n) => ({ value: n, expr: String(n) }))) && guard++ < 80) {
-    puzzle = generate24Puzzle(rng, 'standard');
-  }
+  const p = daily.puzzles[daily.idx];
+  if (!p) return;
+  daily.curDiff = p.diff;
   renderDailyBanner();
-  deal(puzzle);
+  deal(p.cards);
   startDailyTimer();
 }
 
@@ -423,6 +504,7 @@ function updateDailyClock(): void {
 function dailySolve(): void {
   const t = daily.limit - daily.timeLeft;
   daily.times[daily.idx] = t;
+  daily.submits[daily.idx] = { solved: true, solution: formula, time: t };
   daily.solved++;
   resultEl.className = 'result ok';
   resultEl.textContent = `🎉 Solved in ${t.toFixed(0)}s!`;
@@ -444,6 +526,7 @@ function dailySolve(): void {
 
 function dailyTimeUp(): void {
   daily.times[daily.idx] = null;
+  daily.submits[daily.idx] = { solved: false, solution: null, time: daily.limit };
   resultEl.className = 'result bad';
   resultEl.textContent = '⏰ Time up — unsolved';
   const ans = solve(numbers.map((n) => ({ value: n, expr: String(n) })));
@@ -472,10 +555,12 @@ function finishDaily(): void {
   $('newBtn')!.classList.remove('hidden');
   $('modeBanner')!.innerHTML = '';
 
-  const times = daily.times.filter((x): x is number => x != null);
-  const totalTime = times.reduce((a, b) => a + b, 0);
-  const avg = times.length ? totalTime / times.length : 0;
-  const best = times.length ? Math.min(...times) : 0;
+  // 总用时：完成题取实际秒数，未完成题计满分惩罚（保证"全完成"才最快）
+  const totalTime = daily.times.reduce<number>((a, t) => a + (t == null ? daily.limit : t), 0);
+  const solvedTimes = daily.times.filter((x): x is number => x != null);
+  const avg = solvedTimes.length ? solvedTimes.reduce<number>((a, b) => a + b, 0) / solvedTimes.length : 0;
+  const best = solvedTimes.length ? Math.min(...solvedTimes) : 0;
+  const success = daily.solved === daily.total;
 
   if (!dailyCompletedToday()) {
     dailyComplete();
@@ -494,10 +579,62 @@ function finishDaily(): void {
       totalTime,
       avg,
       best,
+      success,
     },
     combo,
   );
-  renderSide();
+  if (daily.canSubmit) void submitDailyChallenge();
+  setMode('practice');
+}
+
+async function submitDailyChallenge(): Promise<void> {
+  const results = daily.submits.map((s, i) => ({
+    idx: i,
+    solved: !!(s && s.solved),
+    solution: s && s.solution ? s.solution : null,
+    time: s ? s.time : daily.limit,
+  }));
+  try {
+    await fetch('/api/daily/24-game/challenge', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ dateKey: daily.dateKey, limit: daily.limit, results }),
+    });
+  } catch {
+    /* 提交失败不影响本地体验 */
+  }
+}
+
+async function loadDailyBoard(): Promise<void> {
+  const el = $('dailyBoard');
+  if (!el) return;
+  if (!daily.canSubmit) {
+    el.innerHTML = '<div class="race-empty">🌐 全球榜需要联网</div>';
+    return;
+  }
+  try {
+    const res = await fetch(`/api/daily/24-game/challenge/rank?d=${daily.dateKey}&limit=20`, { credentials: 'include' });
+    if (!res.ok) throw new Error();
+    const data = await res.json();
+    const entries = data.entries || [];
+    if (!entries.length) {
+      el.innerHTML = '<div class="race-empty">还没有人完成今天的挑战，抢首杀！</div>';
+      return;
+    }
+    el.innerHTML = entries
+      .slice(0, 20)
+      .map(
+        (e: any, i: number) =>
+          `<div class="race-row ${i === 0 ? 'r1' : ''}">` +
+          `<span class="rr-rank">${i + 1}</span>` +
+          `<span class="rr-name">${escapeHtml(e.name || '玩家')}</span>` +
+          `<span class="rr-time">${e.solved}/${daily.total} · ${(e.totalTime ?? 0).toFixed(1)}s</span></div>`,
+      )
+      .join('');
+  } catch {
+    el.innerHTML = '<div class="race-empty">🌐 全球榜加载失败</div>';
+  }
 }
 
 /* ===================== 竞赛 ===================== */
@@ -765,14 +902,28 @@ function renderSide(): void {
       '<div class="hint-step"><b>2</b><span>Same cards for everyone — race to make 24 first</span></div>' +
       '<div class="hint-step"><b>3</b><span>Ranked by solve time each round; accumulate over rounds</span></div></div>';
   } else if (mode === 'daily') {
-    sideEl.innerHTML =
-      '<div class="panel"><h3>📅 Today’s Global Board</h3>' +
-      '<div class="race-list"><div class="race-empty">Daily board on the live site</div></div></div>' +
+    const myStats =
       '<div class="panel"><h3>📈 My Stats</h3>' +
       statRow('Solved', scores.solved) +
       statRow('Skipped', scores.skipped) +
       statRow('Streak', combo) +
       '<div class="hint-step" style="margin-top:10px"><b>·</b><span>Same puzzle worldwide — race the clock</span></div></div>';
+    if (!daily.started) {
+      sideEl.innerHTML =
+        '<div class="panel"><h3>📅 每日挑战规则</h3>' +
+        '<div class="hint-step"><b>1</b><span>每天同一套 5 题，全球玩家同题</span></div>' +
+        '<div class="hint-step"><b>2</b><span>难度递增：Easy → Medium → Hard</span></div>' +
+        '<div class="hint-step"><b>3</b><span>每题限时 60 秒，超时自动揭晓答案</span></div>' +
+        '<div class="hint-step"><b>4</b><span>5 题全在限时内解出 = 挑战成功</span></div>' +
+        '<div class="hint-step"><b>5</b><span>排名按 完成题数 → 总用时</span></div></div>' +
+        myStats;
+    } else {
+      sideEl.innerHTML =
+        '<div class="panel"><h3>🏆 Today’s Global Board</h3>' +
+        '<div class="race-list" id="dailyBoard"><div class="race-empty">加载中…</div></div></div>' +
+        myStats;
+      void loadDailyBoard();
+    }
   } else {
     sideEl.innerHTML =
       '<div class="panel"><h3>🎯 Quick Start</h3>' +
@@ -855,7 +1006,11 @@ $('newBtn')!.onclick = () => {
   deal();
 };
 $('hintBtn')!.onclick = giveHint;
-$('answerBtn')!.onclick = showAnswer;
+$('answerBtn')!.onclick = () => {
+  if (daily.active && daily.started) { dailyTimeUp(); return; }
+  if (daily.active) return; // 开始前忽略
+  showAnswer();
+};
 $('enterBtn')!.onclick = openLobby;
 $('lobbyClose')!.onclick = closeLobby;
 $('joinToggle')!.onclick = () => {
