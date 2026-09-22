@@ -58,9 +58,9 @@ const GAMES: GameDef[] = [
     icon: '▤',
     title: 'Sudoku 6×6',
     desc: 'A faster grid for quick sessions — same rules, tighter board, sharper timing.',
-    href: '/games/sudoku-6x6/',
+    href: '/games/sudoku-6x6/lobby/',
     stage: 'beta',
-    modes: ['Practice'],
+    modes: ['Practice', 'Daily', 'Duel'],
   },
   {
     id: 'killer-sudoku',

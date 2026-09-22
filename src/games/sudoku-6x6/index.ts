@@ -97,21 +97,16 @@ const writeJSON = (k: string, v: unknown): void => {
 };
 const fmt = (sec: number): string => `${sec.toFixed(1)}s`;
 
-/* ═══ 视图切换 ═══ */
-function showLobby(): void {
-  stopAll();
-  st.view = 'lobby';
-  $('lobbyView')!.classList.remove('hidden');
-  $('playView')!.classList.add('hidden');
-  renderLobbySide();
-}
+/* ═══ 模式选择页（独立 MPA 入口，与 24 点 lobby 同构）═══ */
+const LOBBY_URL = '/games/sudoku-6x6/lobby/';
+const goLobby = (): void => {
+  location.href = LOBBY_URL;
+};
 
 function enterMode(m: Mode): void {
   stopAll();
   st.view = 'play';
   st.mode = m;
-  $('lobbyView')!.classList.add('hidden');
-  $('playView')!.classList.remove('hidden');
   document.querySelectorAll<HTMLButtonElement>('#tabs .tab').forEach((t) => t.classList.toggle('active', t.dataset.mode === m));
   const duel = m === 'duel';
   $('oppHead')!.classList.toggle('hidden', !duel);
@@ -396,11 +391,10 @@ function winSoloDaily(): void {
       };
       $('mLobby')!.onclick = () => {
         hideModal();
-        showLobby();
+        goLobby();
       };
     },
   );
-  renderLobbySide();
 }
 
 /* ═══ Timed ═══ */
@@ -439,7 +433,7 @@ function endTimed(): void {
       };
       $('mLobby')!.onclick = () => {
         hideModal();
-        showLobby();
+        goLobby();
       };
     },
   );
@@ -501,7 +495,7 @@ function finishDuel(playerWon: boolean): void {
       };
       $('mLobby')!.onclick = () => {
         hideModal();
-        showLobby();
+        goLobby();
       };
     },
   );
@@ -569,46 +563,6 @@ function renderSide(): void {
     bestRow;
 }
 
-function renderLobbySide(): void {
-  const dk = shanghaiDateKey();
-  const done = readJSON<Record<string, number>>(LS_DAILY, {});
-  const best = readJSON<Record<string, number>>(LS_BEST, {});
-  const today = done[dk];
-  const weekly = Object.keys(done).sort().reverse().slice(0, 5);
-  $('dailySide')!.innerHTML =
-    (today
-      ? `<div class="s6-drow me"><span class="rank">✓</span><span class="bname">Today · you</span><span class="bscore num">${fmt(today)}</span></div>`
-      : `<div class="s6-drow"><span class="rank">–</span><span class="bname">Today</span><span class="bscore num">unsolved</span></div>`) +
-    weekly
-      .filter((k) => k !== dk)
-      .map(
-        (k) =>
-          `<div class="s6-drow"><span class="rank">${k.slice(4)}</span><span class="bname">Daily grid</span><span class="bscore num">${fmt(done[k])}</span></div>`,
-      )
-      .join('') +
-    `<button class="btn ghost s6-full" data-mode="daily">${today ? '↻ Replay today' : '▶ Play today\u2019s grid'}</button>` +
-    `<div class="s6-bestline">Solo bests · E ${best.easy ? fmt(best.easy) : '—'} · S ${best.standard ? fmt(best.standard) : '—'} · H ${best.hard ? fmt(best.hard) : '—'}</div>`;
-  $('lbBest')!.textContent = best.standard ? `Best ${fmt(best.standard)}` : 'Best —';
-  $('lbCoins')!.textContent = '240';
-}
-
-/** 每日倒计时（UTC+8 次日零点）——只在 init 挂一次 */
-function startDailyCountdown(): void {
-  const tickCd = (): void => {
-    const now = new Date();
-    const utc8 = new Date(now.getTime() + 8 * 3600 * 1000);
-    const next = Date.UTC(utc8.getUTCFullYear(), utc8.getUTCMonth(), utc8.getUTCDate() + 1, 0, 0, 0) - 8 * 3600 * 1000;
-    const ms = Math.max(0, next - now.getTime());
-    const h = Math.floor(ms / 3600000);
-    const m = Math.floor((ms % 3600000) / 60000);
-    const s = Math.floor((ms % 60000) / 1000);
-    const el = $('dailyCountdown');
-    if (el) el.textContent = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
-  };
-  tickCd();
-  window.setInterval(tickCd, 1000);
-}
-
 /* ═══ banner / modal / toast ═══ */
 function banner(html: string): void {
   $('modeBanner')!.innerHTML = html;
@@ -625,16 +579,6 @@ function hideModal(): void {
 }
 
 /* ═══ 事件绑定 ═══ */
-document.querySelectorAll<HTMLButtonElement>('.s6-mode').forEach((b) => {
-  b.addEventListener('click', () => {
-    if (b.classList.contains('ghost')) {
-      toast('🚧 ' + (b.dataset.ghost || 'Coming soon'));
-      return;
-    }
-    enterMode(b.dataset.mode as Mode);
-  });
-});
-
 document.querySelectorAll<HTMLButtonElement>('#tabs .tab').forEach((t) => {
   t.addEventListener('click', () => enterMode(t.dataset.mode as Mode));
 });
@@ -658,10 +602,10 @@ window.addEventListener('keydown', (e) => {
   if (st.view !== 'play') return;
   if (e.key >= '1' && e.key <= '6') place(Number(e.key));
   else if (e.key === 'Backspace' || e.key === 'Delete') erase();
-  else if (e.key === 'Escape') showLobby();
+  else if (e.key === 'Escape') goLobby();
 });
 
-$('backLobby')!.addEventListener('click', showLobby);
+$('backLobby')!.addEventListener('click', goLobby);
 $('newBtn')!.addEventListener('click', () => startRound());
 $('hintBtn')!.addEventListener('click', () => {
   if (!st.running || !st.puzzle) return;
@@ -686,14 +630,13 @@ $('overlay')!.addEventListener('click', (e) => {
   if (e.target === $('overlay')!) hideModal();
 });
 
-/* Lobby 动态渲染的「Play today's grid」按钮（事件委托） */
-$('lobbyView')!.addEventListener('click', (e) => {
-  const b = (e.target as HTMLElement).closest<HTMLButtonElement>('.s6-full');
-  if (b) enterMode('daily');
-});
-
 /* ═══ init ═══ */
-renderLobbySide();
-startDailyCountdown();
+// 深链契约：?mode=solo|daily|timed|duel —— 由模式选择页的模式卡链接进来。
+// 不带 mode 直达牌桌时回落到模式选择页，与 24 点「lobby → card table」的两段式保持一致。
+const isMode = (m: string): m is Mode => m === 'solo' || m === 'daily' || m === 'timed' || m === 'duel';
+const modeFromUrl = new URLSearchParams(location.search).get('mode') || '';
+if (isMode(modeFromUrl)) enterMode(modeFromUrl);
+else location.replace(LOBBY_URL);
+
 renderSide();
 botSay(BOT_LINES.hello[Math.floor(Math.random() * BOT_LINES.hello.length)]);

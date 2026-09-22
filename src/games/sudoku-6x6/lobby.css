@@ -1,0 +1,79 @@
+/* ============================================================
+   6×6 SUDOKU · 模式选择页（Lobby）—— 仅放数独专属组件
+   骨架 / 顶栏 / 模式卡 / 页脚全部复用 ../24-game/lobby.css（arb-*），
+   与 24 点的模式选择页保持同一套结构与 --a-* 皮肤，两页零视觉漂移。
+   ============================================================ */
+
+/* Hero 装饰：一行 6 格（对应棋盘的行约束），替代 24 点的四张卡牌 */
+.arb-grid6 {
+  display: flex;
+  gap: 10px;
+  margin: 18px 0 4px;
+}
+.arb-grid6 .arb-cell {
+  width: 46px;
+  height: 56px;
+  border-radius: 10px;
+  background: var(--a-paper);
+  color: var(--a-ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--a-disp);
+  font-weight: 800;
+  font-size: 1.35rem;
+  font-variant-numeric: tabular-nums;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.45);
+}
+/* 第 5 格（ember 高亮）暗示「这一格由你填」 */
+.arb-grid6 .arb-cell.hl {
+  background: var(--a-ember);
+  color: #160a04;
+}
+
+/* 右列「How it works」规则列表 */
+.arb-rules {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 12px;
+}
+.arb-rule {
+  display: flex;
+  gap: 10px;
+  font-size: 0.84rem;
+  color: var(--a-mute);
+  line-height: 1.5;
+}
+.arb-rule b {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.72rem;
+  background: var(--a-ember-soft);
+  color: var(--a-ember-dim);
+}
+
+/* 榜下说明（beta 无全球榜时诚实标注） */
+.board-note {
+  margin-top: 12px;
+  margin-bottom: 0;
+  font-size: 0.76rem;
+  line-height: 1.5;
+}
+
+@media (max-width: 560px) {
+  .arb-grid6 {
+    gap: 8px;
+  }
+  .arb-grid6 .arb-cell {
+    width: 38px;
+    height: 46px;
+    font-size: 1.15rem;
+    border-radius: 8px;
+  }
+}

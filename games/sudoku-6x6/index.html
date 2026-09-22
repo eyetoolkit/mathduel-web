@@ -13,75 +13,8 @@
 <body class="arena">
   <div id="header"></div>
 
-  <!-- ═══ View A · Lobby（设计稿 Screen 1）═══ -->
-  <main class="s6-lobby" id="lobbyView">
-    <div class="s6-wrap">
-      <div class="s6-home-top">
-        <div class="s6-logo">6×6<span class="em">SUDOKU</span></div>
-        <div class="s6-right">
-          <span class="chip" id="lbBest">Best —</span>
-          <span class="s6-coin">◆ <b id="lbCoins">—</b></span>
-          <span class="pstat hidden" id="lbProfile" data-profile></span>
-        </div>
-      </div>
-
-      <div class="s6-hero">
-        <div class="s6-big">Fill the <span class="em">grid</span></div>
-        <p class="s6-sub">Six numbers, no repeats — in every row, column and block. Race the bot, the clock or the daily seed; speed is everything.</p>
-      </div>
-
-      <div class="s6-cols">
-        <div class="s6-modes">
-          <button class="s6-mode feat" data-mode="daily">
-            <span class="mi">🌐</span><span class="mt">Daily Grid</span>
-            <span class="md">Same seeded puzzle worldwide, one shot a day</span>
-          </button>
-          <button class="s6-mode" data-mode="duel">
-            <span class="mi">🤖</span><span class="mt">Duel Bot</span>
-            <span class="md">1v1 vs the machine — claim your half first</span>
-          </button>
-          <button class="s6-mode" data-mode="timed">
-            <span class="mi">⏱️</span><span class="mt">Timed Practice</span>
-            <span class="md">45s per grid, chain solves for streaks</span>
-          </button>
-          <button class="s6-mode" data-mode="solo">
-            <span class="mi">🎯</span><span class="mt">Solo Practice</span>
-            <span class="md">Three difficulties, best times saved</span>
-          </button>
-          <button class="s6-mode ghost" data-ghost="Friend 1v1 rooms need the live API — try Duel Bot instead.">
-            <span class="mi">👥</span><span class="mt">Friend 1v1</span>
-            <span class="md">Private rooms — coming with the live API</span>
-          </button>
-          <button class="s6-mode ghost" data-ghost="Random matchmaking is coming soon.">
-            <span class="mi">🎲</span><span class="mt">Random Match</span>
-            <span class="md">Coming soon · get notified</span>
-          </button>
-        </div>
-
-        <div class="s6-side">
-          <div class="s6-card">
-            <h3>Global Daily Grid</h3>
-            <div class="s6-cd">Resets in <span class="num" id="dailyCountdown">--:--:--</span></div>
-            <div id="dailySide">
-              <div class="s6-empty">Loading today's grid…</div>
-            </div>
-          </div>
-          <div class="s6-card">
-            <h3>How it works</h3>
-            <div class="s6-rules">
-              <div class="s6-rule"><b>1</b><span>Every row, column and 2×3 block holds 1–6 exactly once</span></div>
-              <div class="s6-rule"><b>2</b><span>Paper cells are fixed clues — everything else is yours to place</span></div>
-              <div class="s6-rule"><b>3</b><span>Duel: you and the bot each own half the empty cells — first side done wins</span></div>
-              <div class="s6-rule"><b>4</b><span>Wrong digits flash teal and cost you +2.5s in duels</span></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </main>
-
-  <!-- ═══ View B · Play（设计稿 Screen 2）═══ -->
-  <main class="g24 s6-play hidden" id="playView">
+  <!-- ═══ Play（设计稿 Screen 2）· 模式选择已独立到 /games/sudoku-6x6/lobby/ ═══ -->
+  <main class="g24 s6-play" id="playView">
     <section class="board" id="boardCol" aria-label="Sudoku board">
       <div class="g24-bar">
         <nav class="tabs" id="tabs" aria-label="Game modes">

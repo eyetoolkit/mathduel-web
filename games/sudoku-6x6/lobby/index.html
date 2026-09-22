@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en" data-site="mathduel">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0E1419" />
+  <title>Choose Your Mode — Sudoku 6×6 | MathDuel</title>
+  <meta name="description" content="Pick how you want to fill the grid: today's seeded daily grid, a bot duel, a 45-second timed run or relaxed solo practice. Six cards, thirty-six cells." />
+  <link rel="canonical" href="https://mathduel.games/games/sudoku-6x6/lobby/" />
+  <link rel="preload" href="/fonts/space-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="/fonts/sora-latin.woff2" as="font" type="font/woff2" crossorigin />
+</head>
+<body class="arena">
+  <header class="arbar">
+    <div class="arbar-in">
+      <a class="arb-logo" href="/">6×6<span>SUDOKU</span></a>
+      <nav class="arb-nav" aria-label="Site">
+        <a href="/">Home</a>
+        <a href="/games/sudoku-6x6/">Play now</a>
+        <a href="/leaderboard/">Leaderboard</a>
+      </nav>
+      <a class="arb-top-cta" href="/games/sudoku-6x6/?mode=daily">Today's grid →</a>
+    </div>
+  </header>
+
+  <main class="arb-main" id="main">
+    <!-- ============ Hero ============ -->
+    <section class="arb-hero">
+      <h1 class="arb-big">Fill the <em>grid</em></h1>
+      <div class="arb-grid6" id="heroGrid" aria-hidden="true"></div>
+      <p class="arb-sub">Six numbers, no repeats. Pick how you want to play — the grid is the same, the pressure isn't.</p>
+    </section>
+
+    <div class="arb-cols">
+      <!-- ============ 模式选择 ============ -->
+      <div>
+        <h2 class="arb-h2">Game modes</h2>
+        <div class="arb-modes" id="modeGrid">
+          <a class="arb-mode feat" href="/games/sudoku-6x6/?mode=daily" data-mode="daily">
+            <div class="mi" aria-hidden="true">🌐</div>
+            <div class="mt">Daily Grid <span class="arb-tag" id="dailyTag" hidden>Done today</span></div>
+            <div class="md">Same seeded puzzle worldwide, one shot a day. Log your time.</div>
+          </a>
+          <a class="arb-mode" href="/games/sudoku-6x6/?mode=duel" data-mode="duel">
+            <div class="mi" aria-hidden="true">🤖</div>
+            <div class="mt">Duel Bot</div>
+            <div class="md">1v1 vs the machine — claim your half of the empty cells first.</div>
+          </a>
+          <a class="arb-mode" href="/games/sudoku-6x6/?mode=timed" data-mode="timed">
+            <div class="mi" aria-hidden="true">⏱️</div>
+            <div class="mt">Timed Practice</div>
+            <div class="md">45 seconds, as many grids as you can. Chain solves for streaks.</div>
+          </a>
+          <a class="arb-mode" href="/games/sudoku-6x6/?mode=solo" data-mode="solo">
+            <div class="mi" aria-hidden="true">🎯</div>
+            <div class="mt">Solo Practice</div>
+            <div class="md">No clock, no pressure. Three difficulties, best times saved.</div>
+          </a>
+          <div class="arb-mode ghost">
+            <div class="mi" aria-hidden="true">👥</div>
+            <div class="mt">Friend 1v1</div>
+            <div class="md">Coming soon — private rooms arrive with the live API.</div>
+          </div>
+          <div class="arb-mode ghost">
+            <div class="mi" aria-hidden="true">🎲</div>
+            <div class="mt">Random Match</div>
+            <div class="md">Coming soon — get matched with a stranger instantly.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ 右列：每日 + 玩法说明 ============ -->
+      <div class="arb-side">
+        <section class="arb-card" aria-labelledby="boardTitle">
+          <h3 id="boardTitle">Global Daily Grid</h3>
+          <div class="arb-cd">Ends in <b class="num" id="boardCountdown">--:--:--</b></div>
+          <div id="boardRows" aria-live="polite">
+            <div class="arb-empty">Loading today's board…</div>
+          </div>
+          <a class="arb-btn ghost block" href="/games/sudoku-6x6/?mode=daily" id="boardPlay">Play today's grid</a>
+        </section>
+
+        <section class="arb-card" aria-labelledby="howTitle">
+          <h3 id="howTitle">How it works</h3>
+          <div class="arb-rules">
+            <div class="arb-rule"><b>1</b><span>Every row, column and 2×3 block holds 1–6 exactly once</span></div>
+            <div class="arb-rule"><b>2</b><span>Paper cells are fixed clues — everything else is yours to place</span></div>
+            <div class="arb-rule"><b>3</b><span>Duel: you and the bot each own half the empty cells — first side done wins</span></div>
+            <div class="arb-rule"><b>4</b><span>Wrong digits flash teal and cost you +2.5s in duels</span></div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <footer class="arb-foot">
+    <span><b>6×6 SUDOKU</b> · mode select</span>
+    <span class="arb-foot-links">
+      <a href="/">MathDuel home</a>
+      <a href="/games/sudoku-6x6/">Play now</a>
+      <a href="/leaderboard/">Leaderboard</a>
+    </span>
+  </footer>
+
+  <script type="module" src="/src/games/sudoku-6x6/lobby.ts"></script>
+</body>
+</html>
