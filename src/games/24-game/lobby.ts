@@ -8,6 +8,7 @@
  */
 
 import '@tri-sites/design-system/styles';
+import './arena.css';
 import './lobby.css';
 import { dailyKeyStr } from './engine';
 

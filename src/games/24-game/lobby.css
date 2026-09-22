@@ -7,29 +7,11 @@
    所有类名以 arb- 前缀，避免与设计系统组件冲突。
    ============================================================ */
 
+/* 调色板（--a-*）与「设计系统 token → 深色」的映射都搬到了 arena.css，
+   牌桌 /games/24-game/ 共用同一份，两页之间不再有黑↔白跳变。 */
 body.arena {
-  --a-ink: #0e1419;
-  --a-ink-2: #151d24;
-  --a-ink-3: #1c262e;
-  --a-line: #2a3741;
-  --a-paper: #f4f6f2;
-  --a-mute: #9aa9b3;
-  --a-ember: #ff6a3c;
-  --a-ember-dim: #ff8b66;
-  --a-ember-soft: rgba(255, 106, 60, 0.14);
-  --a-teal: #2fc4c9;
-  --a-gold: #f2c14e;
-  --a-disp: var(--font-sans); /* Sora（设计稿的 Bricolage 用同等厚重的 Sora 800 替代） */
-  --a-ui: var(--font-display); /* Space Grotesk */
-  --a-r-card: 16px;
-  --a-r-btn: 12px;
-
-  margin: 0;
-  background: var(--a-ink);
-  color: var(--a-paper);
   font-family: var(--a-ui);
   line-height: 1.6;
-  min-height: 100vh;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -472,9 +454,32 @@ a.arb-mode:focus-visible {
   .arb-main {
     padding: 24px 16px 40px;
   }
+  /* 窄屏保持两列（与设计稿一致）：卡片长成近正方形，比单列长条更好扫读，
+     也省掉一半竖向滚动。靠收紧 padding / 字号把描述压进 3 行内。 */
   .arb-modes {
-    grid-template-columns: 1fr;
-    gap: 12px;
+    gap: 10px;
+  }
+  .arb-mode {
+    padding: 14px 13px;
+  }
+  .arb-mode .mi {
+    font-size: 1.35rem;
+  }
+  .arb-mode .mt {
+    font-size: 0.92rem;
+    margin-top: 6px;
+    gap: 6px;
+  }
+  .arb-mode .md {
+    font-size: 0.78rem;
+  }
+  /* hero 的橙色光晕是绝对定位装饰，right:-20px + 340px 宽在 390 视口会把
+     body 撑宽 4px（实测 docW 394 > winW 390）。窄屏收进视口内。 */
+  .arb-hero::after {
+    top: -24px;
+    right: -12px;
+    width: 220px;
+    height: 220px;
   }
   .arb-hand {
     gap: 10px;

@@ -6,6 +6,7 @@
 
 import '@tri-sites/design-system/styles';
 import '../24-game/styles.css';
+import './arena.css';
 import { initI18n, mountHeader, toast } from '@tri-sites/design-system';
 import {
   countSolutions,

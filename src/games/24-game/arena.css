@@ -1,0 +1,118 @@
+/* ============================================================
+   24 · ARENA — 共享深色皮肤层
+   ------------------------------------------------------------
+   为什么需要它：模式选择页（/games/24-game/lobby/）与牌桌
+   （/games/24-game/）原本一套深色、一套浅色，从「选模式」进到
+   「对局」会黑↔白跳变。这里把两者收敛到同一套皮肤。
+
+   做法：作用域锁定 body.arena，只在该作用域内把设计系统 token
+   重映射为深色值。好处是——
+     · 牌桌既有 400 行样式**一行不改**就整体跟随变深；
+     · 首页 / bulls 等页面没有 .arena 类，完全不受影响；
+     · 设计系统本身保持浅色默认，不破坏其他站点。
+
+   配色来源：24 ARENA 设计稿（ink 底 + ember 橙 + teal/gold 辅色）。
+   ============================================================ */
+
+body.arena {
+  /* ---------- 调色板（设计稿原值） ---------- */
+  --a-ink: #0e1419;
+  --a-ink-2: #151d24;
+  --a-ink-3: #1c262e;
+  --a-line: #2a3741;
+  --a-paper: #f4f6f2;
+  --a-mute: #9aa9b3;
+  --a-ember: #ff6a3c;
+  --a-ember-dim: #ff8b66;
+  --a-ember-soft: rgba(255, 106, 60, 0.14);
+  --a-teal: #2fc4c9;
+  --a-gold: #f2c14e;
+  --a-disp: var(--font-sans);
+  --a-ui: var(--font-display);
+  --a-r-card: 16px;
+  --a-r-btn: 12px;
+
+  /* ---------- 设计系统 token → 深色映射 ---------- */
+  --bg: var(--a-ink);
+  --bg-subtle: var(--a-ink-2);
+  --surface: var(--a-ink-2);
+  --surface-raised: var(--a-ink-3);
+  --border: var(--a-line);
+  --border-strong: #3d4d59;
+  --text-strong: #ffffff;
+  --text: var(--a-paper);
+  --text-muted: var(--a-mute);
+  --text-inverse: var(--a-ink);
+
+  /* 品牌色：蓝 → ember 橙（原型里所有主按钮 / 高亮都是橙） */
+  --brand-50: rgba(255, 106, 60, 0.06);
+  --brand-100: rgba(255, 106, 60, 0.13);
+  --brand-200: rgba(255, 106, 60, 0.3);
+  --brand-400: #ff9a76;
+  --brand-500: #ff7d54;
+  --brand-600: #ff6a3c;
+  --brand-700: #e85527;
+  --brand-800: #c74318;
+  --brand-900: #a23410;
+  --brand: var(--brand-600);
+  --brand-hover: #ff855f;
+  --brand-active: var(--brand-700);
+  --brand-subtle: var(--brand-100);
+  --brand-ring: rgba(255, 106, 60, 0.35);
+  --brand-text: #ffa184; /* 深底上的品牌文字色，需亮 */
+  --on-brand: #16100c; /* ember 底上的文字：深色（橙底白字只有 2.9:1，不达标） */
+
+  /* 语义色：深底下整体提亮，"浅底变体"改半透明，避免亮块刺眼 */
+  --success: #34d399;
+  --success-strong: #6ee7b7;
+  --success-l: rgba(52, 211, 153, 0.13);
+  --warning: #f2c14e;
+  --warning-strong: #f7d47a;
+  --warning-l: rgba(242, 193, 78, 0.13);
+  --danger: #ff6b6b;
+  --danger-strong: #ff9d9d;
+  --danger-l: rgba(255, 107, 107, 0.13);
+  --info: #38bdf8;
+  --info-strong: #7dd3fc;
+  --info-l: rgba(56, 189, 248, 0.13);
+
+  /* 阴影：浅色阴影在深底上不可见，改为更重的黑 */
+  --e-1: 0 1px 2px rgba(0, 0, 0, 0.5);
+  --e-2: 0 2px 4px rgba(0, 0, 0, 0.45), 0 4px 12px rgba(0, 0, 0, 0.5);
+  --e-3: 0 4px 8px rgba(0, 0, 0, 0.5), 0 12px 28px rgba(0, 0, 0, 0.55);
+  --e-4: 0 8px 16px rgba(0, 0, 0, 0.5), 0 24px 56px rgba(0, 0, 0, 0.6);
+
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+/* 让浏览器原生 UI（滚动条 / select 下拉 / 表单控件）也走深色 */
+html:has(body.arena) {
+  background: #0e1419;
+  color-scheme: dark;
+}
+
+/* ============================================================
+   牌桌专属：扑克牌保持白底
+   ------------------------------------------------------------
+   设计稿的 Match 视图里，牌就是白卡黑红数字 —— 深色桌上的白牌
+   是整页的视觉焦点。所以要挡掉 --surface-raised 的深色映射。
+   牌面数字须用深色（继承 .card 的 color），红桃/方块另用
+   适合白底的深红（--danger 在深色主题下已提亮成 #ff6b6b，
+   白底上只有 2.4:1，不可用于牌面）。
+   ============================================================ */
+body.arena .card {
+  background: #ffffff;
+  color: #101820;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.5);
+}
+body.arena .card.red {
+  color: #d92d20;
+}
+
+/* 二维码必须保持白底 + 静默区，深浅色主题下都要能扫 */
+body.arena .rc-qr,
+body.arena .share-qr {
+  background: #ffffff;
+}
