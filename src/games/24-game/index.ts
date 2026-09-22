@@ -228,7 +228,7 @@ function onWin(): void {
     return;
   }
   if (daily.active) {
-    dailySolve();
+    void dailySolve();
     return;
   }
   if (timed.active) {
@@ -282,11 +282,19 @@ function showAnswer(): void {
   resultEl.textContent = 'Answer: ' + p.replace(/\*/g, '×').replace(/\//g, '÷').replace(/-/g, '−') + ' = 24';
 }
 
-/* ===================== 每日挑战（规则 v2：5 题难度梯度 · 每题 60s · 点开始才揭牌 · 排名按完成数→总用时） ===================== */
-const DAILY_COUNTS = [5, 10, 15];
-const DAILY_TIMES = [60, 90, 120];
-// 难度梯度（5 题递进：暖身 → 冲刺）；题数 >5 时循环复用
-const DAILY_DIFFS: Difficulty[] = ['easy', 'standard', 'standard', 'hard', 'hard'];
+/* ===================== 每日挑战（服务端权威：/api/daily24/* · 全球同题 5 题 · 每题 60s · 连续制）
+   线上契约（照 worker 实现，勿臆造）：
+   · GET  /api/account/me             无 cookie 时自动建号并下发签名 cookie（HttpOnly; Secure）
+   · GET  /api/daily24/puzzle?d=      → {date, puzzles:[[4 张牌]×5], times:[秒|null ×5], serverTime, windowSec}
+                                       ★ 拉题即开 Q1 计时 → 必须等玩家点「开始」才拉题，否则白耗时间
+   · POST /api/daily24/answer         {d,q,formula} → {ok,correct,elapsed,done,total,rank,times}
+                                       超时不报错：{correct:false,timeout:true,elapsed:60} 且服务端推进下一题
+   · GET  /api/daily24/leaderboard?d= → {date,count,top:[{rank,nickname,avatar,total,times}],me:{...}}
+   接不上时（离线，或本地 http 下 Secure cookie 被浏览器拒收）→ 自动降级为本地确定性出题，不上全球榜。 */
+const DAILY_N = 5; // 与服务端 dailyHands() 固定 5 题一致
+const DAILY_WINDOW = 60; // 与服务端 D24_WINDOW_SEC 一致
+// 必须与服务端 dailyHands 的分层计划对齐（T1,T1,T2,T2,T3）——标签要反映真实分层，否则误导玩家
+const DAILY_DIFFS: Difficulty[] = ['easy', 'easy', 'standard', 'standard', 'hard'];
 const diffForIndex = (i: number): Difficulty => DAILY_DIFFS[i % DAILY_DIFFS.length];
 const diffLabel = (d: Difficulty): string => (d === 'easy' ? 'Easy' : d === 'hard' ? 'Hard' : 'Medium');
 // 上海时间(UTC+8)的 YYYYMMDD：确保全球玩家"同一天"一致，不依赖浏览器本地时区
@@ -304,11 +312,11 @@ function seedFromDateKey(dk: string): number {
 const daily = {
   active: false,
   started: false,
-  canSubmit: false,
-  total: 5,
+  canSubmit: false, // true = 已接入服务端，本局可上全球榜
+  total: DAILY_N,
   idx: 0,
-  limit: 60,
-  timeLeft: 60,
+  limit: DAILY_WINDOW,
+  timeLeft: DAILY_WINDOW,
   solved: 0,
   times: [] as (number | null)[],
   puzzles: [] as { idx: number; diff: Difficulty; cards: number[] }[],
@@ -318,19 +326,10 @@ const daily = {
   dateKey: '',
   session: '',
   startTs: 0,
+  qStartTs: 0, // 本题开始时刻（对齐服务端 qStartAt；连续制 = 上一题提交那一刻起跳）
   _iv: null as number | null,
 };
 
-const loadDailyCount = () => {
-  const v = parseInt(localStorage.getItem('twentyfour_daily_count') || '', 10);
-  return DAILY_COUNTS.includes(v) ? v : 5;
-};
-const loadDailyTime = () => {
-  const v = parseInt(localStorage.getItem('twentyfour_daily_time') || '', 10);
-  return DAILY_TIMES.includes(v) ? v : 60;
-};
-const saveDailyCount = (c: number) => localStorage.setItem('twentyfour_daily_count', String(c));
-const saveDailyTime = (t: number) => localStorage.setItem('twentyfour_daily_time', String(t));
 const genSession = () => Math.random().toString(36).slice(2, 10);
 const fmtClock = (s: number) => {
   s = Math.max(0, Math.round(s));
@@ -357,21 +356,23 @@ function dailyComplete(): void {
   localStorage.setItem('twentyfour_daily', JSON.stringify(o));
 }
 
-async function startDaily(): Promise<void> {
+function startDaily(): void {
   daily.active = true;
   mode = 'daily';
-  daily.total = loadDailyCount();
-  daily.limit = loadDailyTime();
+  daily.total = DAILY_N;
+  daily.limit = DAILY_WINDOW;
   daily.idx = 0;
   daily.solved = 0;
   daily.times = [];
   daily.submits = [];
+  daily.puzzles = [];
   daily.session = genSession();
   daily.key = dailyKeyStr();
   daily.dateKey = shanghaiDateKey();
   dailySeedVal = seedFromDateKey(daily.dateKey);
   daily.started = false;
   daily.canSubmit = false;
+  daily.qStartTs = 0;
 
   $('diffPick')!.style.display = 'none';
   $('hintBtn')!.style.display = 'none';
@@ -379,28 +380,59 @@ async function startDaily(): Promise<void> {
   $('enterBtn')!.classList.add('hidden');
   $('newBtn')!.classList.add('hidden');
 
-  await loadDailyPuzzles();
+  // 这里刻意不拉题：线上是「拉题即开 Q1 计时」，拉题必须推迟到玩家点「开始挑战」那一刻
   renderDailyPreStart();
   renderSide();
 }
 
-async function loadDailyPuzzles(): Promise<void> {
-  // 优先从后端取今日 5 题（全球同题 + 可上榜）；失败则客户端确定性兜底（不参与全球榜）
+/* ─── 匿名身份 ───
+   线上 /api/daily24/* 需要 md_uuid cookie；该端点在没有 cookie 时会自动建号并下发签名 cookie，
+   所以前端只需在首次需要时调一次。本地 http 下 cookie 带 Secure 会被浏览器拒收 → 返回 false（走降级）。 */
+let identityReady = false;
+async function ensureIdentity(): Promise<boolean> {
+  if (identityReady) return true;
   try {
-    const res = await fetch(`/api/daily/24-game/challenge?d=${daily.dateKey}`, { credentials: 'include' });
+    const res = await fetch('/api/account/me', { credentials: 'include' });
     if (res.ok) {
-      const data = await res.json();
-      if (Array.isArray(data.puzzles) && data.puzzles.length === daily.total) {
-        daily.puzzles = data.puzzles.map((p: any) => ({ idx: p.idx, diff: p.diff, cards: p.cards }));
-        daily.canSubmit = true;
-        return;
-      }
+      identityReady = true;
+      return true;
     }
   } catch {
-    /* 离线兜底 */
+    /* 离线 */
   }
+  return false;
+}
+
+/** 取今日 5 题（全球同题）。成功 → canSubmit=true（可上全球榜）；失败 → 返回 false 由调用方降级。 */
+async function loadDailyPuzzles(): Promise<boolean> {
+  try {
+    if (!(await ensureIdentity())) return false;
+    const res = await fetch(`/api/daily24/puzzle?d=${daily.dateKey}`, { credentials: 'include' });
+    if (!res.ok) return false;
+    const data = await res.json();
+    const raw: unknown = data.puzzles;
+    if (!Array.isArray(raw) || raw.length !== DAILY_N) return false;
+    const mapped = raw.map((cards: unknown, i: number) => ({
+      idx: i,
+      diff: DAILY_DIFFS[i] || ('standard' as Difficulty),
+      cards: (Array.isArray(cards) ? cards : []).map(Number),
+    }));
+    if (mapped.some((p) => p.cards.length !== 4 || p.cards.some((n) => !Number.isFinite(n)))) return false;
+    daily.puzzles = mapped;
+    daily.times = Array.isArray(data.times) ? (data.times as (number | null)[]) : [];
+    daily.limit = Number(data.windowSec) > 0 ? Number(data.windowSec) : DAILY_WINDOW;
+    daily.timeLeft = daily.limit;
+    daily.canSubmit = true;
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/** 离线兜底：同一天同一套题的确定性出题（照常可玩，但不参与全球榜）。 */
+function buildLocalPuzzles(): void {
   daily.puzzles = [];
-  for (let i = 0; i < daily.total; i++) {
+  for (let i = 0; i < DAILY_N; i++) {
     const diff = diffForIndex(i);
     const rng = SeededRandom(dailySeedVal + i * 7919 + 1);
     let cards = generate24Puzzle(rng, diff);
@@ -408,93 +440,92 @@ async function loadDailyPuzzles(): Promise<void> {
     while (!solve(cards.map((n) => ({ value: n, expr: String(n) }))) && guard++ < 80) cards = generate24Puzzle(rng, diff);
     daily.puzzles.push({ idx: i, diff, cards });
   }
+  daily.times = [];
+  daily.limit = DAILY_WINDOW;
+  daily.timeLeft = DAILY_WINDOW;
   daily.canSubmit = false;
 }
 
 function renderDailyPreStart(): void {
-  const diffChips = daily.puzzles
-    .map((p) => `<span class="diff-chip d-${p.diff}">${diffLabel(p.diff)}</span>`)
-    .join('');
+  // 题面尚未拉取（要等点「开始」），难度标签直接用服务端分层计划渲染
+  const diffChips = DAILY_DIFFS.map((d) => `<span class="diff-chip d-${d}">${diffLabel(d)}</span>`).join('');
   $('modeBanner')!.innerHTML =
     '<div class="banner daily">' +
     '<div class="daily-top"><div class="daily-meta">' +
     `<div class="b-title">📅 Daily Challenge ${daily.key}</div>` +
-    '<div class="b-sub">5 道不同难度 · 全球同题 · 每题 60 秒</div>' +
+    `<div class="b-sub">${DAILY_N} 道不同难度 · 全球同题 · 每题 ${DAILY_WINDOW} 秒 · 服务端统一计时</div>` +
     '</div></div>' +
     '<div class="db-diffs">' + diffChips + '</div>' +
     '<button class="btn primary db-start" id="dbStart">🂠 开始挑战</button>' +
-    '<p class="db-hint">点击开始后将同时揭牌并启动计时；5 题全部在限时内解出即「挑战成功」</p>' +
+    `<p class="db-hint">点击开始后将同时揭牌并启动计时；${DAILY_N} 题全部在限时内解出即「挑战成功」</p>` +
     '</div>';
-  cardsEl.innerHTML = daily.puzzles.map(() => '<div class="cb"><span class="cb-q">?</span></div>').join('');
+  cardsEl.innerHTML = Array.from({ length: DAILY_N }, () => '<div class="cb"><span class="cb-q">?</span></div>').join('');
   resultEl.className = 'result';
   resultEl.textContent = '准备开始每日挑战';
   const sb = $('dbStart');
   if (sb) sb.onclick = beginDaily;
 }
 
-function beginDaily(): void {
-  if (!daily.active || daily.started) return;
+let dailyFetching = false;
+async function beginDaily(): Promise<void> {
+  if (!daily.active || daily.started || dailyFetching) return;
+  dailyFetching = true;
+  const sb = $('dbStart') as HTMLButtonElement | null;
+  if (sb) {
+    sb.disabled = true;
+    sb.textContent = '⏳ 正在取题…';
+  }
+  const online = await loadDailyPuzzles();
+  if (!online) buildLocalPuzzles();
+  dailyFetching = false;
+  if (!daily.active) return; // 取题期间用户切走了模式
+  if (!online) toast('离线模式 — 本局不上全球榜');
   daily.started = true;
   daily.startTs = Date.now();
+  daily.qStartTs = Date.now(); // 与服务端「拉题即开 Q1」对齐（响应延迟百毫秒级，对 60s 窗口无感）
   renderSide();
   dealDailyPuzzle();
 }
 
 function renderDailyBanner(): void {
-  const html =
+  // 题数/时长由服务端固定（5 题 × 60s），不再提供选择器，避免「选了 90s 却被服务端按 60s 判超时」
+  $('modeBanner')!.innerHTML =
     '<div class="banner daily">' +
     '<div class="daily-top"><div class="daily-meta">' +
     `<div class="b-title">📅 Daily Challenge ${daily.key}</div>` +
-    `<div class="b-sub">Puzzle <b id="dbIdx">${daily.idx + 1}</b> / ${daily.total} · <b>${diffLabel(daily.curDiff)}</b> · Global same puzzle</div>` +
-    '</div></div>' +
-    '<div class="db-set">' +
-    '<div class="db-set-row"><span class="db-lbl">Count</span><div class="seg" id="dbCount">' +
-    DAILY_COUNTS.map((c) => `<button data-c="${c}"${c === daily.total ? ' class="on"' : ''}>${c}</button>`).join('') +
-    '</div></div>' +
-    '<div class="db-set-row"><span class="db-lbl">Time</span><div class="seg" id="dbTime">' +
-    DAILY_TIMES.map((t) => `<button data-t="${t}"${t === daily.limit ? ' class="on"' : ''}>${t}s</button>`).join('') +
-    '</div></div>' +
-    '</div>' +
+    `<div class="b-sub">Puzzle <b id="dbIdx">${daily.idx + 1}</b> / ${daily.total} · <b>${diffLabel(daily.curDiff)}</b> · Global same puzzle` +
+    (daily.canSubmit ? '' : ' · <b>Offline</b>') +
+    '</div></div></div>' +
     '<div class="db-timer"><div class="db-timer-fill" id="dbTimerFill"></div></div>' +
     `<div class="db-clock" id="dbClock">${fmtClock(daily.timeLeft)}</div>`;
-  $('modeBanner')!.innerHTML = html;
-  $('dbCount')!.querySelectorAll('button').forEach((b) => {
-    (b as HTMLElement).onclick = () => {
-      saveDailyCount(+(b as HTMLElement).dataset.c!);
-      startDaily();
-    };
-  });
-  $('dbTime')!.querySelectorAll('button').forEach((b) => {
-    (b as HTMLElement).onclick = () => {
-      saveDailyTime(+(b as HTMLElement).dataset.t!);
-      startDaily();
-    };
-  });
 }
 
 function dealDailyPuzzle(): void {
   const p = daily.puzzles[daily.idx];
   if (!p) return;
   daily.curDiff = p.diff;
+  if (!daily.qStartTs) daily.qStartTs = Date.now();
   renderDailyBanner();
   deal(p.cards);
   startDailyTimer();
 }
 
+/** 倒计时以「本题开始时刻」实时推算（与服务端权威计时同源），而不是本地逐秒自减。 */
 function startDailyTimer(): void {
   if (daily._iv) window.clearInterval(daily._iv);
-  daily.timeLeft = daily.limit;
-  updateDailyClock();
-  daily._iv = window.setInterval(() => {
+  if (!daily.qStartTs) daily.qStartTs = Date.now();
+  const tick = () => {
     if (!daily.active) return;
-    daily.timeLeft--;
+    daily.timeLeft = Math.max(0, daily.limit - (Date.now() - daily.qStartTs) / 1000);
     updateDailyClock();
     if (daily.timeLeft <= 0) {
       if (daily._iv) window.clearInterval(daily._iv);
       daily._iv = null;
-      dailyTimeUp();
+      void dailyTimeUp();
     }
-  }, 1000);
+  };
+  tick();
+  daily._iv = window.setInterval(tick, 200);
 }
 
 function updateDailyClock(): void {
@@ -508,32 +539,69 @@ function updateDailyClock(): void {
   c.classList.toggle('low', pct < 30);
 }
 
-function dailySolve(): void {
-  const t = daily.limit - daily.timeLeft;
-  daily.times[daily.idx] = t;
-  daily.submits[daily.idx] = { solved: true, solution: formula, time: t };
-  daily.solved++;
-  resultEl.className = 'result ok';
-  resultEl.textContent = `🎉 Solved in ${t.toFixed(0)}s!`;
+/** 推进到下一题（或结算）。qStartTs 必须立刻对齐 —— 服务端在收到本题提交的当下就让下一题起跳。 */
+function advanceDaily(ok: boolean): void {
+  daily.qStartTs = Date.now();
+  if (daily.idx >= daily.total - 1) window.setTimeout(finishDaily, ok ? 650 : 1500);
+  else
+    window.setTimeout(
+      () => {
+        daily.idx++;
+        dealDailyPuzzle();
+      },
+      ok ? 800 : 1700,
+    );
+}
+
+async function dailySolve(): Promise<void> {
   if (daily._iv) {
     window.clearInterval(daily._iv);
     daily._iv = null;
   }
+  const q = daily.idx;
+  const localT = Math.max(0, daily.limit - daily.timeLeft);
+  // 先本地记账（离线兜底用），随后用服务端权威用时覆盖
+  daily.times[q] = localT;
+  daily.submits[q] = { solved: true, solution: formula, time: localT };
+  daily.solved++;
+  formulaEl.classList.add('success');
+  resultEl.className = 'result ok';
+
+  let elapsed = localT;
+  if (daily.canSubmit) {
+    const r = await submitDailyAnswer(q, normalize24(formula));
+    if (r && typeof r.elapsed === 'number') {
+      elapsed = r.elapsed;
+      daily.times[q] = r.elapsed;
+      const prev = daily.submits[q];
+      if (prev) prev.time = r.elapsed;
+    }
+    if (r && r.timeout) {
+      // 服务端判超时（本地倒计时略快 / 网络延迟）→ 以服务端为准，本题按失败收尾
+      daily.times[q] = null;
+      daily.solved = Math.max(0, daily.solved - 1);
+      daily.submits[q] = { solved: false, solution: null, time: daily.limit };
+      resultEl.className = 'result bad';
+      resultEl.textContent = '⏰ 服务器判定超时';
+      advanceDaily(false);
+      return;
+    }
+  }
+  resultEl.textContent = `🎉 Solved in ${elapsed.toFixed(1)}s!`;
   combo++;
   saveCombo();
   refreshTop();
-  formulaEl.classList.add('success');
-  if (daily.idx >= daily.total - 1) window.setTimeout(finishDaily, 650);
-  else
-    window.setTimeout(() => {
-      daily.idx++;
-      dealDailyPuzzle();
-    }, 800);
+  advanceDaily(true);
 }
 
-function dailyTimeUp(): void {
-  daily.times[daily.idx] = null;
-  daily.submits[daily.idx] = { solved: false, solution: null, time: daily.limit };
+async function dailyTimeUp(): Promise<void> {
+  if (daily._iv) {
+    window.clearInterval(daily._iv);
+    daily._iv = null;
+  }
+  const q = daily.idx;
+  daily.times[q] = null;
+  daily.submits[q] = { solved: false, solution: null, time: daily.limit };
   resultEl.className = 'result bad';
   resultEl.textContent = '⏰ Time up — unsolved';
   const ans = solve(numbers.map((n) => ({ value: n, expr: String(n) })));
@@ -542,12 +610,9 @@ function dailyTimeUp(): void {
     if (p.startsWith('(') && p.endsWith(')')) p = p.slice(1, -1);
     toast('Answer: ' + p.replace(/\*/g, '×').replace(/\//g, '÷').replace(/-/g, '−'));
   }
-  if (daily.idx >= daily.total - 1) window.setTimeout(finishDaily, 1500);
-  else
-    window.setTimeout(() => {
-      daily.idx++;
-      dealDailyPuzzle();
-    }, 1700);
+  // 必须主动告知服务端本题超时（空公式 → 服务端判 timedOut 记满窗并推进），否则对局卡死在本题
+  if (daily.canSubmit) await submitDailyAnswer(q, '');
+  advanceDaily(false);
 }
 
 function finishDaily(): void {
@@ -600,55 +665,82 @@ function finishDaily(): void {
     },
     combo,
   );
-  if (daily.canSubmit) void submitDailyChallenge();
   setMode('practice');
 }
 
-async function submitDailyChallenge(): Promise<void> {
-  const results = daily.submits.map((s, i) => ({
-    idx: i,
-    solved: !!(s && s.solved),
-    solution: s && s.solution ? s.solution : null,
-    time: s ? s.time : daily.limit,
-  }));
+interface DailyAnswerResp {
+  ok?: boolean;
+  correct?: boolean;
+  already?: boolean;
+  timeout?: boolean;
+  q?: number;
+  elapsed?: number;
+  done?: boolean;
+  total?: number | null;
+  rank?: { position: number; count: number; total: number | null } | null;
+  times?: (number | null)[];
+  leftSec?: number;
+  error?: string;
+}
+
+/** 逐题提交（服务端权威校验 + 计时）。超时用空公式提交 —— 服务端会记满窗并推进下一题。 */
+async function submitDailyAnswer(q: number, f: string): Promise<DailyAnswerResp | null> {
   try {
-    await fetch('/api/daily/24-game/challenge', {
+    const res = await fetch('/api/daily24/answer', {
       method: 'POST',
       credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ dateKey: daily.dateKey, limit: daily.limit, results }),
+      body: JSON.stringify({ d: daily.dateKey, q, formula: f }),
     });
+    if (!res.ok) return null;
+    return (await res.json()) as DailyAnswerResp;
   } catch {
-    /* 提交失败不影响本地体验 */
+    return null;
   }
 }
+
+interface DailyRankRow {
+  rank?: number;
+  nickname?: string;
+  avatar?: string | null;
+  total?: number;
+  times?: (number | null)[];
+}
+
+const dailyRow = (rankLabel: string, name: string, score: string, extraCls = ''): string =>
+  `<div class="race-row ${extraCls}">` +
+  `<span class="rr-rank">${rankLabel}</span>` +
+  `<span class="rr-name">${escapeHtml(name)}</span>` +
+  `<span class="rr-time">${score}</span></div>`;
+
+const dailyScoreText = (times: unknown, total: unknown): string => {
+  const solved = Array.isArray(times) ? times.filter((x) => x != null).length : 0;
+  return `${solved}/${DAILY_N} · ${Number(total ?? 0).toFixed(1)}s`;
+};
 
 async function loadDailyBoard(): Promise<void> {
   const el = $('dailyBoard');
   if (!el) return;
   if (!daily.canSubmit) {
-    el.innerHTML = '<div class="race-empty">🌐 全球榜需要联网</div>';
+    el.innerHTML = '<div class="race-empty">🌐 离线模式 — 未接入全球榜</div>';
     return;
   }
   try {
-    const res = await fetch(`/api/daily/24-game/challenge/rank?d=${daily.dateKey}&limit=20`, { credentials: 'include' });
+    const res = await fetch(`/api/daily24/leaderboard?d=${daily.dateKey}`, { credentials: 'include' });
     if (!res.ok) throw new Error();
     const data = await res.json();
-    const entries = data.entries || [];
-    if (!entries.length) {
+    const top: DailyRankRow[] = Array.isArray(data.top) ? data.top : [];
+    if (!top.length) {
       el.innerHTML = '<div class="race-empty">还没有人完成今天的挑战，抢首杀！</div>';
       return;
     }
-    el.innerHTML = entries
+    let html = top
       .slice(0, 20)
-      .map(
-        (e: any, i: number) =>
-          `<div class="race-row ${i === 0 ? 'r1' : ''}">` +
-          `<span class="rr-rank">${i + 1}</span>` +
-          `<span class="rr-name">${escapeHtml(e.name || '玩家')}</span>` +
-          `<span class="rr-time">${e.solved}/${daily.total} · ${(e.totalTime ?? 0).toFixed(1)}s</span></div>`,
-      )
+      .map((e, i) => dailyRow(String(e.rank ?? i + 1), e.nickname || '玩家', dailyScoreText(e.times, e.total), i === 0 ? 'r1' : ''))
       .join('');
+    const me = data.me as DailyRankRow | null;
+    if (me && me.rank) html += dailyRow(String(me.rank), '你', dailyScoreText(me.times, me.total), 'me');
+    el.innerHTML = html;
   } catch {
     el.innerHTML = '<div class="race-empty">🌐 全球榜加载失败</div>';
   }
@@ -1072,7 +1164,7 @@ function renderSide(): void {
         '<div class="hint-step"><b>2</b><span>难度递增：Easy → Medium → Hard</span></div>' +
         '<div class="hint-step"><b>3</b><span>每题限时 60 秒，超时自动揭晓答案</span></div>' +
         '<div class="hint-step"><b>4</b><span>5 题全在限时内解出 = 挑战成功</span></div>' +
-        '<div class="hint-step"><b>5</b><span>排名按 完成题数 → 总用时</span></div></div>' +
+        '<div class="hint-step"><b>5</b><span>服务端权威计时 · 排名按总用时</span></div></div>' +
         myStats;
     } else {
       sideEl.innerHTML =
@@ -1182,7 +1274,10 @@ $('newBtn')!.onclick = () => {
 };
 $('hintBtn')!.onclick = giveHint;
 $('answerBtn')!.onclick = () => {
-  if (daily.active && daily.started) { dailyTimeUp(); return; }
+  if (daily.active && daily.started) {
+    void dailyTimeUp();
+    return;
+  }
   if (daily.active) return; // 开始前忽略
   showAnswer();
 };
@@ -1288,11 +1383,7 @@ refreshTop();
   const params = new URLSearchParams(location.search);
   const rc = (params.get('room') || '').trim().toUpperCase();
   const startMode = params.get('mode');
-  // 首页每日挑战横幅可带 count / time 直达
-  const c = parseInt(params.get('count') || '', 10);
-  const t = parseInt(params.get('time') || '', 10);
-  if (DAILY_COUNTS.includes(c)) saveDailyCount(c);
-  if (DAILY_TIMES.includes(t)) saveDailyTime(t);
+  // 每日挑战题数与时长由服务端固定（5 × 60s），不再接受 ?count= / ?time= 覆盖
 
   // 模式选择页深链：?size=2（好友房）/ ?size=99（竞速）
   const size = parseInt(params.get('size') || '', 10);

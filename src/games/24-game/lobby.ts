@@ -91,15 +91,16 @@ async function renderBoard(): Promise<void> {
   if (!host) return;
   const d = shanghaiDateKey();
   try {
-    // 先确认今天的题能取到（决定榜单可信/是否联网）
-    const chRes = await fetch(`/api/daily/24-game/challenge?d=${d}`, { credentials: 'include' });
-    if (!chRes.ok) throw new Error('challenge_unavailable');
-    await chRes.json();
+    // 线上权威榜单：/api/daily24/leaderboard（无需 cookie，游客也能看 top）
+    const res = await fetch(`/api/daily24/leaderboard?d=${d}`, { credentials: 'include' });
+    if (!res.ok) throw new Error('leaderboard_unavailable');
+    const data = await res.json();
+    const entries: any[] = Array.isArray(data.top) ? data.top : [];
 
-    const rankRes = await fetch(`/api/daily/24-game/challenge/rank?d=${d}&limit=3`, { credentials: 'include' });
-    if (!rankRes.ok) throw new Error('rank_unavailable');
-    const data = await rankRes.json();
-    const entries: any[] = Array.isArray(data.entries) ? data.entries : [];
+    const scoreOf = (times: unknown, total: unknown): string => {
+      const solved = Array.isArray(times) ? times.filter((x) => x != null).length : 0;
+      return `${solved}/${DAILY_TOTAL} \u00b7 ${Number(total ?? 0).toFixed(1)}s`;
+    };
 
     let html = '';
     if (!entries.length) {
@@ -107,20 +108,16 @@ async function renderBoard(): Promise<void> {
     } else {
       html = entries
         .slice(0, 3)
-        .map((e, i) =>
-          rowHtml(
-            String(i + 1),
-            e.name || 'Player',
-            `${e.solved ?? 0}/${DAILY_TOTAL} \u00b7 ${Number(e.totalTime ?? 0).toFixed(1)}s`,
-            `r${i + 1}`,
-          ),
-        )
+        .map((e, i) => rowHtml(String(e.rank ?? i + 1), e.nickname || 'Player', scoreOf(e.times, e.total), `r${i + 1}`))
         .join('');
     }
 
-    const mine = localDailyResult();
-    if (mine) {
-      html += rowHtml('you', 'You', `${mine.solved}/${mine.total} \u00b7 ${mine.totalTime.toFixed(1)}s`, 'me');
+    const me = data.me;
+    if (me && me.rank) {
+      html += rowHtml('you', 'You', scoreOf(me.times, me.total), 'me');
+    } else {
+      const mine = localDailyResult();
+      if (mine) html += rowHtml('you', 'You', `${mine.solved}/${mine.total} \u00b7 ${mine.totalTime.toFixed(1)}s`, 'me');
     }
     host.innerHTML = html;
   } catch {

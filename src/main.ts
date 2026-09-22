@@ -5,7 +5,6 @@ import '@tri-sites/design-system/styles';
 import '../src/styles/home.css';
 import { mountHeader, initI18n, t } from '@tri-sites/design-system';
 import { renderGameGrid } from './pages/home';
-import { renderDailySettings } from './components/daily-settings';
 import { renderHeroFlow } from './components/hero-flow';
 
 initI18n();
@@ -25,11 +24,7 @@ if (headerHost) {
 }
 
 renderHeroFlow(document.getElementById('heroFlow'));
-renderDailySettings(
-  document.getElementById('dailyCount'),
-  document.getElementById('dailyTime'),
-  document.getElementById('dailyStart'),
-);
+// 每日挑战题数(5)与每题时长(60s)由服务端固定，首页不再提供选择器
 renderGameGrid(document.getElementById('gameGrid'));
 
 const yearEl = document.getElementById('year');
