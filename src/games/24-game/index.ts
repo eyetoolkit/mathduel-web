@@ -230,6 +230,10 @@ function onWin(): void {
     dailySolve();
     return;
   }
+  if (timed.active) {
+    timedSolve();
+    return;
+  }
   window.setTimeout(() => showResult({ win: true, sols }), 600);
 }
 
@@ -564,6 +568,16 @@ function finishDaily(): void {
   const best = solvedTimes.length ? Math.min(...solvedTimes) : 0;
   const success = daily.solved === daily.total;
 
+  // 供「模式选择页」展示我今天的最好成绩（本机，仅用于入门页的"You"行）
+  try {
+    localStorage.setItem(
+      'twentyfour_daily_last',
+      JSON.stringify({ dateKey: daily.dateKey, solved: daily.solved, total: daily.total, totalTime }),
+    );
+  } catch {
+    /* localStorage 不可用时忽略 */
+  }
+
   if (!dailyCompletedToday()) {
     dailyComplete();
     combo++;
@@ -637,6 +651,124 @@ async function loadDailyBoard(): Promise<void> {
   } catch {
     el.innerHTML = '<div class="race-empty">🌐 全球榜加载失败</div>';
   }
+}
+
+/* ===================== 限时练习（每题 60s · 超时自动换题 · 记录个人最快） ===================== */
+const TIMED_LIMIT = 60;
+const timed = {
+  active: false,
+  limit: TIMED_LIMIT,
+  timeLeft: TIMED_LIMIT,
+  solved: 0,
+  best: 0,
+  _iv: null as number | null,
+};
+
+function startTimed(): void {
+  timed.active = true;
+  mode = 'timed';
+  timed.timeLeft = timed.limit;
+  timed.solved = 0;
+  timed.best = 0;
+
+  $('diffPick')!.style.display = '';
+  $('hintBtn')!.style.display = '';
+  $('answerBtn')!.style.display = 'none';
+  $('newBtn')!.classList.remove('hidden');
+  $('enterBtn')!.classList.add('hidden');
+
+  renderTimedBanner();
+  deal();
+  startTimedTimer();
+  renderSide();
+}
+
+function renderTimedBanner(): void {
+  $('modeBanner')!.innerHTML =
+    '<div class="banner daily timed">' +
+    '<div class="daily-top"><div class="daily-meta">' +
+    `<div class="b-title">⏱ Timed Practice · ${timed.limit}s per deal</div>` +
+    '<div class="b-sub">Solved <b id="tmSolved">' +
+    timed.solved +
+    '</b> · Best <b id="tmBest">' +
+    (timed.best ? timed.best.toFixed(1) + 's' : '—') +
+    '</b> · unsolved deals just move on</div>' +
+    '</div></div>' +
+    '<div class="db-timer"><div class="db-timer-fill" id="dbTimerFill"></div></div>' +
+    `<div class="db-clock" id="dbClock">${fmtClock(timed.timeLeft)}</div>`;
+}
+
+function startTimedTimer(): void {
+  if (timed._iv) window.clearInterval(timed._iv);
+  timed.timeLeft = timed.limit;
+  updateTimedClock();
+  timed._iv = window.setInterval(() => {
+    if (!timed.active) return;
+    timed.timeLeft--;
+    updateTimedClock();
+    if (timed.timeLeft <= 0) {
+      if (timed._iv) window.clearInterval(timed._iv);
+      timed._iv = null;
+      timedTimeUp();
+    }
+  }, 1000);
+}
+
+function updateTimedClock(): void {
+  const f = $('dbTimerFill');
+  const c = $('dbClock');
+  if (!f || !c) return;
+  const pct = Math.max(0, (timed.timeLeft / timed.limit) * 100);
+  f.style.width = pct + '%';
+  f.classList.toggle('low', pct < 30);
+  c.textContent = fmtClock(timed.timeLeft);
+  c.classList.toggle('low', pct < 30);
+}
+
+function stopTimedTimer(): void {
+  if (timed._iv) {
+    window.clearInterval(timed._iv);
+    timed._iv = null;
+  }
+}
+
+/** 解出当前题：记时 → 刷新最快 → 0.7s 后自动换题 */
+function timedSolve(): void {
+  const t = Math.max(0, timed.limit - timed.timeLeft);
+  stopTimedTimer();
+  timed.solved++;
+  if (!timed.best || t < timed.best) timed.best = t;
+  resultEl.className = 'result ok';
+  resultEl.textContent = `🎉 Solved in ${t.toFixed(1)}s — next deal…`;
+  renderSide();
+  window.setTimeout(() => {
+    if (!timed.active) return;
+    renderTimedBanner();
+    deal();
+    startTimedTimer();
+  }, 700);
+}
+
+/** 本题超时：揭晓答案 → 1.3s 后自动换题（不中断整轮） */
+function timedTimeUp(): void {
+  resultEl.className = 'result bad';
+  resultEl.textContent = '⏰ Time up — next deal…';
+  scores.skipped++;
+  saveScores();
+  refreshTop();
+  renderSide();
+  const ans = solve(numbers.map((n) => ({ value: n, expr: String(n) })));
+  if (ans) {
+    let p = ans[1];
+    if (p.startsWith('(') && p.endsWith(')')) p = p.slice(1, -1);
+    toast('Answer: ' + p.replace(/\*/g, '×').replace(/\//g, '÷').replace(/-/g, '−'));
+  }
+  window.setTimeout(() => {
+    if (!timed.active) return;
+    renderTimedBanner();
+    deal();
+    startTimedTimer();
+  }, 1300);
 }
 
 /* ===================== 竞赛 ===================== */
@@ -948,6 +1080,18 @@ function renderSide(): void {
         myStats;
       void loadDailyBoard();
     }
+  } else if (mode === 'timed') {
+    sideEl.innerHTML =
+      '<div class="panel"><h3>⏱ Timed Practice</h3>' +
+      '<div class="hint-step"><b>1</b><span>60 seconds per deal — solve it before the clock runs out</span></div>' +
+      '<div class="hint-step"><b>2</b><span>Solved? The next deal starts straight away</span></div>' +
+      '<div class="hint-step"><b>3</b><span>Time up reveals the answer, then deals again</span></div></div>' +
+      '<div class="panel"><h3>📈 This Session</h3>' +
+      statRow('Solved', timed.solved) +
+      statRow('Best', timed.best ? timed.best.toFixed(1) + 's' : '—') +
+      statRow('Skipped', scores.skipped) +
+      statRow('Streak', combo) +
+      '</div>';
   } else {
     sideEl.innerHTML =
       '<div class="panel"><h3>🎯 Quick Start</h3>' +
@@ -977,6 +1121,10 @@ function setMode(m: string): void {
     if (daily._iv) window.clearInterval(daily._iv);
     daily._iv = null;
   }
+  if (timed.active) {
+    timed.active = false;
+    stopTimedTimer();
+  }
   $('compHead')!.classList.add('hidden');
   $('enterBtn')!.classList.add('hidden');
   $('diffPick')!.style.display = '';
@@ -991,6 +1139,8 @@ function setMode(m: string): void {
     deal();
   } else if (m === 'daily') {
     startDaily();
+  } else if (m === 'timed') {
+    startTimed();
   } else if (m === 'battle') {
     openLobby();
   }
@@ -1143,17 +1293,33 @@ refreshTop();
   if (DAILY_COUNTS.includes(c)) saveDailyCount(c);
   if (DAILY_TIMES.includes(t)) saveDailyTime(t);
 
+  // 模式选择页深链：?size=2（好友房）/ ?size=99（竞速）
+  const size = parseInt(params.get('size') || '', 10);
+  if ([2, 10, 25, 50, 99].includes(size)) {
+    raceMax = size;
+    comp.setRoomSize(size);
+    const row = $('sizeRow');
+    if (row) {
+      [...row.children].forEach((ch) =>
+        ch.classList.toggle('on', (ch as HTMLElement).dataset.max === String(size)),
+      );
+    }
+  }
+
   deal();
   renderSide();
 
   if (startMode === 'daily') window.setTimeout(() => setMode('daily'), 0);
-  else if (startMode === 'battle') openLobby();
+  else if (startMode === 'timed') window.setTimeout(() => setMode('timed'), 0);
+  else if (startMode === 'battle') window.setTimeout(() => setMode('battle'), 0);
 
   if (rc) {
-    openLobby();
-    const ji = $<HTMLInputElement>('joinInput');
-    if (ji) ji.value = rc;
-    $('joinRow')?.classList.remove('hidden');
+    window.setTimeout(() => {
+      setMode('battle');
+      const ji = $<HTMLInputElement>('joinInput');
+      if (ji) ji.value = rc;
+      $('joinRow')?.classList.remove('hidden');
+    }, 0);
   }
 
   // 生产环境暴露竞赛入口（DEMO 也允许体验完整 99 人流程）

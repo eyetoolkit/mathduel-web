@@ -39,7 +39,7 @@ const GAMES: GameDef[] = [
     icon: '🂡',
     title: '24 · Card Table',
     desc: 'Four cards, four operators, one target. Race up to 99 players on identical cards — or beat the daily clock.',
-    href: '/games/24-game/',
+    href: '/games/24-game/lobby/',
     flagship: true,
     stage: 'live',
     modes: ['Practice', 'Daily', 'Competition'],

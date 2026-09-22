@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en" data-site="mathduel">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0E1419" />
+  <title>Choose Your Mode — 24 · Card Table | MathDuel</title>
+  <meta name="description" content="Pick how you want to make 24: today's global daily challenge, a private friend room, a 99-player race, solo practice or timed practice. Four cards, one target." />
+  <link rel="canonical" href="https://mathduel.games/games/24-game/lobby/" />
+  <link rel="preload" href="/fonts/space-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="/fonts/sora-latin.woff2" as="font" type="font/woff2" crossorigin />
+</head>
+<body class="arena">
+  <header class="arbar">
+    <div class="arbar-in">
+      <a class="arb-logo" href="/">24<span>ARENA</span></a>
+      <nav class="arb-nav" aria-label="Site">
+        <a href="/">Home</a>
+        <a href="/games/24-game/">Card Table</a>
+        <a href="/leaderboard/">Leaderboard</a>
+      </nav>
+      <a class="arb-top-cta" href="/games/24-game/?mode=daily">Today's challenge →</a>
+    </div>
+  </header>
+
+  <main class="arb-main" id="main">
+    <!-- ============ Hero ============ -->
+    <section class="arb-hero">
+      <h1 class="arb-big">Make <em>24</em></h1>
+      <div class="arb-hand" aria-hidden="true">
+        <span class="arb-chip">3</span>
+        <span class="arb-chip">8</span>
+        <span class="arb-chip">4</span>
+        <span class="arb-chip">6</span>
+      </div>
+      <p class="arb-sub">Four cards, one answer. Pick how you want to play — the cards are the same, the pressure isn't.</p>
+    </section>
+
+    <div class="arb-cols">
+      <!-- ============ 模式选择 ============ -->
+      <div>
+        <h2 class="arb-h2">Game modes</h2>
+        <div class="arb-modes" id="modeGrid">
+          <a class="arb-mode feat" href="/games/24-game/?mode=daily" data-mode="daily">
+            <div class="mi" aria-hidden="true">🌐</div>
+            <div class="mt">Daily Challenge <span class="arb-tag" id="dailyTag" hidden>Done today</span></div>
+            <div class="md">Same 5 cards worldwide, one 60s clock each. Climb today's board.</div>
+          </a>
+          <a class="arb-mode" href="/games/24-game/?mode=battle&amp;size=2" data-mode="friend">
+            <div class="mi" aria-hidden="true">👥</div>
+            <div class="mt">Friend 1v1</div>
+            <div class="md">Private room for two. Share the code, first to solve wins.</div>
+          </a>
+          <a class="arb-mode" href="/games/24-game/?mode=battle&amp;size=99" data-mode="race">
+            <div class="mi" aria-hidden="true">🏁</div>
+            <div class="mt">Race</div>
+            <div class="md">Up to 99 players on identical cards, with a live board.</div>
+          </a>
+          <a class="arb-mode" href="/games/24-game/?mode=practice" data-mode="solo">
+            <div class="mi" aria-hidden="true">🎯</div>
+            <div class="mt">Solo Practice</div>
+            <div class="md">No clock, no pressure. Hints and the answer are one tap away.</div>
+          </a>
+          <a class="arb-mode" href="/games/24-game/?mode=timed" data-mode="timed">
+            <div class="mi" aria-hidden="true">⏱️</div>
+            <div class="mt">Timed Practice</div>
+            <div class="md">60 seconds per deal. Beat your own record, streak by streak.</div>
+          </a>
+          <div class="arb-mode ghost">
+            <div class="mi" aria-hidden="true">🎲</div>
+            <div class="mt">Random Match</div>
+            <div class="md">Coming soon — get matched with a stranger instantly.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ 右列：每日榜 + 好友房 ============ -->
+      <div class="arb-side">
+        <section class="arb-card" aria-labelledby="boardTitle">
+          <h3 id="boardTitle">Global Daily Board</h3>
+          <div class="arb-cd">Ends in <b class="num" id="boardCountdown">--:--:--</b></div>
+          <div id="boardRows" aria-live="polite">
+            <div class="arb-empty">Loading today's board…</div>
+          </div>
+          <a class="arb-btn ghost block" href="/games/24-game/?mode=daily" id="boardPlay">Play today's challenge</a>
+        </section>
+
+        <section class="arb-card" aria-labelledby="roomTitle">
+          <h3 id="roomTitle">Start a friend room</h3>
+          <p class="arb-note">Private room, 4–6 character code. Your room code and QR appear once the room is open.</p>
+          <label class="arb-field" for="roomInput">
+            <span>Have a code? Join it</span>
+            <input id="roomInput" type="text" maxlength="6" placeholder="K7Q2R" autocomplete="off" spellcheck="false" />
+          </label>
+          <div class="arb-actions">
+            <a class="arb-btn primary" href="/games/24-game/?mode=battle&amp;size=2" id="createRoom">Create a room</a>
+            <button class="arb-btn ghost" id="joinRoom" type="button">Join</button>
+          </div>
+          <p class="arb-err" id="roomErr" role="alert"></p>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <footer class="arb-foot">
+    <span><b>24 ARENA</b> · mode select</span>
+    <span class="arb-foot-links">
+      <a href="/">MathDuel home</a>
+      <a href="/games/24-game/">Card Table</a>
+      <a href="/leaderboard/">Leaderboard</a>
+    </span>
+  </footer>
+
+  <script type="module" src="/src/games/24-game/lobby.ts"></script>
+</body>
+</html>

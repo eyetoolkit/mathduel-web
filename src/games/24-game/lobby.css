@@ -1,0 +1,494 @@
+/* ============================================================
+   24 · Card Table — 模式选择页（Lobby）
+   ------------------------------------------------------------
+   皮肤来源：24 ARENA 设计稿（ink 底 + ember 橙 + teal 辅色）。
+   字体走站内自托管（Space Grotesk / Sora），不引 Google Fonts 外链，
+   以免被生产 CSP 的 style-src / font-src 拦掉。
+   所有类名以 arb- 前缀，避免与设计系统组件冲突。
+   ============================================================ */
+
+body.arena {
+  --a-ink: #0e1419;
+  --a-ink-2: #151d24;
+  --a-ink-3: #1c262e;
+  --a-line: #2a3741;
+  --a-paper: #f4f6f2;
+  --a-mute: #9aa9b3;
+  --a-ember: #ff6a3c;
+  --a-ember-dim: #ff8b66;
+  --a-ember-soft: rgba(255, 106, 60, 0.14);
+  --a-teal: #2fc4c9;
+  --a-gold: #f2c14e;
+  --a-disp: var(--font-sans); /* Sora（设计稿的 Bricolage 用同等厚重的 Sora 800 替代） */
+  --a-ui: var(--font-display); /* Space Grotesk */
+  --a-r-card: 16px;
+  --a-r-btn: 12px;
+
+  margin: 0;
+  background: var(--a-ink);
+  color: var(--a-paper);
+  font-family: var(--a-ui);
+  line-height: 1.6;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+body.arena .num {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
+}
+
+/* ---------- 顶栏 ---------- */
+.arbar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  background: rgba(14, 20, 25, 0.86);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--a-line);
+}
+.arbar-in {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.arb-logo {
+  font-family: var(--a-disp);
+  font-weight: 800;
+  font-size: 1.25rem;
+  letter-spacing: -0.01em;
+  color: var(--a-paper);
+  flex: none;
+}
+.arb-logo span {
+  color: var(--a-ember);
+}
+.arb-nav {
+  display: flex;
+  gap: 2px;
+  margin-left: 8px;
+}
+.arb-nav a {
+  color: var(--a-mute);
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+}
+.arb-nav a:hover {
+  color: var(--a-paper);
+  background: var(--a-ink-2);
+  border-color: var(--a-line);
+}
+.arb-top-cta {
+  margin-left: auto;
+  color: var(--a-ember-dim);
+  font-size: 0.88rem;
+  font-weight: 600;
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+}
+.arb-top-cta:hover {
+  color: var(--a-ember);
+  text-decoration: underline;
+}
+
+/* ---------- 布局 ---------- */
+.arb-main {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 32px 20px 56px;
+}
+
+/* ---------- Hero ---------- */
+.arb-hero {
+  position: relative;
+  margin-bottom: 34px;
+}
+.arb-hero::after {
+  content: '';
+  position: absolute;
+  top: -40px;
+  right: -20px;
+  width: 340px;
+  height: 340px;
+  background: radial-gradient(circle, var(--a-ember-soft), transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+.arb-hero > * {
+  position: relative;
+  z-index: 1;
+}
+.arb-big {
+  font-family: var(--a-disp);
+  font-weight: 800;
+  font-size: clamp(2.75rem, 8vw, 5.5rem);
+  line-height: 0.92;
+  letter-spacing: -0.03em;
+}
+.arb-big em {
+  font-style: normal;
+  color: var(--a-ember);
+}
+.arb-hand {
+  display: flex;
+  gap: 12px;
+  margin: 18px 0;
+}
+.arb-chip {
+  width: 56px;
+  height: 78px;
+  border-radius: 12px;
+  background: var(--a-paper);
+  color: var(--a-ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--a-disp);
+  font-weight: 800;
+  font-size: 1.8rem;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.45);
+}
+.arb-sub {
+  color: var(--a-mute);
+  max-width: 52ch;
+  margin-top: 6px;
+}
+
+/* ---------- 两栏 ---------- */
+.arb-cols {
+  display: grid;
+  grid-template-columns: 1.35fr 0.95fr;
+  gap: 26px;
+  align-items: start;
+}
+.arb-h2 {
+  font-family: var(--a-disp);
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+/* ---------- 模式卡 ---------- */
+.arb-modes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+.arb-mode {
+  display: block;
+  background: var(--a-ink-2);
+  border: 1px solid var(--a-line);
+  border-radius: 14px;
+  padding: 16px;
+  color: var(--a-paper);
+  transition: border-color 0.15s, transform 0.15s;
+}
+a.arb-mode:hover {
+  border-color: var(--a-ember);
+  transform: translateY(-2px);
+}
+a.arb-mode:focus-visible {
+  outline: 2px solid var(--a-ember);
+  outline-offset: 2px;
+}
+.arb-mode .mi {
+  font-size: 1.5rem;
+  line-height: 1.2;
+}
+.arb-mode .mt {
+  font-weight: 600;
+  margin-top: 8px;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.arb-mode .md {
+  font-size: 0.82rem;
+  color: var(--a-mute);
+  margin-top: 4px;
+  line-height: 1.45;
+}
+.arb-mode.feat {
+  border-color: var(--a-ember);
+  background: linear-gradient(180deg, var(--a-ember-soft), var(--a-ink-2));
+}
+.arb-mode.ghost {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.arb-tag {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--a-ink);
+  background: var(--a-teal);
+  border-radius: 999px;
+  padding: 2px 8px;
+}
+
+/* ---------- 右列卡片 ---------- */
+.arb-side {
+  display: grid;
+  gap: 16px;
+}
+.arb-card {
+  background: var(--a-ink-2);
+  border: 1px solid var(--a-line);
+  border-radius: var(--a-r-card);
+  padding: 18px;
+}
+.arb-card h3 {
+  font-family: var(--a-disp);
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.arb-cd {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.82rem;
+  color: var(--a-teal);
+  margin-bottom: 12px;
+}
+.arb-empty {
+  color: var(--a-mute);
+  font-size: 0.85rem;
+  padding: 12px 0;
+}
+.arb-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--a-line);
+}
+.arb-row:last-of-type {
+  border-bottom: 0;
+}
+.arb-rank {
+  width: 22px;
+  font-weight: 700;
+  color: var(--a-mute);
+  font-variant-numeric: tabular-nums;
+}
+.arb-row.r1 .arb-rank {
+  color: var(--a-gold);
+}
+.arb-row.r2 .arb-rank {
+  color: var(--a-paper);
+}
+.arb-row.r3 .arb-rank {
+  color: var(--a-ember-dim);
+}
+.arb-name {
+  flex: 1;
+  font-size: 0.9rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.arb-score {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.88rem;
+}
+.arb-row.me {
+  background: var(--a-ember-soft);
+  border-radius: 10px;
+  padding-left: 8px;
+  padding-right: 8px;
+}
+.arb-row.me .arb-name {
+  color: var(--a-ember-dim);
+  font-weight: 600;
+}
+
+/* ---------- 好友房 ---------- */
+.arb-note {
+  font-size: 0.82rem;
+  color: var(--a-mute);
+  margin-bottom: 12px;
+  line-height: 1.45;
+}
+.arb-field {
+  display: block;
+  margin-bottom: 12px;
+}
+.arb-field span {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--a-mute);
+  margin-bottom: 6px;
+}
+.arb-field input {
+  width: 100%;
+  background: var(--a-ink-3);
+  border: 1px solid var(--a-line);
+  border-radius: 10px;
+  color: var(--a-paper);
+  font-family: var(--a-ui);
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  padding: 11px 14px;
+  min-height: 48px;
+}
+.arb-field input::placeholder {
+  color: #8a99a3;
+  opacity: 1; /* Firefox 默认给 placeholder 叠一层透明度，会把对比度打下来 */
+  font-weight: 500;
+  letter-spacing: 0.12em;
+}
+.arb-field input:focus-visible {
+  outline: 2px solid var(--a-ember);
+  outline-offset: 1px;
+}
+.arb-actions {
+  display: flex;
+  gap: 10px;
+}
+.arb-err {
+  color: var(--a-ember-dim);
+  font-size: 0.8rem;
+  min-height: 1.2em;
+  margin-top: 8px;
+}
+
+/* ---------- 按钮 ---------- */
+.arb-btn {
+  font-family: var(--a-ui);
+  font-weight: 600;
+  font-size: 0.92rem;
+  padding: 11px 16px;
+  min-height: 44px;
+  border-radius: var(--a-r-btn);
+  border: 1px solid transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: filter 0.15s, border-color 0.15s, background 0.15s;
+}
+.arb-btn.block {
+  width: 100%;
+  margin-top: 12px;
+}
+.arb-btn.primary {
+  background: var(--a-ember);
+  color: #160a04;
+  flex: 1;
+}
+.arb-btn.primary:hover {
+  filter: brightness(1.08);
+}
+.arb-btn.ghost {
+  background: transparent;
+  color: var(--a-paper);
+  border-color: var(--a-line);
+}
+.arb-btn.ghost:hover {
+  border-color: var(--a-mute);
+}
+.arb-btn:focus-visible {
+  outline: 2px solid var(--a-ember);
+  outline-offset: 2px;
+}
+.arb-btn:active {
+  transform: translateY(1px);
+}
+
+/* ---------- 页脚 ---------- */
+.arb-foot {
+  border-top: 1px solid var(--a-line);
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+  font-size: 0.82rem;
+  color: var(--a-mute);
+}
+.arb-foot b {
+  color: var(--a-paper);
+  font-family: var(--a-disp);
+}
+.arb-foot-links {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.arb-foot-links a {
+  color: var(--a-mute);
+  min-height: 32px;
+  display: inline-flex;
+  align-items: center;
+}
+.arb-foot-links a:hover {
+  color: var(--a-paper);
+  text-decoration: underline;
+}
+
+/* ---------- 响应式 ---------- */
+@media (max-width: 900px) {
+  .arb-cols {
+    grid-template-columns: 1fr;
+    gap: 22px;
+  }
+}
+@media (max-width: 560px) {
+  .arbar-in {
+    padding: 10px 16px;
+    gap: 10px;
+  }
+  .arb-nav {
+    order: 3;
+    width: 100%;
+    margin-left: 0;
+    overflow-x: auto;
+  }
+  .arb-top-cta {
+    font-size: 0.82rem;
+  }
+  .arb-main {
+    padding: 24px 16px 40px;
+  }
+  .arb-modes {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .arb-hand {
+    gap: 10px;
+  }
+  .arb-chip {
+    width: 46px;
+    height: 64px;
+    font-size: 1.5rem;
+    border-radius: 10px;
+  }
+  .arb-actions {
+    flex-direction: column;
+  }
+  .arb-btn.primary {
+    width: 100%;
+  }
+}
