@@ -5,12 +5,12 @@
    ============================================================ */
 
 .g24 {
-  display: grid; grid-template-columns: minmax(0, 1fr) 340px;
-  gap: var(--s-6); align-items: start;
+  display: grid; grid-template-columns: minmax(0, 1fr) 320px;
+  gap: var(--s-5); align-items: start;
   max-width: 1120px; margin: 0 auto;
   padding: var(--s-5) var(--s-4) var(--s-16);
 }
-@media (max-width: 920px) { .g24 { grid-template-columns: 1fr; } }
+@media (max-width: 760px) { .g24 { grid-template-columns: 1fr; padding: var(--s-4) var(--s-3) var(--s-12); } }
 @media (min-width: 1024px) { .g24 { padding: var(--s-8) var(--s-8) var(--s-16); gap: var(--s-8); } }
 
 /* ---------- 牌桌 ---------- */
@@ -129,26 +129,37 @@
 
 /* ---------- 扑克牌 ---------- */
 .cards {
-  display: grid; grid-template-columns: repeat(4, 1fr);
+  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 10px; margin-bottom: var(--s-5);
 }
-@media (max-width: 460px) { .cards { gap: 7px; } }
+/* 窄屏：2×2 网格，更适合手指点选；让 4 张牌在 < 480px 也能完整呈现 */
+@media (max-width: 480px) {
+  .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+}
+@media (max-width: 460px) { .cards { gap: 10px; } }
 .card {
   position: relative; aspect-ratio: 3 / 4; border-radius: var(--r-md); cursor: pointer;
   user-select: none; border: 2px solid transparent;
   background: var(--surface-raised); color: var(--text-strong);
   display: flex; align-items: center; justify-content: center;
+  min-width: 0;        /* 关键：让 grid 1fr 真正能收缩，避免在窄屏溢出 */
   box-shadow: var(--shadow);
   transition: transform var(--dur-base) var(--ease-spring), box-shadow var(--dur-base) var(--ease-out), opacity var(--dur-base) var(--ease-out);
 }
 .card .num { font-family: var(--font-display); font-weight: 700; font-size: clamp(2rem, 9vw, 3.25rem); line-height: 1; }
 .card .suit { position: absolute; top: 8px; left: 10px; font-size: 0.9375rem; line-height: 1; opacity: 0.85; }
 .card .suit.br { top: auto; left: auto; bottom: 8px; right: 10px; transform: rotate(180deg); }
-@media (max-width: 460px) {
+@media (max-width: 480px) {
+  .card { aspect-ratio: 5 / 7; border-radius: var(--r); }   /* 2×2 时稍方一点更像大牌 */
+  .card .num { font-size: clamp(2.4rem, 14vw, 3.5rem); }
+  .card .suit { font-size: 0.95rem; top: 9px; left: 12px; }
+  .card .suit.br { bottom: 9px; right: 12px; }
+}
+@media (max-width: 380px) {
   .card { border-radius: var(--r-sm); }
-  .card .num { font-size: clamp(1.6rem, 10.5vw, 2.5rem); }
-  .card .suit { font-size: 0.75rem; top: 6px; left: 7px; }
-  .card .suit.br { bottom: 6px; right: 7px; }
+  .card .num { font-size: clamp(1.9rem, 12vw, 2.8rem); }
+  .card .suit { font-size: 0.78rem; top: 6px; left: 8px; }
+  .card .suit.br { bottom: 6px; right: 8px; }
 }
 .card.red { color: var(--danger); }
 .card:hover { transform: translateY(-4px); }
