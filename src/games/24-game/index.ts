@@ -20,7 +20,7 @@ import {
   type Difficulty,
 } from './engine';
 import { Competition, isProdEnv, type RaceEntry } from './competition';
-import { initShareBindings, openShareOverlay } from './share';
+import { initShareBindings, openShareOverlay, renderQR } from './share';
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T | null;
 
@@ -697,10 +697,22 @@ function openLobby(): void {
 }
 const closeLobby = () => lobby.classList.remove('show');
 
+/** 邀请链接：打开站点并预填房间码（与「Copy Invite Link」完全同一个 URL） */
+function roomInviteUrl(): string {
+  return location.origin + location.pathname + '?room=' + encodeURIComponent(comp.room || '');
+}
+
+function renderRoomQr(): void {
+  const img = $<HTMLImageElement>('roomQr');
+  if (!img || !comp.room) return;
+  renderQR(img, roomInviteUrl());
+}
+
 function showRoomView(): void {
   $('lobbyForm')!.style.display = 'none';
   $('roomView')!.style.display = 'block';
   $('roomCode')!.textContent = comp.room;
+  renderRoomQr();
   renderRoomPlayers();
 }
 
@@ -1067,7 +1079,7 @@ $('joinBtn')!.onclick = () => {
   comp.joinRoom(code, name);
 };
 $('shareBtn')!.onclick = async () => {
-  const url = location.origin + location.pathname + '?room=' + comp.room;
+  const url = roomInviteUrl();
   try {
     await navigator.clipboard.writeText(url);
     toast('Invite link copied');
