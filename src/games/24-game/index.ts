@@ -937,7 +937,7 @@ async function loadProfile(): Promise<void> {
       const d: any = await res.json();
       profile.avatar = d?.avatar || d?.account?.active?.avatar || profile.avatar;
       profile.nickname = d?.nickname || profile.nickname;
-      const r = d?.account?.ratings?.['24-game'];
+      const r = d?.account?.ratings?.['24'] || d?.account?.ratings?.['24-game'];
       if (r && typeof r.elo === 'number') {
         profile.elo = r.elo;
         profile.tier = tierOf(r.elo).name;
