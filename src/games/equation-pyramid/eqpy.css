@@ -1,0 +1,417 @@
+/* ============================================================
+   EQUATION PYRAMID · 牌桌样式（深色 ARENA 皮肤）
+   与 24 点 / 6×6 / 9×9 / killer / number-pyramid 同骨架，
+   自有前缀 `ep-`（equation pyramid）。
+   设计稿要点：
+     · 3×3 board，每格 = 上行运算符（mute-2 + 删除线时是 anchor）+ 数字；
+     · target card（paper）位于 apex（顶部居中）；
+     · strip（equation 条）三 slot + 两 sop + = result；
+     · tray 收集 banked solutions（gold chips）+ hollow dots；
+     · gold 兼任 coin 与 banked chip。
+   ============================================================ */
+
+.ep-arena {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 18px 14px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  --a-teal-soft: rgba(47, 196, 201, 0.14);
+  --a-mute-2: #5c6b74;
+  --a-gold-soft: rgba(242, 193, 78, 0.12);
+}
+
+/* ===== 顶部 tab + back ===== */
+.ep-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.ep-tabs {
+  display: inline-flex; gap: 4px;
+  background: var(--a-ink-2);
+  border: 1px solid var(--a-line);
+  border-radius: var(--a-r-pill, 999px);
+  padding: 4px;
+}
+.ep-tab {
+  appearance: none; cursor: pointer; background: transparent; border: 0;
+  color: var(--a-mute); font-family: var(--a-ui); font-size: 0.84rem; font-weight: 600;
+  padding: 7px 13px; border-radius: var(--a-r-pill, 999px);
+  transition: color 0.12s, background 0.12s;
+}
+.ep-tab:hover { color: var(--a-paper); }
+.ep-tab.active { background: var(--a-ember); color: #160a04; }
+.ep-back {
+  appearance: none; cursor: pointer; background: transparent;
+  border: 1px solid var(--a-line); color: var(--a-mute);
+  font-family: var(--a-ui); font-size: 0.8rem;
+  padding: 7px 12px; border-radius: var(--a-r-pill, 999px);
+}
+.ep-back:hover { color: var(--a-paper); border-color: var(--a-ember); }
+
+/* ===== 对手条 / 我方条（duel） ===== */
+.ep-opp, .ep-you {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  background: var(--a-ink-2); border: 1px solid var(--a-line);
+  border-radius: var(--a-r-card); padding: 10px 14px;
+}
+.ep-player { display: flex; align-items: center; gap: 10px; }
+.ep-av {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--a-teal), var(--a-ink-3));
+  border: 2px solid var(--a-ink);
+}
+.ep-av.you { background: linear-gradient(135deg, var(--a-ember), var(--a-ink-3)); }
+.ep-pn { font-weight: 600; color: var(--a-paper); font-size: 0.95rem; display: flex; align-items: center; gap: 8px; }
+.ep-ps { color: var(--a-mute); font-size: 0.78rem; margin-top: 2px; }
+.ep-side {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 0.7rem; font-weight: 600;
+  border-radius: var(--a-r-pill, 999px); padding: 3px 9px;
+}
+.ep-side .d { width: 6px; height: 6px; border-radius: 50%; }
+.ep-side.you { background: var(--a-ember-soft); color: var(--a-ember); }
+.ep-side.you .d { background: var(--a-ember); }
+.ep-side.opp { background: var(--a-teal-soft); color: var(--a-teal); }
+.ep-side.opp .d { background: var(--a-teal); }
+.ep-status {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-size: 0.82rem; color: var(--a-paper);
+  background: var(--a-ink-3); border: 1px solid var(--a-line);
+  border-radius: var(--a-r-pill, 999px); padding: 5px 11px;
+}
+.ep-status .d { width: 7px; height: 7px; border-radius: 50%; background: var(--a-teal); }
+.ep-status.you .d { background: var(--a-ember); }
+
+/* ===== 难度行 ===== */
+.ep-diff { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.ep-diff .ep-pk {
+  flex-direction: column; align-items: flex-start;
+  padding: 9px 11px;
+}
+.ep-diff .ep-pk small { font-size: 0.7rem; font-weight: 400; color: var(--a-mute); }
+.ep-diff .ep-pk.active small { color: var(--a-ember-dim); }
+
+/* ===== Board ===== */
+.ep-board {
+  width: min(440px, 100%);
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.ep-target-card {
+  width: 132px;
+  padding: 9px 12px 11px;
+  background: var(--a-paper);
+  color: var(--a-ink);
+  border-radius: 14px;
+  text-align: center;
+  margin-bottom: 10px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.45);
+}
+.ep-target-card small {
+  display: block;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--a-mute-2);
+}
+.ep-target-card b {
+  display: block;
+  font-size: 1.85rem;
+  font-weight: 800;
+  font-family: var(--a-disp);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.05;
+  margin-top: 2px;
+}
+
+.ep-grid {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.epc {
+  position: relative;
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--a-ink-3);
+  border: 1px solid var(--a-mute-2);
+  border-radius: 12px;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.1s, color 0.1s, border-color 0.1s;
+}
+.epc .ep-op {
+  position: absolute;
+  top: 5px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--a-ui);
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--a-mute);
+  line-height: 1;
+}
+.epc .ep-num {
+  font-family: var(--a-ui);
+  font-size: clamp(1.4rem, 4.5vw, 1.7rem);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--a-paper);
+}
+/* pick 1（anchor）— 大色块、op 删除线但仍可见（设计稿「struck, not hidden」）*/
+.epc.p1 { background: var(--a-ember); border-color: var(--a-ember); }
+.epc.p1 .ep-num { color: var(--a-ink); }
+.epc.p1 .ep-op {
+  color: rgba(22, 10, 4, 0.55);
+  text-decoration: line-through;
+  text-decoration-thickness: 1.5px;
+}
+/* pick 2 / pick 3 — 浅 ember，op 是真运算符 */
+.epc.p2, .epc.p3 {
+  background: var(--a-ember-soft);
+  border-color: var(--a-ember);
+}
+.epc.p2 .ep-num, .epc.p3 .ep-num { color: var(--a-ember); }
+.epc.p2 .ep-op, .epc.p3 .ep-op { color: var(--a-ember-dim); }
+/* 已 banked（chip 显示在 tray） */
+.epc.banked {
+  background: rgba(242, 193, 78, 0.08);
+  border-color: rgba(242, 193, 78, 0.5);
+}
+.epc.banked .ep-num { color: var(--a-gold, #F2C14E); }
+.epc.banked .ep-op { color: var(--a-mute-2); opacity: 0.7; }
+/* hint 给过的（半透明） */
+.epc.hinted { opacity: 0.65; }
+
+/* ===== Equation strip ===== */
+.ep-strip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+  padding: 14px 12px;
+  border: 1px solid var(--a-line);
+  border-radius: 14px;
+  background: var(--a-ink-2);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.ep-slot {
+  min-width: 48px;
+  height: 48px;
+  padding: 0 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--a-ink-3);
+  border: 1px solid var(--a-line);
+  border-radius: 10px;
+  font-size: 1.3rem;
+  position: relative;
+}
+.ep-slot b {
+  font-size: 1.25rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--a-paper);
+}
+.ep-slot.anchor { background: var(--a-ember); border-color: var(--a-ember); }
+.ep-slot.anchor b { color: var(--a-ink); }
+.ep-slot.anchor small {
+  position: absolute;
+  top: 3px;
+  left: 0; right: 0;
+  text-align: center;
+  font-size: 0.48rem;
+  letter-spacing: 0.12em;
+  color: rgba(22, 10, 4, 0.55);
+  font-weight: 800;
+}
+.ep-sop {
+  color: var(--a-mute);
+  font-size: 1.2rem;
+}
+.ep-sop.eq { color: var(--a-mute-2); }
+/* 第三格填完、结果正确 → 整条变 gold */
+.ep-strip.ok { border-color: var(--a-gold, #F2C14E); }
+.ep-strip.bad { border-color: var(--a-teal-dim); }
+.ep-result {
+  min-width: 48px;
+  height: 48px;
+  padding: 0 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  font-size: 1.3rem;
+  background: var(--a-ink-3);
+  border: 1px solid var(--a-line);
+  color: var(--a-paper);
+}
+.ep-result.ok {
+  background: var(--a-gold, #F2C14E);
+  border-color: var(--a-gold, #F2C14E);
+  color: var(--a-ink);
+}
+.ep-result.bad {
+  color: var(--a-teal);
+  border-color: var(--a-teal-dim);
+}
+
+/* ===== HUD ===== */
+.ep-hud {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+.ep-hud-cell {
+  border: 1px solid var(--a-line);
+  border-radius: 10px;
+  background: var(--a-ink-2);
+  padding: 8px 10px;
+  text-align: center;
+}
+.ep-hud-cell small {
+  display: block;
+  font-size: 0.62rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--a-mute);
+  margin-bottom: 2px;
+}
+.ep-hud-cell b {
+  font-size: 1.1rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--a-paper);
+}
+
+/* ===== 工具栏 ===== */
+.ep-tools {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+.ep-tool {
+  appearance: none; cursor: pointer; background: transparent;
+  border: 1px solid var(--a-line); color: var(--a-mute);
+  font-family: var(--a-ui); font-size: 0.82rem;
+  padding: 7px 14px; border-radius: var(--a-r-pill, 999px);
+}
+.ep-tool:hover { color: var(--a-paper); border-color: var(--a-ember); }
+#hintBtn #hintLeft { color: var(--a-gold, #F2C14E); font-weight: 700; }
+
+/* ===== 结果横幅 ===== */
+.ep-result-msg {
+  text-align: center;
+  padding: 14px 12px;
+  background: var(--a-ink-2);
+  border: 1px solid var(--a-line);
+  border-radius: var(--a-r-card);
+  color: var(--a-paper); font-size: 1rem;
+}
+.ep-result-msg.win {
+  border-color: var(--a-gold, #F2C14E);
+  background: rgba(242, 193, 78, 0.1);
+  color: var(--a-gold, #F2C14E);
+}
+.ep-result-msg.lose { border-color: var(--a-teal-dim); }
+
+/* ===== Tray（已 banked 解） ===== */
+.ep-tray {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 10px 12px;
+  background: var(--a-ink-2);
+  border: 1px solid var(--a-line);
+  border-radius: var(--a-r-card);
+}
+.ep-lab {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--a-mute);
+}
+.ep-tray-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  flex: 1;
+}
+.ep-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--a-gold, #F2C14E);
+  color: var(--a-gold, #F2C14E);
+  border-radius: var(--a-r-pill, 999px);
+  padding: 4px 11px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+  background: rgba(242, 193, 78, 0.08);
+}
+.ep-dot {
+  width: 12px; height: 12px;
+  border: 1.5px solid var(--a-mute-2);
+  border-radius: 50%;
+}
+
+/* ===== Modal / Toast ===== */
+.ep-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 100; padding: 16px;
+}
+.ep-modal {
+  background: var(--a-ink); border: 1px solid var(--a-line);
+  border-radius: var(--a-r-card);
+  padding: 22px 22px 18px;
+  max-width: 360px; width: 100%; text-align: center;
+}
+.ep-modal .ep-verdict { font-family: var(--a-disp); font-weight: 800; font-size: 1.3rem; color: var(--a-paper); }
+.ep-modal .ep-scores { display: flex; gap: 12px; justify-content: center; margin: 10px 0; }
+.ep-modal .ep-scores > div { text-align: center; }
+.ep-modal .ep-scores .num { font-size: 1.4rem; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--a-paper); display: block; }
+.ep-modal .ep-scores small { font-size: 0.74rem; color: var(--a-mute); display: block; }
+.ep-modal .ep-me .num { color: var(--a-ember); }
+.ep-modal .ep-op .num { color: var(--a-teal); }
+.ep-modal .ep-extra { color: var(--a-mute); font-size: 0.84rem; margin: 8px 0; }
+.ep-modal .ep-acts { display: flex; gap: 8px; justify-content: center; margin-top: 14px; }
+.ep-modal .ep-acts button {
+  appearance: none; cursor: pointer;
+  font-family: var(--a-ui); font-weight: 600; font-size: 0.88rem;
+  padding: 9px 16px; border-radius: var(--a-r-btn);
+  border: 1px solid var(--a-line); background: var(--a-ink-2);
+  color: var(--a-paper);
+}
+.ep-modal .ep-acts .ep-prim { background: var(--a-ember); color: #160a04; border-color: transparent; }
+
+.ep-toast {
+  position: fixed; left: 50%; bottom: 32px;
+  transform: translateX(-50%);
+  background: var(--a-ink-2); border: 1px solid var(--a-line);
+  color: var(--a-paper);
+  padding: 10px 14px; border-radius: var(--a-r-pill, 999px);
+  font-size: 0.86rem; z-index: 110;
+}
+
+@media (max-width: 560px) {
+  .ep-arena { padding: 12px 8px 28px; }
+  .ep-hud { grid-template-columns: repeat(2, 1fr); }
+  .ep-target-card b { font-size: 1.6rem; }
+  .ep-slot { min-width: 38px; height: 40px; font-size: 1.1rem; }
+  .ep-slot b { font-size: 1.05rem; }
+  .ep-sop { font-size: 1rem; }
+  .ep-result { min-width: 38px; height: 40px; font-size: 1.1rem; }
+}

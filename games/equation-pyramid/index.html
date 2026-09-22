@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en" data-site="mathduel">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0E1419" />
+  <title>Equation Pyramid · Hit the Target | MathDuel</title>
+  <meta name="description" content="Pick three cells in click order — the click order is the formula. Multiply and divide first, then add and subtract. Reach the target." />
+  <link rel="canonical" href="https://mathduel.games/games/equation-pyramid/" />
+  <link rel="preload" href="/fonts/space-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="/fonts/sora-latin.woff2" as="font" type="font/woff2" crossorigin />
+</head>
+<body class="arena">
+  <div id="header"></div>
+
+  <main class="ep-arena">
+    <div class="ep-top">
+      <div class="ep-tabs" id="tabs">
+        <button class="ep-tab" data-mode="solo">Solo</button>
+        <button class="ep-tab" data-mode="daily">Daily</button>
+        <button class="ep-tab" data-mode="timed">Timed</button>
+        <button class="ep-tab" data-mode="duel">Duel</button>
+      </div>
+      <button class="ep-back" id="backLobby" type="button" title="Mode select">← Mode select</button>
+    </div>
+
+    <div class="ep-opp" id="oppHead" hidden>
+      <div class="ep-player">
+        <div class="ep-av" aria-hidden="true"></div>
+        <div>
+          <div class="ep-pn">Bot <span class="ep-side opp"><span class="d"></span>Opponent</span></div>
+          <div class="ep-ps" id="oppPace">— · random</div>
+        </div>
+      </div>
+      <div class="ep-status" id="oppStatus"><span class="d"></span>0 banks</div>
+    </div>
+
+    <div id="modeBanner"></div>
+
+    <div class="ep-diff" id="diffPick" role="group" aria-label="Difficulty (solution count)">
+      <button class="ep-pk" data-t="warmup">Warm-up<small>6–12 ways</small></button>
+      <button class="ep-pk active" data-t="standard">Standard<small>4–7 ways</small></button>
+      <button class="ep-pk" data-t="tricky">Tricky<small>exactly 3</small></button>
+    </div>
+
+    <div class="ep-board" id="epboard" aria-label="Equation pyramid board">
+      <div class="ep-target-card">
+        <small>Target</small>
+        <b id="targetNum">—</b>
+      </div>
+      <div class="ep-grid" id="epgrid">
+        <!-- 9 个 cell，由 JS 渲染 -->
+      </div>
+    </div>
+
+    <div class="ep-strip" id="strip">
+      <span class="ep-slot anchor" id="slotA"><small>START</small><b id="slotANum">—</b></span>
+      <span class="ep-sop" id="sop1">?</span>
+      <span class="ep-slot" id="slotB"><b>—</b></span>
+      <span class="ep-sop" id="sop2">?</span>
+      <span class="ep-slot" id="slotC"><b>—</b></span>
+      <span class="ep-sop eq">=</span>
+      <span class="ep-result" id="sresult">—</span>
+    </div>
+
+    <div class="ep-hud" id="hud">
+      <div class="ep-hud-cell"><small>Score</small><b id="hudScore" class="num">0</b></div>
+      <div class="ep-hud-cell"><small>Time</small><b id="hudTime" class="num">0:00</b></div>
+      <div class="ep-hud-cell"><small>Left</small><b id="hudLeft" class="num">0</b></div>
+      <div class="ep-hud-cell"><small>Misses</small><b id="hudMiss" class="num">0</b></div>
+    </div>
+
+    <div class="ep-tools">
+      <button class="ep-tool" id="clearBtn" title="Reset current pick order">↻ Clear</button>
+      <button class="ep-tool" id="newBtn" title="Fresh board">🔄 New</button>
+      <button class="ep-tool" id="hintBtn" title="Reveal a remaining solution">💡 Hint <span id="hintLeft">×3</span></button>
+    </div>
+
+    <div id="result" class="ep-result-msg" hidden></div>
+
+    <div class="ep-you" id="youHead">
+      <div class="ep-player">
+        <div class="ep-av you" aria-hidden="true"></div>
+        <div>
+          <div class="ep-pn">You <span class="ep-side you"><span class="d"></span>You</span></div>
+          <div class="ep-ps" id="youPace">— pace</div>
+        </div>
+      </div>
+      <div class="ep-status you" id="youStatus"><span class="d"></span>0 banks</div>
+    </div>
+
+    <div class="ep-tray" id="tray" aria-live="polite">
+      <span class="ep-lab" id="trayLabel">Found 0 of 0</span>
+      <div class="ep-tray-list" id="trayList"></div>
+    </div>
+
+    <div class="ep-overlay" id="overlay" hidden>
+      <div class="ep-modal" id="modal" role="dialog" aria-modal="true"></div>
+    </div>
+    <div class="ep-toast" id="toast" hidden></div>
+  </main>
+
+  <script type="module" src="/src/games/equation-pyramid/index.ts"></script>
+</body>
+</html>

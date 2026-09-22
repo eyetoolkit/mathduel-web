@@ -84,10 +84,10 @@ const GAMES: GameDef[] = [
     id: 'equation-pyramid',
     icon: '△',
     title: 'Equation Pyramid',
-    desc: 'Stack arithmetic bottom-up until a single number remains. Plan backwards to win.',
-    href: '/games/equation-pyramid/',
+    desc: 'Click three cells in order — the click order is the formula. ×÷ first, then +−. Hit the target.',
+    href: '/games/equation-pyramid/lobby/',
     stage: 'beta',
-    modes: ['Practice'],
+    modes: ['Practice', 'Daily'],
   },
   {
     id: 'bulls',

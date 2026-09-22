@@ -1,0 +1,95 @@
+/* ============================================================
+   EQUATION PYRAMID · Lobby 专属样式
+   骨架 / 顶栏 / 模式卡 / 页脚 / 难度行全部复用 ../24-game/lobby.css（arb-*），
+   本文件只放 EP 独有：hero 装饰（target card + 9-cell grid）。
+   ============================================================ */
+
+/* Hero 装饰：target card 在上 + 3×3 grid 在下 */
+.ep-deco {
+  position: relative;
+  width: min(360px, 100%);
+  margin: 20px 0 6px;
+  background: var(--a-ink);
+  border: 2px solid var(--a-line);
+  border-radius: 14px;
+  padding: 16px 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+.ep-deco-target {
+  width: 132px;
+  padding: 8px 10px 9px;
+  background: var(--a-paper);
+  color: var(--a-ink);
+  border-radius: 12px;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.45);
+}
+.ep-deco-target small {
+  display: block;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--a-mute-2);
+}
+.ep-deco-target b {
+  display: block;
+  font-size: 1.7rem;
+  font-weight: 800;
+  font-family: var(--a-disp);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.05;
+  margin-top: 2px;
+}
+.ep-deco-grid {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 7px;
+}
+.ep-deco-c {
+  position: relative;
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--a-ink-3);
+  border: 1px solid var(--a-mute-2);
+  border-radius: 8px;
+  font-family: var(--a-ui);
+}
+.ep-deco-c .op {
+  font-size: 0.7rem;
+  color: var(--a-mute);
+  line-height: 1;
+  margin-bottom: 2px;
+}
+.ep-deco-c .num {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--a-paper);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+/* pick 标记：演示 hero 中 1=p1=anchor、4=p2、6=p3 */
+.ep-deco-c.p1 { background: var(--a-ember); border-color: var(--a-ember); }
+.ep-deco-c.p1 .num { color: var(--a-ink); }
+.ep-deco-c.p1 .op {
+  color: rgba(22, 10, 4, 0.55);
+  text-decoration: line-through;
+  text-decoration-thickness: 1.5px;
+}
+.ep-deco-c.p2, .ep-deco-c.p3 { background: var(--a-ember-soft); border-color: var(--a-ember); }
+.ep-deco-c.p2 .num, .ep-deco-c.p3 .num { color: var(--a-ember); }
+.ep-deco-c.p2 .op, .ep-deco-c.p3 .op { color: var(--a-ember-dim); }
+
+@media (max-width: 560px) {
+  .ep-deco { padding: 12px 10px; }
+  .ep-deco-target { width: 110px; }
+  .ep-deco-target b { font-size: 1.4rem; }
+  .ep-deco-c .num { font-size: 0.92rem; }
+}

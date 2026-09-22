@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en" data-site="mathduel">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0E1419" />
+  <title>Choose Your Mode — Equation Pyramid | MathDuel</title>
+  <meta name="description" content="Pick three cells in click order — the click order is the formula. ×÷ first, then +−. Reach the target. Three difficulty tiers by solution count." />
+  <link rel="canonical" href="https://mathduel.games/games/equation-pyramid/lobby/" />
+  <link rel="preload" href="/fonts/space-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="/fonts/sora-latin.woff2" as="font" type="font/woff2" crossorigin />
+</head>
+<body class="arena">
+  <header class="arbar">
+    <div class="arbar-in">
+      <a class="arb-logo" href="/">EQUATION<span>PYRAMID</span></a>
+      <nav class="arb-nav" aria-label="Site">
+        <a href="/">Home</a>
+        <a href="/games/equation-pyramid/">Play now</a>
+        <a href="/leaderboard/">Leaderboard</a>
+      </nav>
+      <a class="arb-top-cta" href="/games/equation-pyramid/?mode=daily">Today's hunt →</a>
+    </div>
+  </header>
+
+  <main class="arb-main" id="main">
+    <section class="arb-hero">
+      <h1 class="arb-big">Hit the <em>target</em></h1>
+      <div class="ep-deco" id="heroDeco" aria-hidden="true">
+        <div class="ep-deco-target"><small>Target</small><b>−7</b></div>
+        <div class="ep-deco-grid">
+          <div class="ep-deco-c"><span class="op">×</span><span class="num">4</span></div>
+          <div class="ep-deco-c p1"><span class="op">+</span><span class="num">9</span></div>
+          <div class="ep-deco-c p2"><span class="op">−</span><span class="num">4</span></div>
+          <div class="ep-deco-c p3"><span class="op">×</span><span class="num">4</span></div>
+          <div class="ep-deco-c"><span class="op">+</span><span class="num">1</span></div>
+          <div class="ep-deco-c"><span class="op">−</span><span class="num">2</span></div>
+          <div class="ep-deco-c"><span class="op">×</span><span class="num">5</span></div>
+          <div class="ep-deco-c"><span class="op">+</span><span class="num">3</span></div>
+          <div class="ep-deco-c"><span class="op">÷</span><span class="num">9</span></div>
+        </div>
+      </div>
+      <p class="arb-sub">Pick three cells in click order. The first cell's operator is the anchor (struck, not hidden). ×÷ first, then +−. <b>The click order is the formula.</b></p>
+    </section>
+
+    <div class="arb-cols">
+      <div>
+        <h2 class="arb-h2">Game modes</h2>
+        <div class="arb-modes" id="modeGrid">
+          <a class="arb-mode feat" href="/games/equation-pyramid/?mode=daily" data-mode="daily">
+            <div class="mi" aria-hidden="true">🌐</div>
+            <div class="mt">Daily Hunt <span class="arb-tag" id="dailyTag" hidden>Done today</span></div>
+            <div class="md">Same board worldwide. Bank every equation that hits the target.</div>
+          </a>
+          <a class="arb-mode" href="/games/equation-pyramid/?mode=duel" data-mode="duel">
+            <div class="mi" aria-hidden="true">🤖</div>
+            <div class="mt">Duel Bot</div>
+            <div class="md">Race the bot to bank the last equation. Wrong picks cost +2.5s.</div>
+          </a>
+          <a class="arb-mode" href="/games/equation-pyramid/?mode=timed" data-mode="timed">
+            <div class="mi" aria-hidden="true">⏱️</div>
+            <div class="mt">Timed Hunt</div>
+            <div class="md">60 seconds, clear as many boards as you can. Chain clears for streaks.</div>
+          </a>
+          <a class="arb-mode" href="/games/equation-pyramid/?mode=solo" data-mode="solo">
+            <div class="mi" aria-hidden="true">🎯</div>
+            <div class="mt">Solo Practice</div>
+            <div class="md">No clock, no pressure. Three tiers, best times saved.</div>
+          </a>
+          <div class="arb-mode ghost">
+            <div class="mi" aria-hidden="true">👥</div>
+            <div class="mt">Friend Duel</div>
+            <div class="md">Coming soon — private rooms arrive with the live API.</div>
+          </div>
+          <div class="arb-mode ghost">
+            <div class="mi" aria-hidden="true">🎲</div>
+            <div class="mt">Random Match</div>
+            <div class="md">Coming soon — get matched with a stranger instantly.</div>
+          </div>
+        </div>
+
+        <div class="arb-diff-block">
+          <div class="arb-dl">Difficulty · stated in solution count, not number size</div>
+          <div class="arb-diff" id="lobbyDiff" role="group" aria-label="Difficulty">
+            <button class="arb-dbtn" type="button" data-t="warmup">Warm-up<small>6–12 ways</small></button>
+            <button class="arb-dbtn" type="button" data-t="standard">Standard<small>4–7 ways</small></button>
+            <button class="arb-dbtn" type="button" data-t="tricky">Tricky<small>exactly 3</small></button>
+          </div>
+        </div>
+      </div>
+
+      <div class="arb-side">
+        <section class="arb-card" aria-labelledby="boardTitle">
+          <h3 id="boardTitle">Global Daily Hunt</h3>
+          <div class="arb-cd">Ends in <b class="num" id="boardCountdown">--:--:--</b></div>
+          <div id="boardRows" aria-live="polite">
+            <div class="arb-empty">Loading today's board…</div>
+          </div>
+          <a class="arb-btn ghost block" href="/games/equation-pyramid/?mode=daily" id="boardPlay">Play today's hunt</a>
+        </section>
+
+        <section class="arb-card" aria-labelledby="howTitle">
+          <h3 id="howTitle">How it works</h3>
+          <div class="arb-rules">
+            <div class="arb-rule"><b>1</b><span>Click three cells — the click order is the formula</span></div>
+            <div class="arb-rule"><b>2</b><span>The first cell's operator is the anchor (struck, not hidden)</span></div>
+            <div class="arb-rule"><b>3</b><span>Multiply and divide first, then add and subtract</span></div>
+            <div class="arb-rule"><b>4</b><span>Bank every solution that hits the target — gold chips earned</span></div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <footer class="arb-foot">
+    <span><b>EQUATION PYRAMID</b> · mode select</span>
+    <span class="arb-foot-links">
+      <a href="/">MathDuel home</a>
+      <a href="/games/equation-pyramid/">Play now</a>
+      <a href="/leaderboard/">Leaderboard</a>
+    </span>
+  </footer>
+
+  <script type="module" src="/src/games/equation-pyramid/lobby.ts"></script>
+</body>
+</html>
