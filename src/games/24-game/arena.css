@@ -27,7 +27,9 @@ body.arena {
   --a-ember-soft: rgba(255, 106, 60, 0.14);
   --a-teal: #2fc4c9;
   --a-gold: #f2c14e;
-  --a-disp: var(--font-sans);
+  /* 设计稿指定 display 用 Space Grotesk —— 与设计系统 --font-display 同款且已自托管
+     （public/fonts/space-grotesk-latin.woff2），无需新增字体资源。 */
+  --a-disp: var(--font-display);
   --a-ui: var(--font-display);
   --a-r-card: 16px;
   --a-r-btn: 12px;

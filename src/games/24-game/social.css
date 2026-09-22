@@ -1,0 +1,352 @@
+/* ============================================================
+   24 · ARENA — 社交层（聊天 / 观战 / Elo / 头像 / 速度环）
+   ------------------------------------------------------------
+   为什么单独一个文件：arena.css 只做「token 重映射」（皮肤层），
+   这里放的是 2026-09-22 新增的**组件**，职责不同不混在一起。
+   全部作用域限定在 body.arena，不影响首页与其他游戏。
+
+   对应设计稿（24 ARENA · UI Redesign v1）：
+     · Screen 2 的 in-match chat + emoji rail
+     · Screen 2 的 speed ring
+     · Screen 2 的 result badge（Win/Loss ±Elo）
+     · Screen 1 的 coin / avatar 顶栏
+   ============================================================ */
+
+body.arena {
+  /* 段位色（设计稿 gold 为主，其余按稀缺度递进） */
+  --a-tier-bronze: #b07a4a;
+  --a-tier-silver: #a8b3bd;
+  --a-tier-gold: #f2c14e;
+  --a-tier-plat: #7fd6d9;
+  --a-tier-diamond: #7fb3ff;
+  --a-tier-master: #ff6a3c;
+}
+
+/* ---------- 头像 chip（服务端头像是 emoji id，如 a-dog → 🐶） ---------- */
+body.arena .md-av {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.6em;
+  height: 1.6em;
+  font-size: 1.05em;
+  line-height: 1;
+  flex: none;
+  border-radius: 50%;
+  background: var(--a-ink-3);
+  box-shadow: inset 0 0 0 1px var(--a-line);
+}
+
+/* ---------- 玩家状态条（头像 + 昵称 + Elo 段位） ---------- */
+body.arena .pstat {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 11px 5px 6px;
+  border: 1px solid var(--a-line);
+  border-radius: 999px;
+  background: var(--a-ink-2);
+  font-size: 0.82rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+body.arena .pstat .elo {
+  font-family: var(--a-disp);
+  font-variant-numeric: tabular-nums;
+  color: var(--a-ember);
+}
+body.arena .pstat .tier {
+  font-size: 0.7rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--a-ink-3);
+  border: 1px solid var(--a-line);
+  color: var(--a-mute);
+}
+body.arena .pstat.t-bronze .tier { color: var(--a-tier-bronze); }
+body.arena .pstat.t-silver .tier { color: var(--a-tier-silver); }
+body.arena .pstat.t-gold .tier { color: var(--a-tier-gold); }
+body.arena .pstat.t-platinum .tier { color: var(--a-tier-plat); }
+body.arena .pstat.t-diamond .tier { color: var(--a-tier-diamond); }
+body.arena .pstat.t-master .tier { color: var(--a-tier-master); }
+
+/* ---------- 速度环（设计稿 Screen 2 的核心动量元素） ---------- */
+body.arena .speed-ring {
+  position: relative;
+  width: 54px;
+  height: 54px;
+  flex: none;
+}
+body.arena .speed-ring svg {
+  transform: rotate(-90deg);
+  display: block;
+}
+body.arena .speed-ring .sr-track { stroke: var(--a-line); }
+body.arena .speed-ring .sr-fill {
+  stroke: var(--a-teal);
+  transition: stroke-dashoffset 0.95s linear, stroke 0.2s;
+}
+body.arena .speed-ring.low .sr-fill { stroke: var(--a-ember); }
+body.arena .speed-ring .sr-txt {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--a-disp);
+  font-weight: 700;
+  font-size: 0.78rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--a-paper);
+}
+
+/* ---------- 对局内聊天（设计稿 from papergames 的社交钩子） ---------- */
+body.arena .chat-dock {
+  margin-top: 16px;
+  border: 1px solid var(--a-line);
+  border-radius: 14px;
+  background: var(--a-ink-2);
+  overflow: hidden;
+}
+body.arena .chat-dock.hidden { display: none; }
+body.arena .chat-hd {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 9px 14px;
+  border-bottom: 1px solid var(--a-line);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--a-mute);
+}
+body.arena .chat-hd b { color: var(--a-paper); font-weight: 700; }
+body.arena .chat-log {
+  max-height: 128px;
+  overflow-y: auto;
+  padding: 10px 14px 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  scroll-behavior: smooth;
+}
+body.arena .chat-log:empty::after {
+  content: "Say hi — only this room can see it";
+  color: var(--a-mute);
+  font-size: 0.8rem;
+}
+body.arena .chat-bub {
+  max-width: 82%;
+  padding: 6px 11px;
+  border-radius: 12px;
+  font-size: 0.84rem;
+  line-height: 1.45;
+  word-break: break-word;
+}
+body.arena .chat-bub .who {
+  display: block;
+  font-size: 0.66rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  opacity: 0.72;
+  margin-bottom: 1px;
+}
+body.arena .chat-bub.opp {
+  align-self: flex-start;
+  background: var(--a-ink-3);
+  border: 1px solid var(--a-line);
+  border-bottom-left-radius: 4px;
+}
+body.arena .chat-bub.me {
+  align-self: flex-end;
+  background: var(--a-ember);
+  color: #160a04;
+  border-bottom-right-radius: 4px;
+}
+body.arena .chat-bub.opp .who { color: var(--a-teal); }
+body.arena .chat-bub.me .who { color: rgba(22, 10, 4, 0.66); }
+
+body.arena .chat-rail {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  padding: 8px 14px 0;
+}
+body.arena .chat-rail button {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  font-size: 1.02rem;
+  line-height: 1;
+  border-radius: 9px;
+  border: 1px solid var(--a-line);
+  background: var(--a-ink-3);
+  color: var(--a-paper);
+  cursor: pointer;
+  transition: border-color 0.15s, transform 0.15s;
+}
+body.arena .chat-rail button:hover {
+  border-color: var(--a-ember);
+  transform: translateY(-1px);
+}
+
+body.arena .chat-input-row {
+  display: flex;
+  gap: 8px;
+  padding: 10px 14px 12px;
+}
+body.arena .chat-input-row input {
+  flex: 1;
+  min-width: 0;
+  min-height: 40px;
+  padding: 0 13px;
+  border-radius: 10px;
+  border: 1px solid var(--a-line);
+  background: var(--a-ink);
+  color: var(--a-paper);
+  font-family: inherit;
+  font-size: 0.9rem;
+}
+body.arena .chat-input-row input::placeholder { color: var(--a-mute); }
+body.arena .chat-input-row input:focus {
+  outline: none;
+  border-color: var(--a-ember);
+  box-shadow: 0 0 0 3px var(--a-ember-soft);
+}
+body.arena .chat-input-row .send {
+  min-height: 40px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--a-ember);
+  color: #160a04;
+  font-weight: 700;
+  font-size: 0.88rem;
+  cursor: pointer;
+}
+body.arena .chat-input-row .send:hover { background: #ff7d54; }
+body.arena .chat-input-row .send[disabled] { opacity: 0.45; cursor: not-allowed; }
+
+/* ---------- 观战条 ---------- */
+body.arena .spec-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  padding: 8px 13px;
+  border-radius: 10px;
+  border: 1px dashed var(--a-line);
+  background: var(--a-ink-2);
+  font-size: 0.82rem;
+  color: var(--a-mute);
+}
+body.arena .spec-bar b { color: var(--a-teal); }
+body.arena .spec-bar.hidden { display: none; }
+
+/* ---------- 结果面板中的 Elo 块（设计稿 result badge） ---------- */
+body.arena .elo-grid {
+  display: grid;
+  gap: 6px;
+  margin: 4px 0 14px;
+}
+body.arena .elo-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 11px;
+  border-radius: 10px;
+  border: 1px solid var(--a-line);
+  background: var(--a-ink-2);
+  font-size: 0.85rem;
+}
+body.arena .elo-row.me {
+  border-color: var(--a-ember-dim);
+  background: var(--a-ember-soft);
+}
+body.arena .elo-row .n { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+body.arena .elo-row .v {
+  font-family: var(--a-disp);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+body.arena .elo-row .d {
+  font-family: var(--a-disp);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  min-width: 46px;
+  text-align: right;
+}
+body.arena .elo-row .d.up { color: var(--a-ember); }
+body.arena .elo-row .d.down { color: var(--a-teal); }
+body.arena .elo-row .d.flat { color: var(--a-mute); }
+
+/* 升/降段横幅 */
+body.arena .tier-flash {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  margin: 10px 0 2px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--a-tier-gold);
+  background: linear-gradient(180deg, rgba(242, 193, 78, 0.16), var(--a-ink-2));
+  font-family: var(--a-disp);
+  font-weight: 700;
+  font-size: 0.95rem;
+  letter-spacing: 0.01em;
+}
+body.arena .tier-flash.demoted {
+  border-color: var(--a-teal-dim);
+  background: linear-gradient(180deg, rgba(47, 196, 201, 0.14), var(--a-ink-2));
+}
+
+/* ---------- 大厅顶栏（金币 / 头像 / 段位） ---------- */
+body.arena .arb-account {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+body.arena .arb-coin {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--a-disp);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  font-size: 0.86rem;
+  color: var(--a-gold);
+}
+body.arena .arb-coin.hidden { display: none; }
+
+/* ---------- 观战者锁输入（服务端不接受其提交，UI 一并锁死） ---------- */
+body.arena.spectate .pad,
+body.arena.spectate .actions,
+body.arena.spectate .diff-pick {
+  opacity: 0.4;
+  pointer-events: none;
+  filter: grayscale(0.4);
+}
+body.arena.spectate .result { opacity: 0.75; }
+
+/* ---------- Elo 行内的段位小签 ---------- */
+body.arena .elo-row .tier {
+  margin-left: 7px;
+  font-size: 0.66rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: var(--a-ink-3);
+  border: 1px solid var(--a-line);
+  color: var(--a-mute);
+}
+
+@media (max-width: 640px) {
+  body.arena .chat-log { max-height: 104px; }
+  body.arena .elo-row .n { max-width: 9ch; }
+}

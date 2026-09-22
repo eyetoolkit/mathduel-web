@@ -38,6 +38,15 @@
           <button class="icon-btn" id="copyCode" title="Copy room code">📋 Copy</button>
         </div>
         <div class="comp-mid">
+          <!-- 速度环（设计稿 Screen 2）：剩余时间比例 → SVG dashoffset -->
+          <div class="speed-ring" id="speedRing" aria-hidden="true">
+            <svg width="54" height="54" viewBox="0 0 54 54">
+              <circle class="sr-track" cx="27" cy="27" r="20" stroke-width="4" fill="none" />
+              <circle class="sr-fill" id="speedRingFill" cx="27" cy="27" r="20" stroke-width="4"
+                fill="none" stroke-dasharray="125.66" stroke-dashoffset="0" />
+            </svg>
+            <div class="sr-txt" id="speedRingTxt">--</div>
+          </div>
           <div class="comp-timer" id="compTimer"><i></i></div>
           <div class="comp-status" id="compStatus">Waiting to start…</div>
         </div>
@@ -74,6 +83,11 @@
         <button class="btn ghost" id="answerBtn">Show Answer</button>
         <button class="btn primary hidden" id="enterBtn">🏆 Enter Competition</button>
       </div>
+
+      <!-- 观战条（仅观战者可见） -->
+      <div class="spec-bar hidden" id="specBar" role="status"></div>
+      <!-- 对局内聊天（服务端 case 'chat'，内容由 chatDockHtml() 注入） -->
+      <div class="chat-dock hidden" id="chatDock" aria-label="Room chat"></div>
     </section>
 
     <aside class="side" id="side"></aside>
@@ -111,6 +125,7 @@
       </div>
 
       <div id="roomView" class="room-view">
+        <div id="lobbyMe" class="arb-account" style="margin-bottom:12px"></div>
         <div class="room-code-box">
           <div class="rc-lbl">Room code · share with friends</div>
           <div class="rc-code" id="roomCode">·····</div>

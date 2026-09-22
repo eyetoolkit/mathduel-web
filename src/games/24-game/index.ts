@@ -7,6 +7,7 @@
 import '@tri-sites/design-system/styles';
 import '../24-game/styles.css';
 import './arena.css';
+import './social.css';
 import { initI18n, mountHeader, toast } from '@tri-sites/design-system';
 import {
   countSolutions,
@@ -20,7 +21,7 @@ import {
   solve,
   type Difficulty,
 } from './engine';
-import { Competition, isProdEnv, type RaceEntry } from './competition';
+import { Competition, isProdEnv, type RaceEntry, type EloEntry, type ChatMsg } from './competition';
 import { initShareBindings, openShareOverlay, renderQR } from './share';
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T | null;
@@ -864,6 +865,186 @@ function timedTimeUp(): void {
   }, 1300);
 }
 
+/* ===================== 账号档案（头像 / 段位 / Elo / 金币） =====================
+   服务端头像是 emoji id（FREE_AVATARS: a-dog → 🐶），映射同步自
+   worker/src/sites/mathduel/stores/account.js；未知 id 兜底 🎭。
+   ⚠️ 金币走会员体系（需 auth_sid 注册会话），匿名 md_uuid 拿不到 ⇒ 未登录时不渲染，不是 bug。 */
+const AVATAR_ICON: Record<string, string> = {
+  'a-cat': '🐱', 'a-dog': '🐶', 'a-frog': '🐸', 'a-owl': '🦉',
+  'a-tiger': '🐯', 'a-bear': '🐻', 'a-penguin': '🐧', 'a-unicorn': '🦄',
+  'a-robot': '🤖', 'a-ghost': '👻', 'a-turtle': '🐢', 'a-rabbit': '🐰',
+  'a-fox': '🦊', 'a-panda': '🐼', 'a-lion': '🦁', 'a-octo': '🐙',
+};
+const avatarIcon = (id?: string | null): string => (id && AVATAR_ICON[id]) || '🎭';
+
+/* 段位表同步自 worker/src/shared/elo.js TIERS —— 仅用于把 elo 换算成本地展示用段位名。
+   真实结算与升降段判定一律以服务端 game_over.elo[].tier / tierChange 为准。 */
+const TIERS = [
+  { name: 'Bronze', emoji: '🥉', min: 0 },
+  { name: 'Silver', emoji: '🥈', min: 1200 },
+  { name: 'Gold', emoji: '🥇', min: 1400 },
+  { name: 'Platinum', emoji: '💠', min: 1600 },
+  { name: 'Diamond', emoji: '💎', min: 1800 },
+  { name: 'Master', emoji: '👑', min: 2000 },
+];
+const tierOf = (elo: number) => [...TIERS].reverse().find((t) => elo >= t.min) || TIERS[0];
+const tierEmoji = (n?: string | null): string => TIERS.find((t) => t.name === n)?.emoji || '';
+const tierClass = (n?: string | null): string => (n ? ' t-' + n.toLowerCase().replace(/[^a-z]/g, '') : '');
+
+const profile = {
+  avatar: null as string | null,
+  nickname: null as string | null,
+  elo: null as number | null,
+  tier: null as string | null,
+  coins: null as number | null,
+  loaded: false,
+};
+
+/** 玩家状态条：头像 + 昵称 + Elo + 段位（设计稿 Screen 1 顶栏元素） */
+function pstatHtml(o: { avatar?: string | null; name?: string | null; elo?: number | null; tier?: string | null }): string {
+  const elo = o.elo != null ? `<span class="elo">${o.elo}</span>` : '';
+  const tier = o.tier ? `<span class="tier">${tierEmoji(o.tier)}${escapeHtml(o.tier)}</span>` : '';
+  return (
+    `<span class="pstat${tierClass(o.tier)}"><span class="md-av">${avatarIcon(o.avatar)}</span>` +
+    `<span>${escapeHtml(o.name || 'You')}</span>${elo}${tier}</span>`
+  );
+}
+
+function renderProfileChips(): void {
+  document.querySelectorAll<HTMLElement>('[data-profile]').forEach((el) => {
+    el.innerHTML = pstatHtml({ avatar: profile.avatar, name: profile.nickname || 'You', elo: profile.elo, tier: profile.tier });
+  });
+  // 大厅房间视图的身份条（档案异步返回后补渲染一次）
+  const lm = $('lobbyMe');
+  if (lm && comp.myName) {
+    lm.innerHTML = pstatHtml({ avatar: profile.avatar, name: comp.myName, elo: profile.elo, tier: profile.tier });
+  }
+  document.querySelectorAll<HTMLElement>('[data-coins]').forEach((el) => {
+    if (profile.coins == null) {
+      el.classList.add('hidden');
+      return;
+    }
+    el.classList.remove('hidden');
+    el.innerHTML = `◆ <span>${profile.coins}</span>`;
+  });
+}
+
+async function loadProfile(): Promise<void> {
+  try {
+    // 无 cookie 时服务端自动建号并下发签名 md_uuid（与每日挑战共用同一身份）
+    const res = await fetch('/api/account/me', { credentials: 'include' });
+    if (res.ok) {
+      const d: any = await res.json();
+      profile.avatar = d?.avatar || d?.account?.active?.avatar || profile.avatar;
+      profile.nickname = d?.nickname || profile.nickname;
+      const r = d?.account?.ratings?.['24-game'];
+      if (r && typeof r.elo === 'number') {
+        profile.elo = r.elo;
+        profile.tier = tierOf(r.elo).name;
+      }
+      profile.loaded = true;
+      renderProfileChips();
+    }
+  } catch {
+    /* 离线：不渲染身份条，不影响游戏 */
+  }
+  try {
+    const r2 = await fetch('/api/coins/me', { credentials: 'include' });
+    if (r2.ok) {
+      const c: any = await r2.json();
+      if (c && c.authenticated && typeof c.coins === 'number') {
+        profile.coins = c.coins;
+        renderProfileChips();
+      }
+    }
+  } catch {
+    /* 未登录 / 网络失败：金币 chip 保持隐藏 */
+  }
+}
+
+/* ===================== 对局内聊天（服务端 case 'chat'） =====================
+   契约：发 {type:'chat',text}；收 {type:'chat',name,text,ts}。
+   服务端 broadcast 不排除发送者 ⇒ 自己那条也会收到，无需本地回声。 */
+const CHAT_EMOJI = ['😂', '🔥', '😡', '👍', '💡', '🎯', '😱', '🏆'];
+let chatMsgs: ChatMsg[] = [];
+
+function chatBubble(m: ChatMsg): string {
+  return (
+    `<div class="chat-bub ${m.self ? 'me' : 'opp'}">` +
+    `<span class="who">${escapeHtml(m.self ? 'You' : m.name)}</span>${escapeHtml(m.text)}</div>`
+  );
+}
+
+function renderChatLog(): void {
+  document.querySelectorAll<HTMLElement>('[data-chat-log]').forEach((el) => {
+    el.innerHTML = chatMsgs.map(chatBubble).join('');
+    el.scrollTop = el.scrollHeight;
+  });
+}
+
+function pushChat(m: ChatMsg): void {
+  chatMsgs.push(m);
+  if (chatMsgs.length > 60) chatMsgs = chatMsgs.slice(-60);
+  renderChatLog();
+}
+
+function clearChat(): void {
+  chatMsgs = [];
+  renderChatLog();
+}
+
+/** 把样式化的聊天条挂到任意容器（arena board 与大厅房间视图各一处） */
+function chatDockHtml(scope: string): string {
+  return (
+    `<div class="chat-dock" data-chat-dock="${scope}">` +
+    '<div class="chat-hd"><b>💬 Room chat</b><span>only this room</span></div>' +
+    '<div class="chat-log" data-chat-log></div>' +
+    `<div class="chat-rail">${CHAT_EMOJI.map((e) => `<button type="button" data-chat-emoji="${e}" aria-label="Send ${e}">${e}</button>`).join('')}</div>` +
+    '<div class="chat-input-row">' +
+    '<input type="text" maxlength="200" placeholder="Say something…" data-chat-input aria-label="Chat message" />' +
+    '<button type="button" class="send" data-chat-send>Send</button>' +
+    '</div></div>'
+  );
+}
+
+function submitChatFrom(input: HTMLInputElement): void {
+  const t = input.value.trim();
+  if (!t) return;
+  comp.sendChat(t);
+  input.value = '';
+}
+
+/** 事件委托：两处聊天条共用一套绑定，避免重复监听 */
+function initChatDelegation(): void {
+  document.addEventListener('click', (ev) => {
+    const el = ev.target as HTMLElement;
+    if (!el) return;
+    const emoji = el.closest<HTMLElement>('[data-chat-emoji]');
+    if (emoji) {
+      comp.sendChat(emoji.dataset.chatEmoji || '');
+      return;
+    }
+    const send = el.closest<HTMLElement>('[data-chat-send]');
+    if (send) {
+      const row = send.closest<HTMLElement>('.chat-input-row');
+      const input = row?.querySelector<HTMLInputElement>('[data-chat-input]');
+      if (input) submitChatFrom(input);
+    }
+  });
+  document.addEventListener('keydown', (ev) => {
+    const input = ev.target as HTMLInputElement;
+    if (!input || !input.matches || !input.matches('[data-chat-input]')) return;
+    if (ev.key === 'Enter') {
+      ev.preventDefault();
+      submitChatFrom(input);
+    }
+  });
+}
+
+/** 速度环（设计稿 Screen 2）：剩余时间比例 → SVG 环 dashoffset */
+const RING_R = 20;
+const RING_C = 2 * Math.PI * RING_R;
+
 /* ===================== 竞赛 ===================== */
 const comp = new Competition({
   onRoomReady: () => {
@@ -900,7 +1081,25 @@ const comp = new Competition({
     if (e) e.textContent = msg;
     toast(msg);
   },
+  onChat: (m) => pushChat(m),
+  onSpectator: ({ count }) => renderSpecBar(count),
+  onSelfSpectator: () => {
+    toast('👀 Spectating — this room is full, you are watching');
+    renderSpecBar(comp.spectatorCount);
+  },
 });
+
+/** 观战条：仅观战者可见（服务端把 duel 第 3+ 人放进 spectator 槽位） */
+function renderSpecBar(count: number): void {
+  const el = $('specBar');
+  if (!el) return;
+  el.classList.toggle('hidden', !comp.spectator);
+  el.innerHTML = comp.spectator
+    ? `👀 <b>Spectating</b> — read-only view${count > 1 ? ` · ${count} watchers` : ''}`
+    : '';
+}
+
+initChatDelegation();
 
 const lobby = $('lobby')!;
 let raceMax = 99;
@@ -939,6 +1138,19 @@ function showRoomView(): void {
   $('roomCode')!.textContent = comp.room;
   renderRoomQr();
   renderRoomPlayers();
+  // 大厅房间视图也挂一条聊天（等待开局时就能闲聊——服务端任何时刻都接受 chat）
+  const rp = $('roomPlayers');
+  if (rp && !$('lobbyChat')) {
+    const box = document.createElement('div');
+    box.id = 'lobbyChat';
+    box.className = 'chat-dock';
+    box.style.marginTop = '14px';
+    box.innerHTML = chatDockHtml('lobby');
+    rp.insertAdjacentElement('afterend', box);
+  }
+  renderChatLog();
+  const mine = $('lobbyMe');
+  if (mine) mine.innerHTML = pstatHtml({ avatar: profile.avatar, name: comp.myName || profile.nickname || 'You' });
 }
 
 function renderRoomPlayers(): void {
@@ -949,8 +1161,10 @@ function renderRoomPlayers(): void {
     list.innerHTML = names
       .map((name) => {
         const me = name === comp.myName;
+        const p = comp.players[name] || ({} as { avatar?: string | null });
         return (
-          `<div class="rp-item${me ? ' me' : ''}"><span class="rp-dot"></span><span>${escapeHtml(name)}</span>` +
+          `<div class="rp-item${me ? ' me' : ''}"><span class="md-av">${avatarIcon(p.avatar)}</span>` +
+          `<span>${escapeHtml(name)}</span>` +
           (me ? `<span class="rp-host">You${comp.isHost ? ' · Host' : ''}</span>` : '') +
           '</div>'
         );
@@ -1023,7 +1237,36 @@ function showRaceRoundResult(d: { round: number; ranking: RaceEntry[] }): void {
   }, 2200);
 }
 
-function showRaceGameOver(d: { ranking: RaceEntry[] }): void {
+/** Elo 结算块（设计稿 result badge）：服务端 game_over.elo 产出，平局/无 uuid 时可能为空 */
+function eloBlockHtml(elo?: EloEntry[]): string {
+  if (!elo || !elo.length) return '';
+  const mine = elo.find((e) => e.name === comp.myName);
+  const rows = elo
+    .slice(0, 10)
+    .map((e) => {
+      const isMe = e.name === comp.myName;
+      const cls = e.delta > 0 ? 'up' : e.delta < 0 ? 'down' : 'flat';
+      const dtxt = (e.delta > 0 ? '+' : '') + e.delta;
+      const avg = typeof e.elo === 'number' ? Math.round(e.elo - e.delta) : null;
+      const eloTxt = avg != null ? `<span class="v">${avg} → ${e.elo}</span>` : `<span class="v">${e.elo}</span>`;
+      return (
+        `<div class="elo-row${isMe ? ' me' : ''}"><span class="md-av">${avatarIcon(e.avatar)}</span>` +
+        `<span class="n">${escapeHtml(e.nickname || e.name)}</span>${eloTxt}` +
+        `<span class="d ${cls}">${dtxt}</span></div>`
+      );
+    })
+    .join('');
+  let flash = '';
+  if (mine && mine.tierChange && mine.tierChange.from !== mine.tierChange.to) {
+    const pro = !!mine.tierChange.promoted;
+    flash =
+      `<div class="tier-flash${pro ? '' : ' demoted'}">${pro ? '🎉 Promoted to' : '⬇ Demoted to'} ` +
+      `${tierEmoji(mine.tierChange.to)} ${escapeHtml(mine.tierChange.to)}</div>`;
+  }
+  return `<p class="sub" style="margin:12px 0 6px">⚔️ Elo — rated match</p><div class="elo-grid">${rows}</div>${flash}`;
+}
+
+function showRaceGameOver(d: { ranking: RaceEntry[]; elo?: EloEntry[] }): void {
   comp.active = false;
   if (interval) {
     window.clearInterval(interval);
@@ -1039,6 +1282,7 @@ function showRaceGameOver(d: { ranking: RaceEntry[] }): void {
     : '🏁 Competition Over';
   let html = `<h2 class="${me && me.rank === 1 ? 'win-c' : me ? 'draw-c' : 'lose-c'}">${heading}</h2>`;
   html += `<p class="sub">${rk.length} players · cap ${comp.displayCap}</p>`;
+  html += eloBlockHtml(d.elo);
   html += '<div class="final-list">';
   for (let i = 0; i < rk.length; i++) {
     const r = rk[i] || ({} as RaceEntry);
@@ -1092,6 +1336,18 @@ function compEnterGame(): void {
   $('answerBtn')!.style.display = 'none';
   $('newBtn')!.classList.add('hidden');
   $('enterBtn')!.classList.add('hidden');
+  // 观战者：服务端不接受其提交，前端一并锁住输入（CSS 层 pointer-events 兜底）
+  document.body.classList.toggle('spectate', comp.spectator);
+  renderSpecBar(comp.spectatorCount);
+  const dock = $('chatDock');
+  if (dock) {
+    if (!dock.dataset.filled) {
+      dock.innerHTML = chatDockHtml('arena');
+      dock.dataset.filled = '1';
+    }
+    dock.classList.remove('hidden');
+  }
+  renderChatLog();
   $('modeBanner')!.innerHTML =
     `<div class="banner battle"><div><div class="b-title">🏆 Round ${comp.round} / ${comp.maxRounds}</div>` +
     '<div class="b-sub">Same cards · race to 24</div></div></div>';
@@ -1115,23 +1371,42 @@ function compEnterGame(): void {
 }
 
 function updateCompTimer(left: number): void {
+  const secs = Math.max(0, Math.ceil(left));
+  const frac = comp.timeLimit > 0 ? Math.max(0, Math.min(1, left / comp.timeLimit)) : 0;
+  // 速度环（设计稿 Screen 2）：剩余时间比例 → SVG dashoffset
+  const ringFill = $('speedRingFill');
+  if (ringFill) ringFill.setAttribute('stroke-dashoffset', String(RING_C * (1 - frac)));
+  const ring = $('speedRing');
+  if (ring) ring.classList.toggle('low', frac < 0.3);
+  const rt = $('speedRingTxt');
+  if (rt) rt.textContent = secs + 's';
+  // 细进度条（窄屏降级用，速度环是主视觉）
   const bar = $('compTimer');
-  if (!bar) return;
-  const fill = bar.firstElementChild as HTMLElement | null;
-  const pct = Math.max(0, (left / comp.timeLimit) * 100);
-  if (fill) fill.style.width = pct + '%';
-  bar.classList.toggle('low', pct < 30);
+  if (bar) {
+    const fill = bar.firstElementChild as HTMLElement | null;
+    if (fill) fill.style.width = Math.max(0, frac * 100) + '%';
+    bar.classList.toggle('low', frac < 0.3);
+  }
   const st = $('compStatus');
-  if (st) st.textContent = `Round timer ${Math.max(0, Math.ceil(left))}s`;
+  if (st) st.textContent = comp.spectator ? '👀 Spectating this round' : `Round timer ${secs}s`;
 }
 
 function compLeave(silent: boolean): void {
   comp.leave(silent);
+  // 退房清场：聊天记录不外泄到下一局，观战锁与两处聊天条一并复位
+  clearChat();
+  document.body.classList.remove('spectate');
+  $('chatDock')?.classList.add('hidden');
+  $('specBar')?.classList.add('hidden');
+  $('lobbyChat')?.remove();
   if (!silent) setMode('practice');
   closeLobby();
 }
 
 comp.setDifficulty(difficulty);
+
+/* 身份档案（头像 / 段位 / Elo）：与每日挑战共用同一 md_uuid 身份，无 cookie 时服务端自动建号 */
+void loadProfile();
 
 /* ===================== 侧栏 ===================== */
 function statRow(k: string, v: string | number): string {
@@ -1145,6 +1420,7 @@ function renderSide(): void {
       '<div class="panel"><h3>🏆 Live Leaderboard</h3>' +
       '<div class="race-hd"><span class="rh-title">Live Standings</span>' +
       `<span class="rh-count"><b id="raceDone">${comp.done}</b> / <b id="raceTotal">${comp.total}</b> solved</span></div>` +
+      (comp.spectatorCount > 0 ? `<div class="race-empty">👀 ${comp.spectatorCount} watching</div>` : '') +
       '<div class="race-list" id="raceList"><div class="race-empty">No submissions yet — be first!</div></div></div>' +
       '<div class="panel"><h3>🎮 How to Play</h3>' +
       '<div class="hint-step"><b>1</b><span>Create or join a room, share the code with friends</span></div>' +
