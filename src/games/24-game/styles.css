@@ -235,12 +235,27 @@
   animation: rowIn 0.3s var(--ease-out) both;
 }
 @keyframes rowIn { from { opacity: 0; transform: translateX(-8px); } to { opacity: 1; transform: none; } }
-.race-row .rr-rank { width: 26px; text-align: right; font-family: var(--font-mono); font-weight: 700; color: var(--text-muted); }
+.race-row .rr-avatar {
+  width: 26px; height: 26px; flex: 0 0 26px; display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 50%; background: rgba(255,255,255,.06); font-size: 16px; line-height: 1;
+}
+.race-row .rr-rank { width: 22px; text-align: right; font-family: var(--font-mono); font-weight: 700; color: var(--text-muted); }
 .race-row .rr-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.race-row .rr-time { font-family: var(--font-mono); color: var(--text-muted); font-size: 0.78125rem; }
+.race-row .rr-time {
+  font-family: var(--font-mono); color: var(--text-muted); font-size: 0.78125rem;
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.race-row .rr-badge { font-size: 14px; line-height: 1; filter: drop-shadow(0 0 4px currentColor); }
+.race-row .rr-badge.gold   { color: var(--warning-strong); }
+.race-row .rr-badge.silver { color: #b8c2cc; }
+.race-row .rr-badge.bronze { color: #d39b6b; }
 .race-row.me { background: var(--brand-subtle); border: 1px solid var(--brand-200); font-weight: 700; }
 .race-row.r1 { background: var(--warning-l); }
 .race-row.r1 .rr-rank { color: var(--warning-strong); }
+.race-hint {
+  font-size: 0.6875rem; color: var(--text-muted); margin: 0 0 8px 2px;
+  letter-spacing: 0.02em; font-family: var(--font-mono);
+}
 .race-empty { font-size: 0.8125rem; color: var(--text-muted); text-align: center; padding: var(--s-4) 0; }
 .race-more { font-size: 0.75rem; color: var(--text-muted); text-align: center; padding: 5px 0; }
 

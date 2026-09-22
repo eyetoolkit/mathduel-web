@@ -708,11 +708,22 @@ interface DailyRankRow {
   times?: (number | null)[];
 }
 
-const dailyRow = (rankLabel: string, name: string, score: string, extraCls = ''): string =>
+/* 每日挑战完成速度徽章（金 ≤30s / 银 ≤60s / 铜 ≤120s，超出无）—— 与 PvP Elo 段位严格区分 */
+const dailySpeedBadge = (total: unknown): string => {
+  const t = Number(total);
+  if (!Number.isFinite(t) || t <= 0) return '';
+  if (t <= 30) return '<span class="rr-badge gold" title="Speedrun Gold · ≤30s">🥇</span>';
+  if (t <= 60) return '<span class="rr-badge silver" title="Speedrun Silver · ≤60s">🥈</span>';
+  if (t <= 120) return '<span class="rr-badge bronze" title="Speedrun Bronze · ≤120s">🥉</span>';
+  return '';
+};
+
+const dailyRow = (rankLabel: string, name: string, score: string, extraCls = '', avatarGlyph = '🐱', badgeHtml = ''): string =>
   `<div class="race-row ${extraCls}">` +
+  `<span class="rr-avatar md-av">${avatarGlyph}</span>` +
   `<span class="rr-rank">${rankLabel}</span>` +
   `<span class="rr-name">${escapeHtml(name)}</span>` +
-  `<span class="rr-time">${score}</span></div>`;
+  `<span class="rr-time">${score}${badgeHtml}</span></div>`;
 
 const dailyScoreText = (times: unknown, total: unknown): string => {
   const solved = Array.isArray(times) ? times.filter((x) => x != null).length : 0;
@@ -737,10 +748,20 @@ async function loadDailyBoard(): Promise<void> {
     }
     let html = top
       .slice(0, 20)
-      .map((e, i) => dailyRow(String(e.rank ?? i + 1), e.nickname || '玩家', dailyScoreText(e.times, e.total), i === 0 ? 'r1' : ''))
+      .map((e, i) =>
+        dailyRow(
+          String(e.rank ?? i + 1),
+          e.nickname || '玩家',
+          dailyScoreText(e.times, e.total),
+          i === 0 ? 'r1' : '',
+          avatarIcon(e.avatar),
+          dailySpeedBadge(e.total),
+        ),
+      )
       .join('');
     const me = data.me as DailyRankRow | null;
-    if (me && me.rank) html += dailyRow(String(me.rank), '你', dailyScoreText(me.times, me.total), 'me');
+    if (me && me.rank)
+      html += dailyRow(String(me.rank), '你', dailyScoreText(me.times, me.total), 'me', avatarIcon(profile.avatar), dailySpeedBadge(me.total));
     el.innerHTML = html;
   } catch {
     el.innerHTML = '<div class="race-empty">🌐 全球榜加载失败</div>';
@@ -1464,6 +1485,7 @@ function renderSide(): void {
     } else {
       sideEl.innerHTML =
         '<div class="panel"><h3>🏆 Today’s Global Board</h3>' +
+        '<div class="race-hint">🥇 ≤30s · 🥈 ≤60s · 🥉 ≤120s</div>' +
         '<div class="race-list" id="dailyBoard"><div class="race-empty">加载中…</div></div></div>' +
         myStats;
       void loadDailyBoard();
