@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en" data-site="mathduel">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0E1419" />
+  <title>Sudoku 6×6 — Fill the Grid First | MathDuel</title>
+  <meta name="description" content="Six numbers, no repeats — race a bot or the clock on a tight 6×6 grid. Daily seeded puzzle, timed practice and 1v1 duels." />
+  <link rel="canonical" href="https://mathduel.games/games/sudoku-6x6/" />
+  <link rel="preload" href="/fonts/space-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="/fonts/sora-latin.woff2" as="font" type="font/woff2" crossorigin />
+</head>
+<body class="arena">
+  <div id="header"></div>
+
+  <!-- ═══ View A · Lobby（设计稿 Screen 1）═══ -->
+  <main class="s6-lobby" id="lobbyView">
+    <div class="s6-wrap">
+      <div class="s6-home-top">
+        <div class="s6-logo">6×6<span class="em">SUDOKU</span></div>
+        <div class="s6-right">
+          <span class="chip" id="lbBest">Best —</span>
+          <span class="s6-coin">◆ <b id="lbCoins">—</b></span>
+          <span class="pstat hidden" id="lbProfile" data-profile></span>
+        </div>
+      </div>
+
+      <div class="s6-hero">
+        <div class="s6-big">Fill the <span class="em">grid</span></div>
+        <p class="s6-sub">Six numbers, no repeats — in every row, column and block. Race the bot, the clock or the daily seed; speed is everything.</p>
+      </div>
+
+      <div class="s6-cols">
+        <div class="s6-modes">
+          <button class="s6-mode feat" data-mode="daily">
+            <span class="mi">🌐</span><span class="mt">Daily Grid</span>
+            <span class="md">Same seeded puzzle worldwide, one shot a day</span>
+          </button>
+          <button class="s6-mode" data-mode="duel">
+            <span class="mi">🤖</span><span class="mt">Duel Bot</span>
+            <span class="md">1v1 vs the machine — claim your half first</span>
+          </button>
+          <button class="s6-mode" data-mode="timed">
+            <span class="mi">⏱️</span><span class="mt">Timed Practice</span>
+            <span class="md">45s per grid, chain solves for streaks</span>
+          </button>
+          <button class="s6-mode" data-mode="solo">
+            <span class="mi">🎯</span><span class="mt">Solo Practice</span>
+            <span class="md">Three difficulties, best times saved</span>
+          </button>
+          <button class="s6-mode ghost" data-ghost="Friend 1v1 rooms need the live API — try Duel Bot instead.">
+            <span class="mi">👥</span><span class="mt">Friend 1v1</span>
+            <span class="md">Private rooms — coming with the live API</span>
+          </button>
+          <button class="s6-mode ghost" data-ghost="Random matchmaking is coming soon.">
+            <span class="mi">🎲</span><span class="mt">Random Match</span>
+            <span class="md">Coming soon · get notified</span>
+          </button>
+        </div>
+
+        <div class="s6-side">
+          <div class="s6-card">
+            <h3>Global Daily Grid</h3>
+            <div class="s6-cd">Resets in <span class="num" id="dailyCountdown">--:--:--</span></div>
+            <div id="dailySide">
+              <div class="s6-empty">Loading today's grid…</div>
+            </div>
+          </div>
+          <div class="s6-card">
+            <h3>How it works</h3>
+            <div class="s6-rules">
+              <div class="s6-rule"><b>1</b><span>Every row, column and 2×3 block holds 1–6 exactly once</span></div>
+              <div class="s6-rule"><b>2</b><span>Paper cells are fixed clues — everything else is yours to place</span></div>
+              <div class="s6-rule"><b>3</b><span>Duel: you and the bot each own half the empty cells — first side done wins</span></div>
+              <div class="s6-rule"><b>4</b><span>Wrong digits flash teal and cost you +2.5s in duels</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- ═══ View B · Play（设计稿 Screen 2）═══ -->
+  <main class="g24 s6-play hidden" id="playView">
+    <section class="board" id="boardCol" aria-label="Sudoku board">
+      <div class="g24-bar">
+        <nav class="tabs" id="tabs" aria-label="Game modes">
+          <button class="tab" data-mode="solo">Solo</button>
+          <button class="tab" data-mode="daily">Daily Grid</button>
+          <button class="tab" data-mode="timed">Timed</button>
+          <button class="tab" data-mode="duel">Duel Bot</button>
+        </nav>
+        <div class="top-stats">
+          <span class="chip" id="stMain">Ready</span>
+          <button class="icon-btn" id="backLobby" title="Back to lobby">🏠 Lobby</button>
+        </div>
+      </div>
+
+      <!-- 对局头（仅 Duel）：对手条（teal） -->
+      <div id="oppHead" class="s6-opp-head hidden">
+        <div class="player">
+          <span class="md-av">🤖</span>
+          <div><div class="pn">GridBot <span class="side-tag opp"><span class="d"></span>Bot</span></div><div class="ps" id="oppSub">standard pace</div></div>
+        </div>
+        <div class="status thinking" id="oppStatus"><span class="d"></span>Filled 0/9</div>
+      </div>
+
+      <div id="modeBanner"></div>
+
+      <div class="table-head">
+        <div class="target"><span class="lbl">Target</span><b>1–6</b></div>
+        <div class="diff-pick" id="diffPick" role="group" aria-label="Difficulty">
+          <button data-d="easy">Easy</button>
+          <button data-d="standard" class="active">Standard</button>
+          <button data-d="hard">Hard</button>
+        </div>
+      </div>
+
+      <div class="s6-board-wrap">
+        <div class="s6-board" id="s6board" role="grid" aria-label="6 by 6 sudoku grid"></div>
+        <div class="s6-pad" id="s6pad">
+          <button class="pk" data-v="1">1</button>
+          <button class="pk" data-v="2">2</button>
+          <button class="pk" data-v="3">3</button>
+          <button class="pk" data-v="4">4</button>
+          <button class="pk" data-v="5">5</button>
+          <button class="pk" data-v="6">6</button>
+          <button class="pk erase s6-erase-wide" data-act="erase">⌫ Erase</button>
+        </div>
+        <div class="s6-padtools hidden" id="padTools">
+          <button class="btn ghost" id="hintBtn">💡 Hint</button>
+          <button class="btn ghost" id="newBtn">↻ New Grid</button>
+        </div>
+      </div>
+
+      <div class="result" id="result" role="status">Pick a cell, then a number</div>
+
+      <!-- 我方条（仅 Duel）：速度环 + 状态 -->
+      <div id="youHead" class="s6-you-head hidden">
+        <div class="player">
+          <span class="md-av">🙂</span>
+          <div><div class="pn">You <span class="side-tag you"><span class="d"></span>You</span></div><div class="ps" id="youSub">your cells: 9</div></div>
+        </div>
+        <div class="speed-ring" aria-hidden="true">
+          <svg width="54" height="54" viewBox="0 0 54 54">
+            <circle class="sr-track" cx="27" cy="27" r="20" stroke-width="4" fill="none" />
+            <circle class="sr-fill" id="speedRingFill" cx="27" cy="27" r="20" stroke-width="4" fill="none" stroke-dasharray="125.66" stroke-dashoffset="0" />
+          </svg>
+          <div class="sr-txt" id="speedRingTxt">--</div>
+        </div>
+      </div>
+
+      <!-- Duel bot 聊天 -->
+      <div class="chat-dock hidden" id="chatDock" aria-label="Match chat"></div>
+    </section>
+
+    <aside class="side" id="side"></aside>
+  </main>
+
+  <div class="overlay" id="overlay"><div class="modal" id="modal" role="dialog" aria-modal="true"></div></div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script type="module" src="/src/games/sudoku-6x6/index.ts"></script>
+</body>
+</html>

@@ -32,6 +32,7 @@ export default defineConfig({
         '24-game': resolve(here, 'games/24-game/index.html'),
         '24-game-lobby': resolve(here, 'games/24-game/lobby/index.html'),
         bulls: resolve(here, 'games/bulls/index.html'),
+        'sudoku-6x6': resolve(here, 'games/sudoku-6x6/index.html'),
       },
     },
   },
