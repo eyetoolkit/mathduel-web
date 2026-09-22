@@ -67,7 +67,7 @@ const GAMES: GameDef[] = [
     icon: '◇',
     title: 'Killer Sudoku',
     desc: 'Sudoku meets arithmetic cages. Sums must match — pure deduction, no guessing.',
-    href: '/games/killer-sudoku/',
+    href: '/games/killer-sudoku/lobby/',
     stage: 'beta',
     modes: ['Practice', 'Daily'],
   },

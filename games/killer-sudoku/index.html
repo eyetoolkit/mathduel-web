@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en" data-site="mathduel">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0E1419" />
+  <title>Killer Sudoku · Cage-Sum Arena | MathDuel</title>
+  <meta name="description" content="Standard Sudoku rules plus cage-sum constraints: every dashed cage must add up to the number in its corner. Three difficulties by cage count, zero givens." />
+  <link rel="canonical" href="https://mathduel.games/games/killer-sudoku/" />
+  <link rel="preload" href="/fonts/space-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="/fonts/sora-latin.woff2" as="font" type="font/woff2" crossorigin />
+</head>
+<body class="arena">
+  <div id="header"></div>
+
+  <main class="k9-arena">
+    <div class="k9-top">
+      <div class="k9-tabs" id="tabs">
+        <button class="k9-tab" data-mode="solo">Solo</button>
+        <button class="k9-tab" data-mode="daily">Daily</button>
+        <button class="k9-tab" data-mode="timed">Timed</button>
+        <button class="k9-tab" data-mode="duel">Duel Bot</button>
+      </div>
+      <button class="k9-back" id="backLobby" type="button" title="Mode select">← Mode select</button>
+    </div>
+
+    <div class="k9-opp" id="oppHead" hidden>
+      <div class="k9-player">
+        <div class="k9-av" aria-hidden="true"></div>
+        <div>
+          <div class="k9-pn">Bot <span class="k9-side opp"><span class="d"></span>Opponent</span></div>
+          <div class="k9-ps" id="oppPace">— · ~6s per cell</div>
+        </div>
+      </div>
+      <div class="k9-status" id="oppStatus"><span class="d"></span>Filled · 0 / 0</div>
+    </div>
+
+    <div id="modeBanner"></div>
+
+    <div class="k9-diff" id="diffPick" role="group" aria-label="Difficulty by cage count">
+      <button class="k9-pk" data-d="gentle">Gentle<small>26 cages</small></button>
+      <button class="k9-pk active" data-d="standard">Standard<small>29 cages</small></button>
+      <button class="k9-pk" data-d="fierce">Fierce<small>34 cages</small></button>
+    </div>
+
+    <!-- ============ 棋盘：9×9 CSS grid + 笼子 SVG 层 + 角标和值层 ============ -->
+    <div class="k9-board-wrap" id="boardWrap">
+      <div class="k9-board" id="k9board" role="grid" aria-label="9x9 killer sudoku board"></div>
+      <svg class="k9-cage" id="k9cage" viewBox="0 0 9 9" preserveAspectRatio="none" aria-hidden="true"></svg>
+      <div class="k9-sum" id="k9sum" aria-hidden="true"></div>
+    </div>
+
+    <!-- ============ HUD：当前 cage 算术 + 进度 ============ -->
+    <div class="k9-hud" id="hud" aria-live="polite">
+      <div class="k9-hud-row"><span class="k9-hl">This cage</span><span class="k9-arith num" id="hudThis">— · pick a cell</span></div>
+      <div class="k9-hud-row"><span class="k9-hl">Cages cleared</span><span class="k9-arith num" id="hudCages">0 / 0</span></div>
+    </div>
+
+    <div class="k9-pad" id="k9pad">
+      <button class="k9-pk" data-v="1">1</button>
+      <button class="k9-pk" data-v="2">2</button>
+      <button class="k9-pk" data-v="3">3</button>
+      <button class="k9-pk" data-v="4">4</button>
+      <button class="k9-pk" data-v="5">5</button>
+      <button class="k9-pk" data-v="6">6</button>
+      <button class="k9-pk" data-v="7">7</button>
+      <button class="k9-pk" data-v="8">8</button>
+      <button class="k9-pk" data-v="9">9</button>
+      <div class="k9-padfoot">
+        <button class="k9-pk erase" data-act="erase" id="eraseBtn">⌫ Erase</button>
+        <button class="k9-pk notes" data-act="notes" id="notesBtn">✎ Notes</button>
+      </div>
+    </div>
+
+    <div class="k9-tools" id="padTools">
+      <button class="k9-tool" id="hintBtn" title="Reveal a cell">💡 Hint</button>
+      <button class="k9-tool" id="newBtn" title="Fresh board">🔄 New</button>
+    </div>
+
+    <div id="result" class="k9-result" hidden></div>
+
+    <div class="k9-you" id="youHead">
+      <div class="k9-player">
+        <div class="k9-av you" aria-hidden="true"></div>
+        <div>
+          <div class="k9-pn">You <span class="k9-side you"><span class="d"></span>You</span></div>
+          <div class="k9-ps" id="youPace">— pace</div>
+        </div>
+      </div>
+      <div class="k9-status you" id="youStatus"><span class="d"></span>Filled · 0 / 0</div>
+    </div>
+
+    <div class="k9-chatdock" id="chatDock" hidden>
+      <div class="k9-chatlog" id="chatLog" aria-live="polite"></div>
+      <div class="k9-quickline">
+        <button class="k9-qb" data-msg="nice">nice</button>
+        <button class="k9-qb" data-msg="close">close</button>
+        <button class="k9-qb" data-msg="think">thinking…</button>
+        <button class="k9-qb" data-msg="oof">oof</button>
+      </div>
+    </div>
+
+    <!-- ============ Modal + Toast ============ -->
+    <div class="k9-overlay" id="overlay" hidden>
+      <div class="k9-modal" id="modal" role="dialog" aria-modal="true">
+        <div class="k9-mtitle" id="mTitle">—</div>
+        <div class="k9-msub" id="mSub">—</div>
+        <div class="k9-mact" id="mActs"></div>
+      </div>
+    </div>
+    <div class="k9-toast" id="toast" hidden></div>
+  </main>
+
+  <script type="module" src="/src/games/killer-sudoku/index.ts"></script>
+</body>
+</html>

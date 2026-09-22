@@ -1,0 +1,55 @@
+/* ============================================================
+   KILLER SUDOKU · Lobby 专属样式
+   骨架 / 顶栏 / 模式卡 / 页脚 / 难度行全部复用 ../24-game/lobby.css（arb-*），
+   与 24 点 / 6×6 / 9×9 lobby 保持同一套结构与 --a-* 皮肤。
+   本文件只放 killer 独有：
+     · hero 装饰：3×3 cage 缩略图（替换 9×9 的 1–9 一行）
+   ============================================================ */
+
+/* Hero 装饰：小型 9×9 cage 缩略图，宽度对齐 hero 标题区。
+   用 SVG + 绝对定位 sum 标号表达「cage-sum」主题。 */
+.arb-cage-deco {
+  position: relative;
+  width: min(380px, 100%);
+  aspect-ratio: 9 / 7;
+  margin: 20px 0 6px;
+  background: var(--a-ink);
+  border: 2px solid var(--a-line);
+  border-radius: 14px;
+  padding: 8px;
+  overflow: hidden;
+}
+.arb-cage-deco-svg {
+  position: absolute;
+  inset: 8px;
+  width: calc(100% - 16px);
+  height: calc(100% - 16px);
+  pointer-events: none;
+  overflow: visible;
+}
+.arb-cage-deco-svg .cage-l {
+  fill: none;
+  stroke: var(--a-mute-2);
+  stroke-width: 0.13;
+  stroke-dasharray: 0.35 0.22;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.arb-cage-deco-sum {
+  position: absolute;
+  font-family: var(--a-ui);
+  font-weight: 600;
+  font-size: 11px;
+  line-height: 1;
+  color: var(--a-paper);
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  padding: 2px 0 0 3px;
+  pointer-events: none;
+}
+
+@media (max-width: 560px) {
+  .arb-cage-deco {
+    width: 100%;
+  }
+}

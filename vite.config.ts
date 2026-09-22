@@ -36,6 +36,8 @@ export default defineConfig({
         'sudoku-6x6-lobby': resolve(here, 'games/sudoku-6x6/lobby/index.html'),
         'sudoku': resolve(here, 'games/sudoku/index.html'),
         'sudoku-lobby': resolve(here, 'games/sudoku/lobby/index.html'),
+        'killer-sudoku': resolve(here, 'games/killer-sudoku/index.html'),
+        'killer-sudoku-lobby': resolve(here, 'games/killer-sudoku/lobby/index.html'),
       },
     },
   },
