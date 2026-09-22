@@ -1257,11 +1257,30 @@ function eloBlockHtml(elo?: EloEntry[]): string {
     })
     .join('');
   let flash = '';
-  if (mine && mine.tierChange && mine.tierChange.from !== mine.tierChange.to) {
-    const pro = !!mine.tierChange.promoted;
-    flash =
-      `<div class="tier-flash${pro ? '' : ' demoted'}">${pro ? '🎉 Promoted to' : '⬇ Demoted to'} ` +
-      `${tierEmoji(mine.tierChange.to)} ${escapeHtml(mine.tierChange.to)}</div>`;
+  if (mine) {
+    const tc = mine.tierChange;
+    let fromName = tc ? tc.from : null;
+    let toName = tc ? tc.to : null;
+    let promoted = tc ? !!tc.promoted : false;
+    /* ⚠️ 服务端 duel(1v1) 路径有个顺序缺陷：applyUpdate() 先原地改写 ratings[i].elo，
+       随后才 tierChange(ratings[i].elo, newElo) ⇒ 旧值==新值 ⇒ from/to 恒相同，
+       升降段横幅在 1v1 永远不触发（>2 人竞赛路径先存了 oldElo，所以那条正常）。
+       这里用 elo-delta 自行还原旧分兜底，让 1v1 也能正确播横幅。 */
+    const oldElo = typeof mine.elo === 'number' && typeof mine.delta === 'number' ? mine.elo - mine.delta : null;
+    if (oldElo != null && (!fromName || fromName === toName)) {
+      const f = tierOf(oldElo).name;
+      const t = tierOf(mine.elo).name;
+      if (f !== t) {
+        fromName = f;
+        toName = t;
+        promoted = TIERS.findIndex((x) => x.name === t) > TIERS.findIndex((x) => x.name === f);
+      }
+    }
+    if (fromName && toName && fromName !== toName) {
+      flash =
+        `<div class="tier-flash${promoted ? '' : ' demoted'}">${promoted ? '🎉 Promoted to' : '⬇ Demoted to'} ` +
+        `${tierEmoji(toName)} ${escapeHtml(toName)}</div>`;
+    }
   }
   return `<p class="sub" style="margin:12px 0 6px">⚔️ Elo — rated match</p><div class="elo-grid">${rows}</div>${flash}`;
 }
