@@ -4,6 +4,11 @@
   "version": "1.0.0",
   "type": "module",
   "description": "MathDuel 独立前端（Vite + TS + Tailwind + 设计系统）",
+  "packageManager": "pnpm@10.11.1",
+  "engines": {
+    "node": ">=20.0.0 <23",
+    "pnpm": ">=10.0.0"
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build && node scripts/copy-legacy.mjs",
