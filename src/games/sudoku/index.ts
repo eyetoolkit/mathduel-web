@@ -711,7 +711,20 @@ $('overlay')!.addEventListener('click', (e) => {
 // 深链契约：?mode=solo|daily|timed|duel —— 由模式选择页的模式卡链接进来。
 // 不带 mode 直达牌桌时回落到模式选择页，与 24 点「lobby → card table」的两段式保持一致。
 const isMode = (m: string): m is Mode => m === 'solo' || m === 'daily' || m === 'timed' || m === 'duel';
-const modeFromUrl = new URLSearchParams(location.search).get('mode') || '';
+const qs = new URLSearchParams(location.search);
+const modeFromUrl = qs.get('mode') || '';
+
+// 深链 ?d=easy|standard|hard —— 由模式选择页的难度行带入。
+// 必须在 enterMode() 之前落到 st.diff，否则会先用默认难度发牌再被覆盖。
+const isDiff = (x: string): x is Difficulty => x === 'easy' || x === 'standard' || x === 'hard';
+const dFromUrl = qs.get('d') || '';
+if (isDiff(dFromUrl)) {
+  st.diff = dFromUrl;
+  document.querySelectorAll<HTMLButtonElement>('#diffPick button').forEach((b) => {
+    b.classList.toggle('active', b.dataset.d === dFromUrl);
+  });
+}
+
 if (isMode(modeFromUrl)) enterMode(modeFromUrl);
 else location.replace(LOBBY_URL);
 

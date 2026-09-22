@@ -125,12 +125,68 @@ function renderBoard(): void {
   host.innerHTML = html;
 }
 
+/* ===================== 难度行（9×9 专属） ===================== */
+const LS_DIFF = 's9_diff_v1';
+const DIFFS = ['easy', 'standard', 'hard'] as const;
+type Diff = (typeof DIFFS)[number];
+
+const isDiff = (x: string): x is Diff => (DIFFS as readonly string[]).includes(x);
+
+function currentDiff(): Diff {
+  try {
+    const v = localStorage.getItem(LS_DIFF) ?? '';
+    return isDiff(v) ? v : 'standard';
+  } catch {
+    return 'standard';
+  }
+}
+
+/**
+ * 难度行的唯一职责：把选择**写进模式卡的 href**。
+ * 这样模式卡仍是纯 `<a href>`（无 JS 也能点、可中键新开、可爬取），
+ * 难度只是跟着链接走，不引入任何隐藏状态。
+ */
+function wireDifficulty(): void {
+  const host = $('lobbyDiff');
+  if (!host) return;
+  const btns = Array.from(host.querySelectorAll<HTMLButtonElement>('.arb-dbtn'));
+
+  const apply = (d: Diff): void => {
+    btns.forEach((b) => {
+      const on = b.dataset.d === d;
+      b.classList.toggle('on', on);
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+    try {
+      localStorage.setItem(LS_DIFF, d);
+    } catch {
+      /* 隐私模式下写不进就只在本轮生效 */
+    }
+    // daily 是固定种子题（对局页会隐藏难度选择器），所以不追加 ?d=
+    document.querySelectorAll<HTMLAnchorElement>('a.arb-mode[data-mode]').forEach((a) => {
+      const m = a.dataset.mode;
+      if (!m || m === 'daily') return;
+      a.href = `/games/sudoku/?mode=${m}&d=${d}`;
+    });
+  };
+
+  btns.forEach((b) =>
+    b.addEventListener('click', () => {
+      const d = b.dataset.d;
+      if (d && isDiff(d)) apply(d);
+    }),
+  );
+
+  apply(currentDiff());
+}
+
 /* ===================== 启动 ===================== */
 function boot(): void {
   renderHeroGrid();
   markDailyDone();
   startCountdown();
   renderBoard();
+  wireDifficulty();
 }
 
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
