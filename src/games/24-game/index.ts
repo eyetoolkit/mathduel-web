@@ -221,6 +221,8 @@ function onWin(): void {
   }
   const sols = countSolutions(numbers);
   if (comp.active) {
+    // 记录本轮真实用时（DEMO 排名用；真实环境由服务端计时为准）
+    comp.myTime = Math.max(0, (Date.now() - raceStartTs) / 1000);
     comp.submit(true, formula);
     return;
   }
@@ -839,8 +841,12 @@ function showRaceGameOver(d: { ranking: RaceEntry[] }): void {
   };
 }
 
+let raceStartTs = 0;
+
 function compEnterGame(): void {
   comp.active = true;
+  mode = 'battle';
+  tabEls.forEach((t) => t.classList.toggle('active', t.dataset.mode === 'battle'));
   document.body.setAttribute('data-mode', 'battle');
   $('compHead')!.classList.remove('hidden');
   $('compCode')!.textContent = comp.room;
@@ -854,6 +860,12 @@ function compEnterGame(): void {
     '<div class="b-sub">Same cards · race to 24</div></div></div>';
   resultEl.textContent = `⚔️ Round ${comp.round} — make 24 first!`;
   resultEl.className = 'result';
+  // 新一轮：清空上一轮的公式与选牌状态（竞赛不走 deal()，需手动重置）
+  formula = '';
+  historyStack = [];
+  usedCardIndices.clear();
+  raceStartTs = Date.now();
+  comp.myTime = 0;
   timer = 0;
   if (interval) window.clearInterval(interval);
   interval = window.setInterval(() => {
