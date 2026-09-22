@@ -23,7 +23,7 @@ const showBeta = process.env.VITE_SHOW_BETA === '1';
  * 避免旧页面覆盖 vite build 产出的同名目录（dist/games/<id>/）。
  * 重写新游戏后把它加进这里。
  */
-const REWRITTEN_LEGACY_GAMES = ['games/sudoku-6x6'];
+const REWRITTEN_LEGACY_GAMES = ['games/sudoku-6x6', 'games/sudoku'];
 
 async function exists(p) {
   try {

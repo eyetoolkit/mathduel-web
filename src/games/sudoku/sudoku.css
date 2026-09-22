@@ -1,0 +1,145 @@
+/* ============================================================
+   9×9 SUDOKU ARENA · 组件样式（beta）
+   Token remap 复用 ../24-game/arena.css（body.arena），本文件只放
+   数独专属组件：9×9 棋盘（cell 状态系统 + 3×3 宫线）/ 数字键盘 /
+   pencil-mark 微格 / 进度 HUD / lobby / duel 上下条。
+   设计稿：9x9-sudoku-ui-redesign.html
+   ============================================================ */
+
+/* 注：模式选择页已独立为 /games/sudoku/lobby/，其样式在 ./lobby.css，
+   与 24 点共用 ../24-game/lobby.css 骨架，本文件不再包含 lobby 样式。 */
+
+/* ─── 棋盘（Screen 2 hero）─── */
+.s9-board-wrap { margin-top: 6px; }
+.s9-board {
+  display: grid; grid-template-columns: repeat(9, 1fr);
+  width: min(540px, 100%); margin: 0 auto;
+  background: var(--bg); border-radius: 14px; padding: 6px;
+  border: 2px solid var(--border-strong, #2a3741);
+  user-select: none;
+}
+.s9-board .c9cell {
+  aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+  background: var(--surface); color: var(--text-muted);
+  font-family: var(--font-sans); font-weight: 600;
+  font-size: clamp(1rem, 4.4vw, 1.5rem); font-variant-numeric: tabular-nums;
+  border-right: 1px solid var(--border); border-bottom: 1px solid var(--border);
+  cursor: pointer; transition: background 0.12s, box-shadow 0.12s, color 0.12s;
+  position: relative;
+}
+/* 末列 / 末行去掉单线 */
+.s9-board .c9cell:nth-child(9n) { border-right: 0; }
+.s9-board .c9cell:nth-last-child(-n + 9) { border-bottom: 0; }
+/* 3×3 宫线：竖线在 col3、6 后（0-based col 2、5），横线在 row3、6 后（row 2、5）；
+   2px 加粗让 9×9 的「宫」层级从噪声中跳出来（设计稿明确：box > cell） */
+.s9-board .c9cell.bx-c { border-right: 2px solid var(--text-muted); }
+.s9-board .c9cell.bx-r { border-bottom: 2px solid var(--text-muted); }
+
+/* cell 状态（hero element） */
+.s9-board .c9cell.given { background: var(--a-paper, #f4f6f2); color: var(--bg); font-weight: 700; cursor: default; }
+.s9-board .c9cell.entry { color: var(--brand); }
+.s9-board .c9cell.bot { color: var(--teal, #2fc4c9); }
+.s9-board .c9cell.sel {
+  background: var(--brand-subtle); color: var(--brand);
+  box-shadow: inset 0 0 0 2px var(--brand);
+}
+.s9-board .c9cell.peer { background: var(--surface-raised); }
+.s9-board .c9cell.same { color: var(--teal, #2fc4c9); box-shadow: inset 0 0 0 1.5px var(--teal-dim, #1e8a8e); }
+.s9-board .c9cell.conflict {
+  color: var(--teal, #2fc4c9);
+  box-shadow: inset 0 0 0 2px var(--teal-dim, #1e8a8e);
+  background: rgba(47, 196, 201, 0.12);
+}
+.s9-board .c9cell.lock { box-shadow: inset 0 0 0 1px var(--border); }
+
+/* ─── pencil marks：cell 内的 3×3 候选微格（9×9 的「第二语言」）─── */
+.s9-board .c9cell.marks { align-items: stretch; justify-content: stretch; padding: 0; }
+.s9-board .c9cell .n9 {
+  display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr);
+  width: 100%; height: 100%; padding: 2px;
+}
+.s9-board .c9cell .n9 i {
+  display: flex; align-items: center; justify-content: center;
+  font-style: normal; font-family: var(--font-sans); font-weight: 500;
+  font-size: 0.36em; line-height: 1; color: transparent;
+}
+.s9-board .c9cell .n9 i.on { color: var(--a-ember-dim, #ff8b66); }
+
+/* ─── 数字键盘 ─── */
+.s9-pad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; max-width: 380px; margin: 16px auto 0; }
+.s9-pad .pk {
+  aspect-ratio: 1.25; border-radius: 12px; background: var(--surface); border: 1px solid var(--border);
+  color: var(--text); font-family: var(--font-sans); font-size: 1.4rem; font-weight: 600; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: border-color 0.12s, color 0.12s, background 0.12s;
+}
+.s9-pad .pk:hover { border-color: var(--brand); color: var(--brand); }
+.s9-pad .s9-padfoot { grid-column: 1 / -1; display: flex; gap: 8px; }
+.s9-pad .s9-padfoot .pk { flex: 1; aspect-ratio: auto; padding: 11px; font-size: 0.95rem; color: var(--text-muted); }
+.s9-pad .pk.erase:hover { color: var(--text); }
+.s9-pad .pk.notes:hover { color: var(--brand); }
+.s9-pad .pk.notes.on { border-color: var(--brand); background: var(--brand-subtle); color: var(--brand); }
+@media (max-width: 560px) {
+  .s9-pad { gap: 6px; }
+  .s9-pad .pk { font-size: 1.2rem; }
+}
+
+.s9-padtools { display: flex; justify-content: center; gap: 10px; margin-top: 10px; }
+
+/* ─── Duel 上下条（teal 对手 / ember 自己）─── */
+.s9-opp-head {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding-bottom: 14px; border-bottom: 1px solid var(--border); margin-bottom: 16px;
+}
+.s9-you-head {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border);
+}
+.s9-opp-head .player, .s9-you-head .player { display: flex; align-items: center; gap: 11px; }
+.s9-opp-head .pn, .s9-you-head .pn { font-weight: 600; font-size: 0.92rem; display: flex; align-items: center; gap: 8px; }
+.s9-opp-head .ps, .s9-you-head .ps { font-size: 0.74rem; color: var(--text-muted); }
+
+.side-tag {
+  display: inline-flex; align-items: center; gap: 6px; font-size: 0.72rem; font-weight: 600;
+  border-radius: 999px; padding: 3px 9px;
+}
+.side-tag .d { width: 7px; height: 7px; border-radius: 50%; }
+.side-tag.you { background: var(--brand-subtle); color: var(--brand-text); }
+.side-tag.you .d { background: var(--brand); }
+.side-tag.opp { background: rgba(47, 196, 201, 0.14); color: var(--teal, #2fc4c9); }
+.side-tag.opp .d { background: var(--teal, #2fc4c9); }
+
+.status { font-size: 0.8rem; display: inline-flex; align-items: center; gap: 7px; color: var(--text-muted); }
+.status .d { width: 8px; height: 8px; border-radius: 50%; background: var(--teal, #2fc4c9); }
+.status.thinking .d { animation: s9pulse 1s infinite; }
+.status.done .d { background: var(--teal, #2fc4c9); }
+@keyframes s9pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+/* ─── 进度 HUD（设计稿：长局看进度，不看秒表）─── */
+.s9-hud { width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 12px 14px; }
+.s9-hud .hud-row { display: flex; align-items: center; justify-content: space-between; gap: 14px; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 8px; }
+.s9-hud .hud-row:last-child { margin-bottom: 0; }
+.s9-hud .hud-row b { color: var(--text); font-weight: 600; font-variant-numeric: tabular-nums; }
+.s9-hud .lives { display: flex; gap: 5px; }
+.s9-hud .lives i { width: 9px; height: 9px; border-radius: 50%; background: var(--teal, #2fc4c9); }
+.s9-hud .lives i.off { background: var(--border); }
+
+/* ─── Duel 聊天（bot）─── */
+.s9-chatlog { display: flex; flex-direction: column; gap: 8px; max-height: 150px; overflow-y: auto; }
+.chat-dock .bub { max-width: 80%; padding: 7px 12px; border-radius: 14px; font-size: 0.85rem; }
+.chat-dock .bub.opp {
+  align-self: flex-start; background: var(--surface-raised);
+  border: 1px solid var(--border); border-bottom-left-radius: 4px;
+}
+
+/* ─── 结算 ─── */
+.s9-verdict { font-family: var(--font-display); font-weight: 800; font-size: 1.7rem; color: var(--brand-text); }
+.s9-scores { display: flex; justify-content: center; gap: 30px; margin: 14px 0; font-variant-numeric: tabular-nums; }
+.s9-scores .me { color: var(--brand-text); font-weight: 700; font-size: 1.2rem; }
+.s9-scores .op { color: var(--teal, #2fc4c9); font-weight: 700; font-size: 1.2rem; }
+.s9-scores small { display: block; font-size: 0.7rem; color: var(--text-muted); font-weight: 400; }
+.s9-acts { display: flex; justify-content: center; gap: 12px; margin-top: 8px; flex-wrap: wrap; }
+.s9-newbest { margin-top: 8px; font-size: 0.85rem; color: var(--warning-strong); font-weight: 600; }
+
+/* modal 内排版 */
+.modal .s9-verdict { text-align: center; }

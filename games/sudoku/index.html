@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en" data-site="mathduel">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0E1419" />
+  <title>Sudoku 9×9 — Fill the Grid First | MathDuel</title>
+  <meta name="description" content="The classic 9×9 logic grid with a full difficulty ladder and a daily seeded puzzle. Pencil in candidates, race a bot, or beat the clock." />
+  <link rel="canonical" href="https://mathduel.games/games/sudoku/" />
+  <link rel="preload" href="/fonts/space-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="/fonts/sora-latin.woff2" as="font" type="font/woff2" crossorigin />
+</head>
+<body class="arena">
+  <div id="header"></div>
+
+  <!-- ═══ Play · 模式选择已独立到 /games/sudoku/lobby/ ═══ -->
+  <main class="g24 s9-play" id="playView">
+    <section class="board" id="boardCol" aria-label="Sudoku board">
+      <div class="g24-bar">
+        <nav class="tabs" id="tabs" aria-label="Game modes">
+          <button class="tab" data-mode="solo">Solo</button>
+          <button class="tab" data-mode="daily">Daily Grid</button>
+          <button class="tab" data-mode="timed">Timed</button>
+          <button class="tab" data-mode="duel">Duel Bot</button>
+        </nav>
+        <div class="top-stats">
+          <span class="chip" id="stMain">Ready</span>
+          <button class="icon-btn" id="backLobby" title="Back to lobby">🏠 Lobby</button>
+        </div>
+      </div>
+
+      <!-- 对局头（仅 Duel）：对手条（teal） -->
+      <div id="oppHead" class="s9-opp-head hidden">
+        <div class="player">
+          <span class="md-av">🤖</span>
+          <div><div class="pn">GridBot <span class="side-tag opp"><span class="d"></span>Bot</span></div><div class="ps" id="oppSub">standard pace</div></div>
+        </div>
+        <div class="status thinking" id="oppStatus"><span class="d"></span>Filled 0/0</div>
+      </div>
+
+      <div id="modeBanner"></div>
+
+      <div class="table-head">
+        <div class="target"><span class="lbl">Target</span><b>1–9</b></div>
+        <div class="diff-pick" id="diffPick" role="group" aria-label="Difficulty">
+          <button data-d="easy">Easy</button>
+          <button data-d="standard" class="active">Medium</button>
+          <button data-d="hard">Hard</button>
+        </div>
+      </div>
+
+      <div class="s9-board-wrap">
+        <div class="s9-board" id="s9board" role="grid" aria-label="9 by 9 sudoku grid"></div>
+        <div class="s9-pad" id="s9pad">
+          <button class="pk" data-v="1">1</button>
+          <button class="pk" data-v="2">2</button>
+          <button class="pk" data-v="3">3</button>
+          <button class="pk" data-v="4">4</button>
+          <button class="pk" data-v="5">5</button>
+          <button class="pk" data-v="6">6</button>
+          <button class="pk" data-v="7">7</button>
+          <button class="pk" data-v="8">8</button>
+          <button class="pk" data-v="9">9</button>
+          <div class="s9-padfoot">
+            <button class="pk erase" data-act="erase">⌫ Erase</button>
+            <button class="pk notes" data-act="notes" id="notesBtn">✏ Notes</button>
+          </div>
+        </div>
+        <div class="s9-padtools hidden" id="padTools">
+          <button class="btn ghost" id="hintBtn">💡 Hint</button>
+          <button class="btn ghost" id="newBtn">↻ New Grid</button>
+        </div>
+      </div>
+
+      <div class="result" id="result" role="status">Pick a cell, then a number</div>
+
+      <!-- 我方条（仅 Duel）：进度 HUD（替代速度环） -->
+      <div id="youHead" class="s9-you-head hidden">
+        <div class="s9-hud">
+          <div class="hud-row"><span>You</span><b class="num" id="youFilled">0/0</b></div>
+          <div class="hud-row"><span>GridBot</span><b class="num" id="oppFilled">0/0</b></div>
+          <div class="hud-row"><span>Mistakes</span><span class="lives" id="lives"><i></i><i></i><i></i></span></div>
+          <div class="hud-row"><span>Time</span><b class="num" id="duelTime">0:00</b></div>
+        </div>
+      </div>
+
+      <!-- Duel bot 聊天 -->
+      <div class="chat-dock hidden" id="chatDock" aria-label="Match chat"></div>
+    </section>
+
+    <aside class="side" id="side"></aside>
+  </main>
+
+  <div class="overlay" id="overlay"><div class="modal" id="modal" role="dialog" aria-modal="true"></div></div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script type="module" src="/src/games/sudoku/index.ts"></script>
+</body>
+</html>

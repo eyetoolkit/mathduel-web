@@ -1,0 +1,719 @@
+/**
+ * 9×9 数独 · UI 编排（beta 版：全部本地，无 API 依赖）
+ * 模式：solo（3 难度）/ daily（seeded 每日一题）/ timed（45s 连解）/ duel（vs 本地 bot 竞速）
+ * 视觉：24 ARENA 同款 token（body.arena remap），ember=你、teal=bot/冲突、paper=固定线索
+ * 9×9 专属：pencil-mark 笔记模式（cell 内 3×3 候选微格）、3×3 宫线、进度 HUD（filled/mistakes/time）。
+ */
+
+import '@tri-sites/design-system/styles';
+import '../24-game/styles.css';
+import '../24-game/arena.css';
+import './sudoku.css';
+import { initI18n, mountHeader, toast } from '@tri-sites/design-system';
+import {
+  colOf,
+  dailyPuzzle,
+  duelDeal,
+  findConflicts,
+  generatePuzzle,
+  boxOf,
+  rowOf,
+  shanghaiDateKey,
+  mulberry32,
+  hashString,
+  type Difficulty,
+  type Grid,
+  type Puzzle,
+} from './engine';
+
+const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T | null;
+
+initI18n();
+mountHeader($('header')!, {
+  brandName: 'MathDuel',
+  brandSub: 'Sudoku 9×9',
+  mark: '▦',
+  nav: [
+    { labelKey: 'nav.home', href: '/' },
+    { labelKey: 'nav.games', href: '/#games' },
+    { labelKey: 'nav.leaderboard', href: '/leaderboard/' },
+  ],
+});
+
+type Mode = 'solo' | 'daily' | 'timed' | 'duel';
+
+const TIMED_LIMIT = 45;
+const DUEL_PENALTY = 2.5; // 填错罚时（秒）
+const MAX_MISTAKES = 3; // 非 duel 模式累计 3 次错误即负
+
+const diffLabel = (d: Difficulty): string => ({ easy: 'Easy', standard: 'Medium', hard: 'Hard' })[d];
+
+/* ─── 状态 ─── */
+const st = {
+  view: 'lobby' as 'lobby' | 'play',
+  mode: 'solo' as Mode,
+  diff: 'standard' as Difficulty,
+  puzzle: null as Puzzle | null,
+  grid: new Array(81).fill(0) as Grid, // 当前值（含玩家+bot 填入）
+  owner: new Array(81).fill(0) as number[], // 0 公共 / 1 玩家格 / 2 bot 格（duel）
+  filledBy: new Array(81).fill(0) as number[], // 1 玩家填 / 2 bot 填（着色）
+  marks: Array.from({ length: 81 }, () => new Set<number>()), // pencil marks
+  sel: -1,
+  running: false,
+  startTs: 0,
+  elapsed: 0,
+  penalty: 0,
+  timer: null as number | null,
+  mistakes: 0,
+  flash: new Set<number>(), // 临时错误高亮
+  notes: false,
+  // duel
+  mineTotal: 0,
+  mineDone: 0,
+  botTotal: 0,
+  botDone: 0,
+  botTimer: null as number | null,
+  botNext: 0,
+  // timed
+  timedSolved: 0,
+  timedSkipped: 0,
+  timedStreak: 0,
+  timedStartTs: 0,
+};
+
+let conflictCache: Set<number> = new Set();
+
+const LS_BEST = 's9_best_v1';
+const LS_DAILY = 's9_daily_v1';
+const readJSON = <T>(k: string, fb: T): T => {
+  try {
+    const v = localStorage.getItem(k);
+    return v ? (JSON.parse(v) as T) : fb;
+  } catch {
+    return fb;
+  }
+};
+const writeJSON = (k: string, v: unknown): void => {
+  try {
+    localStorage.setItem(k, JSON.stringify(v));
+  } catch { /* ignore */ }
+};
+const fmt = (sec: number): string => `${sec.toFixed(1)}s`;
+const fmtClock = (sec: number): string => {
+  const s = Math.max(0, Math.floor(sec));
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+};
+
+/* ═══ 模式选择页（独立 MPA 入口，与 24 点 lobby 同构）═══ */
+const LOBBY_URL = '/games/sudoku/lobby/';
+const goLobby = (): void => {
+  location.href = LOBBY_URL;
+};
+
+function enterMode(m: Mode): void {
+  stopAll();
+  st.view = 'play';
+  st.mode = m;
+  document.querySelectorAll<HTMLButtonElement>('#tabs .tab').forEach((t) => t.classList.toggle('active', t.dataset.mode === m));
+  const duel = m === 'duel';
+  $('oppHead')!.classList.toggle('hidden', !duel);
+  $('youHead')!.classList.toggle('hidden', !duel);
+  $('chatDock')!.classList.toggle('hidden', !duel);
+  $('diffPick')!.style.display = m === 'daily' ? 'none' : '';
+  $('padTools')!.classList.toggle('hidden', m === 'daily');
+  $('hintBtn')!.style.display = '';
+  if (duel) botTrashTalk('hello');
+  startRound();
+}
+
+function stopAll(): void {
+  if (st.timer) window.clearInterval(st.timer);
+  if (st.botTimer) window.clearTimeout(st.botTimer);
+  st.timer = null;
+  st.botTimer = null;
+  st.running = false;
+}
+
+/* ═══ 开局 ═══ */
+function startRound(): void {
+  stopAll();
+  const m = st.mode;
+  if (m === 'timed') st.timedStartTs = Date.now();
+  if (m === 'daily') {
+    const dk = shanghaiDateKey();
+    st.puzzle = dailyPuzzle(dk);
+    banner(`<div class="banner daily"><div class="daily-top"><div class="daily-meta"><div class="b-title">🌐 Daily Grid #${dk}</div><div class="b-sub">One seeded puzzle worldwide · Medium · finish to log today</div></div></div></div>`);
+  } else if (m === 'duel') {
+    const rng = mulberry32((Date.now() ^ hashString(String(performance.now()))) >>> 0);
+    st.puzzle = duelDeal(st.diff, rng) as Puzzle;
+    banner('<div class="banner daily"><div class="daily-top"><div class="daily-meta"><div class="b-title">🤖 Duel Bot · claim your half</div><div class="b-sub">Fill only the cells with an ember corner · wrong digits cost +2.5s</div></div></div></div>');
+  } else {
+    st.puzzle = newRoundPuzzle();
+    banner(
+      m === 'timed'
+        ? `<div class="banner daily timed"><div class="daily-top"><div class="daily-meta"><div class="b-title">⏱ Timed · ${TIMED_LIMIT}s per grid</div><div class="b-sub">Solved <b id="tmSolved">0</b> · Streak <b id="tmStreak">0</b> · wrong digits just flash</div></div></div></div>`
+        : `<div class="banner"><div class="daily-top"><div class="daily-meta"><div class="b-title">🎯 Solo · ${diffLabel(st.diff)}</div><div class="b-sub">Unique solution · best time saved locally</div></div></div></div>`,
+    );
+  }
+  resetBoard();
+  renderBoard();
+  renderSide();
+  if (st.mode === 'duel') {
+    updateHud();
+    scheduleBot();
+  }
+  beginTimer();
+}
+
+let roundNonce = 0;
+function newRoundPuzzle(): Puzzle {
+  roundNonce = (roundNonce + 1) | 0;
+  return generatePuzzle(st.diff, mulberry32((Date.now() ^ (roundNonce * 0x9e3779b9)) >>> 0));
+}
+
+function resetBoard(keepClock = false): void {
+  const p = st.puzzle!;
+  st.grid = p.puzzle.slice();
+  st.owner = new Array(81).fill(0);
+  st.filledBy = new Array(81).fill(0);
+  st.marks = Array.from({ length: 81 }, () => new Set<number>());
+  st.sel = -1;
+  st.penalty = 0;
+  st.mistakes = 0;
+  st.notes = false;
+  $('notesBtn')!.classList.remove('on');
+  if (!keepClock) {
+    st.elapsed = 0;
+    st.startTs = Date.now();
+  }
+  st.running = true;
+  conflictCache = findConflicts(st.grid);
+  st.mineDone = 0;
+  st.botDone = 0;
+  if (st.mode === 'duel') {
+    const d = st.puzzle as Puzzle & { mine: Set<number>; bots: Set<number> };
+    for (const i of d.mine) st.owner[i] = 1;
+    for (const i of d.bots) st.owner[i] = 2;
+    st.mineTotal = d.mine.size;
+    st.botTotal = d.bots.size;
+    $('oppSub')!.textContent = botPaceText();
+    renderOppStatus();
+  }
+  $('result')!.textContent = st.mode === 'duel' ? 'Claim your cells before GridBot' : 'Pick a cell, then a number';
+}
+
+const botPaceText = (): string =>
+  ({ easy: 'easy pace · ~7s per cell', standard: 'standard pace · ~5s per cell', hard: 'hard pace · ~3.8s per cell' })[st.diff];
+
+/** 我负责的格子里已填对的个数（动态统计，erase/改数后仍准确） */
+function correctMine(): number {
+  let n = 0;
+  for (let i = 0; i < 81; i++) if (st.owner[i] === 1 && st.grid[i] && st.grid[i] === st.puzzle!.solution[i]) n++;
+  return n;
+}
+
+/* ═══ 计时 ═══ */
+function beginTimer(): void {
+  if (st.timer) window.clearInterval(st.timer);
+  st.timer = window.setInterval(tick, 100);
+  tick();
+}
+
+function effElapsed(): number {
+  return (Date.now() - st.startTs) / 1000 + st.penalty;
+}
+
+function tick(): void {
+  if (!st.running) return;
+  st.elapsed = effElapsed();
+  if (st.mode === 'timed') {
+    const left = Math.max(0, TIMED_LIMIT - (Date.now() - st.timedStartTs) / 1000);
+    $('stMain')!.innerHTML = `⏱ <b>${left.toFixed(1)}s</b> · ✅ ${st.timedSolved}`;
+    const tms = $('tmSolved');
+    if (tms) tms.textContent = String(st.timedSolved);
+    const tmsk = $('tmStreak');
+    if (tmsk) tmsk.textContent = String(st.timedStreak);
+    if (left <= 0) endTimed();
+  } else if (st.mode === 'duel') {
+    $('stMain')!.innerHTML = `⏱ <b>${fmtClock(st.elapsed)}</b>`;
+    updateHud();
+  } else {
+    $('stMain')!.innerHTML = `⏱ <b>${fmtClock(st.elapsed)}</b>`;
+  }
+}
+
+/* ═══ 棋盘渲染 ═══ */
+function cellClass(i: number): string {
+  const cls = ['c9cell'];
+  // 3×3 宫线：竖粗线在 col3、6 后（0-based col 2、5），横粗线在 row3、6 后（row 2、5）
+  if (colOf(i) % 3 === 2) cls.push('bx-c');
+  if (rowOf(i) % 3 === 2) cls.push('bx-r');
+  const v = st.grid[i];
+  if (st.puzzle!.puzzle[i]) cls.push('given');
+  else if (st.filledBy[i] === 2) cls.push('bot');
+  else if (v) cls.push('entry');
+  if (st.sel === i) cls.push('sel');
+  if (conflictCache.has(i) || st.flash.has(i)) cls.push('conflict');
+  if (!v && st.marks[i].size) cls.push('marks');
+  if (st.mode === 'duel' && st.owner[i] === 1 && !v) cls.push('lock');
+  if (st.sel >= 0 && st.grid[st.sel]) {
+    if (i !== st.sel && (rowOf(i) === rowOf(st.sel) || colOf(i) === colOf(st.sel) || boxOf(i) === boxOf(st.sel))) cls.push('peer');
+    if (i !== st.sel && v && v === st.grid[st.sel]) cls.push('same');
+  }
+  return cls.join(' ');
+}
+
+function renderBoard(): void {
+  const el = $('s9board')!;
+  if (!el.dataset.built) {
+    el.innerHTML = [...Array(81)].map((_, i) => `<div class="c9cell" data-i="${i}" role="gridcell"></div>`).join('');
+    el.dataset.built = '1';
+    el.addEventListener('click', (e) => {
+      const t = (e.target as HTMLElement).closest<HTMLElement>('[data-i]');
+      if (t) selectCell(Number(t.dataset.i));
+    });
+  }
+  conflictCache = findConflicts(st.grid);
+  [...el.children].forEach((cell, i) => {
+    const c = cell as HTMLElement;
+    const v = st.grid[i];
+    const cls = cellClass(i);
+    if (c.className !== cls) c.className = cls;
+    let html: string;
+    if (v) html = `<span>${v}</span>`;
+    else if (st.marks[i].size) {
+      let cells = '';
+      for (let n = 1; n <= 9; n++) cells += `<i class="${st.marks[i].has(n) ? 'on' : ''}">${n}</i>`;
+      html = `<div class="n9">${cells}</div>`;
+    } else html = '';
+    if (c.innerHTML !== html) c.innerHTML = html;
+  });
+}
+
+function selectCell(i: number): void {
+  if (!st.running) return;
+  if (st.mode === 'duel' && st.owner[i] === 2) {
+    toast('🤖 That cell is GridBot’s to fill');
+    return;
+  }
+  st.sel = i; // given 也允许选中做 peer/same 高亮
+  renderBoard();
+}
+
+/* ═══ 填数 / 笔记 ═══ */
+function place(v: number): void {
+  if (!st.running || st.sel < 0) return;
+  const i = st.sel;
+  if (st.puzzle!.puzzle[i]) {
+    toast('📌 That clue is fixed');
+    return;
+  }
+  if (st.mode === 'duel' && st.owner[i] !== 1) {
+    toast('🏁 Free cells unlock after duels — claim yours');
+    return;
+  }
+  // 笔记模式：切换候选标记
+  if (st.notes) {
+    if (st.grid[i]) return;
+    const m = st.marks[i];
+    if (m.has(v)) m.delete(v);
+    else m.add(v);
+    renderBoard();
+    return;
+  }
+  // 普通模式：填入并即时校验对错（有解 → 与解比对）
+  const correct = v === st.puzzle!.solution[i];
+  if (!correct) {
+    st.mistakes++;
+    st.penalty += st.mode === 'duel' ? DUEL_PENALTY : 0;
+    st.grid[i] = v;
+    st.filledBy[i] = 1;
+    st.flash.add(i);
+    renderBoard();
+    if (st.mode === 'duel') {
+      toast(`⚔️ Mistake! +${DUEL_PENALTY}s penalty`);
+      botTrashTalk('playerFill');
+    } else if (st.mistakes >= MAX_MISTAKES) {
+      window.setTimeout(() => endMistakes(), 500);
+    }
+    window.setTimeout(() => {
+      if (st.grid[i] === v) {
+        st.grid[i] = 0;
+        st.filledBy[i] = 0;
+      }
+      st.flash.delete(i);
+      renderBoard();
+    }, 650);
+    st.sel = i;
+    if (st.mode === 'duel') updateHud();
+    return;
+  }
+  // 正确
+  st.grid[i] = v;
+  st.filledBy[i] = 1;
+  st.marks[i].clear();
+  if (st.mode === 'duel') {
+    renderOppStatus();
+    botTrashTalk('playerFill');
+  }
+  st.sel = i;
+  renderBoard();
+  if (st.mode === 'duel') updateHud();
+  checkWin();
+}
+
+function erase(): void {
+  if (!st.running || st.sel < 0) return;
+  const i = st.sel;
+  if (st.puzzle!.puzzle[i] || st.filledBy[i] === 2) return;
+  if (st.notes && !st.grid[i]) {
+    st.marks[i].clear();
+    renderBoard();
+    return;
+  }
+  st.grid[i] = 0;
+  st.filledBy[i] = 0;
+  renderBoard();
+}
+
+function toggleNotes(): void {
+  st.notes = !st.notes;
+  $('notesBtn')!.classList.toggle('on', st.notes);
+}
+
+/* ═══ 胜负 ═══ */
+function checkWin(): void {
+  if (!st.puzzle) return;
+  if (st.mode === 'duel') {
+    if (correctMine() >= st.mineTotal) {
+      st.running = false;
+      if (st.timer) window.clearInterval(st.timer);
+      finishDuel(true);
+    }
+    return;
+  }
+  const complete = st.grid.every((v, i) => v === st.puzzle!.solution[i]);
+  if (!complete) return;
+  st.running = false;
+  if (st.timer) window.clearInterval(st.timer);
+  if (st.mode === 'timed') winTimed();
+  else winSoloDaily();
+}
+
+function winSoloDaily(): void {
+  const t = st.elapsed;
+  let extra = '';
+  if (st.mode === 'daily') {
+    const dk = shanghaiDateKey();
+    const d = readJSON<Record<string, number>>(LS_DAILY, {});
+    if (!d[dk]) {
+      d[dk] = Math.round(t * 10) / 10;
+      writeJSON(LS_DAILY, d);
+      extra = '<div class="s9-newbest">🌐 Daily grid logged — see you tomorrow!</div>';
+    } else {
+      extra = '<div class="s9-newbest">Already logged today — replay doesn’t overwrite.</div>';
+    }
+  } else {
+    const b = readJSON<Record<string, number>>(LS_BEST, {});
+    const k = st.diff;
+    if (!b[k] || t < b[k]) {
+      b[k] = Math.round(t * 10) / 10;
+      writeJSON(LS_BEST, b);
+      extra = '<div class="s9-newbest">🥇 New personal best!</div>';
+    }
+  }
+  $('result')!.innerHTML = `✅ Solved in <b>${fmt(t)}</b>${extra}`;
+  showModal(
+    '<div class="s9-verdict">Grid complete 🎉</div>' +
+      `<div class="s9-scores"><div class="me num">${fmt(t)}<small>your time</small></div></div>` +
+      extra +
+      '<div class="s9-acts"><button class="btn primary" id="mAgain">↻ New grid</button><button class="btn ghost" id="mLobby">🏠 Lobby</button></div>',
+    () => {
+      $('mAgain')!.onclick = () => {
+        hideModal();
+        startRound();
+      };
+      $('mLobby')!.onclick = () => {
+        hideModal();
+        goLobby();
+      };
+    },
+  );
+}
+
+function endMistakes(): void {
+  if (!st.running) return;
+  stopAll();
+  $('stMain')!.innerHTML = '💥 Too many mistakes';
+  showModal(
+    '<div class="s9-verdict">Out of lives</div>' +
+      '<div class="s9-scores"><div class="op num">3<small>mistakes</small></div></div>' +
+      '<div class="s9-acts"><button class="btn primary" id="mAgain">↻ Try again</button><button class="btn ghost" id="mLobby">🏠 Lobby</button></div>',
+    () => {
+      $('mAgain')!.onclick = () => {
+        hideModal();
+        startRound();
+      };
+      $('mLobby')!.onclick = () => {
+        hideModal();
+        goLobby();
+      };
+    },
+  );
+}
+
+/* ═══ Timed ═══ */
+function winTimed(): void {
+  st.timedSolved++;
+  st.timedStreak++;
+  window.setTimeout(() => {
+    if (st.mode === 'timed' && (Date.now() - st.timedStartTs) / 1000 < TIMED_LIMIT && st.puzzle) {
+      st.puzzle = newRoundPuzzle();
+      resetBoard(true);
+      renderBoard();
+      beginTimer();
+      $('result')!.innerHTML = `✅ #${st.timedSolved} · ${st.timedStreak} streak — next grid!`;
+    }
+  }, 700);
+  $('result')!.innerHTML = `✅ #${st.timedSolved} in <b>${fmt(st.elapsed)}</b> — next grid incoming…`;
+}
+
+function endTimed(): void {
+  stopAll();
+  $('stMain')!.innerHTML = '⏱ Time!';
+  showModal(
+    '<div class="s9-verdict">⏱ Time’s up</div>' +
+      `<div class="s9-scores"><div class="me num">${st.timedSolved}<small>solved</small></div>` +
+      `<div class="op num">${st.timedStreak}<small>best streak</small></div>` +
+      `<div class="op num">${st.timedSkipped}<small>unsolved</small></div></div>` +
+      '<div class="s9-acts"><button class="btn primary" id="mAgain">↻ Run it again</button><button class="btn ghost" id="mLobby">🏠 Lobby</button></div>',
+    () => {
+      $('mAgain')!.onclick = () => {
+        hideModal();
+        st.timedSolved = 0;
+        st.timedStreak = 0;
+        st.timedSkipped = 0;
+        startRound();
+      };
+      $('mLobby')!.onclick = () => {
+        hideModal();
+        goLobby();
+      };
+    },
+  );
+}
+
+/* ═══ Duel bot ═══ */
+function scheduleBot(): void {
+  const pace = { easy: 7000, standard: 5000, hard: 3800 }[st.diff];
+  const jitter = () => pace * (0.6 + Math.random() * 0.9);
+  const step = (): void => {
+    if (!st.running || st.mode !== 'duel') return;
+    const d = st.puzzle as Puzzle & { bots: Set<number> };
+    const remaining = [...d.bots].filter((i) => !st.grid[i]);
+    if (!remaining.length) {
+      finishDuel(false);
+      return;
+    }
+    const i = remaining[Math.floor(Math.random() * remaining.length)];
+    st.grid[i] = st.puzzle!.solution[i];
+    st.filledBy[i] = 2;
+    st.botDone++;
+    renderOppStatus();
+    renderBoard();
+    botTrashTalk('botFill');
+    if (st.botDone >= st.botTotal) {
+      finishDuel(false);
+      return;
+    }
+    st.botTimer = window.setTimeout(step, jitter());
+  };
+  st.botTimer = window.setTimeout(step, 1800);
+}
+
+function updateHud(): void {
+  $('youFilled')!.textContent = `${correctMine()}/${st.mineTotal}`;
+  $('oppFilled')!.textContent = `${st.botDone}/${st.botTotal}`;
+  $('duelTime')!.textContent = fmtClock(st.elapsed);
+  const lv = $('lives')!;
+  [...lv.children].forEach((el, idx) => (el as HTMLElement).classList.toggle('off', idx < st.mistakes));
+}
+
+function renderOppStatus(): void {
+  const s = $('oppStatus')!;
+  s.innerHTML = `<span class="d"></span>Filled ${st.botDone}/${st.botTotal}`;
+  s.classList.toggle('done', st.botDone >= st.botTotal);
+}
+
+function finishDuel(playerWon: boolean): void {
+  stopAll();
+  const t = st.elapsed;
+  const verdict = playerWon ? 'You win 🏆' : 'GridBot wins 🤖';
+  const mine = playerWon ? fmt(t) : `${correctMine()}/${st.mineTotal}`;
+  const bots = playerWon ? `${st.botDone}/${st.botTotal}` : fmt(t);
+  $('result')!.innerHTML = playerWon
+    ? `🏆 You filled your half in <b>${fmt(t)}</b> — GridBot stalled at ${st.botDone}/${st.botTotal}`
+    : `🤖 GridBot finished first (${fmt(t)}) — you had ${correctMine()}/${st.mineTotal}`;
+  showModal(
+    `<div class="s9-verdict">${verdict}</div>` +
+      `<div class="s9-scores"><div class="me num">${mine}<small>you</small></div><div class="op num">${bots}<small>GridBot</small></div></div>` +
+      '<div class="s9-acts"><button class="btn primary" id="mAgain">⚔️ Rematch</button><button class="btn ghost" id="mLobby">🏠 Lobby</button></div>',
+    () => {
+      $('mAgain')!.onclick = () => {
+        hideModal();
+        startRound();
+      };
+      $('mLobby')!.onclick = () => {
+        hideModal();
+        goLobby();
+      };
+    },
+  );
+}
+
+/* bot 聊天台词（DEMO） */
+const BOT_LINES = {
+  hello: ['Good luck — you’ll need it.', 'Grid goes brrr.', 'I was compiled to win this.'],
+  playerFill: ['Nice one.', 'Hey, that was mine-ish.', 'Okay, warm-up over.'],
+  botFill: ['Claimed.', 'Mine.', 'Tick tock.', 'Beep.'],
+  losing: ['You’re fast for a human…', 'Recalibrating…'],
+  winning: ['This is easy mode for me.', 'Almost there!'],
+} as const;
+let lastLine = '';
+function botSay(text: string): void {
+  if (text === lastLine) return;
+  lastLine = text;
+  const dock = $('chatDock')!;
+  if (!dock.dataset.built) {
+    dock.dataset.built = '1';
+    dock.innerHTML =
+      '<div class="ctitle"><span>Match chat · GridBot</span><span>beta demo</span></div><div class="s9-chatlog" id="s9chat"></div>';
+  }
+  const log = $('s9chat')!;
+  const div = document.createElement('div');
+  div.className = 'bub opp';
+  div.textContent = text;
+  log.appendChild(div);
+  log.scrollTop = log.scrollHeight;
+  while (log.children.length > 6) log.removeChild(log.firstChild!);
+}
+
+let botTalkBudget = 0;
+function botTrashTalk(event: keyof typeof BOT_LINES): void {
+  botTalkBudget++;
+  if (event !== 'hello' && Math.random() > 0.22 && botTalkBudget % 4 !== 0) return;
+  const lines = BOT_LINES[event];
+  botSay(lines[Math.floor(Math.random() * lines.length)]);
+}
+
+/* ═══ 侧栏 / 大厅 ═══ */
+function renderSide(): void {
+  const el = $('side')!;
+  const p = st.puzzle;
+  const filled = st.grid.filter((v) => v).length;
+  const holes = p ? p.holes.length : 0;
+  const mistakesLine =
+    st.mode === 'duel'
+      ? ''
+      : `<div class="stat-row"><span>Mistakes</span><span class="lives"><i class="${st.mistakes < 1 ? '' : 'off'}"></i><i class="${st.mistakes < 2 ? '' : 'off'}"></i><i class="${st.mistakes < 3 ? '' : 'off'}"></i></span></div>`;
+  let bestRow = '';
+  if (st.mode === 'solo') {
+    const b = readJSON<Record<string, number>>(LS_BEST, {});
+    bestRow =
+      '<div class="panel"><h3>🏅 Best times</h3>' +
+      (['easy', 'standard', 'hard'] as Difficulty[])
+        .map((d) => `<div class="stat-row"><span>${diffLabel(d)}</span><b>${b[d] ? fmt(b[d]) : '—'}</b></div>`)
+        .join('') +
+      '</div>';
+  } else if (st.mode === 'daily') {
+    bestRow = '<div class="panel"><h3>🌐 Daily</h3><div class="hint-step"><b>·</b><span>One attempt logs your time; replays are free but won’t overwrite.</span></div></div>';
+  }
+  el.innerHTML =
+    '<div class="panel"><h3>▦ Grid status</h3>' +
+    `<div class="stat-row"><span>Cells filled</span><b>${filled}/81</b></div>` +
+    `<div class="stat-row"><span>Empty (this puzzle)</span><b>${holes}</b></div>` +
+    (st.mode === 'duel' ? '' : `<div class="stat-row"><span>Difficulty</span><b>${st.mode === 'daily' ? 'Medium (fixed)' : diffLabel(st.diff)}</b></div>`) +
+    mistakesLine +
+    '<div class="hint-step"><b>·</b><span>Click a cell, then tap a number — or type 1–9. Toggle Notes (✏) to pencil candidates; Backspace erases.</span></div></div>' +
+    bestRow;
+}
+
+/* ═══ banner / modal / toast ═══ */
+function banner(html: string): void {
+  $('modeBanner')!.innerHTML = html;
+}
+
+function showModal(html: string, bind: () => void): void {
+  $('modal')!.innerHTML = html;
+  $('overlay')!.classList.add('show');
+  bind();
+}
+
+function hideModal(): void {
+  $('overlay')!.classList.remove('show');
+}
+
+/* ═══ 事件绑定 ═══ */
+document.querySelectorAll<HTMLButtonElement>('#tabs .tab').forEach((t) => {
+  t.addEventListener('click', () => enterMode(t.dataset.mode as Mode));
+});
+
+document.querySelectorAll<HTMLButtonElement>('#diffPick button').forEach((b) => {
+  b.addEventListener('click', () => {
+    st.diff = b.dataset.d as Difficulty;
+    document.querySelectorAll<HTMLButtonElement>('#diffPick button').forEach((x) => x.classList.toggle('active', x === b));
+    if (st.mode === 'solo' || st.mode === 'duel') startRound();
+  });
+});
+
+$('s9pad')!.addEventListener('click', (e) => {
+  const b = (e.target as HTMLElement).closest<HTMLElement>('button');
+  if (!b) return;
+  if (b.dataset.act === 'erase') erase();
+  else if (b.dataset.act === 'notes') toggleNotes();
+  else if (b.dataset.v) place(Number(b.dataset.v));
+});
+
+window.addEventListener('keydown', (e) => {
+  if (st.view !== 'play') return;
+  if (e.key >= '1' && e.key <= '9') place(Number(e.key));
+  else if (e.key === 'Backspace' || e.key === 'Delete') erase();
+  else if (e.key === 'n' || e.key === 'N') toggleNotes();
+  else if (e.key === 'Escape') goLobby();
+});
+
+$('backLobby')!.addEventListener('click', goLobby);
+$('newBtn')!.addEventListener('click', () => startRound());
+$('hintBtn')!.addEventListener('click', () => {
+  if (!st.running || !st.puzzle) return;
+  const empties = [...Array(81)].map((_, i) => i).filter((i) => !st.grid[i] && !st.puzzle!.puzzle[i]);
+  if (st.mode === 'duel') {
+    const mine = empties.filter((i) => st.owner[i] === 1);
+    if (!mine.length) return;
+    const i = mine[Math.floor(Math.random() * mine.length)];
+    st.sel = i;
+    renderBoard();
+    toast('💡 One of your cells — GridBot says it’s ' + st.puzzle.solution[i]);
+    return;
+  }
+  if (!empties.length) return;
+  const i = empties[Math.floor(Math.random() * empties.length)];
+  st.sel = i;
+  renderBoard();
+  toast('💡 Try cell r' + (rowOf(i) + 1) + 'c' + (colOf(i) + 1) + ' — maybe ' + st.puzzle.solution[i] + '?');
+});
+
+$('overlay')!.addEventListener('click', (e) => {
+  if (e.target === $('overlay')!) hideModal();
+});
+
+/* ═══ init ═══ */
+// 深链契约：?mode=solo|daily|timed|duel —— 由模式选择页的模式卡链接进来。
+// 不带 mode 直达牌桌时回落到模式选择页，与 24 点「lobby → card table」的两段式保持一致。
+const isMode = (m: string): m is Mode => m === 'solo' || m === 'daily' || m === 'timed' || m === 'duel';
+const modeFromUrl = new URLSearchParams(location.search).get('mode') || '';
+if (isMode(modeFromUrl)) enterMode(modeFromUrl);
+else location.replace(LOBBY_URL);
+
+renderSide();
+botSay(BOT_LINES.hello[Math.floor(Math.random() * BOT_LINES.hello.length)]);

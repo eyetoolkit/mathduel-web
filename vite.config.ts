@@ -34,6 +34,8 @@ export default defineConfig({
         bulls: resolve(here, 'games/bulls/index.html'),
         'sudoku-6x6': resolve(here, 'games/sudoku-6x6/index.html'),
         'sudoku-6x6-lobby': resolve(here, 'games/sudoku-6x6/lobby/index.html'),
+        'sudoku': resolve(here, 'games/sudoku/index.html'),
+        'sudoku-lobby': resolve(here, 'games/sudoku/lobby/index.html'),
       },
     },
   },

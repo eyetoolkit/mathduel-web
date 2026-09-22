@@ -49,7 +49,7 @@ const GAMES: GameDef[] = [
     icon: '▦',
     title: 'Sudoku',
     desc: 'The classic 9×9 logic grid with a full difficulty ladder and a daily seeded puzzle.',
-    href: '/games/sudoku/',
+    href: '/games/sudoku/lobby/',
     stage: 'beta',
     modes: ['Practice', 'Daily'],
   },
