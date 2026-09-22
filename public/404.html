@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en" data-site="mathduel">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0066CC" />
+  <title>Page not found — MathDuel</title>
+  <meta name="description" content="That page doesn't exist. Jump back into a game of 24." />
+  <meta name="robots" content="noindex, follow" />
+  <!--
+    为什么这个文件必须存在：
+    Cloudflare Pages 在输出目录里找不到 404.html 时，会把所有未命中的路径
+    回落到站点根 (/) 并返回 HTTP 200 —— 形成全站软 404。
+    后果：/robots.txt 与 /sitemap.xml 返回 HTML（爬虫无法解析）、
+    /leaderboard/ 等链接静默显示首页、Google 判定 soft 404 / 重复内容。
+    boardduel-web 与 memoryduel-web 都已放置此文件，仅 mathduel-web 缺失。
+    样式全部内联，不依赖带 hash 的构建产物，保证任何构建下都能正常渲染。
+  -->
+  <style>
+    :root{
+      --brand:#0066CC; --brand-dark:#0052a3; --ink:#0f172a; --muted:#5b6b7f;
+      --bg:#f4f7fb; --card:#ffffff; --line:#e2e8f0;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0}
+    body{
+      min-height:100dvh; display:flex; align-items:center; justify-content:center;
+      padding:32px 20px; background:var(--bg); color:var(--ink);
+      font-family:"Space Grotesk",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"PingFang SC","Microsoft YaHei",sans-serif;
+      -webkit-font-smoothing:antialiased;
+    }
+    .wrap{width:100%; max-width:560px}
+    .brand{
+      display:flex; align-items:center; gap:10px; justify-content:center;
+      margin-bottom:26px; font-weight:700; font-size:18px; letter-spacing:-.01em;
+      color:var(--brand); text-decoration:none;
+    }
+    .brand .mark{
+      display:grid; place-items:center; width:34px; height:34px; border-radius:9px;
+      background:var(--brand); color:#fff; font-size:15px; font-weight:800;
+    }
+    .card{
+      background:var(--card); border:1px solid var(--line); border-radius:18px;
+      padding:40px 32px; text-align:center;
+      box-shadow:0 1px 2px rgba(15,23,42,.04), 0 12px 32px -12px rgba(15,23,42,.12);
+    }
+    .code{
+      font-size:64px; font-weight:800; line-height:1; letter-spacing:-.04em;
+      color:var(--brand); margin:0 0 6px;
+      font-variant-numeric:tabular-nums;
+    }
+    .cards-row{
+      display:flex; gap:8px; justify-content:center; margin:0 0 22px;
+      font-size:20px; font-weight:700;
+    }
+    .cards-row span{
+      display:grid; place-items:center; width:44px; height:60px; border-radius:8px;
+      background:#fff; border:1.5px solid var(--line); color:var(--ink);
+      font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    }
+    .cards-row span.red{ color:#d92b2b }
+    h1{ font-size:24px; margin:0 0 10px; letter-spacing:-.02em }
+    p{ color:var(--muted); margin:0 0 8px; line-height:1.6; font-size:15px }
+    .hint{
+      font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+      font-size:13px; background:var(--bg); border:1px solid var(--line);
+      border-radius:8px; padding:8px 12px; color:var(--muted);
+      display:inline-block; margin:14px 0 26px; word-break:break-all;
+    }
+    .actions{ display:flex; flex-direction:column; gap:10px }
+    .btn{
+      display:block; padding:13px 20px; border-radius:11px; text-decoration:none;
+      font-weight:650; font-size:15px; transition:background .15s,transform .1s;
+      border:1.5px solid transparent;
+    }
+    .btn:active{ transform:translateY(1px) }
+    .btn-primary{ background:var(--brand); color:#fff }
+    .btn-primary:hover{ background:var(--brand-dark) }
+    .btn-ghost{ background:transparent; color:var(--ink); border-color:var(--line) }
+    .btn-ghost:hover{ background:#eef3f9 }
+    .links{ margin-top:22px; font-size:13.5px; color:var(--muted) }
+    .links a{ color:var(--brand); text-decoration:none; margin:0 7px }
+    .links a:hover{ text-decoration:underline }
+    @media (min-width:480px){ .actions{ flex-direction:row } .btn{ flex:1 } }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <a class="brand" href="/"><span class="mark">24</span>MathDuel</a>
+
+    <div class="card">
+      <p class="code">404</p>
+      <div class="cards-row" aria-hidden="true">
+        <span>4</span><span class="red">0</span><span>4</span>
+      </div>
+
+      <h1>We couldn't make 24 here.</h1>
+      <p>That page doesn't exist — or it moved. Four cards, one target, nothing to solve on this URL.</p>
+      <span class="hint" id="pathHint"></span>
+
+      <div class="actions">
+        <a class="btn btn-primary" href="/games/24-game/">Play 24</a>
+        <a class="btn btn-ghost" href="/">Back to home</a>
+      </div>
+
+      <p class="links">
+        Try the
+        <a href="/games/24-game/?mode=daily">daily challenge</a> or
+        <a href="/games/bulls/">Guess the Number</a>
+      </p>
+    </div>
+  </div>
+
+  <script>
+    // 只做展示，失败也不影响页面
+    try {
+      var p = location.pathname + location.search;
+      if (p && p !== '/') document.getElementById('pathHint').textContent = p;
+      else document.getElementById('pathHint').style.display = 'none';
+    } catch (e) {}
+  </script>
+</body>
+</html>
