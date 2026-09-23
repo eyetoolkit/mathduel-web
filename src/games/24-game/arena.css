@@ -1,17 +1,21 @@
 /* ============================================================
-   24 · ARENA — 共享深色皮肤层
+   24 · ARENA — 共享皮肤层（token 重映射）
    ------------------------------------------------------------
-   为什么需要它：模式选择页（/games/24-game/lobby/）与牌桌
+   背景：模式选择页（/games/24-game/lobby/）与牌桌
    （/games/24-game/）原本一套深色、一套浅色，从「选模式」进到
-   「对局」会黑↔白跳变。这里把两者收敛到同一套皮肤。
+   「对局」会黑↔白跳变。做法：作用域锁定 body.arena，在该作用域
+   内把设计系统 token 重映射，牌桌既有样式**一行不改**整体跟随。
 
-   做法：作用域锁定 body.arena，只在该作用域内把设计系统 token
-   重映射为深色值。好处是——
-     · 牌桌既有 400 行样式**一行不改**就整体跟随变深；
-     · 首页 / bulls 等页面没有 .arena 类，完全不受影响；
-     · 设计系统本身保持浅色默认，不破坏其他站点。
-
-   配色来源：24 ARENA 设计稿（ink 底 + ember 橙 + teal/gold 辅色）。
+   当前有两个皮肤作用域：
+     · body.arena             → 深色（ink 底 + ember 橙），供
+                                sudoku 系等游戏页继续使用；
+     · body.arena.skin-paper  → 浅色 papergames 皮肤（2026-09-23），
+                                24 点游戏页专用，与首页 / 模式选择页
+                                （home-redesign.css / lobby.css）同源：
+                                纸白底 + 白卡 + 靛蓝主色 + 琥珀辅色。
+                                各游戏 CSS 里的硬编码深色未走 token，
+                                所以先只给 24 点开 skin-paper，其他
+                                游戏清理完硬编码色后再逐个加入。
    ============================================================ */
 
 body.arena {
@@ -117,4 +121,112 @@ body.arena .card.red {
 body.arena .rc-qr,
 body.arena .share-qr {
   background: #ffffff;
+}
+
+/* ============================================================
+   24 · ARENA — skin-paper 浅色皮肤（24 点游戏页专用）
+   ------------------------------------------------------------
+   配色来源：papergames 设计稿（与 body.home-v2 / lobby.css 同源）：
+     paper #F4F5F9 / ink #1E1B39 / indigo #3730A3 / amber #F59E0B
+   做法：只重映射 token，styles.css / social.css / lobby.css 的
+   组件样式零改动即可整体翻浅。
+   ⚠️ token 语义换位说明：深色皮肤里 --a-ink* 是「深色表面」、
+   --a-paper 是「浅色文字」；本皮肤里反过来——--a-ink* 是白色
+   表面、--a-paper 是深色文字。引用方（social.css 等）拿到的
+   都是自己需要的对比色，无需改动。
+   ============================================================ */
+
+body.arena.skin-paper {
+  /* ---------- 调色板 ---------- */
+  --a-ink: #ffffff;              /* 表面（原深色皮肤里是深底） */
+  --a-ink-2: #f1f2fa;            /* 次级表面 / subtle 底 */
+  --a-ink-3: #ffffff;            /* 凸起表面 */
+  --a-line: #e3e6f0;
+  --a-paper: #1e1b39;            /* 文字主色（原是浅色文字） */
+  --a-mute: #5b6079;
+  --a-ember: #f59e0b;            /* 品牌辅色：琥珀（原 ember 橙） */
+  --a-ember-dim: #d97706;
+  --a-ember-soft: rgba(245, 158, 11, 0.16);
+  --a-teal: #0fa3a8;             /* 提深：浅底上作文字/描边要能读 */
+  --a-gold: #d97706;             /* 金币文字色：浅底上压深 */
+
+  /* ---------- 设计系统 token → papergames 浅色映射 ---------- */
+  --bg: #f4f5f9;
+  --bg-subtle: #eef0fb;          /* lobby 同款靛蓝浅底（tabs 轨道 / chips / 算式条） */
+  --surface: #ffffff;
+  --surface-raised: #ffffff;
+  --border: #e3e6f0;
+  --border-strong: #c7cbee;
+  --text-strong: #1e1b39;
+  --text: #1e1b39;
+  --text-muted: #5b6079;
+  --text-inverse: #ffffff;
+
+  /* 品牌色：ember 橙 → 靛蓝（与侧栏 Play now / lobby 主按钮一致） */
+  --brand-50: rgba(55, 48, 163, 0.05);
+  --brand-100: rgba(55, 48, 163, 0.1);
+  --brand-200: rgba(55, 48, 163, 0.22);
+  --brand-400: #6366f1;
+  --brand-500: #4f46e5;
+  --brand-600: #3730a3;
+  --brand-700: #312e81;
+  --brand-800: #292670;
+  --brand-900: #211e5c;
+  --brand: var(--brand-600);
+  --brand-hover: #4f46e5;
+  --brand-active: #312e81;
+  --brand-subtle: #eef0fb;
+  --brand-ring: rgba(79, 70, 229, 0.22);
+  --brand-text: #3730a3;         /* 浅底上的品牌文字：压深 */
+  --on-brand: #ffffff;           /* 靛蓝底上白字（约 9.6:1） */
+
+  /* 语义色：浅底变体，文字版一律压深保证对比度 */
+  --success: #16a34a;
+  --success-strong: #15803d;
+  --success-l: rgba(22, 163, 74, 0.12);
+  --warning: #d97706;
+  --warning-strong: #b45309;
+  --warning-l: rgba(217, 119, 6, 0.12);
+  --danger: #dc2626;
+  --danger-strong: #b91c1c;
+  --danger-l: rgba(220, 38, 38, 0.1);
+  --info: #0284c7;
+  --info-strong: #0369a1;
+  --info-l: rgba(2, 132, 199, 0.1);
+
+  /* 阴影：浅色页面的柔和投影 */
+  --e-1: 0 1px 2px rgba(30, 27, 57, 0.08);
+  --e-2: 0 2px 4px rgba(30, 27, 57, 0.08), 0 4px 12px rgba(30, 27, 57, 0.08);
+  --e-3: 0 4px 8px rgba(30, 27, 57, 0.08), 0 12px 28px rgba(30, 27, 57, 0.12);
+  --e-4: 0 8px 16px rgba(30, 27, 57, 0.1), 0 24px 56px rgba(30, 27, 57, 0.16);
+
+  background: transparent;       /* 纸白底由 game-shell.css 的 body 背景负责 */
+  color: var(--text);
+  min-height: 100vh;
+}
+
+/* 浏览器原生 UI（滚动条 / select / 表单控件）走浅色 */
+html:has(body.arena.skin-paper) {
+  background: #f4f5f9;
+  color-scheme: light;
+}
+
+/* ---------- 牌桌组件微调（token 覆盖不到的少量细节） ---------- */
+
+/* 牌面：白卡 + 深数字 + 适合白底的深红（保持不变，与浅色桌面对比更干净） */
+body.arena.skin-paper .card {
+  background: #ffffff;
+  color: #101820;
+  box-shadow: 0 1px 2px rgba(30, 27, 57, 0.1), 0 10px 24px rgba(30, 27, 57, 0.12);
+}
+body.arena.skin-paper .card.red { color: #dc2626; }
+
+/* 聊天发送按钮 hover：social.css 硬编码的 #ff7d54 是深色皮肤 ember 系，
+   浅色皮肤下换成琥珀亮档 */
+body.arena.skin-paper .chat-input-row .send:hover { background: #fbbf24; }
+
+/* 弹窗遮罩：浅色页面用稍透的靛蓝夜幕（与 lobby overlay 一致观感） */
+body.arena.skin-paper .lobby,
+body.arena.skin-paper .share-overlay {
+  background: rgba(30, 27, 75, 0.45);
 }

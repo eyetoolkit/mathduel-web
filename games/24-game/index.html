@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#0E1419" />
+  <meta name="theme-color" content="#F4F5F9" />
   <title>24 · Card Table — Make 24 Multiplayer Race | MathDuel</title>
   <meta name="description" content="Make 24 from four cards. Practice solo, take the global daily challenge, or race up to 99 players on identical cards." />
   <link rel="canonical" href="https://mathduel.games/games/24-game/" />
@@ -31,7 +31,7 @@
   <link rel="preload" href="/fonts/space-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin />
   <link rel="preload" href="/fonts/sora-latin.woff2" as="font" type="font/woff2" crossorigin />
 </head>
-<body data-mode="practice" class="arena has-papergames-shell">
+<body data-mode="practice" class="arena has-papergames-shell skin-paper">
   <!-- ═══════════ 6 个游戏封面 SVG symbol（与首页同源） ═══════════ -->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
 <defs><symbol id="cv-24" viewBox="0 0 512 512">
@@ -167,7 +167,7 @@
   </div>
 </aside>
 
-<!-- ═══════════ 主区：游戏对局内容（保留 body.arena 旧深色皮肤） ═══════════ -->
+<!-- ═══════════ 主区：游戏对局内容（skin-paper 浅色皮肤，与首页/ lobby 同源） ═══════════ -->
 <div class="pg-main">
 
   <main class="g24" id="main">
@@ -221,7 +221,7 @@
         </div>
         <!-- Practice 专属：本局用时（依赖 updatePracticeTimer 每秒更新） -->
         <div class="prac-timer" id="pracTimerWrap" hidden>
-          <span class="prac-lbl">本局用时</span><b id="practiceTimer" class="num">⏱ 0:00</b>
+          <span class="prac-lbl">Time</span><b id="practiceTimer" class="num">⏱ 0:00</b>
         </div>
       </div>
 
