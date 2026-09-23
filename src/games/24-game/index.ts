@@ -83,16 +83,22 @@ function refreshTop(): void {
 function deal(override?: number[]): void {
   numbers = override ? override.slice() : generate24Puzzle(undefined, difficulty);
   formula = '';
-  historyStack = [];
-  usedCardIndices.clear();
-  dealingAnim = true;
-  timer = 0;
+historyStack = [];
+usedCardIndices.clear();
+lastClickIndex = -1;
+if (lastClickTimeout != null) {
+  window.clearTimeout(lastClickTimeout);
+  lastClickTimeout = null;
+}
+dealingAnim = true;
+timer = 0;
   // 新发牌 = 清掉「答案已揭晓」锁
   document.body.classList.remove('answer-revealed');
   if (interval) window.clearInterval(interval);
   interval = window.setInterval(() => {
     if (comp.active) return;
     timer++;
+    if (mode === 'practice') paintPracticeTimer();
   }, 1000);
   render();
   resultEl.className = 'result';
@@ -104,6 +110,9 @@ const prettyFormula = (f: string) => f.replace(/\*/g, ' × ').replace(/\//g, ' �
 /** 只在真正发牌那一刻播 dealIn 动画；此后每次点击重渲染不再复播
     —— 否则每次点击都会让整排牌重播发牌动画，看起来就是"点一下闪一下" */
 let dealingAnim = false;
+/** 最后点击的牌（用于 .selected 高亮，纯视觉反馈） */
+let lastClickIndex = -1;
+let lastClickTimeout: number | null = null;
 
 function render(): void {
   const dealing = dealingAnim;
@@ -113,9 +122,10 @@ function render(): void {
       const used = usedCardIndices.has(i);
       const red = i === 1 || i === 3;
       const dealCls = dealing && !used ? 'dealing' : '';
+      const selCls = !used && i === lastClickIndex ? 'selected' : '';
       const delay = dealing ? ` style="animation-delay:${i * 70}ms"` : '';
       return (
-        `<div class="card ${used ? 'used' : ''} ${red ? 'red' : ''} ${dealCls}" data-i="${i}"` +
+        `<div class="card ${used ? 'used' : ''} ${red ? 'red' : ''} ${dealCls} ${selCls}" data-i="${i}"` +
         ` role="button" tabindex="0" aria-label="card ${n}"${delay}>` +
         `<div class="suit">${SUITS[i]}</div>` +
         `<div class="num">${n}</div>` +
@@ -123,6 +133,9 @@ function render(): void {
       );
     })
     .join('');
+
+  // Practice 模式：刷新本局用时显示
+  if (mode === 'practice') updatePracticeTimer();
 
   if (formula) {
     formulaEl.innerHTML = prettyFormula(formula)
@@ -323,10 +336,20 @@ function giveHint(): void {
     toast('No hint for this one');
     return;
   }
-  const e = ans[1];
-  const m = e.match(/\(?([^()]+)\)?/);
-  const part = m ? m[1] : e;
-  toast('Try: ' + part.replace(/\*/g, '×').replace(/\//g, '÷').replace(/-/g, '−'));
+  // 去掉最外层括号，再按从左到右优先级拆出"算一步即可"的最小子表达式
+  // 例: "(1 + 3) × (12 - 6)" → 先看 "1 + 3 = 4"，再算 "4 × 6 = 24"
+  const e = ans[1].replace(/^\(|\)$/g, '');
+  // 匹配形如 "-?d+ ×/÷/+/− -?d+" 的最小二元组（× ÷ 优先于 + −，按出现顺序抓最早的非 + - 项）
+  const bin = e.match(/-?\d+\s*[×÷÷\*\/]\s*-?\d+/);
+  const step = bin ? bin[0] : e;
+  // 算这一步的近似结果（仅做"该多大"提示；具体数字精度由玩家自行核算）
+  let approx = '';
+  try {
+    const v = safeEval(step.replace(/[×]/g, '*').replace(/[÷]/g, '/').replace(/[−]/g, '-'));
+    approx = ` → ~${Math.round(v)}`;
+  } catch { /* 拆不出来也不强算 */ }
+  const kind = difficulty === 'easy' ? 'Try first:' : difficulty === 'hard' ? 'From here:' : 'Try first:';
+  toast(`${kind} ${step.replace(/\*/g, '×').replace(/\//g, '÷').replace(/-/g, '−')}${approx}`);
 }
 
 function showAnswer(): void {
@@ -343,10 +366,15 @@ function showAnswer(): void {
   // 答案揭晓后锁定输入：清空式子与已用牌状态，并拒绝后续 append，防止"接着上一题往下算"
   // —— 同时把已用牌保留为视觉提示，玩家可点 New Deal 重新发牌
   formula = '';
-  historyStack = [];
-  usedCardIndices.clear();
-  document.body.classList.add('answer-revealed');
-  render();
+historyStack = [];
+usedCardIndices.clear();
+lastClickIndex = -1;
+if (lastClickTimeout != null) {
+  window.clearTimeout(lastClickTimeout);
+  lastClickTimeout = null;
+}
+document.body.classList.add('answer-revealed');
+render();
 }
 
 /* ===================== 每日挑战（服务端权威：/api/daily24/* · 全球同题 5 题 · 每题 60s · 连续制）
@@ -404,6 +432,16 @@ const fmtClock = (s: number) => {
   const ss = s % 60;
   return m + ':' + (ss < 10 ? '0' : '') + ss;
 };
+
+/** Practice 模式：本局用时 mm:ss（与 timed/daily 共用 fmtClock，便于在窄屏一致） */
+function paintPracticeTimer(): void {
+  const el = document.getElementById('practiceTimer');
+  if (!el) return;
+  el.textContent = '⏱ ' + fmtClock(timer);
+}
+function updatePracticeTimer(): void {
+  if (mode === 'practice') paintPracticeTimer();
+}
 
 const dailyCompletedToday = () => {
   try {
@@ -917,27 +955,28 @@ function stopTimedTimer(): void {
   }
 }
 
-/** 解出当前题：记时 → 刷新最快 → 0.7s 后自动换题 */
+/** 解出当前题：记时 → 刷新最快 → 1500ms 后自动换题（足够读完"X.Xs"，且不拖慢速度党） */
 function timedSolve(): void {
   const t = Math.max(0, timed.limit - timed.timeLeft);
   stopTimedTimer();
   timed.solved++;
   if (!timed.best || t < timed.best) timed.best = t;
   resultEl.className = 'result ok';
-  resultEl.textContent = `🎉 Solved in ${t.toFixed(1)}s — next deal…`;
+  // 用 toFixed(1) 保留 1 位小数让 "5.3s" 更有成就感
+  resultEl.textContent = `🎉 Solved in ${t.toFixed(1)}s · best ${timed.best.toFixed(1)}s — next…`;
   renderSide();
   window.setTimeout(() => {
     if (!timed.active) return;
     renderTimedBanner();
     deal();
     startTimedTimer();
-  }, 700);
+  }, 1500);
 }
 
-/** 本题超时：揭晓答案 → 1.3s 后自动换题（不中断整轮） */
+/** 本题超时：揭晓答案 → 1700ms 后自动换题（让玩家看清答案 + 表情反馈） */
 function timedTimeUp(): void {
   resultEl.className = 'result bad';
-  resultEl.textContent = '⏰ Time up — next deal…';
+  resultEl.textContent = '⏰ Time up — answer revealed, next…';
   scores.skipped++;
   saveScores();
   refreshTop();
@@ -953,7 +992,7 @@ function timedTimeUp(): void {
     renderTimedBanner();
     deal();
     startTimedTimer();
-  }, 1300);
+  }, 1700);
 }
 
 /* ===================== 账号档案（头像 / 段位 / Elo / 金币） =====================
@@ -1079,10 +1118,11 @@ function pushChat(m: ChatMsg): void {
   renderChatLog();
 }
 
-function clearChat(): void {
-  chatMsgs = [];
-  renderChatLog();
-}
+// 保留 clearChat 以备未来"清空全场聊天"用例；当前 compLeave 不再调用（避免清掉观战条/race-list 状态）
+// function clearChat(): void {
+//   chatMsgs = [];
+//   renderChatLog();
+// }
 
 /** 把样式化的聊天条挂到任意容器（arena board 与大厅房间视图各一处） */
 function chatDockHtml(scope: string): string {
@@ -1504,12 +1544,16 @@ function updateCompTimer(left: number): void {
 
 function compLeave(silent: boolean): void {
   comp.leave(silent);
-  // 退房清场：聊天记录不外泄到下一局，观战锁与两处聊天条一并复位
-  clearChat();
+  // 不再主动清 chatDock / specBar：comp.active=false 后 renderSpecBar() 与
+  // 下一局 compEnterGame() 会接管（chatDock 在新对局由 chatDockHtml() 重新填充，
+  // specBar 在非 spectator 时自动 hidden）。这样观战条的状态切换由统一的 active 标志
+  // 控制，race-list 由 renderSide() 在 setMode 时刷新——不再被清场误伤。
   document.body.classList.remove('spectate');
   $('chatDock')?.classList.add('hidden');
   $('specBar')?.classList.add('hidden');
   $('lobbyChat')?.remove();
+  // silent=true 是 setMode 内部的清理路径（避免与玩家主动退房争抢
+  // race-list 等 DOM）；silent=false 玩家主动退房 → 回到 practice
   if (!silent) setMode('practice');
   closeLobby();
 }
@@ -1613,6 +1657,8 @@ function setMode(m: string): void {
   $('answerBtn')!.style.display = '';
   $('newBtn')!.classList.remove('hidden');
   $('modeBanner')!.innerHTML = '';
+  // Practice 模式：本局用时可见；其它模式隐藏
+  $('pracTimerWrap')!.hidden = m !== 'practice';
 
   if (comp.active) compLeave(true);
 
@@ -1635,6 +1681,7 @@ cardsEl.addEventListener('click', (e) => {
   if (!c || (comp.active && comp.waiting)) return;
   const i = +(c.dataset.i || 0);
   if (usedCardIndices.has(i)) return;
+  flashLast(i);
   appendNumber(String(numbers[i]));
 });
 cardsEl.addEventListener('keydown', (e) => {
@@ -1644,7 +1691,10 @@ cardsEl.addEventListener('keydown', (e) => {
       e.preventDefault();
       if (document.body.classList.contains('answer-revealed')) return;
       const i = +(c.dataset.i || 0);
-      if (!usedCardIndices.has(i)) appendNumber(String(numbers[i]));
+      if (!usedCardIndices.has(i)) {
+        flashLast(i);
+        appendNumber(String(numbers[i]));
+      }
     }
   }
 });
@@ -1662,6 +1712,18 @@ $('pad')!.addEventListener('click', (e) => {
   if ('+-*/'.includes(v)) return appendOp(v);
   append(v);
 });
+
+/** 标记"刚点击的牌"高亮：600ms 后自动清除 */
+function flashLast(i: number): void {
+  lastClickIndex = i;
+  if (lastClickTimeout != null) window.clearTimeout(lastClickTimeout);
+  lastClickTimeout = window.setTimeout(() => {
+    lastClickIndex = -1;
+    lastClickTimeout = null;
+    render();
+  }, 600);
+  render();
+}
 
 $('newBtn')!.onclick = () => {
   if (comp.active) return;
@@ -1755,7 +1817,10 @@ document.addEventListener('keydown', (e) => {
   if (comp.active && comp.waiting) return;
   if (e.key >= '1' && e.key <= '4') {
     const i = +e.key - 1;
-    if (i < numbers.length && !usedCardIndices.has(i)) appendNumber(String(numbers[i]));
+    if (i < numbers.length && !usedCardIndices.has(i)) {
+      flashLast(i);
+      appendNumber(String(numbers[i]));
+    }
   } else if (e.key === '+') appendOp('+');
   else if (e.key === '-') appendOp('-');
   else if (e.key === '*') appendOp('*');

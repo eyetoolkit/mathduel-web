@@ -107,7 +107,7 @@ body.arena.answer-revealed .formula { opacity: 0.5; font-style: italic; }
   color: var(--text-muted); margin-top: 3px;
 }
 
-/* ---------- 桌头：目标 + 难度 ---------- */
+/* ---------- 桌头：目标 + 难度 + practice 用时 ---------- */
 .table-head {
   display: flex; align-items: center; justify-content: space-between;
   gap: var(--s-4); flex-wrap: wrap; margin-bottom: var(--s-5);
@@ -121,6 +121,20 @@ body.arena.answer-revealed .formula { opacity: 0.5; font-style: italic; }
   font-family: var(--font-display); font-weight: 700; font-size: clamp(2.25rem, 8vw, 3rem); line-height: 1;
   background: linear-gradient(180deg, var(--brand-400), var(--brand-700));
   -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.prac-timer {
+  display: inline-flex; align-items: baseline; gap: 8px;
+  padding: 6px 14px; border-radius: var(--r-full);
+  border: 1px solid var(--border); background: var(--bg-subtle);
+  font-size: 0.8125rem; color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+.prac-timer .prac-lbl { font-size: 0.6875rem; letter-spacing: 0.12em; text-transform: uppercase; }
+.prac-timer b { color: var(--text-strong); font-size: 1rem; font-weight: 700; }
+@media (max-width: 460px) {
+  /* 窄屏：把计时器换到第二行，避免挤压难度块 */
+  .table-head { row-gap: var(--s-3); }
+  .prac-timer { align-self: flex-end; }
 }
 .diff-pick {
   display: flex; gap: var(--s-1); padding: 4px;
@@ -172,9 +186,15 @@ body.arena.answer-revealed .formula { opacity: 0.5; font-style: italic; }
 .card.red { color: var(--danger); }
 .card:hover { transform: translateY(-4px); }
 .card.selected {
-  transform: translateY(-7px) scale(1.04);
+  /* 用一次性"按下回弹"动画而不是 fixed transform —— 6 次连续点击会一直保持高亮反而干扰 */
+  animation: cardFlash 0.32s var(--ease-spring);
   border-color: var(--brand-600);
-  box-shadow: 0 14px 34px var(--brand-ring), 0 0 0 4px var(--brand-ring);
+  box-shadow: 0 0 0 4px var(--brand-ring);
+}
+@keyframes cardFlash {
+  0%   { transform: translateY(0) scale(1); }
+  35%  { transform: translateY(-6px) scale(1.05); }
+  100% { transform: translateY(0) scale(1); }
 }
 .card.used { opacity: 0.4; transform: translateY(3px) scale(0.97); cursor: default; box-shadow: none; }
 @keyframes dealIn { from { opacity: 0; transform: translateY(26px) rotate(-8deg) scale(0.85); } to { opacity: 1; transform: none; } }
