@@ -1,40 +1,17 @@
 /**
- * MathDuel 首页入口（Homepage Redesign, 2026-09-23）
- * 装配：竞技墙 + 游戏网格（JS 渲染，beta 可见性由 VITE_SHOW_BETA 控制）。
+ * MathDuel 首页入口（Homepage Redesign v2 · papergames 浅色版, 2026-09-23）
+ * 设计稿：share-html/24zuixin.html
+ * - 装配侧栏 + 游戏墙 + hero + 每日/周赛 + 天梯 + 特性 + 页脚
+ * - 字体/CSS 沿用设计系统站内自托管（Space Grotesk / Sora）
+ * - 倒计时到 UTC 零点（与 daily24 API 对齐）
  */
 import '@tri-sites/design-system/styles';
 import './styles/home-redesign.css';
-import { renderGameGrid, renderArenaWall } from './pages/home';
+import { renderHomeV2 } from './pages/home-redesign';
 
-// Hero 右侧「竞技墙」
-renderArenaWall(document.getElementById('arenaWall'));
+// 主页装配
+renderHomeV2();
 
-// 游戏网格（含 Sum Tower SOON 卡片）
-renderGameGrid(document.getElementById('gameGrid'));
-
-// 年份
+// 年份（页脚）
 const yearEl = document.getElementById('year');
 if (yearEl) yearEl.textContent = String(new Date().getFullYear());
-
-// 每日挑战倒计时：到下一个 UTC 零点
-function nextDailyReset(): number {
-  const now = new Date();
-  const next = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1, 0, 0, 0, 0));
-  return Math.max(0, next.getTime() - now.getTime());
-}
-function fmt(ms: number): string {
-  const s = Math.floor(ms / 1000);
-  const h = String(Math.floor(s / 3600)).padStart(2, '0');
-  const m = String(Math.floor((s % 3600) / 60)).padStart(2, '0');
-  const sec = String(s % 60).padStart(2, '0');
-  return `${h}:${m}:${sec}`;
-}
-function tickDaily() {
-  const txt = fmt(nextDailyReset());
-  const t1 = document.getElementById('dailyTimer');
-  if (t1) t1.textContent = txt;
-  const t2 = document.getElementById('dailyCountdown');
-  if (t2) t2.textContent = `Same puzzle worldwide · resets in ${txt}`;
-}
-tickDaily();
-setInterval(tickDaily, 1000);
