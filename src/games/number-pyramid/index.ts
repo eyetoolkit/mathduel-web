@@ -16,6 +16,7 @@ import {
   duelDeal,
   posOf,
   idxAt,
+  cellsAt,
   totalCells,
   nextDeterminable,
   botStep,
@@ -64,15 +65,16 @@ const st = {
   notes: false,
   // duel
   mineTotal: 0,
-  mineDone: 0,
   botTotal: 0,
   botDone: 0,
   botTimer: null as number | null,
   // timed
   timedSolved: 0,
-  timedSkipped: 0,
+  timedDealt: 0,
   timedStreak: 0,
   timedStartTs: 0,
+  // 多位数组合输入：正在逐位输入的格下标（-1 = 无）
+  composing: -1,
 };
 
 const LS_BEST = 'np_best_v1';
@@ -93,6 +95,10 @@ const writeJSON = (k: string, v: unknown): void => {
   }
 };
 const fmt = (sec: number): string => `${sec.toFixed(1)}s`;
+const fmtClock = (sec: number): string => {
+  const s = Math.max(0, Math.floor(sec));
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+};
 
 const LOBBY_URL = '/games/number-pyramid/lobby/';
 const goLobby = (): void => {
@@ -105,7 +111,7 @@ const ROW_H = (levels: Height): number => 100 / (levels + 1.5);
 const CELL_W = (levels: Height): number => 100 / (levels + 0.5);
 /** 第 k 层（0=顶层）brick 中心点的 (x, y) in viewBox 100 */
 const cellCenter = (level: number, col: number, levels: Height): { x: number; y: number } => {
-  const row = levels - level;
+  const row = level + 1; // cellsAt(level)：apex 1 格居中，底行 levels 格铺满（勿用 levels - level，会整塔反置）
   const cw = CELL_W(levels);
   const w = row * cw;
   const startX = (100 - w) / 2 + cw / 2;
@@ -161,7 +167,10 @@ function mulberryFromDate(): () => number {
 function startRound(): void {
   stopAll();
   const m = st.mode;
-  if (m === 'timed') st.timedStartTs = Date.now();
+  if (m === 'timed') {
+    st.timedStartTs = Date.now();
+    st.timedDealt++;
+  }
   if (m === 'daily') {
     const dk = shanghaiDateKey();
     st.tower = dailyTower(dk);
@@ -201,7 +210,7 @@ function resetBoard(keepClock = false): void {
     st.startTs = Date.now();
   }
   st.running = true;
-  st.mineDone = 0;
+  st.composing = -1;
   st.botDone = 0;
   if (st.mode === 'duel') {
     const d = st.tower as Tower & { mine: Set<number>; bots: Set<number> };
@@ -220,6 +229,7 @@ function resetBoard(keepClock = false): void {
       : st.mode === 'timed'
         ? '— chained towers'
         : `— ${heightLabel(st.height)} tower`;
+  $('result')!.classList.remove('win');
   $('result')!.textContent = st.mode === 'duel' ? 'Fill your half before BotBot' : 'Pick a brick, then a number';
 }
 
@@ -235,6 +245,12 @@ function effElapsed(): number {
 function tick(): void {
   if (!st.running) return;
   st.elapsed = effElapsed();
+  const ht = $('hudTime');
+  if (ht) {
+    ht.textContent = st.mode === 'timed'
+      ? fmtClock(Math.max(0, TIMED_LIMIT - (Date.now() - st.timedStartTs) / 1000))
+      : fmtClock(st.elapsed);
+  }
   if (st.mode === 'timed') {
     const left = Math.max(0, TIMED_LIMIT - (Date.now() - st.timedStartTs) / 1000);
     const tms = $('tmSolved');
@@ -256,6 +272,8 @@ function cellClass(i: number, t: Tower): string {
   if (st.sel === i) cls.push('sel');
   if (st.flash.has(i)) cls.push('conflict');
   if (st.mode === 'duel' && st.owner[i] !== 1 && st.owner[i] !== 0) cls.push('lock');
+  if (st.mode === 'duel' && st.owner[i] === 1 && !v) cls.push('mine');
+  if (st.composing === i) cls.push('composing');
   if (!v && st.marks[i] && st.marks[i].size) cls.push('marks');
   // 字号：3 位数 d3
   if (v && v >= 100) cls.push('d3');
@@ -329,7 +347,7 @@ function renderDep(): void {
     const y3 = cellCenter(p.level + 1, p.col + 1, levels).y;
     // 线条状态：若 i 是空 → 普通 mute-2；若 i 已填且正确 → hot；错误 → bad
     let cls = '';
-    if (st.grid[i] !== 0) {
+    if (st.grid[i] !== 0 && st.composing !== i) {
       const expected = st.tower!.solution[aIdx] + st.tower!.solution[bIdx];
       if (st.grid[i] === expected) cls = 'hot';
       else cls = 'bad';
@@ -346,14 +364,38 @@ function selectCell(i: number): void {
     toast('🏁 That brick is BotBot’s');
     return;
   }
+  if (st.composing >= 0 && st.composing !== i) {
+    // 离开未完成的组合输入（半截数字不构成任何判定）→ 丢弃
+    st.grid[st.composing] = 0;
+    st.composing = -1;
+  }
   st.sel = i;
   renderBoard();
   updateHud();
 }
 
 /* ═══ 填数 / 笔记 ═══ */
+let lastNudge = 0;
+function nudgePick(): void {
+  const now = Date.now();
+  if (now - lastNudge < 2000) return;
+  lastNudge = now;
+  toast('👆 Pick a brick first');
+}
+
+function flashCell(i: number, cls: string): void {
+  const c = document.querySelector<HTMLElement>(`#p1board [data-i="${i}"]`);
+  if (!c) return;
+  c.classList.add(cls);
+  window.setTimeout(() => c.classList.remove(cls), 420);
+}
+
 function place(v: number): void {
-  if (!st.running || st.sel < 0) return;
+  if (!st.running) return;
+  if (st.sel < 0) {
+    nudgePick();
+    return;
+  }
   const i = st.sel;
   if (st.tower!.givens.includes(i) && st.grid[i] !== 0) {
     toast('📌 That brick is given');
@@ -368,19 +410,32 @@ function place(v: number): void {
     renderBoard();
     return;
   }
-  // 直接填值；由 dep 显示 hot/bad
-  const correct = v === st.tower!.solution[i];
+  // 多位数组合输入：洞格值 = 两数之和，常 ≥ 10（最大 131）。
+  // 连按组成多位：等于解 → 提交判对；是解的前缀（如 15 打了 1）→ 挂起虚线待续；否则判错。
+  const next = st.grid[i] && st.composing === i ? st.grid[i] * 10 + v : v;
+  const sol = st.tower!.solution[i];
+  if (next !== sol && String(sol).startsWith(String(next))) {
+    st.grid[i] = next;
+    st.composing = i;
+    renderBoard();
+    renderDep();
+    updateHud();
+    return;
+  }
+  st.composing = -1;
+  const correct = next === sol;
   if (!correct) {
     st.mistakes++;
     st.penalty += st.mode === 'duel' ? DUEL_PENALTY : 0;
-    st.grid[i] = v;
+    st.grid[i] = next;
     st.flash.add(i);
     renderBoard();
     renderDep();
+    flashCell(i, 'p1shake');
     if (st.mode === 'duel') toast(`⚔️ Mistake! +${DUEL_PENALTY}s penalty`);
     else if (st.mistakes >= MAX_MISTAKES) window.setTimeout(() => endMistakes(), 500);
     window.setTimeout(() => {
-      if (st.grid[i] === v) st.grid[i] = 0;
+      if (st.grid[i] === next) st.grid[i] = 0;
       st.flash.delete(i);
       renderBoard();
       renderDep();
@@ -388,27 +443,38 @@ function place(v: number): void {
     }, 650);
     return;
   }
-  st.grid[i] = v;
+  st.grid[i] = next;
   st.marks[i].clear();
-  if (st.mode === 'duel') {
-    st.mineDone++;
-    renderOppStatus();
-  }
+  // 自动跳到下一个可确定格（duel 只跳自己半边的）——须在 renderBoard 前改 sel，否则 DOM 停在旧格
+  const det = nextDeterminable(st.grid, st.tower!.levels);
+  const adv = st.mode === 'duel' ? det.filter((j) => st.owner[j] === 1) : det;
+  if (adv.length) st.sel = adv[0];
+  if (st.mode === 'duel') renderOppStatus();
   renderBoard();
   renderDep();
+  flashCell(i, 'p1pop');
   updateHud();
   checkWin();
 }
 
 function erase(): void {
-  if (!st.running || st.sel < 0) return;
+  if (!st.running) return;
+  if (st.sel < 0) {
+    nudgePick();
+    return;
+  }
   const i = st.sel;
   if (st.owner[i] === 2) return;
+  if (st.tower!.givens.includes(i) && st.grid[i] !== 0) {
+    toast('📌 That brick is given');
+    return;
+  }
   if (st.notes && !st.grid[i]) {
     st.marks[i].clear();
     renderBoard();
     return;
   }
+  if (st.composing === i) st.composing = -1;
   st.grid[i] = 0;
   renderBoard();
   renderDep();
@@ -461,7 +527,9 @@ function winSoloDaily(): void {
       extra = '<div class="p1-extra">🥇 New personal best!</div>';
     }
   }
-  $('result')!.innerHTML = `✅ Tower climbed in <b>${fmt(t)}</b>${extra}`;
+  const res = $('result')!;
+  res.classList.add('win');
+  res.innerHTML = `✅ Tower climbed in <b>${fmt(t)}</b>${extra}`;
   showModal(
     `<div class="p1-verdict">Tower complete 🎉</div>
      <div class="p1-scores"><div class="p1-me num">${fmt(t)}<small>your time</small></div></div>
@@ -500,6 +568,7 @@ function winTimed(): void {
   window.setTimeout(() => {
     if (st.mode === 'timed' && (Date.now() - st.timedStartTs) / 1000 < TIMED_LIMIT && st.tower) {
       st.tower = newRoundTower();
+      st.timedDealt++;
       resetBoard(true);
       renderBoard();
       renderDep();
@@ -507,8 +576,10 @@ function winTimed(): void {
       beginTimer();
       $('result')!.innerHTML = `✅ #${st.timedSolved} · ${st.timedStreak} streak — next tower!`;
     }
-  }, 700);
-  $('result')!.innerHTML = `✅ #${st.timedSolved} in <b>${fmt(st.elapsed)}</b> — next tower incoming…`;
+  }, 1500);
+  const res2 = $('result')!;
+  res2.classList.add('win');
+  res2.innerHTML = `✅ #${st.timedSolved} in <b>${fmt(st.elapsed)}</b> — next tower incoming…`;
 }
 
 function endTimed(): void {
@@ -518,6 +589,7 @@ function endTimed(): void {
      <div class="p1-scores">
        <div class="p1-me num">${st.timedSolved}<small>solved</small></div>
        <div class="p1-op num">${st.timedStreak}<small>best streak</small></div>
+       <div class="p1-op num">${Math.max(0, st.timedDealt - st.timedSolved)}<small>unsolved</small></div>
      </div>
      <div class="p1-acts">
        <button class="p1-prim" id="mAgain">↻ Run it again</button>
@@ -526,7 +598,7 @@ function endTimed(): void {
     () => {
       ($('mAgain') as HTMLButtonElement).onclick = () => {
         hideModal();
-        st.timedSolved = 0; st.timedStreak = 0; st.timedSkipped = 0;
+        st.timedSolved = 0; st.timedStreak = 0; st.timedDealt = 0;
         startRound();
       };
       ($('mLobby') as HTMLButtonElement).onclick = () => { hideModal(); goLobby(); };
@@ -563,8 +635,10 @@ function scheduleBot(): void {
 function updateHud(): void {
   const t = st.tower!;
   $('hudApex')!.textContent = `→ ${t.solution[0]}`;
-  const filled = st.grid.filter((v) => v).length;
+  const filled = st.grid.reduce((n, v, idx) => (v && st.composing !== idx ? n + 1 : n), 0);
   $('hudFilled')!.textContent = `${filled} / ${st.grid.length}`;
+  const lives = $('hudLives');
+  if (lives) [...lives.children].forEach((dot, k) => dot.classList.toggle('off', st.mistakes > k));
   if (st.mode === 'duel') {
     $('youStatus')!.innerHTML = `<span class="d"></span>Filled · ${correctMine()}/${st.mineTotal}`;
     $('oppStatus')!.innerHTML = `<span class="d"></span>Filled · ${st.botDone}/${st.botTotal}`;
@@ -640,11 +714,73 @@ $('p1pad')!.addEventListener('click', (e) => {
   else if (b.dataset.v) place(Number(b.dataset.v));
 });
 
+/** 方向键金字塔导航：左右同行环绕；上/下跨层（越界不动）；
+ *  duel 中跳过 bot 的格子（同行环绕扫、跨层就近扫）。 */
+function arrowNav(dc: number, dl: number): void {
+  const t = st.tower;
+  if (!t || !st.running) return;
+  const levels = t.levels;
+  const playable = (i: number): boolean => st.mode !== 'duel' || st.owner[i] === 1;
+  if (st.sel < 0) {
+    const first = t.holes.find((i) => playable(i));
+    if (first != null) {
+      st.sel = first;
+      renderBoard();
+      updateHud();
+    }
+    return;
+  }
+  const p = posOf(st.sel, levels);
+  let target = -1;
+  if (dl === 0) {
+    const rowSize = cellsAt(p.level, levels);
+    for (let step = 1; step <= rowSize; step++) {
+      const col = (((p.col + dc * step) % rowSize) + rowSize) % rowSize;
+      const i = idxAt(p.level, col, levels);
+      if (playable(i)) {
+        target = i;
+        break;
+      }
+    }
+  } else {
+    const nl = p.level + dl;
+    if (nl >= 0 && nl <= levels - 1) {
+      const rowSize = cellsAt(nl, levels);
+      const col = Math.min(p.col, rowSize - 1);
+      for (let off = 0; off < rowSize && target < 0; off++) {
+        const dirs = off === 0 ? [0] : [-off, off];
+        for (const d of dirs) {
+          const c2 = col + d;
+          if (c2 < 0 || c2 >= rowSize) continue;
+          const i = idxAt(nl, c2, levels);
+          if (playable(i)) {
+            target = i;
+            break;
+          }
+        }
+      }
+    }
+  }
+  if (target >= 0 && target !== st.sel) {
+    st.sel = target;
+    renderBoard();
+    updateHud();
+  }
+}
+
 window.addEventListener('keydown', (e) => {
-  if (e.key >= '1' && e.key <= '9') place(Number(e.key));
+  if (e.key >= '0' && e.key <= '9') place(Number(e.key));
   else if (e.key === 'Backspace' || e.key === 'Delete') erase();
   else if (e.key === 'n' || e.key === 'N') toggleNotes();
-  else if (e.key === 'Escape') goLobby();
+  else if (e.key === 'ArrowLeft') { e.preventDefault(); arrowNav(-1, 0); }
+  else if (e.key === 'ArrowRight') { e.preventDefault(); arrowNav(1, 0); }
+  else if (e.key === 'ArrowUp') { e.preventDefault(); arrowNav(0, -1); }
+  else if (e.key === 'ArrowDown') { e.preventDefault(); arrowNav(0, 1); }
+  else if (e.key === 'Escape') {
+    // 结算弹窗打开时先关弹窗，再退 lobby
+    if (!$('overlay')!.hidden) hideModal();
+    else goLobby();
+  }
 });
 
 $('backLobby')!.addEventListener('click', goLobby);
@@ -652,7 +788,7 @@ $('newBtn')!.addEventListener('click', () => startRound());
 $('hintBtn')!.addEventListener('click', () => {
   if (!st.running || !st.tower) return;
   const det = nextDeterminable(st.grid, st.tower.levels);
-  if (!det.length) return toast('🤔 No determinable brick — try guessing');
+  if (!det.length) return toast('🤔 No determinable brick right now');
   // 选一个可确定的空格（优先不在 duel 别人的）
   const candidates = st.mode === 'duel'
     ? det.filter((i) => st.owner[i] === 1 || st.owner[i] === 0)
@@ -663,7 +799,8 @@ $('hintBtn')!.addEventListener('click', () => {
   renderBoard();
   updateHud();
   const p = posOf(i, st.tower.levels);
-  toast(`💡 r${p.level + 1}c${p.col + 1} = ${st.tower.solution[i]} (sum of below)`);
+  // 逻辑提示：指向可确定格但不泄值（把下方两格相加正是玩法本身）
+  toast(`💡 r${p.level + 1}c${p.col + 1} is determinable — sum the two bricks below it`);
 });
 
 $('overlay')!.addEventListener('click', (e) => {

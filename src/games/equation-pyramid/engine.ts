@@ -65,7 +65,9 @@ export function evalTriple(a: number, op1: Op, b: number, op2: Op, c: number): n
   const result1: (number | Op)[] = [];
   for (let i = 0; i < tokens.length; i++) {
     const tk = tokens[i];
-    if (typeof tk === 'string' && (tk === mul || tk === div) && i + 2 < tokens.length) {
+    // 边界必须是 i+1（right = tokens[i+1]）。曾误写 i+2 导致 op2 位置的 ×/÷ 永不合并、
+    // 连 a×b×c 都恒判 null（acc 循环遇 ×/÷ 走 else return null）。
+    if (typeof tk === 'string' && (tk === mul || tk === div) && i + 1 < tokens.length) {
       const left = result1.pop() as number;
       const right = tokens[i + 1] as number;
       if (tk === mul) {

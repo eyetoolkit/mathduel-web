@@ -21,7 +21,7 @@
 }
 
 /* ===== 顶部 tab + back ===== */
-.p1-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.p1-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
 .p1-tabs {
   display: inline-flex; gap: 4px;
   background: var(--a-ink-2);
@@ -315,4 +315,48 @@
   .p1-pad { max-width: 320px; }
   .p1-pk { font-size: 1rem; padding: 10px 6px; }
   .p1-pk.erase, .p1-pk.notes { font-size: 0.78rem; }
+  .p1-tab { padding: 6px 9px; font-size: 0.78rem; }
 }
+
+/* ===== 🔴 关键修复：author 的 display:flex 会覆盖 UA 的 [hidden]{display:none}，
+   导致结算遮罩从页面加载起就全屏拦截点击（同 killer .k9-overlay 教训） ===== */
+.p1-overlay[hidden] { display: none; }
+
+/* 结果横幅：空内容不占位；胜利用 ember 高亮 */
+.p1-result:empty { display: none; }
+
+/* HUD lives（3 条命，off = 已犯错） */
+.p1-lives { display: inline-flex; gap: 5px; align-items: center; }
+.p1-lives i { width: 9px; height: 9px; border-radius: 50%; background: var(--a-teal); }
+.p1-lives i.off { background: var(--a-line); }
+
+/* duel 我方空格 ember 角标（bot 格已有 teal 描边区分） */
+.p1-cell.mine::after {
+  content: '';
+  position: absolute;
+  top: 0; right: 0;
+  border-top: 8px solid var(--a-ember);
+  border-left: 8px solid transparent;
+}
+
+/* 多位数组合输入中：虚线边框提示「还会继续拼位」 */
+.p1-cell.composing { border-style: dashed; }
+
+/* 动效：落子 pop / 错误 shake（一次性挂 class，下轮 render 自然移除） */
+@keyframes p1pop {
+  0% { transform: scale(0.82); }
+  55% { transform: scale(1.07); }
+  100% { transform: scale(1); }
+}
+.p1-cell.p1pop { animation: p1pop 0.28s cubic-bezier(0.34, 1.56, 0.64, 1); }
+@keyframes p1shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-4px); }
+  40% { transform: translateX(4px); }
+  60% { transform: translateX(-3px); }
+  80% { transform: translateX(2px); }
+}
+.p1-cell.p1shake { animation: p1shake 0.32s ease; }
+
+/* 0 键（在 padfoot 里与 Erase/Notes 同排） */
+.p1-pk.zero { aspect-ratio: auto; padding: 10px 8px; font-size: 1.05rem; }

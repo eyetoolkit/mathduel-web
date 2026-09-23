@@ -23,7 +23,7 @@
 }
 
 /* ===== 顶部 tab + back ===== */
-.ep-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.ep-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
 .ep-tabs {
   display: inline-flex; gap: 4px;
   background: var(--a-ink-2);
@@ -414,4 +414,28 @@
   .ep-slot b { font-size: 1.05rem; }
   .ep-sop { font-size: 1rem; }
   .ep-result { min-width: 38px; height: 40px; font-size: 1.1rem; }
+  .ep-tab { padding: 6px 9px; font-size: 0.78rem; }
 }
+
+/* ===== 🔴 关键修复：author 的 display:flex 会覆盖 UA 的 [hidden]{display:none}，
+   导致结算遮罩从页面加载起就全屏拦截点击（同 killer .k9-overlay 教训） ===== */
+.ep-overlay[hidden] { display: none; }
+
+/* 结果横幅：空内容不占位 */
+.ep-result-msg:empty { display: none; }
+
+/* 动效：bank 成功 epop / 判错 eshake（一次性挂 class） */
+@keyframes epop {
+  0% { transform: scale(0.82); }
+  55% { transform: scale(1.07); }
+  100% { transform: scale(1); }
+}
+.epc.epop { animation: epop 0.32s cubic-bezier(0.34, 1.56, 0.64, 1); }
+@keyframes eshake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-4px); }
+  40% { transform: translateX(4px); }
+  60% { transform: translateX(-3px); }
+  80% { transform: translateX(2px); }
+}
+.ep-strip.eshake { animation: eshake 0.36s ease; }

@@ -61,9 +61,11 @@ const st = {
   hintsLeft: HINT_BUDGET,
   // timed
   timedSolved: 0,
+  timedDealt: 0,
   timedStreak: 0,
   timedStartTs: 0,
   // duel
+  myBanks: 0, // 玩家本人的 bank 数（st.banked 是共享池，含 bot 的）
   oppBanks: 0,
   oppTimer: null as number | null,
 };
@@ -135,7 +137,10 @@ function newRoundBoard(): Board {
 function startRound(): void {
   stopAll();
   const m = st.mode;
-  if (m === 'timed') st.timedStartTs = Date.now();
+  if (m === 'timed') {
+    st.timedStartTs = Date.now();
+    st.timedDealt++;
+  }
   if (m === 'daily') {
     const dk = shanghaiDateKey();
     st.board = dailyBoard(dk);
@@ -164,7 +169,10 @@ function resetBoard(): void {
   st.score = 0;
   st.misses = 0;
   st.hintsLeft = HINT_BUDGET;
+  st.myBanks = 0;
   st.oppBanks = 0;
+  // 清掉上一局的 hint 残留（dataset.hinted 挂在复用的 cell DOM 上，不删会跨局发光）
+  document.querySelectorAll<HTMLElement>('#epgrid .epc').forEach((c) => { delete c.dataset.hinted; });
   st.elapsed = 0;
   st.penalty = 0;
   st.startTs = Date.now();
@@ -281,10 +289,18 @@ function renderStrip(): void {
       const key = tripleKey([a, b, c]);
       if (!st.banked.has(key)) {
         st.banked.add(key);
+        st.myBanks++;
         st.score += 100;
         sres.textContent = String(val);
         sres.classList.add('ok');
         strip.classList.add('ok');
+        for (const ci of [a, b, c]) {
+          const cell = document.querySelector<HTMLElement>(`#epgrid [data-i="${ci}"]`);
+          if (cell) {
+            cell.classList.add('epop');
+            window.setTimeout(() => cell.classList.remove('epop'), 420);
+          }
+        }
         toast('✓ ' + describeSolution([a, b, c], t) + ' = ' + val);
         // 检查 board 是否已被穷尽
         if (st.banked.size >= t.solutions.length) {
@@ -305,6 +321,10 @@ function renderStrip(): void {
       st.misses++;
       st.penalty += st.mode === 'duel' ? DUEL_PENALTY : 0;
       toast(`✗ ${describeSolution([a, b, c], t)} = ${val} (target ${t.target})`);
+    }
+    if (sres.classList.contains('bad')) {
+      strip.classList.add('eshake');
+      window.setTimeout(() => strip.classList.remove('eshake'), 420);
     }
     renderTray();
   } else {
@@ -333,6 +353,14 @@ function escHtml(s: string): string {
 }
 
 /* ═══ 单元格点击 ═══ */
+let lastJudgeNudge = 0;
+function nudgeJudge(): void {
+  const now = Date.now();
+  if (now - lastJudgeNudge < 2000) return;
+  lastJudgeNudge = now;
+  toast('⏳ Judging current pick — tap ↻ Clear to reset');
+}
+
 function onCellClick(i: number): void {
   if (!st.running || !st.board) return;
   // 同格重复点 → 取消该格（移除）
@@ -343,7 +371,10 @@ function onCellClick(i: number): void {
     renderStrip();
     return;
   }
-  if (st.picks.length >= 3) return; // 已选满 3 格，等 strip 处理
+  if (st.picks.length >= 3) {
+    nudgeJudge(); // 已选满 3 格，判定中
+    return;
+  }
   st.picks.push(i);
   renderBoard();
   renderStrip();
@@ -369,7 +400,7 @@ function updateHud(): void {
   $('hudMiss')!.textContent = String(st.misses);
   $('hintLeft')!.textContent = `×${st.hintsLeft}`;
   if (st.mode === 'duel') {
-    $('youStatus')!.innerHTML = `<span class="d"></span>${st.banked.size} banks`;
+    $('youStatus')!.innerHTML = `<span class="d"></span>${st.myBanks} banks`;
     $('oppStatus')!.innerHTML = `<span class="d"></span>${st.oppBanks} banks`;
   } else {
     $('youStatus')!.innerHTML = `<span class="d"></span>${st.banked.size} of ${t.solutions.length}`;
@@ -390,6 +421,7 @@ function winBoard(): void {
     window.setTimeout(() => {
       if (st.mode === 'timed' && (Date.now() - st.timedStartTs) / 1000 < TIMED_LIMIT) {
         st.board = newRoundBoard();
+        st.timedDealt++;
         resetBoard();
         renderBoard();
         renderTarget();
@@ -399,7 +431,7 @@ function winBoard(): void {
         beginTimer();
         $('result')!.innerHTML = `✅ Board cleared in <b>${fmt(st.elapsed)}</b> — next!`;
       }
-    }, 600);
+    }, 1500);
     $('result')!.innerHTML = `✅ Cleared in <b>${fmt(st.elapsed)}</b> — ${st.timedStreak} streak`;
     return;
   }
@@ -448,6 +480,7 @@ function endTimed(): void {
      <div class="ep-scores">
        <div class="ep-me num">${st.timedSolved}<small>boards cleared</small></div>
        <div class="ep-op num">${st.timedStreak}<small>best streak</small></div>
+       <div class="ep-op num">${Math.max(0, st.timedDealt - st.timedSolved)}<small>unsolved</small></div>
      </div>
      <div class="ep-acts">
        <button class="ep-prim" id="mAgain">↻ Run it again</button>
@@ -456,7 +489,7 @@ function endTimed(): void {
     () => {
       ($('mAgain') as HTMLButtonElement).onclick = () => {
         hideModal();
-        st.timedSolved = 0; st.timedStreak = 0;
+        st.timedSolved = 0; st.timedStreak = 0; st.timedDealt = 0;
         startRound();
       };
       ($('mLobby') as HTMLButtonElement).onclick = () => { hideModal(); goLobby(); };
@@ -480,10 +513,8 @@ function scheduleOpp(): void {
     renderTray();
     updateHud();
     if (st.banked.size >= t.solutions.length) {
-      // 谁先 bank 完最后那个就赢——简化：玩家先 bank 完算赢
-      const playerDone = countMyBanks(t);
-      if (playerDone >= t.solutions.length - st.oppBanks) finishDuel(true);
-      else finishDuel(false);
+      // bot 收下最后一解 → bot 胜（玩家收尾走 renderStrip → winBoard → finishDuel(true)）
+      finishDuel(false);
       return;
     }
     st.oppTimer = window.setTimeout(step, 2000 + Math.random() * 2000);
@@ -491,22 +522,15 @@ function scheduleOpp(): void {
   st.oppTimer = window.setTimeout(step, 2200);
 }
 
-function countMyBanks(_t: Board): number {
-  // 简化：player banks 已经包含在 st.banked 中。但 bot 也会推到 st.banked。
-  // 我们这里把 player banks 视为先到先得——实际上两者都进 st.banked，难以区分。
-  // 退化为：若 st.banked.size >= t.solutions.length 且非最后一手由 bot 完成就算赢。
-  return st.banked.size;
-}
-
 function finishDuel(playerWon: boolean): void {
   stopAll();
   $('result')!.innerHTML = playerWon
     ? `🏆 You banked the last one in <b>${fmt(st.elapsed)}</b>`
-    : `🤖 Bot banked the last one — you had ${countMyBanks(st.board!)} banks`;
+    : `🤖 Bot banked the last one — you had ${st.myBanks} banks`;
   showModal(
     `<div class="ep-verdict">${playerWon ? 'You win 🏆' : 'Bot wins 🤖'}</div>
      <div class="ep-scores">
-       <div class="ep-me num">${playerWon ? fmt(st.elapsed) : `${countMyBanks(st.board!)} banks`}<small>you</small></div>
+       <div class="ep-me num">${playerWon ? fmt(st.elapsed) : `${st.myBanks} banks`}<small>you</small></div>
        <div class="ep-op num">${playerWon ? `${st.oppBanks} banks` : fmt(st.elapsed)}<small>Bot</small></div>
      </div>
      <div class="ep-acts">
@@ -559,23 +583,25 @@ $('hintBtn')!.addEventListener('click', () => {
   if (!remaining.length) return toast('🤔 All banked');
   // 随机挑一个解的三个 cell 标 hinted（半透明提示）
   const tri = remaining[Math.floor(Math.random() * remaining.length)];
-  for (const i of tri) {
-    const cell = document.querySelector<HTMLElement>(`#epgrid [data-i="${i}"]`);
-    if (cell) cell.dataset.hinted = '1';
-  }
+  // 只点亮解中的一个格（原实现三格全标 + 泄整条等式，剧透太狠）
+  const cell = document.querySelector<HTMLElement>(`#epgrid [data-i="${tri[Math.floor(Math.random() * 3)]}"]`);
+  if (cell) cell.dataset.hinted = '1';
   renderBoard();
   st.hintsLeft--;
   updateHud();
-  toast(`💡 Try ${describeSolution(tri, t)}`);
+  toast('💡 One cell of an unbanked equation is glowing — build around it');
 });
 
 window.addEventListener('keydown', (e) => {
   if (e.key === 'Backspace' || e.key === 'Delete') {
+    if (!st.running) return;
     st.picks.pop();
     renderBoard();
     renderStrip();
   } else if (e.key === 'Escape') {
-    goLobby();
+    // 结算弹窗打开时先关弹窗，再退 lobby
+    if (!$('overlay')!.hidden) hideModal();
+    else goLobby();
   }
 });
 

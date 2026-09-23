@@ -52,6 +52,8 @@
     <div class="p1-hud" id="hud" aria-live="polite">
       <div class="p1-hud-row"><span class="p1-hl">Apex target</span><span class="p1-arith num" id="hudApex">—</span></div>
       <div class="p1-hud-row"><span class="p1-hl">Bricks filled</span><span class="p1-arith num" id="hudFilled">0 / 0</span></div>
+      <div class="p1-hud-row"><span class="p1-hl">Time</span><span class="p1-arith num" id="hudTime">0:00</span></div>
+      <div class="p1-hud-row"><span class="p1-hl">Lives</span><span class="p1-lives" id="hudLives"><i></i><i></i><i></i></span></div>
     </div>
 
     <div class="p1-pad" id="p1pad">
@@ -65,6 +67,7 @@
       <button class="p1-pk" data-v="8">8</button>
       <button class="p1-pk" data-v="9">9</button>
       <div class="p1-padfoot">
+        <button class="p1-pk zero" data-v="0">0</button>
         <button class="p1-pk erase" data-act="erase" id="eraseBtn">⌫ Erase</button>
         <button class="p1-pk notes" data-act="notes" id="notesBtn">✎ Notes</button>
       </div>
@@ -75,7 +78,7 @@
       <button class="p1-tool" id="newBtn" title="Fresh tower">🔄 New</button>
     </div>
 
-    <div id="result" class="p1-result" hidden></div>
+    <div id="result" class="p1-result"></div>
 
     <div class="p1-you" id="youHead">
       <div class="p1-player">
