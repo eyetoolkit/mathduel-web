@@ -9,6 +9,7 @@
     ".": "./src/index.ts",
     "./styles": "./src/styles/index.css",
     "./styles/*": "./src/styles/*",
+    "./styles/mono": "./src/styles/tokens-mono.css",
     "./tailwind-preset": "./src/tailwind-preset.ts",
     "./i18n": "./src/i18n/index.ts",
     "./lib/*": "./src/lib/*"

@@ -1,0 +1,16 @@
+/* ============================================================
+   Tri-Sites Design System · Mono Tokens（按需）
+   ------------------------------------------------------------
+   仅 24-game 公式区等宽对齐刚需场景使用：
+     import '@tri-sites/design-system/styles/mono';
+   引入后会加载 ~44KB 字体文件（500+700 两个 weight）。
+   其余页面只走 tokens.css 的 fallback 链（系统 mono），视觉接近无损。
+   ============================================================ */
+@font-face {
+  font-family: 'JetBrains Mono'; font-style: normal; font-weight: 500;
+  font-display: swap; src: url('/fonts/jetbrains-mono-latin-500.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'JetBrains Mono'; font-style: normal; font-weight: 700;
+  font-display: swap; src: url('/fonts/jetbrains-mono-latin-700.woff2') format('woff2');
+}

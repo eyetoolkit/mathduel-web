@@ -23,14 +23,8 @@
   font-family: 'Sora'; font-style: normal; font-weight: 400 800;
   font-display: swap; src: url('/fonts/sora-latin.woff2') format('woff2');
 }
-@font-face {
-  font-family: 'JetBrains Mono'; font-style: normal; font-weight: 500;
-  font-display: swap; src: url('/fonts/jetbrains-mono-latin-500.woff2') format('woff2');
-}
-@font-face {
-  font-family: 'JetBrains Mono'; font-style: normal; font-weight: 700;
-  font-display: swap; src: url('/fonts/jetbrains-mono-latin-700.woff2') format('woff2');
-}
+/* JetBrains Mono 已拆到 tokens-mono.css，仅 24-game 公式区等宽刚需场景显式 import。
+   其他页面只走 fallback 链（ui-monospace / SFMono-Regular / Menlo / 系统 mono），首屏省 ~22KB + ~1.2s。 */
 
 /* ========== Reset ========== */
 * { box-sizing: border-box; margin: 0; padding: 0; }

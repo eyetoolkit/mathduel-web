@@ -5,6 +5,8 @@
  */
 
 import '@tri-sites/design-system/styles';
+// 24-game 公式区需要严格等宽对齐（formula / race-row / db-clock 等），保留 JetBrains Mono
+import '@tri-sites/design-system/styles/mono';
 import '../24-game/styles.css';
 import './arena.css';
 import './social.css';
