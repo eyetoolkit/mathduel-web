@@ -7,6 +7,7 @@
  */
 
 import '@tri-sites/design-system/styles';
+import '../../styles/game-shell.css';
 import './styles.css';
 import { initI18n, mountHeader, toast } from '@tri-sites/design-system';
 import {
@@ -25,7 +26,7 @@ import {
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T | null;
 
 initI18n();
-mountHeader($('header')!, {
+mountHeader(($('header') as HTMLElement | null) ?? document.createElement('div'), {
   brandName: 'MathDuel',
   brandSub: 'Guess the Number',
   mark: '◎',

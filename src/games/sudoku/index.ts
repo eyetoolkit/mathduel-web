@@ -6,6 +6,7 @@
  */
 
 import '@tri-sites/design-system/styles';
+import '../../styles/game-shell.css';
 import '../24-game/styles.css';
 import '../24-game/arena.css';
 import './sudoku.css';
@@ -29,7 +30,7 @@ import {
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T | null;
 
 initI18n();
-mountHeader($('header')!, {
+mountHeader(($('header') as HTMLElement | null) ?? document.createElement('div'), {
   brandName: 'MathDuel',
   brandSub: 'Sudoku 9×9',
   mark: '▦',

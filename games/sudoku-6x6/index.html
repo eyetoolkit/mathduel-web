@@ -30,8 +30,142 @@
   <link rel="preload" href="/fonts/space-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin />
   <link rel="preload" href="/fonts/sora-latin.woff2" as="font" type="font/woff2" crossorigin />
 </head>
-<body class="arena">
-  <div id="header"></div>
+<body class="arena has-papergames-shell">
+  
+<!-- ═══════════ 6 个游戏封面 SVG symbol（与首页同源） ═══════════ -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+<defs>
+<symbol id="cv-24" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#3730A3"/>
+  <rect x="56" y="56" width="184" height="184" rx="42" fill="#FFFFFF"/>
+  <rect x="272" y="56" width="184" height="184" rx="42" fill="#FFFFFF"/>
+  <rect x="56" y="272" width="184" height="184" rx="42" fill="#FFFFFF"/>
+  <rect x="272" y="272" width="184" height="184" rx="42" fill="#F59E0B"/>
+  <g font-family="system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif" font-weight="800" text-anchor="middle">
+    <text x="148" y="148" dominant-baseline="central" font-size="80" fill="#3730A3">13</text>
+    <text x="364" y="148" dominant-baseline="central" font-size="80" fill="#3730A3">11</text>
+    <text x="148" y="366" dominant-baseline="central" font-size="86" fill="#3730A3">+</text>
+    <text x="364" y="366" dominant-baseline="central" font-size="72" fill="#1E1B39">24</text>
+  </g>
+</symbol>
+<symbol id="cv-sudoku" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#3730A3"/>
+  <g fill="#FFFFFF">
+    <rect x="56" y="56" width="118" height="118" rx="27"/><rect x="197" y="56" width="118" height="118" rx="27"/>
+    <rect x="338" y="56" width="118" height="118" rx="27"/><rect x="56" y="197" width="118" height="118" rx="27"/>
+    <rect x="197" y="197" width="118" height="118" rx="27"/><rect x="338" y="197" width="118" height="118" rx="27"/>
+    <rect x="56" y="338" width="118" height="118" rx="27"/><rect x="197" y="338" width="118" height="118" rx="27"/>
+  </g>
+  <rect x="338" y="338" width="118" height="118" rx="27" fill="#F59E0B"/>
+  <g font-family="system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif" font-weight="800" text-anchor="middle">
+    <text x="115" y="115" dominant-baseline="central" font-size="62" fill="#3730A3">1</text><text x="256" y="115" dominant-baseline="central" font-size="62" fill="#3730A3">2</text>
+    <text x="397" y="115" dominant-baseline="central" font-size="62" fill="#3730A3">3</text><text x="115" y="256" dominant-baseline="central" font-size="62" fill="#3730A3">4</text>
+    <text x="256" y="256" dominant-baseline="central" font-size="62" fill="#3730A3">5</text><text x="397" y="256" dominant-baseline="central" font-size="62" fill="#3730A3">6</text>
+    <text x="115" y="397" dominant-baseline="central" font-size="62" fill="#3730A3">7</text><text x="256" y="397" dominant-baseline="central" font-size="62" fill="#3730A3">8</text>
+    <text x="397" y="397" dominant-baseline="central" font-size="62" fill="#1E1B39">9</text>
+  </g>
+</symbol>
+<symbol id="cv-s6" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#4F46E5"/>
+  <g fill="#FFFFFF">
+    <rect x="56" y="126" width="118" height="118" rx="27"/><rect x="197" y="126" width="118" height="118" rx="27"/>
+    <rect x="338" y="126" width="118" height="118" rx="27"/><rect x="56" y="267" width="118" height="118" rx="27"/>
+    <rect x="197" y="267" width="118" height="118" rx="27"/>
+  </g>
+  <rect x="338" y="267" width="118" height="118" rx="27" fill="#22C55E"/>
+  <g font-family="system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif" font-weight="800" text-anchor="middle">
+    <text x="115" y="185" dominant-baseline="central" font-size="62" fill="#4F46E5">1</text><text x="256" y="185" dominant-baseline="central" font-size="62" fill="#4F46E5">2</text>
+    <text x="397" y="185" dominant-baseline="central" font-size="62" fill="#4F46E5">3</text><text x="115" y="326" dominant-baseline="central" font-size="62" fill="#4F46E5">4</text>
+    <text x="256" y="326" dominant-baseline="central" font-size="62" fill="#4F46E5">5</text><text x="397" y="326" dominant-baseline="central" font-size="62" fill="#FFFFFF">6</text>
+  </g>
+</symbol>
+<symbol id="cv-killer" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#312E81"/>
+  <g fill="#FFFFFF">
+    <rect x="56" y="56" width="118" height="118" rx="27"/><rect x="197" y="56" width="118" height="118" rx="27"/>
+    <rect x="338" y="56" width="118" height="118" rx="27"/><rect x="56" y="197" width="118" height="118" rx="27"/>
+    <rect x="197" y="197" width="118" height="118" rx="27"/><rect x="338" y="197" width="118" height="118" rx="27"/>
+    <rect x="56" y="338" width="118" height="118" rx="27"/>
+  </g>
+  <rect x="197" y="338" width="259" height="118" rx="27" fill="#DC2626"/>
+  <rect x="197" y="338" width="259" height="118" rx="27" fill="none" stroke="#FFFFFF" stroke-width="6.5" stroke-dasharray="16 13"/>
+  <g font-family="system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif" font-weight="800">
+    <g text-anchor="middle">
+      <text x="115" y="115" dominant-baseline="central" font-size="62" fill="#312E81">5</text><text x="397" y="115" dominant-baseline="central" font-size="62" fill="#312E81">6</text>
+      <text x="256" y="256" dominant-baseline="central" font-size="62" fill="#312E81">3</text><text x="115" y="397" dominant-baseline="central" font-size="62" fill="#312E81">2</text>
+    </g>
+    <text x="219" y="366" text-anchor="start" dominant-baseline="central" font-size="54" fill="#FFFFFF">17</text>
+  </g>
+</symbol>
+<symbol id="cv-pyr" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#3730A3"/>
+  <rect x="214" y="48" width="84" height="84" rx="19" fill="#F59E0B"/>
+  <g fill="#FFFFFF" fill-opacity="0.16">
+    <rect x="98" y="148" width="96" height="96" rx="22"/><rect x="208" y="148" width="96" height="96" rx="22"/>
+    <rect x="318" y="148" width="96" height="96" rx="22"/><rect x="98" y="258" width="96" height="96" rx="22"/>
+    <rect x="318" y="258" width="96" height="96" rx="22"/><rect x="98" y="368" width="96" height="96" rx="22"/>
+    <rect x="208" y="368" width="96" height="96" rx="22"/><rect x="318" y="368" width="96" height="96" rx="22"/>
+  </g>
+  <g fill="#FFFFFF">
+    <rect x="98" y="258" width="96" height="96" rx="22"/><rect x="208" y="258" width="96" height="96" rx="22"/><rect x="318" y="258" width="96" height="96" rx="22"/>
+  </g>
+  <g font-family="system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif" font-weight="800" text-anchor="middle">
+    <text x="256" y="90" dominant-baseline="central" font-size="40" fill="#1E1B39">20</text>
+    <text x="146" y="306" dominant-baseline="central" font-size="48" fill="#3730A3">4</text>
+    <text x="256" y="306" dominant-baseline="central" font-size="48" fill="#3730A3">×</text>
+    <text x="366" y="306" dominant-baseline="central" font-size="48" fill="#3730A3">5</text>
+  </g>
+</symbol>
+<symbol id="cv-bulls" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#1D4ED8"/>
+  <rect x="56" y="56" width="184" height="184" rx="42" fill="#FFFFFF"/>
+  <rect x="272" y="56" width="184" height="184" rx="42" fill="#FFFFFF"/>
+  <rect x="56" y="272" width="184" height="184" rx="42" fill="#FFFFFF"/>
+  <rect x="272" y="272" width="184" height="184" rx="42" fill="#F59E0B"/>
+  <g font-family="system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif" font-weight="800" text-anchor="middle">
+    <text x="148" y="148" dominant-baseline="central" font-size="110" fill="#1D4ED8">1</text>
+    <text x="364" y="148" dominant-baseline="central" font-size="110" fill="#1E1B39">2</text>
+    <text x="148" y="366" dominant-baseline="central" font-size="110" fill="#1D4ED8">A</text>
+    <text x="364" y="366" dominant-baseline="central" font-size="110" fill="#1E1B39">B</text>
+  </g>
+</symbol></defs>
+</svg>
+
+<!-- ═══════════ 移动端顶栏（≤1119px） ═══════════ -->
+<div class="pg-topbar">
+  <button class="burger" id="pgBurger" aria-label="Open navigation" aria-expanded="false">
+    <svg viewBox="0 0 24 24" fill="none"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+  </button>
+  <a class="logo" href="/">Math<b>Duel</b></a>
+  <a class="btn-play-top" href="/games/sudoku-6x6/?mode=daily">Play now</a>
+</div>
+<div class="pg-overlay" id="pgOverlay"></div>
+
+<!-- ═══════════ 侧边导航（当前 game 高亮） ═══════════ -->
+<aside class="pg-sidebar" id="pgSidebar">
+  <div class="sb-top">
+    <a class="logo" href="/">Math<b>Duel</b></a>
+    <button class="sb-collapse" id="pgCollapse" title="Collapse sidebar" aria-label="Collapse sidebar">«</button>
+  </div>
+  <div class="sb-login">
+    <a class="btn-play" href="/games/sudoku-6x6/?mode=daily"><span>Play now</span></a>
+    <a class="sb-back" href="/" title="Home" aria-label="Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></a>
+  </div>
+  <nav class="sb-nav" aria-label="Site navigation">
+    <a class="nav-item" href="/"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg><label style="cursor:inherit">Home</label></a>
+    <a class="nav-item" href="/leaderboard/"><svg viewBox="0 0 24 24"><path d="M8 21h8m-4-4v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M7 6H4a3 3 0 0 0 3 5M17 6h3a3 3 0 0 1-3 5"/></svg><label style="cursor:inherit">Leaderboard</label></a>
+    <a class="nav-item" href="#"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l2.5 2.5"/></svg><label style="cursor:inherit">Coin Shop 🪙</label></a>
+    <div class="nav-group">All games</div>
+    <a class="nav-item" href="/games/24-game/"><svg class="mini" aria-hidden="true"><use href="#cv-24"/></svg><label style="cursor:inherit">24 Game</label></a><a class="nav-item" href="/games/sudoku/"><svg class="mini" aria-hidden="true"><use href="#cv-sudoku"/></svg><label style="cursor:inherit">Sudoku 9×9</label></a><a class="nav-item active" href="/games/sudoku-6x6/"><svg class="mini" aria-hidden="true"><use href="#cv-s6"/></svg><label style="cursor:inherit">Sudoku 6×6</label></a><a class="nav-item" href="/games/killer-sudoku/"><svg class="mini" aria-hidden="true"><use href="#cv-killer"/></svg><label style="cursor:inherit">Killer Sudoku</label></a><a class="nav-item" href="/games/number-pyramid/"><svg class="mini" aria-hidden="true"><use href="#cv-pyr"/></svg><label style="cursor:inherit">Number Pyramid</label></a><a class="nav-item" href="/games/equation-pyramid/"><svg class="mini" aria-hidden="true"><use href="#cv-pyr"/></svg><label style="cursor:inherit">Equation Pyramid</label></a><a class="nav-item" href="/games/bulls/"><svg class="mini" aria-hidden="true"><use href="#cv-bulls"/></svg><label style="cursor:inherit">Number Guess 1A2B</label></a>
+  </nav>
+  <div class="nav-foot">
+    <span class="lang-pill"><b>EN</b> · 中文 · 日</span>
+    <span class="sb-copy">© 2026</span>
+  </div>
+</aside>
+
+<!-- ═══════════ 主区：游戏对局内容（保留 body.arena 旧深色皮肤） ═══════════ -->
+<div class="pg-main">
 
   <!-- ═══ Play（设计稿 Screen 2）· 模式选择已独立到 /games/sudoku-6x6/lobby/ ═══ -->
   <main class="g24 s6-play" id="playView">
@@ -114,5 +248,46 @@
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <script type="module" src="/src/games/sudoku-6x6/index.ts"></script>
+
+</div><!-- /.pg-main -->
+
+<!-- ═══════════ 深靛页脚（三站矩阵，与首页/ lobby 同源） ═══════════ -->
+<footer class="pg-footer">
+  <div class="wrap">
+    <div class="sf-title">Explore the Duel family</div>
+    <div class="sf-matrix">
+      <a class="sf-item" href="https://boardduel.com"><span class="pip" style="background:#2FC4C9"></span>BoardDuel · Chess &amp; Card Games</a>
+      <a class="sf-item" href="https://mathduel.games"><span class="pip" style="background:#F59E0B"></span>MathDuel · Math Puzzle Games</a>
+      <a class="sf-item" href="https://memoryduel.com"><span class="pip" style="background:#4F46E5"></span>MemoryDuel · Knowledge Battles</a>
+    </div>
+    <div class="sf-links">
+      <a href="/about/">About</a><a href="/contact/">Contact</a><a href="/privacy/">Privacy</a><a href="/terms/">Terms</a>
+    </div>
+    <div class="sf-copy">© 2026 MathDuel · Pure static · Privacy-first · Free to play</div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var burger = document.getElementById('pgBurger');
+  var overlay = document.getElementById('pgOverlay');
+  var collapse = document.getElementById('pgCollapse');
+  function closeNav(){
+    document.body.classList.remove('nav-open');
+    if(burger) burger.setAttribute('aria-expanded','false');
+  }
+  if(burger) burger.addEventListener('click', function(){
+    var open = document.body.classList.toggle('nav-open');
+    burger.setAttribute('aria-expanded', open);
+  });
+  if(overlay) overlay.addEventListener('click', closeNav);
+  if(collapse) collapse.addEventListener('click', function(){
+    document.body.classList.toggle('rail');
+  });
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape') closeNav();
+  });
+})();
+</script>
 </body>
 </html>
