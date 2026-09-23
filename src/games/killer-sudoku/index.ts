@@ -81,13 +81,12 @@ const st = {
   notes: false,
   // duel
   mineTotal: 0,
-  mineDone: 0,
   botTotal: 0,
   botDone: 0,
   botTimer: null as number | null,
   // timed
   timedSolved: 0,
-  timedSkipped: 0,
+  timedDealt: 0, // 本轮共发过几盘（dealt − solved = unsolved）
   timedStreak: 0,
   timedStartTs: 0,
 };
@@ -112,6 +111,10 @@ const writeJSON = (k: string, v: unknown): void => {
   }
 };
 const fmt = (sec: number): string => `${sec.toFixed(1)}s`;
+const fmtClock = (sec: number): string => {
+  const s = Math.max(0, Math.floor(sec));
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+};
 
 const LOBBY_URL = '/games/killer-sudoku/lobby/';
 const goLobby = (): void => {
@@ -153,7 +156,10 @@ function newRoundPuzzle(): KillerPuzzle {
 function startRound(): void {
   stopAll();
   const m = st.mode;
-  if (m === 'timed') st.timedStartTs = Date.now();
+  if (m === 'timed') {
+    st.timedStartTs = Date.now();
+    st.timedDealt = 1; // 首盘已发出
+  }
   if (m === 'daily') {
     const dk = shanghaiDateKey();
     st.puzzle = dailyKiller(dk);
@@ -196,7 +202,6 @@ function resetBoard(keepClock = false): void {
   }
   st.running = true;
   conflictCache = findConflicts(st.grid);
-  st.mineDone = 0;
   st.botDone = 0;
   if (st.mode === 'duel') {
     const d = st.puzzle as KillerPuzzle & { mine: Set<number>; bots: Set<number> };
@@ -235,17 +240,19 @@ function effElapsed(): number {
 function tick(): void {
   if (!st.running) return;
   st.elapsed = effElapsed();
+  // 只做轻量文本刷新；笼子/棋盘渲染只在盘面变化（place/erase/bot）时走 updateHud
+  const ht = $('hudTime');
   if (st.mode === 'timed') {
     const left = Math.max(0, TIMED_LIMIT - (Date.now() - st.timedStartTs) / 1000);
     const tms = $('tmSolved');
     if (tms) tms.textContent = String(st.timedSolved);
     const tmsk = $('tmStreak');
     if (tmsk) tmsk.textContent = String(st.timedStreak);
+    if (ht) ht.textContent = fmtClock(left);
     if (left <= 0) endTimed();
-  } else if (st.mode === 'duel') {
-    // 你方 HUD 已有 duelTime；不需要在主 status 复写
+  } else {
+    if (ht) ht.textContent = fmtClock(st.elapsed); // solo/daily/duel 可见计时器
   }
-  updateHud();
 }
 
 /* ═══ 棋盘渲染 ═══ */
@@ -258,6 +265,7 @@ function cellClass(i: number): string {
   else if (v) cls.push('entry');
   if (st.sel === i) cls.push('sel');
   if (conflictCache.has(i) || st.flash.has(i)) cls.push('conflict');
+  if (st.mode === 'duel' && st.owner[i] === 1 && !v) cls.push('lock');
   // 同 cage peer 高亮
   if (st.sel >= 0) {
     const selCage = cageOf(st.puzzle!.cages, st.sel);
@@ -297,6 +305,26 @@ function renderBoard(): void {
     } else html = '';
     if (c.innerHTML !== html) c.innerHTML = html;
   });
+  updatePad();
+  updateLives();
+}
+
+/* ═══ 数字键盘剩余计数 + 命值实时刷新 ═══ */
+function updatePad(): void {
+  const pad = $('k9pad');
+  if (!pad) return;
+  pad.querySelectorAll<HTMLButtonElement>('.k9-pk[data-v]').forEach((b) => {
+    const v = Number(b.dataset.v);
+    const left = 9 - st.grid.filter((x) => x === v).length;
+    const badge = b.querySelector('.pk-left');
+    if (badge) badge.textContent = left > 0 ? String(left) : '';
+    b.classList.toggle('done', left <= 0);
+  });
+}
+
+function updateLives(): void {
+  const lv = $('hudLives');
+  if (lv) [...lv.children].forEach((el, idx) => (el as HTMLElement).classList.toggle('off', idx < st.mistakes));
 }
 
 function selectCell(i: number): void {
@@ -410,11 +438,42 @@ function renderOppStatus(): void {
 }
 
 /* ═══ 填数 / 笔记 ═══ */
+let padNudgeAt = 0;
+function nudgePick(): void {
+  const now = Date.now();
+  if (now - padNudgeAt < 2000) return; // 2s 节流，避免连点刷屏
+  padNudgeAt = now;
+  toast('👆 Pick a cell first');
+}
+
+/** 落子/错误的一次性动效（直接挂 class，下一次 renderBoard 自然移除） */
+function flashCell(i: number, cls: string, ms: number): void {
+  const el = $('k9board')!.children[i] as HTMLElement | undefined;
+  if (!el) return;
+  el.classList.add(cls);
+  window.setTimeout(() => el.classList.remove(cls), ms);
+}
+
+/** 从 from 之后（环绕）找下一个可填空格；duel 跳过 bot 格；无则 -1 */
+function nextClaimable(from: number): number {
+  for (let k = 1; k <= 81; k++) {
+    const i = (from + k) % 81;
+    if (st.grid[i]) continue;
+    if (st.mode === 'duel' && st.owner[i] !== 1) continue;
+    return i;
+  }
+  return -1;
+}
+
 function place(v: number): void {
-  if (!st.running || st.sel < 0) return;
+  if (!st.running) return;
+  if (st.sel < 0) {
+    nudgePick();
+    return;
+  }
   const i = st.sel;
   if (st.mode === 'duel' && st.owner[i] !== 1) {
-    toast('🏁 Free cells unlock after duels — claim yours');
+    toast('🤖 That cell is GridBot’s to fill');
     return;
   }
   if (st.notes) {
@@ -433,6 +492,7 @@ function place(v: number): void {
     st.filledBy[i] = 1;
     st.flash.add(i);
     renderBoard();
+    flashCell(i, 'k9shake', 400);
     updateHud();
     if (st.mode === 'duel') {
       toast(`⚔️ Mistake! +${DUEL_PENALTY}s penalty`);
@@ -453,13 +513,20 @@ function place(v: number): void {
   st.grid[i] = v;
   st.filledBy[i] = 1;
   st.marks[i].clear();
+  const nx = nextClaimable(i);
+  st.sel = nx >= 0 ? nx : i; // 填对后自动跳到下一空格，连解提速
   renderBoard();
   updateHud();
+  flashCell(i, 'k9pop', 320);
   checkWin();
 }
 
 function erase(): void {
-  if (!st.running || st.sel < 0) return;
+  if (!st.running) return;
+  if (st.sel < 0) {
+    nudgePick();
+    return;
+  }
   const i = st.sel;
   if (st.filledBy[i] === 2) return;
   if (st.notes && !st.grid[i]) {
@@ -569,6 +636,7 @@ function winTimed(): void {
   window.setTimeout(() => {
     if (st.mode === 'timed' && (Date.now() - st.timedStartTs) / 1000 < TIMED_LIMIT && st.puzzle) {
       st.puzzle = newRoundPuzzle();
+      st.timedDealt++; // 续盘也算发出
       resetBoard(true);
       renderBoard();
       renderCages();
@@ -577,17 +645,19 @@ function winTimed(): void {
       beginTimer();
       $('result')!.innerHTML = `✅ #${st.timedSolved} · ${st.timedStreak} streak — next cage-grid!`;
     }
-  }, 700);
+  }, 1500); // 与 24 点/6×6/9×9 对齐：留足时间看清完成盘面
   $('result')!.innerHTML = `✅ #${st.timedSolved} in <b>${fmt(st.elapsed)}</b> — next grid incoming…`;
 }
 
 function endTimed(): void {
   stopAll();
+  const unsolved = Math.max(0, st.timedDealt - st.timedSolved); // 发出 − 解出 = 没解完的
   showModal(
     `<div class="k9-verdict">⏱ Time’s up</div>
      <div class="k9-scores">
        <div class="k9-me num">${st.timedSolved}<small>solved</small></div>
        <div class="k9-op num">${st.timedStreak}<small>best streak</small></div>
+       <div class="k9-op num">${unsolved}<small>unsolved</small></div>
      </div>
      <div class="k9-acts">
        <button class="k9-prim" id="mAgain">↻ Run it again</button>
@@ -598,7 +668,6 @@ function endTimed(): void {
         hideModal();
         st.timedSolved = 0;
         st.timedStreak = 0;
-        st.timedSkipped = 0;
         startRound();
       };
       ($('mLobby') as HTMLButtonElement).onclick = () => {
@@ -705,28 +774,118 @@ $('k9pad')!.addEventListener('click', (e) => {
   else if (b.dataset.v) place(Number(b.dataset.v));
 });
 
+/** 方向键在棋盘上移动选格（环绕；duel 跳过 bot 格） */
+function moveSel(dr: number, dc: number): void {
+  let r = st.sel >= 0 ? rowOf(st.sel) : 0;
+  let c = st.sel >= 0 ? colOf(st.sel) : 0;
+  for (let step = 0; step < 81; step++) {
+    r = (r + dr + 9) % 9;
+    c = (c + dc + 9) % 9;
+    const i = r * 9 + c;
+    if (st.mode === 'duel' && st.owner[i] === 2) continue;
+    st.sel = i;
+    renderBoard();
+    updateHud();
+    return;
+  }
+}
+
 window.addEventListener('keydown', (e) => {
   if (e.key >= '1' && e.key <= '9') place(Number(e.key));
   else if (e.key === 'Backspace' || e.key === 'Delete') erase();
   else if (e.key === 'n' || e.key === 'N') toggleNotes();
-  else if (e.key === 'Escape') goLobby();
+  else if (e.key === 'ArrowUp' || e.key === 'ArrowDown' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+    e.preventDefault(); // 阻止页面滚动
+    moveSel(
+      e.key === 'ArrowUp' ? -1 : e.key === 'ArrowDown' ? 1 : 0,
+      e.key === 'ArrowLeft' ? -1 : e.key === 'ArrowRight' ? 1 : 0,
+    );
+  } else if (e.key === 'Escape') {
+    const ov = $('overlay')!;
+    if (!ov.hidden) hideModal(); // 先关结算/弹窗，再考虑离开
+    else goLobby();
+  }
 });
 
 $('backLobby')!.addEventListener('click', goLobby);
 $('newBtn')!.addEventListener('click', () => startRound());
-$('hintBtn')!.addEventListener('click', () => {
+$('hintBtn')!.addEventListener('click', giveHint);
+
+/* ═══ Hint（naked-single 逻辑提示，对照 9×9；附笼子和值）═══ */
+/** 当前盘面下 i 格的候选数字（错误格 650ms 内自清，所以一般 ≥1） */
+function candidatesOf(i: number): number[] {
+  const used = new Set<number>();
+  for (let j = 0; j < 81; j++) {
+    if (j === i || !st.grid[j]) continue;
+    if (rowOf(j) === rowOf(i) || colOf(j) === colOf(i) || boxOf(j) === boxOf(i)) used.add(st.grid[j]);
+  }
+  return [1, 2, 3, 4, 5, 6, 7, 8, 9].filter((v) => !used.has(v));
+}
+
+/** 解释「为什么必须是 n」：n 是该行/列/宫唯一缺席的数字 */
+function nakedReason(i: number, n: number): string {
+  const unitVals = (pred: (j: number) => boolean): Set<number> =>
+    new Set(
+      [...Array(81).keys()].filter((j) => j !== i && pred(j) && st.grid[j]).map((j) => st.grid[j]),
+    );
+  const onlyMissing = (s: Set<number>): boolean => {
+    for (let v = 1; v <= 9; v++) {
+      if (v === n) { if (s.has(v)) return false; }
+      else if (!s.has(v)) return false;
+    }
+    return true;
+  };
+  if (onlyMissing(unitVals((j) => rowOf(j) === rowOf(i)))) return `only digit missing from row ${rowOf(i) + 1}`;
+  if (onlyMissing(unitVals((j) => colOf(j) === colOf(i)))) return `only digit missing from column ${colOf(i) + 1}`;
+  if (onlyMissing(unitVals((j) => boxOf(j) === boxOf(i)))) return 'only digit missing from its 3\u00d73 box';
+  return 'every other digit already sits nearby';
+}
+
+function giveHint(): void {
   if (!st.running || !st.puzzle) return;
-  const empties = [...Array(81)]
-    .map((_, i) => i)
-    .filter((i) => !st.grid[i] && (st.mode !== 'duel' || st.owner[i] === 1));
+  const empties = [...Array(81).keys()].filter(
+    (i) => !st.grid[i] && (st.mode !== 'duel' || st.owner[i] === 1),
+  );
   if (!empties.length) return;
-  const i = empties[Math.floor(Math.random() * empties.length)];
-  st.sel = i;
+  // 1) 先找 naked single（唯一候选格）——最像「逻辑推理」的提示
+  let best = -1;
+  let cands: number[] = [];
+  for (const i of empties) {
+    const c = candidatesOf(i);
+    if (c.length === 1) {
+      best = i;
+      cands = c;
+      break;
+    }
+  }
+  // 2) 退而求其次：候选最少的格（揭示可能性而非答案）
+  if (best < 0) {
+    let min = 10;
+    for (const i of empties) {
+      const c = candidatesOf(i);
+      if (c.length && c.length < min) {
+        min = c.length;
+        best = i;
+        cands = c;
+      }
+    }
+  }
+  // 3) 兜底：玩家错格污染候选（极少见）→ 直接给解
+  if (best < 0) {
+    best = empties[Math.floor(Math.random() * empties.length)];
+    cands = [st.puzzle.solution[best]];
+  }
+  st.sel = best;
   renderBoard();
   updateHud();
-  const cage = cageOf(st.puzzle.cages, i);
-  toast(`💡 r${rowOf(i) + 1}c${colOf(i) + 1} is in the ${cage?.sum} cage · try ${st.puzzle.solution[i]}`);
-});
+  const cage = cageOf(st.puzzle.cages, best);
+  const cageTxt = cage ? ` · cage ${cage.sum}` : '';
+  if (cands.length === 1) {
+    toast(`💡 r${rowOf(best) + 1}c${colOf(best) + 1} must be ${cands[0]} — ${nakedReason(best, cands[0])}${cageTxt}`);
+  } else {
+    toast(`💡 r${rowOf(best) + 1}c${colOf(best) + 1}: only ${cands.join(' or ')} fit there${cageTxt}`);
+  }
+}
 
 $('overlay')!.addEventListener('click', (e) => {
   if (e.target === $('overlay')!) hideModal();

@@ -215,6 +215,28 @@
   box-shadow: inset 0 0 0 1.5px var(--a-teal-dim);
 }
 
+/* duel 我方格内描边 + 「ember corner」右上角三角（banner 承诺的视觉标记） */
+.k9-cell.lock { box-shadow: inset 0 0 0 1px var(--a-line); }
+.k9-cell.lock::after {
+  content: ''; position: absolute; top: 0; right: 0; width: 0; height: 0;
+  border-top: 12px solid var(--a-ember);
+  border-left: 12px solid transparent;
+}
+
+/* 落子 pop / 错误 shake（对照 24 点 cardFlash / 9×9 的一次性动效） */
+.k9-cell.k9pop span { animation: k9pop 0.28s var(--ease-spring, cubic-bezier(0.34, 1.56, 0.64, 1)); }
+@keyframes k9pop {
+  0% { transform: scale(0.4); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+.k9-cell.k9shake { animation: k9shake 0.32s ease; }
+@keyframes k9shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-3px); }
+  50% { transform: translateX(3px); }
+  75% { transform: translateX(-2px); }
+}
+
 /* pencil marks */
 .k9-cell.marks { padding: 0; align-items: stretch; }
 .k9-cell .k9-n9 {
@@ -299,6 +321,10 @@
   font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
+/* 5 条命圆点（Mistakes 行）——错误进度终于可见 */
+.k9-lives { display: inline-flex; gap: 5px; align-items: center; }
+.k9-lives i { width: 9px; height: 9px; border-radius: 50%; background: var(--a-ember); }
+.k9-lives i.off { background: var(--a-line); }
 
 /* ===== 数字键盘 ===== */
 .k9-pad {
@@ -333,7 +359,16 @@
   font-variant-numeric: tabular-nums;
   transition: border-color 0.12s, color 0.12s, background 0.12s;
   aspect-ratio: 1.15;
+  position: relative;
 }
+/* 剩余计数角标：该数字还差几个；集齐 9 个整键置灰 */
+.k9-pk .pk-left {
+  position: absolute; right: 6px; bottom: 3px;
+  font-size: 0.62rem; font-weight: 700; line-height: 1;
+  color: var(--a-mute); font-variant-numeric: tabular-nums;
+}
+.k9-pk.done { opacity: 0.35; }
+.k9-pk.done:hover { border-color: var(--a-line); color: var(--a-paper); }
 .k9-pk:hover {
   border-color: var(--a-ember);
   color: var(--a-ember);
@@ -441,6 +476,9 @@
   z-index: 100;
   padding: 16px;
 }
+/* 🔴 关键修复：author 的 display:flex 会覆盖 UA 的 [hidden]{display:none}，
+   导致遮罩层永远盖在棋盘上拦截点击 —— 必须显式压回 */
+.k9-overlay[hidden] { display: none; }
 .k9-modal {
   background: var(--a-ink);
   border: 1px solid var(--a-line);
