@@ -8,7 +8,8 @@
  */
 
 import '@tri-sites/design-system/styles';
-import './arena.css';
+// 共享 papergames 视觉（sidebar / footer / ladder / 移动端 drawer / .btn 等）
+import '../../styles/home-redesign.css';
 import './lobby.css';
 import { dailyKeyStr } from './engine';
 

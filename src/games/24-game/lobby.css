@@ -1,502 +1,205 @@
 /* ============================================================
-   24 · Card Table — 模式选择页（Lobby）
-   ------------------------------------------------------------
-   皮肤来源：24 ARENA 设计稿（ink 底 + ember 橙 + teal 辅色）。
-   字体走站内自托管（Space Grotesk / Sora），不引 Google Fonts 外链，
-   以免被生产 CSP 的 style-src / font-src 拦掉。
-   所有类名以 arb- 前缀，避免与设计系统组件冲突。
-   ============================================================ */
+ * MathDuel · 24 Game Lobby · papergames 浅色版（2026-09-23）
+ * ------------------------------------------------------------
+ * 设计稿：share-html/mathduel-24game-lobby-papergames.html
+ * 与首页共用：home-redesign.css 提供 sidebar / footer / ladder / 移动端 drawer
+ * 本文件仅放 lobby 专属区块（g-hero / lobby-grid / mode / panel / how / step）
+ * 共享类（`.btn` `.btn-amber` `.btn-ghost` `.chip` 等）复用 home-redesign.css 已在的规则
+ *
+ * 注：lobby.ts 写出的 leaderboard 行 class（`.arb-row` / `.arb-rank` / `.arb-name` / `.arb-score` / `.arb-empty`）
+ *     是稳定的——保留，避免改 TS。这里只换皮肤样式。
+ * ============================================================ */
 
-/* 调色板（--a-*）与「设计系统 token → 深色」的映射都搬到了 arena.css，
-   牌桌 /games/24-game/ 共用同一份，两页之间不再有黑↔白跳变。 */
-body.arena {
-  font-family: var(--a-ui);
-  line-height: 1.6;
-  -webkit-font-smoothing: antialiased;
+/* ── 游戏 Hero（居中：封面 + h1 + 一句话 + 三 chip） ── */
+.home-v2 .g-hero { text-align: center; padding: 46px 0 8px; }
+.home-v2 .g-hero .gcover {
+  width: 104px; height: 104px; border-radius: 24px; overflow: hidden;
+  box-shadow: 0 14px 30px rgba(30, 27, 75, .22); display: inline-block;
+  background: #fff;
 }
+.home-v2 .g-hero .gcover svg { display: block; width: 100%; height: 100%; }
+.home-v2 .g-hero h1 {
+  font-family: var(--font-display); font-weight: 800;
+  font-size: clamp(30px, 4vw, 44px); line-height: 1.15; margin: 18px 0 8px;
+  text-wrap: balance;
+}
+.home-v2 .g-hero h1 em { font-style: normal; color: var(--indigo); }
+.home-v2 .g-hero .sub { color: var(--mute); font-size: 1.05rem; max-width: 34em; margin: 0 auto; }
+.home-v2 .g-hero .chips { margin-top: 18px; }
 
-body.arena .num {
-  font-variant-numeric: tabular-nums;
-  font-feature-settings: 'tnum' 1;
+/* ── 主栅格：左模式卡 + 右信息栏 ── */
+.home-v2 .lobby-grid {
+  display: grid; grid-template-columns: 1.55fr 1fr; gap: 24px;
+  align-items: start; padding: 36px 0 8px;
 }
-
-/* ---------- 顶栏 ---------- */
-.arbar {
-  position: sticky;
-  top: 0;
-  z-index: 30;
-  background: rgba(14, 20, 25, 0.86);
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid var(--a-line);
+.home-v2 .sec-h {
+  font-family: var(--font-display); font-weight: 800;
+  font-size: 1.22rem; margin-bottom: 14px;
 }
-.arbar-in {
-  max-width: 1120px;
-  margin: 0 auto;
-  padding: 12px 20px;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  flex-wrap: wrap;
-}
-.arb-logo {
-  font-family: var(--a-disp);
-  font-weight: 800;
-  font-size: 1.25rem;
-  letter-spacing: -0.01em;
-  color: var(--a-paper);
-  flex: none;
-}
-.arb-logo span {
-  color: var(--a-ember);
-}
-.arb-nav {
-  display: flex;
-  gap: 2px;
-  margin-left: 8px;
-}
-.arb-nav a {
-  color: var(--a-mute);
-  font-size: 0.9rem;
-  font-weight: 600;
-  padding: 8px 14px;
-  border-radius: 999px;
-  border: 1px solid transparent;
-  /* WCAG 2.5.5 / AA：触控目标 ≥ 44×44；2026-09-23 提升自 40px（a11y 审计 S-003） */
-  min-height: 44px;
-  display: inline-flex;
-  align-items: center;
-}
-.arb-nav a:hover {
-  color: var(--a-paper);
-  background: var(--a-ink-2);
-  border-color: var(--a-line);
-}
-.arb-top-cta {
-  margin-left: auto;
-  color: var(--a-ember-dim);
-  font-size: 0.88rem;
-  font-weight: 600;
-  /* WCAG 2.5.5：触控目标 ≥ 44（2026-09-23 a11y 审计 S-003 提升自 40px） */
-  min-height: 44px;
-  display: inline-flex;
-  align-items: center;
-}
-.arb-top-cta:hover {
-  color: var(--a-ember);
-  text-decoration: underline;
+.home-v2 .sec-h small {
+  display: block; font-family: var(--font-sans); font-weight: 500;
+  font-size: .82rem; color: var(--mute); margin-top: 2px;
 }
 
-/* ---------- 布局 ---------- */
-.arb-main {
-  max-width: 1120px;
-  margin: 0 auto;
-  padding: 32px 20px 56px;
+/* ── 模式卡：papergames 式极简小卡（白底 + 浅边框） ── */
+.home-v2 .modes { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+.home-v2 .mode {
+  position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; background: #fff; border: 1.5px solid var(--line); border-radius: 16px;
+  padding: 22px 12px 18px; color: var(--ink);
+  transition: transform .16s ease, border-color .16s ease, box-shadow .16s ease;
+}
+.home-v2 .mode:hover { transform: translateY(-3px); border-color: var(--indigo-bright); box-shadow: 0 10px 22px rgba(30, 27, 75, .08); }
+.home-v2 .mode:active { transform: translateY(-1px); }
+.home-v2 .mode .mi { font-size: 2.2rem; line-height: 1; margin-bottom: 10px; }
+.home-v2 .mode .mt {
+  font-family: var(--font-display); font-weight: 800;
+  font-size: 1.02rem; line-height: 1.25;
+  display: flex; align-items: center; justify-content: center;
+  gap: 7px; flex-wrap: wrap;
 }
 
-/* ---------- Hero ---------- */
-.arb-hero {
-  position: relative;
-  margin-bottom: 34px;
+/* Daily 卡：唯一琥珀变体（细顶 rail + 琥珀边） */
+.home-v2 .mode.daily { border-color: rgba(245, 158, 11, .55); }
+.home-v2 .mode.daily::before {
+  content: ""; position: absolute; inset: 0 0 auto 0; height: 4px;
+  border-radius: 16px 16px 0 0;
+  background: linear-gradient(90deg, var(--amber), #FBBF24);
 }
-.arb-hero::after {
-  content: '';
-  position: absolute;
-  top: -40px;
-  right: -20px;
-  width: 340px;
-  height: 340px;
-  background: radial-gradient(circle, var(--a-ember-soft), transparent 70%);
-  pointer-events: none;
-  z-index: 0;
+.home-v2 .mode .cd-row { margin-top: 7px; font-size: .76rem; color: var(--mute); }
+.home-v2 .mode .cd-row b {
+  font-family: var(--font-display); font-variant-numeric: tabular-nums;
+  color: var(--amber); font-weight: 800;
 }
-.arb-hero > * {
-  position: relative;
-  z-index: 1;
-}
-.arb-big {
-  font-family: var(--a-disp);
-  font-weight: 800;
-  font-size: clamp(2.75rem, 8vw, 5.5rem);
-  line-height: 0.92;
-  letter-spacing: -0.03em;
-}
-.arb-big em {
-  font-style: normal;
-  color: var(--a-ember);
-}
-.arb-hand {
-  display: flex;
-  gap: 12px;
-  margin: 18px 0;
-}
-.arb-chip {
-  width: 56px;
-  height: 78px;
-  border-radius: 12px;
-  background: var(--a-paper);
-  color: var(--a-ink);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--a-disp);
-  font-weight: 800;
-  font-size: 1.8rem;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.45);
-}
-.arb-sub {
-  color: var(--a-mute);
-  max-width: 52ch;
-  margin-top: 6px;
+.home-v2 .tag-done {
+  background: rgba(34, 197, 94, .12); border: 1px solid rgba(34, 197, 94, .55);
+  color: #16A34A; font-size: .6rem; font-weight: 800; letter-spacing: .05em;
+  border-radius: 999px; padding: 1px 8px; text-transform: uppercase;
 }
 
-/* ---------- 两栏 ---------- */
-.arb-cols {
-  display: grid;
-  grid-template-columns: 1.35fr 0.95fr;
-  gap: 26px;
-  align-items: start;
+/* SOON 卡：灰态虚线 + 靛蓝徽章 */
+.home-v2 .mode.soon {
+  background: transparent; border-style: dashed; color: #9BA0B8; box-shadow: none;
+  cursor: default;
 }
-.arb-h2 {
-  font-family: var(--a-disp);
-  font-size: 1.05rem;
-  font-weight: 700;
-  margin-bottom: 12px;
-}
-
-/* ---------- 模式卡 ---------- */
-.arb-modes {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px;
-}
-.arb-mode {
-  display: block;
-  background: var(--a-ink-2);
-  border: 1px solid var(--a-line);
-  border-radius: 14px;
-  padding: 16px;
-  color: var(--a-paper);
-  transition: border-color 0.15s, transform 0.15s;
-}
-a.arb-mode:hover {
-  border-color: var(--a-ember);
-  transform: translateY(-2px);
-}
-a.arb-mode:focus-visible {
-  outline: 2px solid var(--a-ember);
-  outline-offset: 2px;
-}
-.arb-mode .mi {
-  font-size: 1.5rem;
-  line-height: 1.2;
-}
-.arb-mode .mt {
-  font-weight: 600;
-  margin-top: 8px;
-  font-size: 1rem;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-.arb-mode .md {
-  font-size: 0.82rem;
-  color: var(--a-mute);
-  margin-top: 4px;
-  line-height: 1.45;
-}
-.arb-mode.feat {
-  border-color: var(--a-ember);
-  background: linear-gradient(180deg, var(--a-ember-soft), var(--a-ink-2));
-}
-.arb-mode.ghost {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-.arb-tag {
-  font-size: 0.68rem;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
-  color: var(--a-ink);
-  background: var(--a-teal);
-  border-radius: 999px;
+.home-v2 .mode.soon .mi { filter: grayscale(1); opacity: .6; }
+.home-v2 .mode.soon .mt { color: #9BA0B8; }
+.home-v2 .mode.soon:hover { transform: none; border-color: #C6CAE4; box-shadow: none; }
+.home-v2 .soon-pill {
+  position: absolute; top: 10px; right: 10px;
+  background: #EEF0FB; color: var(--indigo); font-weight: 800;
+  font-size: .6rem; letter-spacing: .08em; border-radius: 999px;
   padding: 2px 8px;
 }
 
-/* ---------- 右列卡片 ---------- */
-.arb-side {
-  display: grid;
-  gap: 16px;
+/* ── 右栏：白卡信息面板 ── */
+.home-v2 .side { display: grid; gap: 18px; }
+.home-v2 .panel {
+  background: #fff; border: 1px solid var(--line); border-radius: var(--r-card);
+  padding: 20px 20px 18px;
 }
-.arb-card {
-  background: var(--a-ink-2);
-  border: 1px solid var(--a-line);
-  border-radius: var(--a-r-card);
-  padding: 18px;
+.home-v2 .panel h3 {
+  font-family: var(--font-display); font-weight: 800;
+  font-size: 1.05rem; margin-bottom: 4px;
 }
-.arb-card h3 {
-  font-family: var(--a-disp);
-  font-size: 1.05rem;
-  font-weight: 700;
-  margin-bottom: 4px;
-}
-.arb-cd {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 0.82rem;
-  color: var(--a-teal);
-  margin-bottom: 12px;
-}
-.arb-empty {
-  color: var(--a-mute);
-  font-size: 0.85rem;
-  padding: 12px 0;
-}
-.arb-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 9px 0;
-  border-bottom: 1px solid var(--a-line);
-}
-.arb-row:last-of-type {
-  border-bottom: 0;
-}
-.arb-rank {
-  width: 22px;
-  font-weight: 700;
-  color: var(--a-mute);
-  font-variant-numeric: tabular-nums;
-}
-.arb-row.r1 .arb-rank {
-  color: var(--a-gold);
-}
-.arb-row.r2 .arb-rank {
-  color: var(--a-paper);
-}
-.arb-row.r3 .arb-rank {
-  color: var(--a-ember-dim);
-}
-.arb-name {
-  flex: 1;
-  font-size: 0.9rem;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.arb-score {
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-  font-size: 0.88rem;
-}
-.arb-row.me {
-  background: var(--a-ember-soft);
-  border-radius: 10px;
-  padding-left: 8px;
-  padding-right: 8px;
-}
-.arb-row.me .arb-name {
-  color: var(--a-ember-dim);
-  font-weight: 600;
+.home-v2 .panel .pnote { font-size: .82rem; color: var(--mute); margin-bottom: 12px; }
+.home-v2 .panel .cd-line { font-size: .86rem; color: var(--mute); margin-bottom: 12px; }
+.home-v2 .panel .cd-line b {
+  font-family: var(--font-display); font-variant-numeric: tabular-nums;
+  color: var(--amber); font-weight: 800;
 }
 
-/* ---------- 好友房 ---------- */
-.arb-note {
-  font-size: 0.82rem;
-  color: var(--a-mute);
-  margin-bottom: 12px;
-  line-height: 1.45;
+/* 每日榜行（lobby.ts 用 arb-* 类，保留类名以避免改 TS） */
+.home-v2 .arb-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 0; border-bottom: 1px dashed var(--line); font-size: .9rem;
 }
-.arb-field {
-  display: block;
-  margin-bottom: 12px;
+.home-v2 .arb-row:last-of-type { border-bottom: 0; }
+.home-v2 .arb-rank {
+  flex: none; width: 26px; height: 26px; border-radius: 8px;
+  display: grid; place-items: center;
+  font-family: var(--font-display); font-weight: 800; font-size: .8rem;
+  background: #EEF0FB; color: var(--indigo);
 }
-.arb-field span {
-  display: block;
-  font-size: 0.78rem;
-  color: var(--a-mute);
-  margin-bottom: 6px;
+.home-v2 .arb-row:nth-child(1) .arb-rank { background: var(--amber); color: var(--amber-ink); }
+.home-v2 .arb-name { flex: 1; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.home-v2 .arb-score {
+  font-family: var(--font-display); font-weight: 700;
+  font-size: .86rem; font-variant-numeric: tabular-nums;
 }
-.arb-field input {
-  width: 100%;
-  background: var(--a-ink-3);
-  border: 1px solid var(--a-line);
-  border-radius: 10px;
-  color: var(--a-paper);
-  font-family: var(--a-ui);
-  font-size: 1.1rem;
-  font-weight: 700;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  padding: 11px 14px;
-  min-height: 48px;
-}
-.arb-field input::placeholder {
-  color: #8a99a3;
-  opacity: 1; /* Firefox 默认给 placeholder 叠一层透明度，会把对比度打下来 */
-  font-weight: 500;
-  letter-spacing: 0.12em;
-}
-.arb-field input:focus-visible {
-  outline: 2px solid var(--a-ember);
-  outline-offset: 1px;
-}
-.arb-actions {
-  display: flex;
-  gap: 10px;
-}
-.arb-err {
-  color: var(--a-ember-dim);
-  font-size: 0.8rem;
-  min-height: 1.2em;
-  margin-top: 8px;
+.home-v2 .arb-row.me { color: var(--indigo); }
+.home-v2 .arb-row.me .arb-rank { background: #EEF0FB; }
+.home-v2 .arb-empty {
+  font-size: .82rem; color: var(--mute); padding: 4px 0;
 }
 
-/* ---------- 按钮 ---------- */
-.arb-btn {
-  font-family: var(--a-ui);
-  font-weight: 600;
-  font-size: 0.92rem;
-  padding: 11px 16px;
-  min-height: 44px;
-  border-radius: var(--a-r-btn);
-  border: 1px solid transparent;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  cursor: pointer;
-  transition: filter 0.15s, border-color 0.15s, background 0.15s;
+/* 好友房字段 */
+.home-v2 .field { display: block; margin-bottom: 12px; }
+.home-v2 .field span {
+  display: block; font-size: .8rem; font-weight: 600;
+  color: var(--mute); margin-bottom: 6px;
 }
-.arb-btn.block {
-  width: 100%;
-  margin-top: 12px;
+.home-v2 .field input {
+  width: 100%; border: 1.5px solid var(--line); border-radius: 11px;
+  background: var(--paper); padding: 11px 14px;
+  font-family: var(--font-display); font-weight: 700;
+  font-size: 1.05rem; letter-spacing: .22em; text-transform: uppercase;
+  color: var(--ink);
 }
-.arb-btn.primary {
-  background: var(--a-ember);
-  color: #160a04;
-  flex: 1;
-}
-.arb-btn.primary:hover {
-  filter: brightness(1.08);
-}
-.arb-btn.ghost {
-  background: transparent;
-  color: var(--a-paper);
-  border-color: var(--a-line);
-}
-.arb-btn.ghost:hover {
-  border-color: var(--a-mute);
-}
-.arb-btn:focus-visible {
-  outline: 2px solid var(--a-ember);
-  outline-offset: 2px;
-}
-.arb-btn:active {
-  transform: translateY(1px);
-}
+.home-v2 .field input:focus { outline: none; border-color: var(--indigo-bright); background: #fff; }
 
-/* ---------- 页脚 ---------- */
-.arb-foot {
-  border-top: 1px solid var(--a-line);
-  max-width: 1120px;
-  margin: 0 auto;
-  padding: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 14px;
-  flex-wrap: wrap;
-  font-size: 0.82rem;
-  color: var(--a-mute);
+/* 按钮行（Create + Join） */
+.home-v2 .panel .btn-row { display: flex; gap: 10px; }
+.home-v2 .panel .btn {
+  flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  border-radius: 11px; font-weight: 800; font-size: .92rem;
+  padding: 11px 0; border: 1.5px solid transparent;
+  transition: transform .15s ease, box-shadow .15s ease;
 }
-.arb-foot b {
-  color: var(--a-paper);
-  font-family: var(--a-disp);
-}
-.arb-foot-links {
-  display: flex;
-  gap: 16px;
-  flex-wrap: wrap;
-}
-.arb-foot-links a {
-  color: var(--a-mute);
-  /* WCAG 2.5.5：触控目标 ≥ 44（2026-09-23 a11y 审计 S-003 提升自 32px） */
-  min-height: 44px;
-  display: inline-flex;
-  align-items: center;
-}
-.arb-foot-links a:hover {
-  color: var(--a-paper);
-  text-decoration: underline;
-}
+.home-v2 .panel .btn:hover { transform: translateY(-2px); }
+.home-v2 .panel .btn-amber { background: var(--amber); color: var(--amber-ink); box-shadow: 0 8px 20px rgba(245, 158, 11, .3); }
+.home-v2 .panel .btn-ghost { background: #fff; color: var(--indigo); border-color: #C7CBEE; }
+.home-v2 .panel .btn-ghost:hover { border-color: var(--indigo-bright); }
+.home-v2 .panel .btn.block { display: flex; }
 
-/* ---------- 响应式 ---------- */
-@media (max-width: 900px) {
-  .arb-cols {
-    grid-template-columns: 1fr;
-    gap: 22px;
-  }
+/* 错误提示 */
+.home-v2 .err { min-height: 1.2em; font-size: .8rem; color: #DC2626; margin-top: 8px; }
+
+/* ── How to play（4 步） ── */
+.home-v2 .how { padding: 40px 0 8px; }
+.home-v2 .how-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+.home-v2 .step {
+  background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 18px;
 }
-@media (max-width: 560px) {
-  .arbar-in {
-    padding: 10px 16px;
-    gap: 10px;
-  }
-  .arb-nav {
-    order: 3;
-    width: 100%;
-    margin-left: 0;
-    overflow-x: auto;
-  }
-  .arb-top-cta {
-    font-size: 0.82rem;
-  }
-  .arb-main {
-    padding: 24px 16px 40px;
-  }
-  /* 窄屏保持两列（与设计稿一致）：卡片长成近正方形，比单列长条更好扫读，
-     也省掉一半竖向滚动。靠收紧 padding / 字号把描述压进 3 行内。 */
-  .arb-modes {
-    gap: 10px;
-  }
-  .arb-mode {
-    padding: 14px 13px;
-  }
-  .arb-mode .mi {
-    font-size: 1.35rem;
-  }
-  .arb-mode .mt {
-    font-size: 0.92rem;
-    margin-top: 6px;
-    gap: 6px;
-  }
-  .arb-mode .md {
-    font-size: 0.78rem;
-  }
-  /* hero 的橙色光晕是绝对定位装饰，right:-20px + 340px 宽在 390 视口会把
-     body 撑宽 4px（实测 docW 394 > winW 390）。窄屏收进视口内。 */
-  .arb-hero::after {
-    top: -24px;
-    right: -12px;
-    width: 220px;
-    height: 220px;
-  }
-  .arb-hand {
-    gap: 10px;
-  }
-  .arb-chip {
-    width: 46px;
-    height: 64px;
-    font-size: 1.5rem;
-    border-radius: 10px;
-  }
-  .arb-actions {
-    flex-direction: column;
-  }
-  .arb-btn.primary {
-    width: 100%;
-  }
+.home-v2 .step .sn {
+  width: 30px; height: 30px; border-radius: 99px;
+  background: var(--amber); color: var(--amber-ink);
+  display: grid; place-items: center;
+  font-family: var(--font-display); font-weight: 800; font-size: .9rem;
+  margin-bottom: 10px;
+}
+.home-v2 .step b { display: block; font-size: .95rem; margin-bottom: 4px; }
+.home-v2 .step span { font-size: .82rem; color: var(--mute); line-height: 1.55; display: block; }
+
+/* ── 天梯（少量补充；主体样式 home-redesign.css 已提供） ── */
+.home-v2 .ladder { padding: 32px 0 8px; }
+
+/* ── 移动端 ── */
+@media (max-width: 979px) {
+  .home-v2 .lobby-grid { grid-template-columns: 1fr; }
+  .home-v2 .how-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 639px) {
+  .home-v2 .wrap { padding: 0 14px; }
+  .home-v2 .g-hero { padding-top: 26px; }
+  .home-v2 .g-hero .gcover { width: 88px; height: 88px; }
+  .home-v2 .modes { gap: 10px; }
+  .home-v2 .mode { padding: 15px 8px 13px; border-radius: 13px; }
+  .home-v2 .mode .mi { font-size: 1.7rem; margin-bottom: 7px; }
+  .home-v2 .mode .mt { font-size: .9rem; }
+  .home-v2 .tag-done { font-size: .54rem; padding: 1px 6px; }
+  .home-v2 .mode .cd-row { font-size: .66rem; margin-top: 5px; }
+  .home-v2 .chips .chip { padding: 5px 11px; font-size: .78rem; }
+  .home-v2 .how-grid { grid-template-columns: 1fr; gap: 12px; }
+  .home-v2 .ladder-panel { padding: 18px; }
 }
