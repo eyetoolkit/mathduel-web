@@ -23,7 +23,7 @@ export type Op = '+' | '-' | '×' | '÷';
  *  最稳的兜底：在源码里**完全 ASCII**，运行时从 charcode 数字构造。 */
 export const OP_MUL_CODE = 0xd7; // ×
 export const OP_DIV_CODE = 0xf7; // ÷
-export const OPS: Op[] = ['+', '-', String.fromCharCode(OP_MUL_CODE), String.fromCharCode(OP_DIV_CODE)];
+export const OPS: Op[] = ['+', '-', String.fromCharCode(OP_MUL_CODE) as Op, String.fromCharCode(OP_DIV_CODE) as Op];
 
 export type Tier = 'warmup' | 'standard' | 'tricky';
 export const TIER_LABEL: Record<Tier, string> = {
