@@ -1,11 +1,11 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en" data-site="mathduel">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#0066CC" />
+  <meta name="theme-color" content="#1E1B39" />
   <title>Page not found — MathDuel</title>
-  <meta name="description" content="That page doesn't exist. Jump back into a game of 24." />
+  <meta name="description" content="That page doesn't exist. Jump back into today's 24 Game instead." />
   <meta name="robots" content="noindex, follow" />
   <!--
     为什么这个文件必须存在：
@@ -13,111 +13,175 @@
     回落到站点根 (/) 并返回 HTTP 200 —— 形成全站软 404。
     后果：/robots.txt 与 /sitemap.xml 返回 HTML（爬虫无法解析）、
     /leaderboard/ 等链接静默显示首页、Google 判定 soft 404 / 重复内容。
-    boardduel-web 与 memoryduel-web 都已放置此文件，仅 mathduel-web 缺失。
-    样式全部内联，不依赖带 hash 的构建产物，保证任何构建下都能正常渲染。
+    boardduel-web 与 memoryduel-web 同样依赖此文件。
+
+    为什么样式全部内联：
+    404 页属于 CF Pages 的兜底路由，不能引用带 hash 的构建产物
+    （每次构建 hash 都变，且失败构建下 dist 可能不全）。
+    token 与 src/styles/home-redesign.css 的 body.home-v2 保持一致，**改皮肤时两处同步**。
   -->
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+  <link rel="canonical" href="https://mathduel.games/" />
+  <meta property="og:site_name" content="MathDuel" />
+  <meta property="og:title" content="Page not found — MathDuel" />
+
+  <!-- 站内自托管字体（同源 /fonts/，与新首页同一套 Sora + Space Grotesk） -->
+  <link rel="preload" href="/fonts/sora-latin.woff2" as="font" type="font/woff2" crossorigin />
+
   <style>
+    /* === papergames token（与 body.home-v2 同源） ===
+       paper #F4F5F9 · ink #1E1B39 · card #1E1B4B · indigo #3730A3 · amber #F59E0B */
+    @font-face{font-family:'Sora';font-style:normal;font-weight:400 800;font-display:swap;
+      src:url('/fonts/sora-latin.woff2') format('woff2')}
+    @font-face{font-family:'Space Grotesk';font-style:normal;font-weight:400 700;font-display:swap;
+      src:url('/fonts/space-grotesk-latin.woff2') format('woff2')}
+
     :root{
-      --brand:#0066CC; --brand-dark:#0052a3; --ink:#0f172a; --muted:#5b6b7f;
-      --bg:#f4f7fb; --card:#ffffff; --line:#e2e8f0;
+      --paper:#F4F5F9; --grid:rgba(55,48,163,.05); --grid2:rgba(55,48,163,.07);
+      --ink:#1E1B39; --mute:#5B6079; --line:#E3E6F0; --line2:#C7CBEE;
+      --white:#FFFFFF; --card:#1E1B4B; --indigo:#3730A3; --amber:#F59E0B;
+      --ui:'Space Grotesk','PingFang SC','Microsoft YaHei',system-ui,sans-serif;
+      --disp:'Sora','PingFang SC','Microsoft YaHei',system-ui,sans-serif;
     }
     *{box-sizing:border-box}
     html,body{margin:0;padding:0}
     body{
-      min-height:100dvh; display:flex; align-items:center; justify-content:center;
-      padding:32px 20px; background:var(--bg); color:var(--ink);
-      font-family:"Space Grotesk",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"PingFang SC","Microsoft YaHei",sans-serif;
+      min-height:100vh; display:flex; flex-direction:column;
+      background-color:var(--paper);
+      /* 作业纸底：数学符号 + 28px 细格 + 140px 粗格（与新首页同一套图层） */
+      background-image:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='420' height='420' viewBox='0 0 420 420'%3E%3Cg fill='none' stroke='rgba(55,48,163,.075)' stroke-width='2.4' stroke-linecap='round'%3E%3Cpath d='M48 62h24M60 50v24'/%3E%3Cpath d='M188 78l26 26M214 78l-26 26'/%3E%3Cpath d='M312 58h28'/%3E%3Ccircle cx='319' cy='46' r='2.6'/%3E%3Ccircle cx='333' cy='70' r='2.6'/%3E%3Cpath d='M84 168h30M84 180h30'/%3E%3Cpath d='M244 150l10 16 18-34'/%3E%3Cpath d='M52 288v-14h6a7 7 0 0 1 0 14h-6m6 0l8 14'/%3E%3Cpath d='M170 312c8-9 20-9 26 0 6 9 18 9 26 0'/%3E%3Cpath d='M320 272l16 30h-32z'/%3E%3Cpath d='M96 380h18l-11 11 11 11H96'/%3E%3C/g%3E%3C/svg%3E"),
+        linear-gradient(var(--grid) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid) 1px, transparent 1px),
+        linear-gradient(var(--grid2) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid2) 1px, transparent 1px);
+      background-size:420px 420px, 28px 28px, 28px 28px, 140px 140px, 140px 140px;
+      color:var(--ink); font-family:var(--ui); line-height:1.65;
       -webkit-font-smoothing:antialiased;
     }
-    .wrap{width:100%; max-width:560px}
-    .brand{
-      display:flex; align-items:center; gap:10px; justify-content:center;
-      margin-bottom:26px; font-weight:700; font-size:18px; letter-spacing:-.01em;
-      color:var(--brand); text-decoration:none;
-    }
-    .brand .mark{
-      display:grid; place-items:center; width:34px; height:34px; border-radius:9px;
-      background:var(--brand); color:#fff; font-size:15px; font-weight:800;
-    }
+
+    /* --- 顶部品牌条 --- */
+    .top{position:sticky;top:0;z-index:50;background:rgba(244,245,249,.92);
+      border-bottom:1px solid var(--line);backdrop-filter:blur(6px)}
+    .top-in{max-width:1080px;margin:0 auto;padding:13px 20px;
+      display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+    .mark{font-family:var(--disp);font-weight:800;letter-spacing:-.01em;font-size:17px;color:var(--ink);text-decoration:none}
+    .mark em{font-style:normal;color:var(--amber)}
+    .links{display:flex;gap:6px;margin-left:auto;flex-wrap:wrap}
+    .links a{color:var(--mute);text-decoration:none;font-size:12.5px;font-weight:600;padding:7px 11px;border-radius:9px}
+    .links a:hover{background:var(--white);color:var(--ink)}
+
+    /* --- 主体 --- */
+    .pg{flex:1;display:flex;align-items:center;justify-content:center;padding:48px 20px 40px}
     .card{
-      background:var(--card); border:1px solid var(--line); border-radius:18px;
-      padding:40px 32px; text-align:center;
-      box-shadow:0 1px 2px rgba(15,23,42,.04), 0 12px 32px -12px rgba(15,23,42,.12);
+      width:100%;max-width:620px;background:var(--white);
+      border:1px solid var(--line);border-radius:18px;
+      box-shadow:0 1px 2px rgba(30,27,57,.04), 0 18px 40px -24px rgba(30,27,57,.28);
+      padding:38px 34px 32px;text-align:center;
     }
+    .cards-row{display:flex;gap:8px;justify-content:center;margin:0 0 20px}
+    .cards-row span{
+      display:grid;place-items:center;width:44px;height:60px;border-radius:9px;
+      background:#fff;border:1.5px solid var(--line);color:var(--ink);
+      font-weight:700;font-size:17px;font-family:var(--ui);
+    }
+    .cards-row span.red{color:#d92b2b;border-color:#f0c9c9}
     .code{
-      font-size:64px; font-weight:800; line-height:1; letter-spacing:-.04em;
-      color:var(--brand); margin:0 0 6px;
+      font-family:var(--disp);font-weight:800;letter-spacing:-.02em;
+      font-size:clamp(3.2rem,10vw,4.6rem);line-height:1;color:var(--ink);margin:0 0 8px;
       font-variant-numeric:tabular-nums;
     }
-    .cards-row{
-      display:flex; gap:8px; justify-content:center; margin:0 0 22px;
-      font-size:20px; font-weight:700;
-    }
-    .cards-row span{
-      display:grid; place-items:center; width:44px; height:60px; border-radius:8px;
-      background:#fff; border:1.5px solid var(--line); color:var(--ink);
-      font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
-    }
-    .cards-row span.red{ color:#d92b2b }
-    h1{ font-size:24px; margin:0 0 10px; letter-spacing:-.02em }
-    p{ color:var(--muted); margin:0 0 8px; line-height:1.6; font-size:15px }
+    h1{font-family:var(--disp);font-size:1.35rem;font-weight:800;margin:0 0 8px;letter-spacing:-.02em}
+    p{color:var(--mute);margin:0 0 8px;font-size:15px;line-height:1.6}
     .hint{
-      font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
-      font-size:13px; background:var(--bg); border:1px solid var(--line);
-      border-radius:8px; padding:8px 12px; color:var(--muted);
-      display:inline-block; margin:14px 0 26px; word-break:break-all;
+      font-size:12.5px;color:var(--mute);margin:16px 0 24px;
     }
-    .actions{ display:flex; flex-direction:column; gap:10px }
+    .actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
     .btn{
-      display:block; padding:13px 20px; border-radius:11px; text-decoration:none;
-      font-weight:650; font-size:15px; transition:background .15s,transform .1s;
-      border:1.5px solid transparent;
+      display:inline-block;padding:12px 22px;border-radius:13px;text-decoration:none;
+      font-weight:700;font-size:14px;border:1.5px solid transparent;
+      transition:transform .12s ease,filter .12s ease;
     }
-    .btn:active{ transform:translateY(1px) }
-    .btn-primary{ background:var(--brand); color:#fff }
-    .btn-primary:hover{ background:var(--brand-dark) }
-    .btn-ghost{ background:transparent; color:var(--ink); border-color:var(--line) }
-    .btn-ghost:hover{ background:#eef3f9 }
-    .links{ margin-top:22px; font-size:13.5px; color:var(--muted) }
-    .links a{ color:var(--brand); text-decoration:none; margin:0 7px }
-    .links a:hover{ text-decoration:underline }
-    @media (min-width:480px){ .actions{ flex-direction:row } .btn{ flex:1 } }
+    .btn:hover{transform:translateY(-1px)}
+    .btn-amber{background:var(--amber);color:var(--ink)}
+    .btn-amber:hover{filter:brightness(1.06)}
+    .btn-primary{background:var(--indigo);color:#fff}
+    .btn-primary:hover{filter:brightness(1.08)}
+    .btn-ghost{border-color:var(--line2);color:var(--ink);background:var(--white)}
+    .btn-ghost:hover{background:#EEF0FB}
+
+    /* --- 深靛页脚 --- */
+    .foot{background:var(--card);color:#fff;margin-top:auto;padding:26px 20px 32px}
+    .foot-in{max-width:1080px;margin:0 auto;display:flex;flex-direction:column;
+      gap:13px;align-items:center;text-align:center}
+    .sf-title{font-size:11px;letter-spacing:.16em;color:rgba(255,255,255,.62)}
+    .sf-matrix{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+    .sf-item{
+      display:inline-flex;align-items:center;gap:8px;padding:9px 14px;border-radius:11px;
+      border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.06);
+      color:#fff;text-decoration:none;font-size:13px;font-weight:600
+    }
+    .sf-item:hover{background:rgba(255,255,255,.12)}
+    .sf-links{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;font-size:12.5px}
+    .sf-links a{color:rgba(255,255,255,.7);text-decoration:none}
+    .sf-links a:hover{color:#fff}
+    .sf-copy{color:rgba(255,255,255,.55);font-size:12px}
+
+    @media (max-width:520px){
+      .card{padding:28px 18px 24px}
+      .links{display:none}
+    }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <a class="brand" href="/"><span class="mark">24</span>MathDuel</a>
 
-    <div class="card">
-      <p class="code">404</p>
-      <div class="cards-row" aria-hidden="true">
-        <span>4</span><span class="red">0</span><span>4</span>
-      </div>
-
-      <h1>We couldn't make 24 here.</h1>
-      <p>That page doesn't exist — or it moved. Four cards, one target, nothing to solve on this URL.</p>
-      <span class="hint" id="pathHint"></span>
-
-      <div class="actions">
-        <a class="btn btn-primary" href="/games/24-game/">Play 24</a>
-        <a class="btn btn-ghost" href="/">Back to home</a>
-      </div>
-
-      <p class="links">
-        Try the
-        <a href="/games/24-game/?mode=daily">daily challenge</a> or
-        <a href="/games/bulls/">Guess the Number</a>
-      </p>
+<div class="top">
+  <div class="top-in">
+    <a class="mark" href="/">Math<em>Duel</em></a>
+    <div class="links">
+      <a href="/">Home</a>
+      <a href="/games/24-game/lobby/">24 Game</a>
+      <a href="/games/sudoku/">Sudoku</a>
     </div>
   </div>
+</div>
 
-  <script>
-    // 只做展示，失败也不影响页面
-    try {
-      var p = location.pathname + location.search;
-      if (p && p !== '/') document.getElementById('pathHint').textContent = p;
-      else document.getElementById('pathHint').style.display = 'none';
-    } catch (e) {}
-  </script>
+<main class="pg">
+  <div class="card">
+    <div class="cards-row" aria-hidden="true">
+      <span>4</span><span class="red">♦</span><span>4</span>
+    </div>
+    <div class="code">404</div>
+    <h1>That card is not in the deck</h1>
+    <p>The page you were after isn't here — it may have moved, or it never existed.</p>
+    <p class="hint">Tip: today's puzzle resets at midnight Shanghai time. Start a hand and see if you can make 24.</p>
+    <div class="actions">
+      <a class="btn btn-amber" href="/games/24-game/lobby/">Play 24 Game</a>
+      <a class="btn btn-primary" href="/">Back to home</a>
+      <a class="btn btn-ghost" href="/games/sudoku/">Play Sudoku</a>
+    </div>
+  </div>
+</main>
+
+<div class="foot">
+  <div class="foot-in">
+    <div class="sf-title">OUR BRAND NETWORK</div>
+    <div class="sf-matrix">
+      <a class="sf-item" href="https://mathduel.games/">♟ MathDuel</a>
+      <a class="sf-item" href="https://boardduel.com/">♞ BoardDuel</a>
+      <a class="sf-item" href="https://memoryduel.com/">♠ MemoryDuel</a>
+    </div>
+    <div class="sf-links">
+      <a href="/">Home</a>
+      <a href="/games/24-game/lobby/">24 Game</a>
+      <a href="/games/sudoku/">Sudoku 9×9</a>
+      <a href="/games/equation-pyramid/">Equation Pyramid</a>
+      <a href="/games/bulls/">Number Guess</a>
+    </div>
+    <div class="sf-copy">© 2026 MathDuel · free to play · privacy-first</div>
+  </div>
+</div>
+
 </body>
 </html>
