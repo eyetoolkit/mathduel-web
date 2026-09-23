@@ -3,98 +3,178 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#0066CC" />
-  <title>MathDuel — Race the world to make 24</title>
-  <meta name="description" content="Six brain games. Four cards, one target: make 24. Race up to 99 players worldwide on the same cards, or take on today's global daily challenge." />
+  <meta name="theme-color" content="#0E1419" />
+  <title>MathDuel — Six math arenas, one Elo ladder</title>
+  <meta name="description" content="Math duels in 24, sudoku, killer, equations and code-breaking. The server deals the identical puzzle to both players — the faster correct answer takes the round. No login, no ads." />
   <link rel="canonical" href="https://mathduel.games/" />
-  <meta property="og:title" content="MathDuel — Race the world to make 24" />
-  <meta property="og:description" content="Same cards, same clock. Race up to 99 players to make 24." />
+  <meta property="og:title" content="MathDuel — Six math arenas, one Elo ladder" />
+  <meta property="og:description" content="Two brains. One board. Sixty seconds. Race the world in six math arenas." />
   <meta property="og:type" content="website" />
   <link rel="preload" href="/fonts/space-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin />
   <link rel="preload" href="/fonts/sora-latin.woff2" as="font" type="font/woff2" crossorigin />
 </head>
-<body class="atmos">
-  <div id="header"></div>
+<body class="home-redesign">
 
-  <main id="main">
-    <!-- ============ Hero：记忆点 —— 「算式流动」背景 + 巨型数字 ============ -->
-    <section class="hero" aria-labelledby="heroTitle">
-      <div class="hero-flow" id="heroFlow" aria-hidden="true"></div>
-      <div class="container hero-grid">
-        <div class="hero-copy">
-          <p class="eyebrow" data-i18n="hero.eyebrow">Global multiplayer math</p>
-          <h1 id="heroTitle" class="display-1 hero-title" data-i18n="hero.title">Race the world to make 24.</h1>
-          <p class="lead hero-lead" data-i18n="hero.lead">Four cards. Four operators. One target.</p>
-          <div class="row wrap gap-3 hero-cta">
-            <a class="btn btn-primary btn-lg" href="/games/24-game/lobby/" data-i18n="hero.cta.play">Play now</a>
-            <a class="btn btn-ghost btn-lg" href="/games/24-game/?mode=daily" data-i18n="hero.cta.daily">Today's challenge</a>
-          </div>
-          <dl class="hero-stats">
-            <div><dt data-i18n="hero.stat.games">Games</dt><dd class="num-mono">6</dd></div>
-            <div><dt data-i18n="hero.stat.players">Players online</dt><dd class="num-mono" id="statPlayers">1,248</dd></div>
-            <div><dt data-i18n="hero.stat.room">Per room</dt><dd class="num-mono">99</dd></div>
-          </dl>
-        </div>
-
-        <!-- 舞台预览：4 张牌 + 算式，纯 CSS 动画，营造"正在对局"的临场感 -->
-        <div class="hero-stage" aria-hidden="true">
-          <div class="stage-cards">
-            <span class="scard">3</span>
-            <span class="scard red">6</span>
-            <span class="scard">11</span>
-            <span class="scard red">12</span>
-          </div>
-          <div class="stage-formula">
-            <span>( 11 − 3 ) × 6 ÷ <b>2</b> = <b class="ok">24</b></span>
-          </div>
-          <div class="stage-race">
-            <div class="sr-row r1"><span class="sr-rk">1</span><span class="sr-nm">Nova</span><span class="sr-tm">4.2s</span></div>
-            <div class="sr-row me"><span class="sr-rk">2</span><span class="sr-nm">You</span><span class="sr-tm">6.8s</span></div>
-            <div class="sr-row r3"><span class="sr-rk">3</span><span class="sr-nm">Luna</span><span class="sr-tm">9.1s</span></div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ============ 每日挑战横幅：题数 / 每题时间（沿用原站 5 题 · 60s 设计） ============ -->
-    <section class="container section" aria-labelledby="dailyTitle">
-      <div class="daily-banner" id="dailyBanner">
-        <div class="db-left">
-          <span class="badge badge-warning" data-i18n="daily.badge">Daily Challenge</span>
-          <h2 id="dailyTitle" class="display-3">What is 24?</h2>
-          <p class="lead">Same 5 puzzles for everyone on Earth today — 60 seconds each, server-timed.</p>
-        </div>
-        <div class="db-right">
-          <div class="db-setting">
-            <span class="db-label" data-i18n="daily.count">Puzzles</span>
-            <span class="badge">5</span>
-          </div>
-          <div class="db-setting">
-            <span class="db-label" data-i18n="daily.time">Per puzzle</span>
-            <span class="badge">60s</span>
-          </div>
-          <a class="btn btn-primary btn-lg btn-block" id="dailyStart" href="/games/24-game/?mode=daily" data-i18n="daily.start">Start daily</a>
-        </div>
-      </div>
-    </section>
-
-    <!-- ============ 游戏网格：移动单列 → 平板 2 列 → 桌面 3 列 ============ -->
-    <section class="container section" aria-labelledby="gamesTitle">
-      <header class="section-head">
-        <h2 id="gamesTitle" class="display-2" data-i18n="section.games.title">Pick your game</h2>
-        <p class="lead" data-i18n="section.games.lead">Six brain games.</p>
-      </header>
-      <div class="grid-cards" id="gameGrid"></div>
-    </section>
-  </main>
-
-  <footer class="site-footer">
-    <div class="container row between wrap gap-4">
-      <span>© <span id="year"></span> MathDuel</span>
-      <a class="btn btn-ghost btn-sm" href="/games/24-game/" data-i18n="hero.cta.play">Play now</a>
+<!-- APP BAR -->
+<header class="appbar">
+  <div class="in">
+    <a class="logo" href="/">MATH<span class="em">DUEL</span></a>
+    <nav class="tabs">
+      <a class="tab active" href="/">Games</a>
+      <a class="tab" href="/games/24-game/?mode=daily">Daily</a>
+      <a class="tab" href="/leaderboard/">Rank</a>
+      <a class="tab" href="#">Shop</a>
+    </nav>
+    <div class="right">
+      <span class="coin num" id="coinBalance">◎ 1,240</span>
+      <span class="lang">EN · 中文 · 日</span>
+      <a class="btn primary small" href="/games/24-game/lobby/">Sign in</a>
     </div>
-  </footer>
+  </div>
+</header>
 
-  <script type="module" src="/src/main.ts"></script>
+<!-- HERO -->
+<header class="hero" id="sec0">
+  <div class="wrap grid">
+    <div>
+      <span class="badge"><i></i>SIX ARENAS · ONE LADDER · SAME 60 SECONDS</span>
+      <h1>Two brains.<br>One board.<br><span class="em">Sixty seconds.</span></h1>
+      <p class="sub">Math duels in <b>24</b>, <b>sudoku</b>, <b>killer</b>, <b>equations</b> and <b>code-breaking</b>. The server deals the identical puzzle to both players — the faster correct answer takes the round. No login, no ads.</p>
+      <div class="cta-row">
+        <a class="btn primary" href="/games/24-game/?mode=daily">Play the daily hunt</a>
+        <a class="btn" href="/games/24-game/lobby/">Challenge a friend</a>
+      </div>
+      <div class="chips">
+        <span class="chip-t">No login</span><span class="chip-t">No ads</span><span class="chip-t">No tracking</span><span class="chip-t">60-second duels</span>
+      </div>
+    </div>
+    <div class="wall" id="arenaWall"></div>
+  </div>
+</header>
+
+<!-- GAMES -->
+<section id="sec1">
+  <div class="wrap">
+    <p class="kicker">Six arenas</p>
+    <h2>Pick your fight.</h2>
+    <p class="lead">Every arena is duel-ready: the same hand for both players, served by the server. Mini boards below are <b>real starting positions</b> from each game's generator.</p>
+    <div class="ggrid" id="gameGrid"></div>
+  </div>
+</section>
+
+<!-- HOW A DUEL WORKS -->
+<section id="sec2">
+  <div class="wrap">
+    <p class="kicker">How a duel works</p>
+    <h2>Three moves to the first round.</h2>
+    <p class="lead">No matchmaking queue to trust, no lobby to learn — a duel is <b>share a link, solve, compare</b>.</p>
+    <div class="steps">
+      <div class="step2"><b>1</b><div><strong>Pick a game, pick a fight.</strong><span>Create a room and share the link, or jump into a 99-player race.</span></div></div>
+      <div class="step2"><b>2</b><div><strong>Same board, same clock.</strong><span>The server deals the identical puzzle to everyone — no one gets an easier hand.</span></div></div>
+      <div class="step2"><b>3</b><div><strong>Faster correct answer takes the round.</strong><span>Speed bonus crowns photo finishes. Elo moves either way.</span></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- MODES -->
+<section id="sec3">
+  <div class="wrap">
+    <p class="kicker">Four ways in</p>
+    <h2>Every arena speaks the same four modes.</h2>
+    <p class="lead">Learn one, play all six. The modes are the platform — <b>games are content</b>.</p>
+    <div class="modes4">
+      <div class="mode4"><span class="mi"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></span><div><b>Daily hunt</b><span>One board worldwide · ends in 04:48</span></div></div>
+      <div class="mode4"><span class="mi"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span><div><b>Friend duel</b><span>Share a link, one click to join</span></div></div>
+      <div class="mode4"><span class="mi"><svg viewBox="0 0 24 24"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg></span><div><b>Race · 99</b><span>Live standings, your row pinned</span></div></div>
+      <div class="mode4"><span class="mi"><svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span><div><b>Solo streak</b><span>Warm up, then climb the tiers</span></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- STAKES -->
+<section id="sec4">
+  <div class="wrap">
+    <p class="kicker">The stakes</p>
+    <h2>A ladder you can see, a clock you can feel.</h2>
+    <p class="lead">One Elo ladder across all three duel sites — <b>Bronze to Master</b> — and a daily hunt that ends whether you show up or not.</p>
+    <div class="stakes">
+      <div class="card"><h3>The ladder · six tiers</h3><div class="ladder">
+        <div class="rung "><i style="height:10px"></i><span>Bronze</span></div>
+        <div class="rung "><i style="height:15px"></i><span>Silver</span></div>
+        <div class="rung "><i style="height:20px"></i><span>Gold</span></div>
+        <div class="rung "><i style="height:25px"></i><span>Platinum</span></div>
+        <div class="rung "><i style="height:30px"></i><span>Diamond</span></div>
+        <div class="rung top"><i style="height:35px"></i><span>Master</span></div>
+      </div></div>
+      <div class="side-card">
+        <h4>Daily hunt · today</h4>
+        <div class="lb-row"><span>1 <span class="n">Mira</span></span><span>0:42</span></div>
+        <div class="lb-row"><span>2 <span class="n">Ken</span></span><span>0:51</span></div>
+        <div class="lb-row"><span>3 <span class="n">Ade</span></span><span>1:02</span></div>
+        <div class="lb-row me"><span>37 <span class="n">You</span></span><span>2:19</span></div>
+        <div class="cd" id="dailyCountdown">Same puzzle worldwide · resets in 04:48:51</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- VALUES -->
+<section id="sec5">
+  <div class="wrap">
+    <p class="kicker">Why it sticks</p>
+    <h2>Nothing in your way.</h2>
+    <p class="lead">The platform's whole job is to disappear between you and the puzzle.</p>
+    <div class="vals">
+      <div class="val"><b>Free forever</b><span>No login, no ads, no paywall — every game and feature is completely free.</span></div>
+      <div class="val"><b>Real-time duels</b><span>Head-to-head in every arena — challenge a friend anytime, one link away.</span></div>
+      <div class="val"><b>Worldwide daily</b><span>The Daily Challenge is the same puzzle for the whole planet — beat the clock, climb the board.</span></div>
+      <div class="val"><b>Family-safe</b><span>Healthy, educational, distraction-free — fun for the whole family.</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section id="sec6">
+  <div class="wrap">
+    <p class="kicker">Questions</p>
+    <h2>Before you duel.</h2>
+    <div class="faq">
+      <details><summary>Is it really free?</summary><p>Yes — every game, every mode, every feature. No ads, no paywall.</p></details>
+      <details><summary>Do I need an account?</summary><p>No. Solo play and dailies work without one. An account only adds cross-site Elo, coins and avatars.</p></details>
+      <details><summary>Is it kid-friendly?</summary><p>That's the 6×6 grid's whole job — and there are no ads or chat with strangers to worry about.</p></details>
+      <details><summary>What languages?</summary><p>English, 中文, 日本語 today; more on the way.</p></details>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="cols">
+      <div>
+        <b>MATH<span style="color:var(--ember)">DUEL</span></b>
+        <span>Six math arenas, one Elo ladder. Made for two brains and sixty seconds.</span>
+      </div>
+      <div>
+        <b>The duel family</b>
+        <a href="/">MathDuel — you are here</a>
+        <a href="https://boardduel.com/">BoardDuel · five classic board games</a>
+        <a href="https://memoryduel.com/">MemoryDuel · memory &amp; trivia</a>
+      </div>
+      <div>
+        <b>Learn &amp; play</b>
+        <a href="/games/24-game/lobby/">How to play · 24 Game</a>
+        <a href="/games/sudoku/lobby/">How to play · Sudoku</a>
+        <a href="/games/24-game/?mode=daily">Daily hunt rules</a>
+        <a href="#">English · 中文 · 日本語</a>
+      </div>
+    </div>
+    <div class="base">
+      <span>© <span id="year"></span> MathDuel · 24 ARENA FAMILY · HOMEPAGE — same tokens as the six game arenas.</span>
+      <span>Mini boards are real: solver-verified starting positions from each generator.</span>
+    </div>
+  </div>
+</footer>
+
+<script type="module" src="/src/main.ts"></script>
 </body>
 </html>
