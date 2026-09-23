@@ -81,6 +81,7 @@ function deal(override?: number[]): void {
   formula = '';
   historyStack = [];
   usedCardIndices.clear();
+  dealingAnim = true;
   timer = 0;
   if (interval) window.clearInterval(interval);
   interval = window.setInterval(() => {
@@ -94,14 +95,22 @@ function deal(override?: number[]): void {
 
 const prettyFormula = (f: string) => f.replace(/\*/g, ' × ').replace(/\//g, ' ÷ ').replace(/-/g, ' − ');
 
+/** 只在真正发牌那一刻播 dealIn 动画；此后每次点击重渲染不再复播
+    —— 否则每次点击都会让整排牌重播发牌动画，看起来就是"点一下闪一下" */
+let dealingAnim = false;
+
 function render(): void {
+  const dealing = dealingAnim;
+  dealingAnim = false;
   cardsEl.innerHTML = numbers
     .map((n, i) => {
       const used = usedCardIndices.has(i);
       const red = i === 1 || i === 3;
+      const dealCls = dealing && !used ? 'dealing' : '';
+      const delay = dealing ? ` style="animation-delay:${i * 70}ms"` : '';
       return (
-        `<div class="card ${used ? 'used' : ''} ${red ? 'red' : ''} ${used ? '' : 'dealing'}" data-i="${i}" ` +
-        `role="button" tabindex="0" aria-label="card ${n}" style="animation-delay:${i * 70}ms">` +
+        `<div class="card ${used ? 'used' : ''} ${red ? 'red' : ''} ${dealCls}" data-i="${i}"` +
+        ` role="button" tabindex="0" aria-label="card ${n}"${delay}>` +
         `<div class="suit">${SUITS[i]}</div>` +
         `<div class="num">${n}</div>` +
         `<div class="suit br">${SUITS[i]}</div></div>`
@@ -154,6 +163,50 @@ function append(text: string): void {
   render();
   checkAnswer();
 }
+
+const endsWithDigit = (s: string) => /\d$/.test(s);
+const endsWithOp = (s: string) => /[+\-*/]$/.test(s);
+
+/** 点数字：算式以数字或「)」结尾时自动补一个「+」再入数
+    —— 连点数字即自动相加，不用先按运算符（旧版便捷行为，恢复） */
+function appendNumber(n: string): void {
+  if (endsWithDigit(formula) || formula.endsWith(')')) {
+    append('+' + n);
+    return;
+  }
+  append(n);
+}
+
+/** 点运算符：开头或「(」后无效（忽略）；连点运算符 = 替换上一个；其余正常追加 */
+function appendOp(op: string): void {
+  if (!formula || formula.endsWith('(')) return;
+  if (endsWithOp(formula)) {
+    historyStack.push(formula);
+    formula = formula.slice(0, -1) + op;
+    computeUsedIndices();
+    render();
+    checkAnswer();
+    return;
+  }
+  append(op);
+}
+
+/** 点「(」：紧跟数字或「)」时自动补「×」（数学上相邻即乘，如 3×(4+5) 只需点 3 再点 ( ） */
+function appendOpenParen(): void {
+  if (endsWithDigit(formula) || formula.endsWith(')')) {
+    append('*(');
+    return;
+  }
+  append('(');
+}
+
+/** 点「)」：存在未闭合括号且前一个字符是数字或「)」时才闭合，否则忽略（杜绝空括号/乱闭合） */
+function appendCloseParen(): void {
+  const opens = (formula.match(/\(/g) || []).length;
+  const closes = (formula.match(/\)/g) || []).length;
+  if (opens <= closes) return;
+  if (endsWithDigit(formula) || formula.endsWith(')')) append(')');
+}
 function undo(): void {
   if (!historyStack.length) return;
   formula = historyStack.pop()!;
@@ -184,6 +237,7 @@ function checkAnswer(): void {
       return;
     }
   }
+  if (!isCompleteExpr(f)) return; // 还没写完：保持安静，不打断输入节奏
   const uniq = [...new Set(numbers)];
   const cnt: Record<number, number> = {};
   for (const v of fVals) cnt[v] = (cnt[v] || 0) + 1;
@@ -194,7 +248,6 @@ function checkAnswer(): void {
       return;
     }
   }
-  if (!isCompleteExpr(f)) return;
   try {
     const r = safeEval(f);
     if (Math.abs(r - 24) < 0.0001) onWin();
@@ -1406,6 +1459,7 @@ function compEnterGame(): void {
     timer++;
     updateCompTimer(comp.timeLimit - Math.min(timer, comp.timeLimit));
   }, 1000);
+  dealingAnim = true; // 竞赛每轮开局也播一次发牌动画
   render();
   renderSide();
 }
@@ -1563,7 +1617,7 @@ cardsEl.addEventListener('click', (e) => {
   if (!c || (comp.active && comp.waiting)) return;
   const i = +(c.dataset.i || 0);
   if (usedCardIndices.has(i)) return;
-  append(String(numbers[i]));
+  appendNumber(String(numbers[i]));
 });
 cardsEl.addEventListener('keydown', (e) => {
   if (e.key === 'Enter' || e.key === ' ') {
@@ -1571,7 +1625,7 @@ cardsEl.addEventListener('keydown', (e) => {
     if (c) {
       e.preventDefault();
       const i = +(c.dataset.i || 0);
-      if (!usedCardIndices.has(i)) append(String(numbers[i]));
+      if (!usedCardIndices.has(i)) appendNumber(String(numbers[i]));
     }
   }
 });
@@ -1582,7 +1636,11 @@ $('pad')!.addEventListener('click', (e) => {
   if (b.dataset.act === 'undo') return undo();
   if (b.dataset.act === 'clear') return clearFormula();
   if (comp.active && comp.waiting) return;
-  append(b.dataset.v!);
+  const v = b.dataset.v || '';
+  if (v === '(') return appendOpenParen();
+  if (v === ')') return appendCloseParen();
+  if ('+-*/'.includes(v)) return appendOp(v);
+  append(v);
 });
 
 $('newBtn')!.onclick = () => {
@@ -1676,13 +1734,13 @@ document.addEventListener('keydown', (e) => {
   if (comp.active && comp.waiting) return;
   if (e.key >= '1' && e.key <= '4') {
     const i = +e.key - 1;
-    if (i < numbers.length && !usedCardIndices.has(i)) append(String(numbers[i]));
-  } else if (e.key === '+') append('+');
-  else if (e.key === '-') append('-');
-  else if (e.key === '*') append('*');
-  else if (e.key === '/') append('/');
-  else if (e.key === '(') append('(');
-  else if (e.key === ')') append(')');
+    if (i < numbers.length && !usedCardIndices.has(i)) appendNumber(String(numbers[i]));
+  } else if (e.key === '+') appendOp('+');
+  else if (e.key === '-') appendOp('-');
+  else if (e.key === '*') appendOp('*');
+  else if (e.key === '/') appendOp('/');
+  else if (e.key === '(') appendOpenParen();
+  else if (e.key === ')') appendCloseParen();
   else if (e.key === 'Backspace') {
     e.preventDefault();
     undo();
