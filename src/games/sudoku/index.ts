@@ -37,8 +37,7 @@ mountHeader(($('header') as HTMLElement | null) ?? document.createElement('div')
   nav: [
     { labelKey: 'nav.home', href: '/' },
     { labelKey: 'nav.games', href: '/#games' },
-    { labelKey: 'nav.leaderboard', href: '/leaderboard/' },
-  ],
+    ],
 });
 
 type Mode = 'solo' | 'daily' | 'timed' | 'duel';

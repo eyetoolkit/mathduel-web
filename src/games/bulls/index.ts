@@ -33,8 +33,7 @@ mountHeader(($('header') as HTMLElement | null) ?? document.createElement('div')
   nav: [
     { labelKey: 'nav.home', href: '/' },
     { labelKey: 'nav.games', href: '/games/bulls/' },
-    { labelKey: 'nav.leaderboard', href: '/leaderboard/' },
-  ],
+    ],
 });
 
 /* ───────────── 状态 ───────────── */

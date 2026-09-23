@@ -204,20 +204,8 @@ function sidebarHtml(): string {
   const home = navItem(true, '/',
     '<svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg>',
     'Home');
-  const leaderboard = navItem(false, '/leaderboard/',
-    '<svg viewBox="0 0 24 24"><path d="M8 21h8m-4-4v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M7 6H4a3 3 0 0 0 3 5M17 6h3a3 3 0 0 1-3 5"/></svg>',
-    'Leaderboard');
-  const shop = navItem(false, '/shop/',
-    '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l2.5 2.5"/></svg>',
-    'Coin Shop 🪙');
-
-  const duelGroup = `
-    <div class="nav-group">Duel</div>
-    ${navItem(false, '/rooms/', '<svg viewBox="0 0 24 24"><path d="M16 11a4 4 0 1 0-8 0"/><circle cx="12" cy="6" r="2.5"/><path d="M4 20c1.5-3.5 4.5-5 8-5s6.5 1.5 8 5"/></svg>', 'Friend rooms')}
-    ${navItem(false, '/tournaments/new/', '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 8v8M8 12h8"/></svg>', 'Create tournament')}
-    ${navItem(false, '/tournaments/', '<svg viewBox="0 0 24 24"><circle cx="12" cy="9" r="5"/><path d="M9.5 13.5L8 21l4-2 4 2-1.5-7.5"/></svg>', 'My tournaments')}
-  `;
-
+  
+  
   const gamesGroup = `
     <div class="nav-group">All games · 6</div>
     ${miniNavItem(false, '/games/24-game/lobby/',   'cv-24',     '24 Game')}
@@ -228,29 +216,21 @@ function sidebarHtml(): string {
     ${miniNavItem(false, '/games/bulls/',            'cv-bulls',  'Number Guess 1A2B')}
   `;
 
-  const helpGroup = `
-    <div class="nav-group">Help</div>
-    ${navItem(false, '/how-to-play/', '<svg viewBox="0 0 24 24"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19a2 2 0 0 1 2-2h13"/></svg>', 'How to play')}
-  `;
-
+  
   return `
     <div class="sb-top">
       <a class="logo" href="/">Math<b>Duel</b></a>
       <button class="sb-collapse" id="sbCollapse" title="Collapse sidebar" aria-label="Collapse sidebar">«</button>
     </div>
     <div class="sb-login">
-      <a class="btn-login" href="#"><span>Log in / Sign up</span></a>
+      <span class="btn-login" style="opacity:.55;cursor:default" title="Accounts are not enabled yet"><span>Log in · soon</span></span>
       <button class="sb-theme" title="Toggle theme" aria-label="Toggle theme">
         <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M20 13A8 8 0 1 1 11 4a6.5 6.5 0 0 0 9 9z"/></svg>
       </button>
     </div>
     <nav class="sb-nav" aria-label="Site navigation">
       ${home}
-      ${leaderboard}
-      ${shop}
-      ${duelGroup}
       ${gamesGroup}
-      ${helpGroup}
     </nav>
     <div class="nav-foot">
       <span class="lang-pill"><b>EN</b> · 中文 · 日</span>
@@ -323,7 +303,7 @@ function featsHtml(): string {
       ${F('<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>', 'Daily hunt', 'One puzzle worldwide, timed reset — race the globe.')}
       ${F('<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1.6 1.6"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1.6-1.6"/>', 'Friend duel', 'Copy an invite link — one click and you\'re in the room.')}
       ${F('<path d="M13 2L5 13h6l-1 9 8-11h-6z"/>', 'Race · 99', 'Live standings, your row pinned on the page.')}
-      ${F('<circle cx="12" cy="12" r="8.5"/><path d="M14.5 9.3c-.5-.8-1.4-1.3-2.5-1.3-1.7 0-3 1-3 2.2 0 2.8 6 1.4 6 4.2 0 1.2-1.3 2.2-3 2.2-1.1 0-2-.5-2.5-1.3M12 6.5V8m0 8v1.5"/>', 'Coin shop', 'Earn coins as you play, swap for avatars and emojis.')}
+      ${F('<circle cx="12" cy="12" r="8.5"/><path d="M14.5 9.3c-.5-.8-1.4-1.3-2.5-1.3-1.7 0-3 1-3 2.2 0 2.8 6 1.4 6 4.2 0 1.2-1.3 2.2-3 2.2-1.1 0-2-.5-2.5-1.3M12 6.5V8m0 8v1.5"/>', 'Smart hint', 'Stuck? Ask for a hint — it shows the next step, not the answer.')}
     </div>
   `;
 }
@@ -339,7 +319,7 @@ function footerHtml(): string {
         <a class="sf-item" href="https://memoryduel.com"><span class="pip" style="background:#4F46E5"></span>MemoryDuel · Knowledge Battles</a>
       </div>
       <div class="sf-links">
-        <a href="/about/">About</a><a href="/contact/">Contact</a><a href="/privacy/">Privacy</a><a href="/terms/">Terms</a><a href="/how-to-play/">How to play</a>
+        <a href="/about/">About</a><a href="/contact/">Contact</a><a href="/privacy/">Privacy</a><a href="/terms/">Terms</a><a href="/games/24-game/lobby/">All games</a>
       </div>
       <div class="sf-copy">© 2026 MathDuel · Pure static · Privacy-first · Free to play</div>
     </div>
