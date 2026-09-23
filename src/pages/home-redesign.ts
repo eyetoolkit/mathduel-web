@@ -151,7 +151,7 @@ interface HomeCard {
   live: boolean;
 }
 const HOME_CARDS: HomeCard[] = [
-  { href: '/games/24-game/',          cvId: 'cv-24',     name: '24 Game',              tags: ['Solo', '1v1', 'Daily'], live: true  },
+  { href: '/games/24-game/lobby/',   cvId: 'cv-24',     name: '24 Game',              tags: ['Solo', '1v1', 'Daily'], live: true  },
   { href: '/games/sudoku/',           cvId: 'cv-sudoku', name: 'Sudoku 9×9',           tags: ['Solo', 'Daily'],        live: false },
   { href: '/games/sudoku-6x6/',       cvId: 'cv-s6',     name: 'Sudoku 6×6',           tags: ['Solo', 'Beginner'],     live: false },
   { href: '/games/killer-sudoku/',    cvId: 'cv-killer', name: 'Killer Sudoku',        tags: ['Solo', 'Advanced'],     live: false },
@@ -220,7 +220,7 @@ function sidebarHtml(): string {
 
   const gamesGroup = `
     <div class="nav-group">All games · 6</div>
-    ${miniNavItem(false, '/games/24-game/',          'cv-24',     '24 Game')}
+    ${miniNavItem(false, '/games/24-game/lobby/',   'cv-24',     '24 Game')}
     ${miniNavItem(false, '/games/sudoku/',           'cv-sudoku', 'Sudoku 9×9')}
     ${miniNavItem(false, '/games/sudoku-6x6/',       'cv-s6',     'Sudoku 6×6')}
     ${miniNavItem(false, '/games/killer-sudoku/',    'cv-killer', 'Killer Sudoku')}
