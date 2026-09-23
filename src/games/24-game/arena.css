@@ -26,11 +26,21 @@ body.arena {
   --a-line: #2a3741;
   --a-paper: #f4f6f2;
   --a-mute: #9aa9b3;
+  /* 组件层次级文字/描边：killer cage 虚线、pyramid deco 砖块描边直接引用。
+     只在 .k9-arena/.p1-arena 上局部定义过，lobby 页没有那个 class 会取空值
+     → SVG stroke 失效（虚线整体消失）。两个皮肤都必须给出档位。 */
+  --a-mute-2: #5c6b74;
   --a-ember: #ff6a3c;
   --a-ember-dim: #ff8b66;
   --a-ember-soft: rgba(255, 106, 60, 0.14);
   --a-teal: #2fc4c9;
   --a-gold: #f2c14e;
+  /* 组件层 teal 别名：sudoku.css / s6.css 直接写 var(--teal, fallback)，
+     但 --teal 从未定义，恒取 fallback 亮青。补上别名后两处皮肤各自给出
+     适合作文字/描边的档位，游戏 CSS 无需逐个改。 */
+  --teal: var(--a-teal);
+  --teal-dim: #1e8a8e;
+  --teal-soft: rgba(47, 196, 201, 0.14);
   /* 设计稿指定 display 用 Space Grotesk —— 与设计系统 --font-display 同款且已自托管
      （public/fonts/space-grotesk-latin.woff2），无需新增字体资源。 */
   --a-disp: var(--font-display);
@@ -144,11 +154,17 @@ body.arena.skin-paper {
   --a-line: #e3e6f0;
   --a-paper: #1e1b39;            /* 文字主色（原是浅色文字） */
   --a-mute: #5b6079;
+  --a-mute-2: #5c6b74;           /* cage 虚线 / deco 砖描边：浅底上保持可读 */
   --a-ember: #f59e0b;            /* 品牌辅色：琥珀（原 ember 橙） */
   --a-ember-dim: #d97706;
   --a-ember-soft: rgba(245, 158, 11, 0.16);
   --a-teal: #0fa3a8;             /* 提深：浅底上作文字/描边要能读 */
   --a-gold: #d97706;             /* 金币文字色：浅底上压深 */
+  /* 深色皮肤下 --teal == --a-teal；浅底上必须再压一档，
+     否则 #2fc4c9 白底只有 2.4:1 读不出来 */
+  --teal: #0fa3a8;
+  --teal-dim: #0b7f85;
+  --teal-soft: rgba(15, 163, 168, 0.14);
 
   /* ---------- 设计系统 token → papergames 浅色映射 ---------- */
   --bg: #f4f5f9;
@@ -200,10 +216,13 @@ body.arena.skin-paper {
   --e-3: 0 4px 8px rgba(30, 27, 57, 0.08), 0 12px 28px rgba(30, 27, 57, 0.12);
   --e-4: 0 8px 16px rgba(30, 27, 57, 0.1), 0 24px 56px rgba(30, 27, 57, 0.16);
 
-  background: transparent;       /* 纸白底由 game-shell.css 的 body 背景负责 */
   color: var(--text);
   min-height: 100vh;
 }
+
+/* 牌桌页（has-papergames-shell）的纸白底由 game-shell.css 的 body 背景负责，
+   这里必须让位；home-v2 lobby（模式选择页）则保留 body.arena 的浅底不被清掉 */
+body.arena.skin-paper.has-papergames-shell { background: transparent; }
 
 /* 浏览器原生 UI（滚动条 / select / 表单控件）走浅色 */
 html:has(body.arena.skin-paper) {

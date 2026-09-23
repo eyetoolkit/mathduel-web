@@ -13,10 +13,12 @@
 // 设计系统必须先引入：--font-display / --font-sans 等 token 由它定义，
 // arena.css 的 --a-disp 只是引用 var(--font-display)。缺了这行标题会掉回 Times New Roman。
 import '@tri-sites/design-system/styles';
-import '../24-game/arena.css';
+import '../24-game/arena.css';            // --a-* 皮肤 token（skin-paper 浅色）
+import '../../styles/home-redesign.css';  // papergames 骨架：sidebar / topbar / footer / how / ladder
 import '../24-game/lobby.css';
 import './lobby.css';
-import { shanghaiDateKey } from './engine';
+import { wireLobbyChrome } from '../../pages/lobby-chrome';
+import { shanghaiDateKey } from '../sudoku/engine';
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T | null;
 
@@ -127,6 +129,8 @@ function renderBoard(): void {
 
 /* ===================== 启动 ===================== */
 function boot(): void {
+  wireLobbyChrome();
+  wireLobbyChrome();
   renderHeroGrid();
   markDailyDone();
   startCountdown();

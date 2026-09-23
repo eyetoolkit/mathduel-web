@@ -4,9 +4,11 @@
  */
 
 import '@tri-sites/design-system/styles';
-import '../24-game/arena.css';
+import '../24-game/arena.css';            // --a-* 皮肤 token（skin-paper 浅色）
+import '../../styles/home-redesign.css';  // papergames 骨架：sidebar / topbar / footer / how / ladder
 import '../24-game/lobby.css';
 import './lobby.css';
+import { wireLobbyChrome } from '../../pages/lobby-chrome';
 import { shanghaiDateKey } from '../sudoku/engine';
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T | null;
@@ -153,6 +155,8 @@ function wireDifficulty(): void {
 }
 
 function boot(): void {
+  wireLobbyChrome();
+  wireLobbyChrome();
   renderHero();
   markDailyDone();
   startCountdown();

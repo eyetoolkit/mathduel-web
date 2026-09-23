@@ -32,95 +32,6 @@
   color: #160a04;
 }
 
-/* 右列「How it works」规则列表 */
-.arb-rules {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-top: 12px;
-}
-.arb-rule {
-  display: flex;
-  gap: 10px;
-  font-size: 0.84rem;
-  color: var(--a-mute);
-  line-height: 1.5;
-}
-.arb-rule b {
-  flex: none;
-  width: 20px;
-  height: 20px;
-  border-radius: 6px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.72rem;
-  background: var(--a-ember-soft);
-  color: var(--a-ember-dim);
-}
-
-/* 榜下说明（beta 无全球榜时诚实标注） */
-.board-note {
-  margin-top: 12px;
-  margin-bottom: 0;
-  font-size: 0.76rem;
-  line-height: 1.5;
-}
-
-/* ===== 难度行（9×9 专属，设计稿新增） =====
-   紧跟模式卡下方：9×9 一局要几分钟，「要花多久」是进入前的决定。
-   选中态只做边框 + 底色，不用背景反色，避免和模式卡的 feat 高亮抢焦点。 */
-.arb-diff-block {
-  margin-top: 22px;
-}
-.arb-dl {
-  font-size: 0.74rem;
-  color: var(--a-mute);
-  margin-bottom: 10px;
-}
-.arb-diff {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-}
-.arb-dbtn {
-  appearance: none;
-  cursor: pointer;
-  font-family: var(--a-ui);
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: var(--a-paper);
-  background: var(--a-ink-2);
-  border: 1px solid var(--a-line);
-  border-radius: var(--a-r-btn);
-  padding: 10px 12px;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 2px;
-  text-align: left;
-  transition: border-color 0.12s, background 0.12s, color 0.12s;
-}
-.arb-dbtn small {
-  font-size: 0.72rem;
-  font-weight: 400;
-  color: var(--a-mute);
-}
-.arb-dbtn:hover {
-  border-color: var(--a-ember-dim);
-}
-.arb-dbtn.on {
-  border-color: var(--a-ember);
-  background: var(--a-ember-soft);
-  color: var(--a-ember);
-}
-.arb-dbtn.on small {
-  color: var(--a-ember-dim);
-}
-.arb-dbtn:focus-visible {
-  outline: 2px solid var(--a-ember);
-  outline-offset: 2px;
-}
 
 @media (max-width: 560px) {
   .arb-grid9 {
@@ -131,15 +42,5 @@
     height: 38px;
     font-size: 1rem;
     border-radius: 7px;
-  }
-  .arb-diff {
-    gap: 7px;
-  }
-  .arb-dbtn {
-    padding: 9px 8px;
-    font-size: 0.82rem;
-  }
-  .arb-dbtn small {
-    font-size: 0.66rem;
   }
 }

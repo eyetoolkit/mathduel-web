@@ -5,9 +5,11 @@
  */
 
 import '@tri-sites/design-system/styles';
-import '../24-game/arena.css';
+import '../24-game/arena.css';            // --a-* 皮肤 token（skin-paper 浅色）
+import '../../styles/home-redesign.css';  // papergames 骨架：sidebar / topbar / footer / how / ladder
 import '../24-game/lobby.css';
 import './lobby.css';
+import { wireLobbyChrome } from '../../pages/lobby-chrome';
 import { shanghaiDateKey } from '../sudoku/engine';
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T | null;
@@ -40,20 +42,21 @@ const esc = (s: unknown): string =>
 function renderHeroPyr(): void {
   const el = $('heroPyr');
   if (!el) return;
-  // viewBox 100×100；brick 1/5 行高，每行 cell 中心 y = (level+0.5) * ROW_H
-  const ROW_H = 100 / 6.5;
-  const CELL_W = 100 / 5.5;
+  // 位置/尺寸全部用百分比（相对容器），任何视口下金字塔都等比缩放。
+  // 旧版把 100×100 的坐标当 px 用，brick 全部坍缩在容器左上角 100×100 内。
+  const ROW_H = 100 / 6.5;  // 纵向 100 等分
+  const CELL_W = 100 / 5.5; // 横向 100 等分
   const levels = 5;
   const labels = ['120', '64', '56', '34', '30', '26', '14', '12', '', '', '', '', '', '', ''];
-  // 给顶 5 个 brick 标数字（given，paper 视觉），其余空
-  const givenSet = new Set([0, 1, 2, 3, 4, 5, 7, 8]); // 顶 9 格都给（更像"paper 已知"）
+  // 给顶 9 格标数字（given，paper 视觉），其余空
+  const givenSet = new Set([0, 1, 2, 3, 4, 5, 7, 8]);
 
   let bricks = '';
   let cum = 0;
   for (let level = 0; level < levels; level++) {
     const row = levels - level;
     const w = row * CELL_W;
-    const startX = (360 - w) / 2 + CELL_W / 2;
+    const startX = (100 - w) / 2 + CELL_W / 2;
     for (let col = 0; col < row; col++) {
       const cx = startX + col * CELL_W;
       const cy = ROW_H * (level + 0.5);
@@ -64,7 +67,8 @@ function renderHeroPyr(): void {
       const isGiven = givenSet.has(cum);
       const val = labels[cum];
       const cls = isGiven ? 'brick given' : 'brick';
-      bricks += `<div class="${cls}" style="left:${x}px;top:${y}px;width:${w2}px;height:${h2}px;">${val}</div>`;
+      const r1 = (n: number) => Math.round(n * 100) / 100;
+      bricks += `<div class="${cls}" style="left:${r1(x)}%;top:${r1(y)}%;width:${r1(w2)}%;height:${r1(h2)}%;">${val}</div>`;
       cum++;
     }
   }
@@ -182,6 +186,8 @@ function wireDifficulty(): void {
 }
 
 function boot(): void {
+  wireLobbyChrome();
+  wireLobbyChrome();
   renderHeroPyr();
   markDailyDone();
   startCountdown();

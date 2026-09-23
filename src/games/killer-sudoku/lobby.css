@@ -50,6 +50,8 @@
 
 @media (max-width: 560px) {
   .arb-cage-deco {
-    width: 100%;
+    /* 全宽时 9:7 比例会拉出一个 260px+ 的高框，缩成居中缩略图 */
+    width: min(280px, 88%);
+    margin: 16px auto 6px;
   }
 }

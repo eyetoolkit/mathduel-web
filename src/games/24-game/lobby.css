@@ -58,6 +58,12 @@
   display: flex; align-items: center; justify-content: center;
   gap: 7px; flex-wrap: wrap;
 }
+/* 卡内一句式描述（数独系 lobby 用，24 点卡片不带 .md 时零影响） */
+.home-v2 .mode .md {
+  margin-top: 6px; font-size: .78rem; line-height: 1.45;
+  color: var(--mute); max-width: 24em;
+}
+.home-v2 .mode.soon .md { color: #9BA0B8; }
 
 /* Daily 卡：唯一琥珀变体（细顶 rail + 琥珀边） */
 .home-v2 .mode.daily { border-color: rgba(245, 158, 11, .55); }
@@ -202,4 +208,36 @@
   .home-v2 .chips .chip { padding: 5px 11px; font-size: .78rem; }
   .home-v2 .how-grid { grid-template-columns: 1fr; gap: 12px; }
   .home-v2 .ladder-panel { padding: 18px; }
+}
+/* ── 共享：规则列表（arb-rules）/ 榜下说明 / 难度行（arb-diff）──
+   数独系 lobby 共用。原先散在各游戏 lobby.css 并依赖已删除的旧骨架，
+   2026-09-24 统一收拢到这里，配色走 papergames token。 */
+.home-v2 .arb-rules { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
+.home-v2 .arb-rule { display: flex; gap: 10px; font-size: .84rem; color: var(--mute); line-height: 1.5; }
+.home-v2 .arb-rule b {
+  flex: none; width: 20px; height: 20px; border-radius: 6px;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: .72rem; background: var(--indigo-soft); color: var(--indigo);
+}
+.home-v2 .board-note { margin-top: 12px; margin-bottom: 0; font-size: .76rem; line-height: 1.5; }
+.home-v2 .arb-diff-block { margin-top: 22px; }
+.home-v2 .arb-dl { font-size: .74rem; color: var(--mute); margin-bottom: 10px; }
+.home-v2 .arb-diff { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.home-v2 .arb-dbtn {
+  appearance: none; cursor: pointer; font-family: inherit;
+  font-size: .9rem; font-weight: 600; color: var(--ink);
+  background: var(--indigo-soft); border: 1px solid var(--line);
+  border-radius: var(--r-btn); padding: 10px 12px;
+  display: flex; flex-direction: column; align-items: flex-start; gap: 2px; text-align: left;
+  transition: border-color .12s, background .12s, color .12s;
+}
+.home-v2 .arb-dbtn small { font-size: .72rem; font-weight: 400; color: var(--mute); }
+.home-v2 .arb-dbtn:hover { border-color: var(--amber); }
+.home-v2 .arb-dbtn.on { border-color: var(--amber); background: rgba(245, 158, 11, .14); color: #B45309; }
+.home-v2 .arb-dbtn.on small { color: #B45309; }
+.home-v2 .arb-dbtn:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
+@media (max-width: 560px) {
+  .home-v2 .arb-diff { gap: 7px; }
+  .home-v2 .arb-dbtn { padding: 9px 8px; font-size: .82rem; }
+  .home-v2 .arb-dbtn small { font-size: .66rem; }
 }

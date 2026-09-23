@@ -1,11 +1,11 @@
 <!doctype html>
-<html lang="en" data-site="mathduel">
+<html lang="en" data-site="mathduel" data-build="%VITE_SHOW_BETA%">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#0E1419" />
-  <title>Choose Your Mode — Killer Sudoku | MathDuel</title>
-  <meta name="description" content="Standard Sudoku rules plus cage-sum constraints: every dashed cage must add up to the number in its corner. Three difficulties by cage count (Gentle 26 / Standard 29 / Fierce 34), zero givens." />
+  <meta name="theme-color" content="#F4F5F9" />
+  <title>Killer Sudoku — Choose Your Mode · MathDuel</title>
+  <meta name="description" content="Sudoku with cages: every dashed cage adds to its corner number. Daily cage, duel bot, timed runs and solo practice — zero givens, pure logic." />
   <link rel="canonical" href="https://mathduel.games/games/killer-sudoku/lobby/" />
   <!-- PWA + favicons -->
   <link rel="icon" href="/favicon.ico" sizes="any" />
@@ -19,114 +19,300 @@
   <meta property="og:image" content="https://mathduel.games/og-image.svg" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
-  <meta property="og:image:alt" content="MathDuel — Six math arenas, one Elo ladder" />
+  <meta property="og:image:alt" content="Killer Sudoku — follow the cages on MathDuel" />
+  <meta property="og:title" content="Killer Sudoku — Choose Your Mode · MathDuel" />
+  <meta property="og:description" content="Sudoku with cages: every dashed cage adds to its corner number. Daily cage, duel bot, timed runs and solo practice — zero givens, pure logic." />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:site" content="@mathduel" />
   <meta name="twitter:creator" content="@mathduel" />
+  <meta name="twitter:title" content="Killer Sudoku — Choose Your Mode · MathDuel" />
+  <meta name="twitter:description" content="Sudoku with cages: every dashed cage adds to its corner number. Daily cage, duel bot, timed runs and solo practice — zero givens, pure logic." />
   <meta name="twitter:image" content="https://mathduel.games/og-image.svg" />
-  <!-- hreflang (站点仅英文版，x-default = en) -->
   <link rel="alternate" hreflang="en" href="https://mathduel.games/games/killer-sudoku/lobby/" />
   <link rel="alternate" hreflang="x-default" href="https://mathduel.games/games/killer-sudoku/lobby/" />
   <link rel="preload" href="/fonts/space-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin />
   <link rel="preload" href="/fonts/sora-latin.woff2" as="font" type="font/woff2" crossorigin />
 </head>
-<body class="arena">
-  <header class="arbar">
-    <div class="arbar-in">
-      <a class="arb-logo" href="/">KILLER<span>SUDOKU</span></a>
-      <nav class="arb-nav" aria-label="Site">
-        <a href="/">Home</a>
-        <a href="/games/killer-sudoku/">Play now</a>
-      </nav>
-      <a class="arb-top-cta" href="/games/killer-sudoku/?mode=daily">Today's cage →</a>
-    </div>
-  </header>
+<body class="home-v2 arena skin-paper">
 
-  <main class="arb-main" id="main">
-    <section class="arb-hero">
-      <h1 class="arb-big">Fill the <em>cages</em></h1>
+<!-- ═══════════ 图标库：6 张游戏封面 SVG symbol（与首页/ 24 点 lobby 同源） ═══════════ -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+<defs>
+<symbol id="cv-24" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#3730A3"/>
+  <rect x="56" y="56" width="184" height="184" rx="42" fill="#FFFFFF"/>
+  <rect x="272" y="56" width="184" height="184" rx="42" fill="#FFFFFF"/>
+  <rect x="56" y="272" width="184" height="184" rx="42" fill="#FFFFFF"/>
+  <rect x="272" y="272" width="184" height="184" rx="42" fill="#F59E0B"/>
+  <g font-family="system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif" font-weight="800" text-anchor="middle">
+    <text x="148" y="148" dominant-baseline="central" font-size="80" fill="#3730A3">13</text>
+    <text x="364" y="148" dominant-baseline="central" font-size="80" fill="#3730A3">11</text>
+    <text x="148" y="366" dominant-baseline="central" font-size="86" fill="#3730A3">+</text>
+    <text x="364" y="366" dominant-baseline="central" font-size="72" fill="#1E1B39">24</text>
+  </g>
+</symbol>
+<symbol id="cv-sudoku" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#3730A3"/>
+  <g fill="#FFFFFF">
+    <rect x="56" y="56" width="118" height="118" rx="27"/><rect x="197" y="56" width="118" height="118" rx="27"/>
+    <rect x="338" y="56" width="118" height="118" rx="27"/><rect x="56" y="197" width="118" height="118" rx="27"/>
+    <rect x="197" y="197" width="118" height="118" rx="27"/><rect x="338" y="197" width="118" height="118" rx="27"/>
+    <rect x="56" y="338" width="118" height="118" rx="27"/><rect x="197" y="338" width="118" height="118" rx="27"/>
+  </g>
+  <rect x="338" y="338" width="118" height="118" rx="27" fill="#F59E0B"/>
+  <g font-family="system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif" font-weight="800" text-anchor="middle">
+    <text x="115" y="115" dominant-baseline="central" font-size="62" fill="#3730A3">1</text><text x="256" y="115" dominant-baseline="central" font-size="62" fill="#3730A3">2</text>
+    <text x="397" y="115" dominant-baseline="central" font-size="62" fill="#3730A3">3</text><text x="115" y="256" dominant-baseline="central" font-size="62" fill="#3730A3">4</text>
+    <text x="256" y="256" dominant-baseline="central" font-size="62" fill="#3730A3">5</text><text x="397" y="256" dominant-baseline="central" font-size="62" fill="#3730A3">6</text>
+    <text x="115" y="397" dominant-baseline="central" font-size="62" fill="#3730A3">7</text><text x="256" y="397" dominant-baseline="central" font-size="62" fill="#3730A3">8</text>
+    <text x="397" y="397" dominant-baseline="central" font-size="62" fill="#1E1B39">9</text>
+  </g>
+</symbol>
+<symbol id="cv-s6" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#4F46E5"/>
+  <g fill="#FFFFFF">
+    <rect x="56" y="126" width="118" height="118" rx="27"/><rect x="197" y="126" width="118" height="118" rx="27"/>
+    <rect x="338" y="126" width="118" height="118" rx="27"/><rect x="56" y="267" width="118" height="118" rx="27"/>
+    <rect x="197" y="267" width="118" height="118" rx="27"/>
+  </g>
+  <rect x="338" y="267" width="118" height="118" rx="27" fill="#22C55E"/>
+  <g font-family="system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif" font-weight="800" text-anchor="middle">
+    <text x="115" y="185" dominant-baseline="central" font-size="62" fill="#4F46E5">1</text><text x="256" y="185" dominant-baseline="central" font-size="62" fill="#4F46E5">2</text>
+    <text x="397" y="185" dominant-baseline="central" font-size="62" fill="#4F46E5">3</text><text x="115" y="326" dominant-baseline="central" font-size="62" fill="#4F46E5">4</text>
+    <text x="256" y="326" dominant-baseline="central" font-size="62" fill="#4F46E5">5</text><text x="397" y="326" dominant-baseline="central" font-size="62" fill="#FFFFFF">6</text>
+  </g>
+</symbol>
+<symbol id="cv-killer" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#312E81"/>
+  <g fill="#FFFFFF">
+    <rect x="56" y="56" width="118" height="118" rx="27"/><rect x="197" y="56" width="118" height="118" rx="27"/>
+    <rect x="338" y="56" width="118" height="118" rx="27"/><rect x="56" y="197" width="118" height="118" rx="27"/>
+    <rect x="197" y="197" width="118" height="118" rx="27"/><rect x="338" y="197" width="118" height="118" rx="27"/>
+    <rect x="56" y="338" width="118" height="118" rx="27"/>
+  </g>
+  <rect x="197" y="338" width="259" height="118" rx="27" fill="#DC2626"/>
+  <rect x="197" y="338" width="259" height="118" rx="27" fill="none" stroke="#FFFFFF" stroke-width="6.5" stroke-dasharray="16 13"/>
+  <g font-family="system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif" font-weight="800">
+    <g text-anchor="middle">
+      <text x="115" y="115" dominant-baseline="central" font-size="62" fill="#312E81">5</text><text x="397" y="115" dominant-baseline="central" font-size="62" fill="#312E81">6</text>
+      <text x="256" y="256" dominant-baseline="central" font-size="62" fill="#312E81">3</text><text x="115" y="397" dominant-baseline="central" font-size="62" fill="#312E81">2</text>
+    </g>
+    <text x="219" y="366" text-anchor="start" dominant-baseline="central" font-size="54" fill="#FFFFFF">17</text>
+  </g>
+</symbol>
+<symbol id="cv-pyr" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#3730A3"/>
+  <rect x="214" y="48" width="84" height="84" rx="19" fill="#F59E0B"/>
+  <g fill="#FFFFFF" fill-opacity="0.16">
+    <rect x="98" y="148" width="96" height="96" rx="22"/><rect x="208" y="148" width="96" height="96" rx="22"/>
+    <rect x="318" y="148" width="96" height="96" rx="22"/><rect x="98" y="258" width="96" height="96" rx="22"/>
+    <rect x="318" y="258" width="96" height="96" rx="22"/><rect x="98" y="368" width="96" height="96" rx="22"/>
+    <rect x="208" y="368" width="96" height="96" rx="22"/><rect x="318" y="368" width="96" height="96" rx="22"/>
+  </g>
+  <g fill="#FFFFFF">
+    <rect x="98" y="258" width="96" height="96" rx="22"/><rect x="208" y="258" width="96" height="96" rx="22"/><rect x="318" y="258" width="96" height="96" rx="22"/>
+  </g>
+  <g font-family="system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif" font-weight="800" text-anchor="middle">
+    <text x="256" y="90" dominant-baseline="central" font-size="40" fill="#1E1B39">20</text>
+    <text x="146" y="306" dominant-baseline="central" font-size="48" fill="#3730A3">4</text>
+    <text x="256" y="306" dominant-baseline="central" font-size="48" fill="#3730A3">×</text>
+    <text x="366" y="306" dominant-baseline="central" font-size="48" fill="#3730A3">5</text>
+  </g>
+</symbol>
+<symbol id="cv-bulls" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#1D4ED8"/>
+  <rect x="56" y="56" width="184" height="184" rx="42" fill="#FFFFFF"/>
+  <rect x="272" y="56" width="184" height="184" rx="42" fill="#FFFFFF"/>
+  <rect x="56" y="272" width="184" height="184" rx="42" fill="#FFFFFF"/>
+  <rect x="272" y="272" width="184" height="184" rx="42" fill="#F59E0B"/>
+  <g font-family="system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif" font-weight="800" text-anchor="middle">
+    <text x="148" y="148" dominant-baseline="central" font-size="110" fill="#1D4ED8">1</text>
+    <text x="364" y="148" dominant-baseline="central" font-size="110" fill="#1D4ED8">2</text>
+    <text x="148" y="366" dominant-baseline="central" font-size="110" fill="#1D4ED8">A</text>
+    <text x="364" y="366" dominant-baseline="central" font-size="110" fill="#1E1B39">B</text>
+  </g>
+</symbol>
+</defs>
+</svg>
+
+<!-- ═══════════ 移动端顶栏 ═══════════ -->
+<div class="topbar">
+  <button class="burger" id="burger" aria-label="Open navigation" aria-expanded="false">
+    <svg viewBox="0 0 24 24" fill="none"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+  </button>
+  <a class="logo" href="/">Math<b>Duel</b></a>
+  <a class="btn-login" href="/games/killer-sudoku/?mode=daily" style="flex:none;padding:8px 18px">Play now</a>
+</div>
+<div class="overlay" id="overlay"></div>
+
+<!-- ═══════════ 侧边导航（Sudoku 9×9 高亮） ═══════════ -->
+<aside class="sidebar" id="sidebar">
+  <div class="sb-top">
+    <a class="logo" href="/">Math<b>Duel</b></a>
+    <button class="sb-collapse" id="collapse" title="Collapse navigation" aria-label="Collapse navigation">«</button>
+  </div>
+  <div class="sb-login">
+    <a class="btn-login" href="/games/killer-sudoku/?mode=daily"><span>Play now</span></a>
+    <button class="sb-theme" title="Toggle theme" aria-label="Toggle theme">
+      <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M20 13A8 8 0 1 1 11 4a6.5 6.5 0 0 0 9 9z"/></svg>
+    </button>
+  </div>
+  <nav class="sb-nav" aria-label="Site navigation">
+    <a class="nav-item" href="/"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg><label style="cursor:inherit">Home</label></a>
+    <span class="nav-item is-disabled" aria-disabled="true" style="opacity:.5;cursor:default" title="Coming soon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l2.5 2.5"/></svg><label style="cursor:inherit">Coin Shop 🪙</label></span>
+
+    <div class="nav-group">All games</div>
+    <a class="nav-item" href="/games/24-game/lobby/"><svg class="mini" aria-hidden="true"><use href="#cv-24"/></svg><label style="cursor:inherit">24 Game</label></a>
+    <a class="nav-item active" href="/games/killer-sudoku/lobby/"><svg class="mini" aria-hidden="true"><use href="#cv-sudoku"/></svg><label style="cursor:inherit">Sudoku 9×9</label></a>
+    <a class="nav-item" href="/games/sudoku-6x6/lobby/"><svg class="mini" aria-hidden="true"><use href="#cv-s6"/></svg><label style="cursor:inherit">Sudoku 6×6</label></a>
+    <a class="nav-item active" href="/games/killer-sudoku/lobby/"><svg class="mini" aria-hidden="true"><use href="#cv-killer"/></svg><label style="cursor:inherit">Killer Sudoku</label></a>
+    <a class="nav-item" href="/games/equation-pyramid/lobby/"><svg class="mini" aria-hidden="true"><use href="#cv-pyr"/></svg><label style="cursor:inherit">Equation Pyramid</label></a>
+    <a class="nav-item" href="/games/bulls/"><svg class="mini" aria-hidden="true"><use href="#cv-bulls"/></svg><label style="cursor:inherit">Number Guess 1A2B</label></a>
+
+    <div class="nav-group">Help</div>
+    <a class="nav-item" href="#"><svg viewBox="0 0 24 24"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19a2 2 0 0 1 2-2h13"/></svg><label style="cursor:inherit">How to play</label></a>
+  </nav>
+  <div class="nav-foot">
+    <span class="lang-pill"><b>EN</b> · 中文 · 日</span>
+    <span class="sb-copy">© 2026</span>
+  </div>
+</aside>
+
+<!-- ═══════════ 主区 ═══════════ -->
+<main class="main">
+
+  <!-- 游戏 Hero -->
+  <section class="g-hero">
+    <div class="wrap">
+      <span class="gcover" aria-hidden="true"><svg role="img" aria-label="Killer Sudoku"><use href="#cv-killer"/></svg></span>
+      <h1>Zero givens. <em>Follow the cages.</em></h1>
+      <p class="sub">Nine numbers, no repeats — in every row, column, 3×3 box and dashed cage. Every cage must add up to the number in its corner.</p>
+      <div class="chips">
+        <span class="chip"><span class="dot"></span>Solo · Duel · Daily</span>
+        <span class="chip"><span class="dot"></span>Cage sums only</span>
+        <span class="chip"><span class="dot"></span>Global daily cage</span>
+      </div>
       <div class="arb-cage-deco" id="heroCages" aria-hidden="true"></div>
-      <p class="arb-sub">Nine numbers, no repeats — in every row, column, 3×3 box and dashed cage. Every cage must add up to the number in its corner.</p>
+    </div>
+  </section>
+
+  <!-- 模式选择 + 右栏信息 -->
+  <div class="wrap lobby-grid">
+    <section aria-labelledby="modesTitle">
+      <h2 class="sec-h" id="modesTitle">Choose your mode<small>Tap a card to jump straight in.</small></h2>
+      <div class="modes" id="modeGrid">
+        <a class="mode daily arb-mode" href="/games/killer-sudoku/?mode=daily" data-mode="daily">
+          <div class="mi" aria-hidden="true">🌐</div>
+          <div class="mt">Daily Cage <span class="tag-done" id="dailyTag" hidden>Done today</span></div>
+          <div class="md">Same seeded cage-grid worldwide, one shot a day. Log your time.</div>
+          <div class="cd-row">Resets in <b class="num" id="boardCountdown">--:--:--</b></div>
+        </a>
+        <a class="mode arb-mode" href="/games/killer-sudoku/?mode=duel" data-mode="duel">
+          <div class="mi" aria-hidden="true">🤖</div>
+          <div class="mt">Duel Bot</div>
+          <div class="md">Claim your half of the empty cells before GridBot finishes its half.</div>
+        </a>
+        <a class="mode arb-mode" href="/games/killer-sudoku/?mode=timed" data-mode="timed">
+          <div class="mi" aria-hidden="true">⏱️</div>
+          <div class="mt">Timed Practice</div>
+          <div class="md">90 seconds, as many cage-grids as you can. Chain solves for streaks.</div>
+        </a>
+        <a class="mode arb-mode" href="/games/killer-sudoku/?mode=solo" data-mode="solo">
+          <div class="mi" aria-hidden="true">🎯</div>
+          <div class="mt">Solo Practice</div>
+          <div class="md">No clock, no pressure. Three cage counts, best times saved.</div>
+        </a>
+        <div class="mode soon" aria-disabled="true">
+          <div class="mi" aria-hidden="true">👥</div>
+          <div class="mt">Friend 1v1</div>
+          <div class="md">Private rooms arrive with the live API.</div>
+          <span class="soon-pill">SOON</span>
+        </div>
+        <div class="mode soon" aria-disabled="true">
+          <div class="mi" aria-hidden="true">🎲</div>
+          <div class="mt">Random Match</div>
+          <div class="md">Get matched with a stranger instantly.</div>
+          <span class="soon-pill">SOON</span>
+        </div>
+      </div>
+
+      <!-- 难度行：选择写进模式卡 href，卡片仍是纯 <a href> -->
+      <div class="arb-diff-block">
+        <div class="arb-dl">Difficulty · stated in cages, not clues</div>
+        <div class="arb-diff" id="lobbyDiff" role="group" aria-label="Difficulty by cage count">
+          <button class="arb-dbtn" type="button" data-d="gentle">Gentle<small>26 cages</small></button>
+          <button class="arb-dbtn" type="button" data-d="standard">Standard<small>29 cages</small></button>
+          <button class="arb-dbtn" type="button" data-d="fierce">Fierce<small>34 cages</small></button>
+        </div>
+      </div>
     </section>
 
-    <div class="arb-cols">
-      <div>
-        <h2 class="arb-h2">Game modes</h2>
-        <div class="arb-modes" id="modeGrid">
-          <a class="arb-mode feat" href="/games/killer-sudoku/?mode=daily" data-mode="daily">
-            <div class="mi" aria-hidden="true">🌐</div>
-            <div class="mt">Daily Cage <span class="arb-tag" id="dailyTag" hidden>Done today</span></div>
-            <div class="md">Same seeded cage-grid worldwide, one shot a day. Log your time.</div>
-          </a>
-          <a class="arb-mode" href="/games/killer-sudoku/?mode=duel" data-mode="duel">
-            <div class="mi" aria-hidden="true">🤖</div>
-            <div class="mt">Duel Bot</div>
-            <div class="md">Claim your half of the empty cells before GridBot finishes its half.</div>
-          </a>
-          <a class="arb-mode" href="/games/killer-sudoku/?mode=timed" data-mode="timed">
-            <div class="mi" aria-hidden="true">⏱️</div>
-            <div class="mt">Timed Practice</div>
-            <div class="md">90 seconds, as many cage-grids as you can. Chain solves for streaks.</div>
-          </a>
-          <a class="arb-mode" href="/games/killer-sudoku/?mode=solo" data-mode="solo">
-            <div class="mi" aria-hidden="true">🎯</div>
-            <div class="mt">Solo Practice</div>
-            <div class="md">No clock, no pressure. Three cage counts, best times saved.</div>
-          </a>
-          <div class="arb-mode ghost">
-            <div class="mi" aria-hidden="true">👥</div>
-            <div class="mt">Friend 1v1</div>
-            <div class="md">Coming soon — private rooms arrive with the live API.</div>
-          </div>
-          <div class="arb-mode ghost">
-            <div class="mi" aria-hidden="true">🎲</div>
-            <div class="mt">Random Match</div>
-            <div class="md">Coming soon — get matched with a stranger instantly.</div>
-          </div>
+    <!-- 右栏 -->
+    <aside class="side">
+      <section class="panel" aria-labelledby="boardTitle">
+        <h3 id="boardTitle">Global Daily Cage</h3>
+        <p class="pnote">One seeded cage-grid per day — same puzzle for everyone, one shot.</p>
+        <div id="boardRows" aria-live="polite">
+          <div class="arb-empty">Loading today's board…</div>
         </div>
+        <a class="btn btn-amber block" href="/games/killer-sudoku/?mode=daily" id="boardPlay" style="margin-top:12px">Play today’s cage</a>
+      </section>
 
-        <!-- ============ 难度行（按笼子数） ============ -->
-        <div class="arb-diff-block">
-          <div class="arb-dl">Difficulty · stated in cages, not clues</div>
-          <div class="arb-diff" id="lobbyDiff" role="group" aria-label="Difficulty by cage count">
-            <button class="arb-dbtn" type="button" data-d="gentle">Gentle<small>26 cages</small></button>
-            <button class="arb-dbtn" type="button" data-d="standard">Standard<small>29 cages</small></button>
-            <button class="arb-dbtn" type="button" data-d="fierce">Fierce<small>34 cages</small></button>
-          </div>
+      <section class="panel" aria-labelledby="rulesTitle">
+        <h3 id="rulesTitle">How it works</h3>
+        <div class="arb-rules">
+          <div class="arb-rule"><b>1</b><span>Every row, column and 3×3 box holds 1–9 exactly once</span></div>
+          <div class="arb-rule"><b>2</b><span>Inside each dashed cage the digits are distinct and add to the corner number</span></div>
+          <div class="arb-rule"><b>3</b><span>Zero givens — the cage sum is the only thing the puzzle tells you</span></div>
+          <div class="arb-rule"><b>4</b><span>Duel: you and the bot each own half the cells — first side done wins</span></div>
         </div>
-      </div>
+      </section>
+    </aside>
+  </div>
 
-      <div class="arb-side">
-        <section class="arb-card" aria-labelledby="boardTitle">
-          <h3 id="boardTitle">Global Daily Cage</h3>
-          <div class="arb-cd">Ends in <b class="num" id="boardCountdown">--:--:--</b></div>
-          <div id="boardRows" aria-live="polite">
-            <div class="arb-empty">Loading today's board…</div>
-          </div>
-          <a class="arb-btn ghost block" href="/games/killer-sudoku/?mode=daily" id="boardPlay">Play today's cage</a>
-        </section>
+  <!-- How to play -->
+  <section class="how wrap" aria-labelledby="howTitle">
+    <h2 class="sec-h" id="howTitle">How to play<small>Read the cage → deduce → fill.</small></h2>
+    <div class="how-grid">
+      <div class="step"><span class="sn">1</span><b>Read the cages</b><span>Every dashed cage’s digits are distinct and add to its corner number.</span></div>
+      <div class="step"><span class="sn">2</span><b>Deduce, don’t guess</b><span>Zero givens — cage sums are the only clues you get.</span></div>
+      <div class="step"><span class="sn">3</span><b>Race the bot</b><span>Duel splits the empty cells — first side done wins.</span></div>
+      <div class="step"><span class="sn">4</span><b>Chain your clears</b><span>Timed runs give 90 seconds — back-to-back grids build streaks.</span></div>
+    </div>
+  </section>
 
-        <section class="arb-card" aria-labelledby="howTitle">
-          <h3 id="howTitle">How it works</h3>
-          <div class="arb-rules">
-            <div class="arb-rule"><b>1</b><span>Every row, column and 3×3 box holds 1–9 exactly once</span></div>
-            <div class="arb-rule"><b>2</b><span>Inside each dashed cage the digits are distinct and add to the corner number</span></div>
-            <div class="arb-rule"><b>3</b><span>Zero givens — the cage sum is the only thing the puzzle tells you</span></div>
-            <div class="arb-rule"><b>4</b><span>Duel: you and the bot each own half the cells — first side done wins</span></div>
-          </div>
-        </section>
+  <!-- 天梯 -->
+  <section class="ladder wrap" aria-label="Rank ladder">
+    <div class="ladder-panel">
+      <div class="ladder-title">Killer Sudoku Elo ladder<small>Wins here feed the global ladder · weekly reset</small></div>
+      <div class="tiers">
+        <div class="tier"><i style="height:16px"></i><span>Bronze</span></div>
+        <div class="tier"><i style="height:22px"></i><span>Silver</span></div>
+        <div class="tier"><i style="height:28px"></i><span>Gold</span></div>
+        <div class="tier"><i style="height:34px"></i><span>Platinum</span></div>
+        <div class="tier"><i style="height:40px"></i><span>Diamond</span></div>
+        <div class="tier master"><i style="height:48px"></i><span>Master</span></div>
       </div>
     </div>
-  </main>
+  </section>
+</main>
 
-  <footer class="arb-foot">
-    <span><b>KILLER SUDOKU</b> · mode select</span>
-    <span class="arb-foot-links">
-      <a href="/">MathDuel home</a>
-      <a href="/games/killer-sudoku/">Play now</a>
-    </span>
-  </footer>
+<!-- ═══════════ 页脚（与首页同一套） ═══════════ -->
+<footer class="site-footer main">
+  <div class="wrap">
+    <div class="sf-title">Explore the Duel family</div>
+    <div class="sf-matrix">
+      <a class="sf-item" href="https://boardduel.com"><span class="pip" style="background:#2FC4C9"></span>BoardDuel · Chess &amp; Card Games</a>
+      <a class="sf-item" href="https://mathduel.games"><span class="pip" style="background:#F59E0B"></span>MathDuel · Math Puzzle Games</a>
+      <a class="sf-item" href="https://memoryduel.com"><span class="pip" style="background:#4F46E5"></span>MemoryDuel · Knowledge Battles</a>
+    </div>
+    <div class="sf-links">
+      <a href="#">About</a><a href="#">Contact</a><a href="#">Privacy</a><a href="#">Terms</a><a href="#">How to play</a>
+    </div>
+    <div class="sf-copy">© 2026 MathDuel · Pure static · Privacy-first · Free to play</div>
+  </div>
+</footer>
 
-  <script type="module" src="/src/games/killer-sudoku/lobby.ts"></script>
+<script type="module" src="/src/games/killer-sudoku/lobby.ts"></script>
 </body>
 </html>
