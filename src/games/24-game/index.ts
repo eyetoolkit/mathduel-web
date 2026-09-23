@@ -1593,7 +1593,7 @@ function renderSide(): void {
     if (!daily.started) {
       sideEl.innerHTML =
         '<div class="panel"><h3>📅 每日挑战规则</h3>' +
-        '<div class="hint-step"><b>1</b><span>每天同一套 5 题，全球玩家同题</span></div>' +
+        '<div class="hint-step"><b>1</b><span>每天同一套 5 题，全球同题</span></div>' +
         '<div class="hint-step"><b>2</b><span>难度递增：Easy → Medium → Hard</span></div>' +
         '<div class="hint-step"><b>3</b><span>每题限时 60 秒，超时自动揭晓答案</span></div>' +
         '<div class="hint-step"><b>4</b><span>5 题全在限时内解出 = 挑战成功</span></div>' +

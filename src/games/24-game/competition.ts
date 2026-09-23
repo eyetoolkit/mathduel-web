@@ -306,7 +306,7 @@ export class Competition {
         // H1: 服务端广播同房所有人（含发送者自己），故无需本地回声
         const text = typeof d.text === 'string' ? d.text : '';
         if (!text) break;
-        this.cb.onChat({ name: d.name || '玩家', text, ts: d.ts || Date.now(), self: d.name === this.myName });
+        this.cb.onChat({ name: d.name || 'Player', text, ts: d.ts || Date.now(), self: d.name === this.myName });
         break;
       }
       case 'player_left':
