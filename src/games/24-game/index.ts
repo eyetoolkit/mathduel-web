@@ -5,6 +5,7 @@
  */
 
 import '@tri-sites/design-system/styles';
+import '../../styles/game-shell.css';
 // 24-game 公式区需要严格等宽对齐（formula / race-row / db-clock 等），保留 JetBrains Mono
 import '@tri-sites/design-system/styles/mono';
 import '../24-game/styles.css';
@@ -29,7 +30,7 @@ import { initShareBindings, openShareOverlay, renderQR } from './share';
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T | null;
 
 initI18n();
-mountHeader($('header')!, {
+mountHeader(($('header') as HTMLElement | null) ?? document.createElement('div'), {
   brandName: 'MathDuel',
   brandSub: '24 · Card Table',
   mark: '24',
