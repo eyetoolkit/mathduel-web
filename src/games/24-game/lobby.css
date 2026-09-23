@@ -61,7 +61,8 @@ body.arena .num {
   padding: 8px 14px;
   border-radius: 999px;
   border: 1px solid transparent;
-  min-height: 40px;
+  /* WCAG 2.5.5 / AA：触控目标 ≥ 44×44；2026-09-23 提升自 40px（a11y 审计 S-003） */
+  min-height: 44px;
   display: inline-flex;
   align-items: center;
 }
@@ -75,7 +76,8 @@ body.arena .num {
   color: var(--a-ember-dim);
   font-size: 0.88rem;
   font-weight: 600;
-  min-height: 40px;
+  /* WCAG 2.5.5：触控目标 ≥ 44（2026-09-23 a11y 审计 S-003 提升自 40px） */
+  min-height: 44px;
   display: inline-flex;
   align-items: center;
 }
@@ -421,7 +423,8 @@ a.arb-mode:focus-visible {
 }
 .arb-foot-links a {
   color: var(--a-mute);
-  min-height: 32px;
+  /* WCAG 2.5.5：触控目标 ≥ 44（2026-09-23 a11y 审计 S-003 提升自 32px） */
+  min-height: 44px;
   display: inline-flex;
   align-items: center;
 }

@@ -32,6 +32,7 @@ export default defineConfig({
         '24-game': resolve(here, 'games/24-game/index.html'),
         '24-game-lobby': resolve(here, 'games/24-game/lobby/index.html'),
         bulls: resolve(here, 'games/bulls/index.html'),
+        'bulls-lobby': resolve(here, 'games/bulls/lobby/index.html'),
         'sudoku-6x6': resolve(here, 'games/sudoku-6x6/index.html'),
         'sudoku-6x6-lobby': resolve(here, 'games/sudoku-6x6/lobby/index.html'),
         'sudoku': resolve(here, 'games/sudoku/index.html'),

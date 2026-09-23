@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en" data-site="mathduel">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0E1419" />
+  <title>Choose Your Mode — Bulls &amp; Cows | MathDuel</title>
+  <meta name="description" content="Pick how you want to play Bulls & Cows: solo vs the computer, or wait for daily challenge and friend duel modes. Set a 4-digit number, crack your opponent's." />
+  <link rel="canonical" href="https://mathduel.games/games/bulls/lobby/" />
+  <!-- PWA + favicons -->
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <!-- Open Graph / Twitter -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="MathDuel" />
+  <meta property="og:url" content="https://mathduel.games/games/bulls/lobby/" />
+  <meta property="og:image" content="https://mathduel.games/og-image.svg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="MathDuel — Six math arenas, one Elo ladder" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:site" content="@mathduel" />
+  <meta name="twitter:creator" content="@mathduel" />
+  <meta name="twitter:image" content="https://mathduel.games/og-image.svg" />
+  <!-- hreflang (站点仅英文版，x-default = en) -->
+  <link rel="alternate" hreflang="en" href="https://mathduel.games/games/bulls/lobby/" />
+  <link rel="alternate" hreflang="x-default" href="https://mathduel.games/games/bulls/lobby/" />
+  <link rel="preload" href="/fonts/space-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="/fonts/sora-latin.woff2" as="font" type="font/woff2" crossorigin />
+</head>
+<body class="arena">
+  <header class="arbar">
+    <div class="arbar-in">
+      <a class="arb-logo" href="/">BULLS<span>ARENA</span></a>
+      <nav class="arb-nav" aria-label="Site">
+        <a href="/">Home</a>
+        <a href="/games/bulls/">Game</a>
+        <a href="/leaderboard/">Leaderboard</a>
+      </nav>
+      <a class="arb-top-cta" href="/games/bulls/">Play now →</a>
+    </div>
+  </header>
+
+  <main class="arb-main" id="main">
+    <!-- ============ Hero ============ -->
+    <section class="arb-hero">
+      <h1 class="arb-big">Bulls &amp; <em>Cows</em></h1>
+      <div class="arb-hand" aria-hidden="true">
+        <span class="arb-chip">1</span>
+        <span class="arb-chip">A</span>
+        <span class="arb-chip">2</span>
+        <span class="arb-chip">B</span>
+      </div>
+      <p class="arb-sub">Set a 4-digit number, crack your opponent's. A is right digit right place, B is right digit wrong place. First to 4A wins.</p>
+    </section>
+
+    <div class="arb-cols">
+      <!-- ============ 模式选择 ============ -->
+      <div>
+        <h2 class="arb-h2">Game modes</h2>
+        <div class="arb-modes" id="modeGrid">
+          <a class="arb-mode feat" href="/games/bulls/" data-mode="pva">
+            <div class="mi" aria-hidden="true">🤖</div>
+            <div class="mt">vs Computer</div>
+            <div class="md">Set your secret 4-digit number, then take turns guessing against the AI. Easy / Normal / Hard.</div>
+          </a>
+          <div class="arb-mode ghost">
+            <div class="mi" aria-hidden="true">🌐</div>
+            <div class="mt">Daily Challenge</div>
+            <div class="md">Coming soon — same puzzle worldwide, climb today's board.</div>
+          </div>
+          <div class="arb-mode ghost">
+            <div class="mi" aria-hidden="true">👥</div>
+            <div class="mt">Friend 1v1</div>
+            <div class="md">Coming soon — share a code, first to crack wins.</div>
+          </div>
+          <div class="arb-mode ghost">
+            <div class="mi" aria-hidden="true">🏁</div>
+            <div class="mt">Race · 99</div>
+            <div class="md">Coming soon — up to 99 players on the same number.</div>
+          </div>
+          <div class="arb-mode ghost">
+            <div class="mi" aria-hidden="true">🎲</div>
+            <div class="mt">Random Match</div>
+            <div class="md">Coming soon — get matched with a stranger instantly.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ 右列：玩法规则 + 当前最佳 ============ -->
+      <div class="arb-side">
+        <section class="arb-card" aria-labelledby="howTitle">
+          <h3 id="howTitle">How it works</h3>
+          <p class="arb-note">Set a 4-digit secret from 1–9, no repeats. Take turns guessing your opponent's number; you can be the setter and the guesser simultaneously against the AI.</p>
+          <ul class="arb-leds">
+            <li><b>A</b> — right digit, right place</li>
+            <li><b>B</b> — right digit, wrong place</li>
+            <li>First to <b>4A</b> wins the round</li>
+          </ul>
+          <a class="arb-btn ghost block" href="/games/bulls/">Start a round</a>
+        </section>
+
+        <section class="arb-card" aria-labelledby="bestTitle">
+          <h3 id="bestTitle">Your best</h3>
+          <div id="bestBox">
+            <div class="arb-empty" id="bestEmpty">No rounds played yet — start your first round.</div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <footer class="arb-foot">
+    <span><b>BULLS ARENA</b> · mode select</span>
+    <span class="arb-foot-links">
+      <a href="/">MathDuel home</a>
+      <a href="/games/bulls/">Game</a>
+      <a href="/leaderboard/">Leaderboard</a>
+    </span>
+  </footer>
+
+  <script type="module">
+    /* Bulls lobby · 轻量脚本：填充 Your best（localStorage 'md_best_bulls'） */
+    (function () {
+      var bestBox = document.getElementById('bestBox');
+      var bestEmpty = document.getElementById('bestEmpty');
+      if (!bestBox || !bestEmpty) return;
+      try {
+        var raw = localStorage.getItem('md_best_bulls');
+        if (!raw) return;
+        var v = JSON.parse(raw);
+        var html = '<div class="arb-best-row"><span class="arb-best-lbl">Best moves</span><b class="num">' + (v.moves || 0) + '</b></div>' +
+                   '<div class="arb-best-row"><span class="arb-best-lbl">Difficulty</span><b>' + (v.diff || 'normal') + '</b></div>';
+        bestEmpty.remove();
+        bestBox.insertAdjacentHTML('beforeend', html);
+      } catch (e) { /* ignore */ }
+    })();
+  </script>
+  <style>
+    /* Bulls lobby 局部样式 · 与 arena.css 共用 arb-* class，仅追加细节 */
+    .arb-leds { list-style: none; padding: 0; margin: 12px 0 18px; color: var(--text, #cbd5e1); font-size: 0.875rem; line-height: 1.7; }
+    .arb-leds b { color: var(--brand, #FF6A3C); font-weight: 700; }
+    .arb-best-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-top: 1px solid var(--a-line, #1f2937); font-size: 0.9375rem; }
+    .arb-best-row:first-child { border-top: 0; }
+    .arb-best-lbl { color: var(--text-muted, #94a3b8); font-size: 0.75rem; letter-spacing: 0.14em; text-transform: uppercase; }
+  </style>
+</body>
+</html>

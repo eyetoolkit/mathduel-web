@@ -1,0 +1,37 @@
+{
+  "name": "MathDuel — Six math arenas, one Elo ladder",
+  "short_name": "MathDuel",
+  "description": "Math duels in 24, sudoku, killer, equations and code-breaking. The server deals the identical puzzle to both players — the faster correct answer takes the round. No login, no ads.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0E1419",
+  "theme_color": "#0E1419",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any",
+      "purpose": "any"
+    },
+    {
+      "src": "/favicon.ico",
+      "type": "image/x-icon",
+      "sizes": "48x48",
+      "purpose": "any"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "type": "image/png",
+      "sizes": "180x180",
+      "purpose": "any"
+    }
+  ],
+  "categories": [
+    "games",
+    "education",
+    "puzzle"
+  ],
+  "lang": "en"
+}

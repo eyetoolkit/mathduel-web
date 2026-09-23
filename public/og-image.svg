@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0B0F18"/>
+      <stop offset="1" stop-color="#101828"/>
+    </linearGradient>
+    <linearGradient id="ember" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#FF6A3C"/>
+      <stop offset="1" stop-color="#F2C14E"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <!-- 装饰几何网格 -->
+  <g opacity="0.08" stroke="#F2C14E" stroke-width="1">
+    <line x1="0" y1="157" x2="1200" y2="157"/>
+    <line x1="0" y1="315" x2="1200" y2="315"/>
+    <line x1="0" y1="472" x2="1200" y2="472"/>
+    <line x1="300" y1="0" x2="300" y2="630"/>
+    <line x1="600" y1="0" x2="600" y2="630"/>
+    <line x1="900" y1="0" x2="900" y2="630"/>
+  </g>
+  <!-- 圆形 logo -->
+  <g transform="translate(80,205)">
+    <circle cx="110" cy="110" r="108" fill="url(#ember)"/>
+    <text x="110" y="172" font-family="ui-sans-serif,system-ui,sans-serif" font-weight="900"
+          font-size="160" fill="#0E1419" text-anchor="middle">π</text>
+  </g>
+  <!-- 主标题 -->
+  <g font-family="ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif" font-weight="800" fill="#E4E8EE">
+    <text x="360" y="280" font-size="92">MathDuel</text>
+    <text x="360" y="350" font-size="36" fill="#F2C14E" font-weight="700">Six math arenas · one Elo ladder</text>
+  </g>
+  <!-- 副标题 -->
+  <g font-family="ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif" font-weight="500" fill="#94A3B8">
+    <text x="360" y="430" font-size="28">Two brains. One board. Sixty seconds.</text>
+    <text x="360" y="470" font-size="22" opacity="0.75">mathduel.games</text>
+  </g>
+  <!-- 底部署名条 -->
+  <rect x="0" y="580" width="1200" height="50" fill="#000" opacity="0.3"/>
+  <text x="80" y="612" font-family="ui-sans-serif,system-ui,sans-serif" font-size="20" fill="#94A3B8">
+    24 · Sudoku · Killer · Equation Pyramid · Number Pyramid · Bulls · Code-breaking
+  </text>
+</svg>

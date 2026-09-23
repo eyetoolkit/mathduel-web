@@ -861,7 +861,7 @@ async function loadDailyBoard(): Promise<void> {
       .map((e, i) =>
         dailyRow(
           String(e.rank ?? i + 1),
-          e.nickname || '玩家',
+          e.nickname || 'Player',
           dailyScoreText(e.times, e.total),
           i === 0 ? 'r1' : '',
           avatarIcon(e.avatar),
