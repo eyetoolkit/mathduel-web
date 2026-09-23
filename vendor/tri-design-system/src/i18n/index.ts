@@ -55,7 +55,7 @@ const DICT: Record<Lang, Record<string, string>> = {
     'lang.switch': '语言',
     'hero.eyebrow': '全球多人数学对战',
     'hero.title': '与全世界竞速，做出 24。',
-    'hero.lead': '四张牌、四个运算符、一个目标。与最多 99 名玩家同牌同时竞速，谁先算出 24 谁赢。',
+    'hero.lead': '四张牌、四个运算符、一个目标。与最多 99 人同牌同时竞速，谁先算出 24 谁赢。',
     'hero.cta.play': '开始游戏',
     'hero.cta.daily': '今日挑战',
     'hero.stat.games': '款游戏',
