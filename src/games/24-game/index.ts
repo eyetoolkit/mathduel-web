@@ -65,9 +65,13 @@ function loadScores(): void {
     scores = { solved: 0, skipped: 0 };
   }
 }
-const saveScores = () => localStorage.setItem('twentyfour_scores', JSON.stringify(scores));
+const saveScores = () => {
+  try { localStorage.setItem('twentyfour_scores', JSON.stringify(scores)); } catch {}
+};
 const loadCombo = () => (combo = parseInt(localStorage.getItem('twentyfour_combo') || '0', 10) || 0);
-const saveCombo = () => localStorage.setItem('twentyfour_combo', String(combo));
+const saveCombo = () => {
+  try { localStorage.setItem('twentyfour_combo', String(combo)); } catch {}
+};
 function refreshTop(): void {
   const s = $('stSolved');
   const c = $('stCombo');
@@ -83,6 +87,8 @@ function deal(override?: number[]): void {
   usedCardIndices.clear();
   dealingAnim = true;
   timer = 0;
+  // 新发牌 = 清掉「答案已揭晓」锁
+  document.body.classList.remove('answer-revealed');
   if (interval) window.clearInterval(interval);
   interval = window.setInterval(() => {
     if (comp.active) return;
@@ -334,6 +340,13 @@ function showAnswer(): void {
   showResult({ win: true, answer: ans[1] });
   resultEl.className = 'result ok';
   resultEl.textContent = 'Answer: ' + p.replace(/\*/g, '×').replace(/\//g, '÷').replace(/-/g, '−') + ' = 24';
+  // 答案揭晓后锁定输入：清空式子与已用牌状态，并拒绝后续 append，防止"接着上一题往下算"
+  // —— 同时把已用牌保留为视觉提示，玩家可点 New Deal 重新发牌
+  formula = '';
+  historyStack = [];
+  usedCardIndices.clear();
+  document.body.classList.add('answer-revealed');
+  render();
 }
 
 /* ===================== 每日挑战（服务端权威：/api/daily24/* · 全球同题 5 题 · 每题 60s · 连续制）
@@ -407,7 +420,7 @@ function dailyComplete(): void {
     /* ignore */
   }
   o[dailyKeyStr()] = true;
-  localStorage.setItem('twentyfour_daily', JSON.stringify(o));
+  try { localStorage.setItem('twentyfour_daily', JSON.stringify(o)); } catch {}
 }
 
 function startDaily(): void {
@@ -612,6 +625,8 @@ async function dailySolve(): Promise<void> {
     window.clearInterval(daily._iv);
     daily._iv = null;
   }
+  // 用户可能在 await 服务端结果期间切到其它模式；如已切走，不写 resultEl、不推进题
+  if (!daily.active) return;
   const q = daily.idx;
   const localT = Math.max(0, daily.limit - daily.timeLeft);
   // 先本地记账（离线兜底用），随后用服务端权威用时覆盖
@@ -653,6 +668,8 @@ async function dailyTimeUp(): Promise<void> {
     window.clearInterval(daily._iv);
     daily._iv = null;
   }
+  // 计时器回调可能在用户切走模式后才触发；daily.active 已是 false 时不写 DOM、不推进题
+  if (!daily.active) return;
   const q = daily.idx;
   daily.times[q] = null;
   daily.submits[q] = { solved: false, solution: null, time: daily.limit };
@@ -1613,6 +1630,7 @@ function setMode(m: string): void {
 
 /* ===================== 事件绑定 ===================== */
 cardsEl.addEventListener('click', (e) => {
+  if (document.body.classList.contains('answer-revealed')) return;
   const c = (e.target as HTMLElement).closest<HTMLElement>('.card');
   if (!c || (comp.active && comp.waiting)) return;
   const i = +(c.dataset.i || 0);
@@ -1624,6 +1642,7 @@ cardsEl.addEventListener('keydown', (e) => {
     const c = (e.target as HTMLElement).closest<HTMLElement>('.card');
     if (c) {
       e.preventDefault();
+      if (document.body.classList.contains('answer-revealed')) return;
       const i = +(c.dataset.i || 0);
       if (!usedCardIndices.has(i)) appendNumber(String(numbers[i]));
     }
@@ -1631,6 +1650,7 @@ cardsEl.addEventListener('keydown', (e) => {
 });
 
 $('pad')!.addEventListener('click', (e) => {
+  if (document.body.classList.contains('answer-revealed')) return;
   const b = (e.target as HTMLElement).closest<HTMLElement>('.op-btn');
   if (!b) return;
   if (b.dataset.act === 'undo') return undo();
@@ -1731,6 +1751,7 @@ document.querySelectorAll('#diffPick button').forEach((b) => {
 
 document.addEventListener('keydown', (e) => {
   if ((e.target as HTMLElement).tagName === 'INPUT') return;
+  if (document.body.classList.contains('answer-revealed')) return;
   if (comp.active && comp.waiting) return;
   if (e.key >= '1' && e.key <= '4') {
     const i = +e.key - 1;
