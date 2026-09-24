@@ -339,6 +339,29 @@
   .p1-pk.erase, .p1-pk.notes { aspect-ratio: 1; font-size: 0.78rem; }
 }
 
+/* ===== 桌面端：键盘同样收紧凑，避免大方块 + 整页过长需要滚动 =====
+   说明：上一轮修复只落在 ≤640px，电脑端仍是大方块。这里把 >640px 也改成
+   5 列紧凑网格（0/Erase/Notes 用 display:contents 并入同一网格），
+   并取消高度选择按钮的方形 aspect-ratio，高度显著降低。 */
+@media (min-width: 641px) {
+  .p1-pad {
+    grid-template-columns: repeat(5, 1fr);
+    max-width: 440px;
+    gap: 7px;
+  }
+  .p1-padfoot { display: contents; }   /* 0 / Erase / Notes 并入 5 列网格 */
+  .p1-pk {
+    aspect-ratio: auto;
+    font-size: 1rem;
+    padding: 11px 4px;
+  }
+  .p1-pk.zero { aspect-ratio: auto; }
+  .p1-pk.erase, .p1-pk.notes { aspect-ratio: auto; font-size: 0.8rem; }
+
+  /* 高度选择器按钮：取消方形 aspect-ratio，回归正常高度 */
+  .p1-diff .p1-pk { aspect-ratio: auto; }
+}
+
 /* ===== 🔴 关键修复：author 的 display:flex 会覆盖 UA 的 [hidden]{display:none}，
    导致结算遮罩从页面加载起就全屏拦截点击（同 killer .k9-overlay 教训） ===== */
 .p1-overlay[hidden] { display: none; }
