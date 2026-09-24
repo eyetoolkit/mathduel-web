@@ -286,7 +286,7 @@ function sidebarHtml(): string {
       <button class="sb-collapse" id="sbCollapse" title="Collapse sidebar" aria-label="Collapse sidebar">«</button>
     </div>
     <div class="sb-login">
-      <span class="btn-login" style="opacity:.55;cursor:default" title="Accounts are not enabled yet"><span>Log in · soon</span></span>
+      <span class="btn-login" style="opacity:.55;cursor:default" title="Accounts are not enabled yet"><span>EN</span></span>
       <button class="sb-theme" title="Toggle theme" aria-label="Toggle theme">
         <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M20 13A8 8 0 1 1 11 4a6.5 6.5 0 0 0 9 9z"/></svg>
       </button>
