@@ -153,7 +153,7 @@ const GAMES: GameDef[] = [
     id: 'bulls',
     title: 'Bulls 1A2B',
     desc: 'Crack the secret code in fewest guesses.',
-    href: '/games/bulls/',
+    href: '/games/bulls/lobby/',
     modes: 'Deduction · Duel',
     stage: 'beta',
     mini: MINI_BULLS,

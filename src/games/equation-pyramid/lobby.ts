@@ -156,7 +156,6 @@ function wireDifficulty(): void {
 
 function boot(): void {
   wireLobbyChrome();
-  wireLobbyChrome();
   renderHero();
   markDailyDone();
   startCountdown();

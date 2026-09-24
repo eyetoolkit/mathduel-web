@@ -130,7 +130,6 @@ function renderBoard(): void {
 /* ===================== 启动 ===================== */
 function boot(): void {
   wireLobbyChrome();
-  wireLobbyChrome();
   renderHeroGrid();
   markDailyDone();
   startCountdown();

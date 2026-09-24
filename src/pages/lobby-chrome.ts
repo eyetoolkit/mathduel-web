@@ -4,9 +4,16 @@
  * 各游戏 lobby 页的静态壳（sidebar / topbar / overlay）与首页同源，
  * 但首页的接线在 pages/home-redesign.ts 里，lobby 页不经过它。
  * 本模块只负责三件小事：移动端 burger 抽屉、遮罩/Esc 关闭、侧栏收窄。
- * 页面在 DOMContentLoaded 后调用一次 wireLobbyChrome() 即可。
+ * 页面在 DOMContentLoaded 后调用一次即可；函数本身幂等，重复调用无副作用。
  */
+let wired = false;
+
 export function wireLobbyChrome(): void {
+  // 幂等：页面可能被多个入口调用（或将来被 hot-reload 重跑）。
+  // 重复绑定会让 burger 的 toggle 相互抵消 —— 抽屉永远打不开。
+  if (wired) return;
+  wired = true;
+
   const burger = document.getElementById('burger');
   const overlay = document.getElementById('overlay');
   if (burger && overlay) {

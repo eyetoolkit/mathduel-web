@@ -1,11 +1,11 @@
 <!doctype html>
-<html lang="en" data-site="mathduel">
+<html lang="en" data-site="mathduel" data-build="%VITE_SHOW_BETA%">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#0E1419" />
-  <title>Choose Your Mode — Bulls &amp; Cows | MathDuel</title>
-  <meta name="description" content="Pick how you want to play Bulls & Cows: solo vs the computer, or wait for daily challenge and friend duel modes. Set a 4-digit number, crack your opponent's." />
+  <meta name="theme-color" content="#F4F5F9" />
+  <title>Bulls &amp; Cows (1A2B) — Choose Your Mode · MathDuel</title>
+  <meta name="description" content="Set a 4-digit secret, then crack your opponent's. A is a right digit in the right place, B is a right digit in the wrong place — first to 4A wins the round." />
   <link rel="canonical" href="https://mathduel.games/games/bulls/lobby/" />
   <!-- PWA + favicons -->
   <link rel="icon" href="/favicon.ico" sizes="any" />
@@ -19,130 +19,271 @@
   <meta property="og:image" content="https://mathduel.games/og-image.svg" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
-  <meta property="og:image:alt" content="MathDuel — Six math arenas, one Elo ladder" />
+  <meta property="og:image:alt" content="Bulls &amp; Cows — crack the 4-digit code on MathDuel" />
+  <meta property="og:title" content="Bulls &amp; Cows (1A2B) — Choose Your Mode · MathDuel" />
+  <meta property="og:description" content="Set a 4-digit secret, then crack your opponent's. First to 4A wins." />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:site" content="@mathduel" />
   <meta name="twitter:creator" content="@mathduel" />
+  <meta name="twitter:title" content="Bulls &amp; Cows (1A2B) — Choose Your Mode · MathDuel" />
+  <meta name="twitter:description" content="Set a 4-digit secret, then crack your opponent's. First to 4A wins." />
   <meta name="twitter:image" content="https://mathduel.games/og-image.svg" />
-  <!-- hreflang (站点仅英文版，x-default = en) -->
   <link rel="alternate" hreflang="en" href="https://mathduel.games/games/bulls/lobby/" />
   <link rel="alternate" hreflang="x-default" href="https://mathduel.games/games/bulls/lobby/" />
   <link rel="preload" href="/fonts/space-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin />
   <link rel="preload" href="/fonts/sora-latin.woff2" as="font" type="font/woff2" crossorigin />
 </head>
-<body class="arena">
-  <header class="arbar">
-    <div class="arbar-in">
-      <a class="arb-logo" href="/">BULLS<span>ARENA</span></a>
-      <nav class="arb-nav" aria-label="Site">
-        <a href="/">Home</a>
-        <a href="/games/bulls/">Game</a>
-      </nav>
-      <a class="arb-top-cta" href="/games/bulls/">Play now →</a>
-    </div>
-  </header>
+<body class="home-v2 arena skin-paper">
+<!-- ═══════════ 图标库：6 张游戏封面 SVG symbol（与首页/ 24 点 lobby 同源） ═══════════ -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+<defs>
+<symbol id="cv-24" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#3730A3"/>
+  <rect x="56" y="56" width="184" height="184" rx="42" fill="#FFFFFF"/>
+  <rect x="272" y="56" width="184" height="184" rx="42" fill="#FFFFFF"/>
+  <rect x="56" y="272" width="184" height="184" rx="42" fill="#FFFFFF"/>
+  <rect x="272" y="272" width="184" height="184" rx="42" fill="#F59E0B"/>
+  <g font-family="system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif" font-weight="800" text-anchor="middle">
+    <text x="148" y="148" dominant-baseline="central" font-size="80" fill="#3730A3">13</text>
+    <text x="364" y="148" dominant-baseline="central" font-size="80" fill="#3730A3">11</text>
+    <text x="148" y="366" dominant-baseline="central" font-size="86" fill="#3730A3">+</text>
+    <text x="364" y="366" dominant-baseline="central" font-size="72" fill="#1E1B39">24</text>
+  </g>
+</symbol>
+<symbol id="cv-sudoku" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#3730A3"/>
+  <g fill="#FFFFFF">
+    <rect x="56" y="56" width="118" height="118" rx="27"/><rect x="197" y="56" width="118" height="118" rx="27"/>
+    <rect x="338" y="56" width="118" height="118" rx="27"/><rect x="56" y="197" width="118" height="118" rx="27"/>
+    <rect x="197" y="197" width="118" height="118" rx="27"/><rect x="338" y="197" width="118" height="118" rx="27"/>
+    <rect x="56" y="338" width="118" height="118" rx="27"/><rect x="197" y="338" width="118" height="118" rx="27"/>
+  </g>
+  <rect x="338" y="338" width="118" height="118" rx="27" fill="#F59E0B"/>
+  <g font-family="system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif" font-weight="800" text-anchor="middle">
+    <text x="115" y="115" dominant-baseline="central" font-size="62" fill="#3730A3">1</text><text x="256" y="115" dominant-baseline="central" font-size="62" fill="#3730A3">2</text>
+    <text x="397" y="115" dominant-baseline="central" font-size="62" fill="#3730A3">3</text><text x="115" y="256" dominant-baseline="central" font-size="62" fill="#3730A3">4</text>
+    <text x="256" y="256" dominant-baseline="central" font-size="62" fill="#3730A3">5</text><text x="397" y="256" dominant-baseline="central" font-size="62" fill="#3730A3">6</text>
+    <text x="115" y="397" dominant-baseline="central" font-size="62" fill="#3730A3">7</text><text x="256" y="397" dominant-baseline="central" font-size="62" fill="#3730A3">8</text>
+    <text x="397" y="397" dominant-baseline="central" font-size="62" fill="#1E1B39">9</text>
+  </g>
+</symbol>
+<symbol id="cv-s6" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#4F46E5"/>
+  <g fill="#FFFFFF">
+    <rect x="56" y="126" width="118" height="118" rx="27"/><rect x="197" y="126" width="118" height="118" rx="27"/>
+    <rect x="338" y="126" width="118" height="118" rx="27"/><rect x="56" y="267" width="118" height="118" rx="27"/>
+    <rect x="197" y="267" width="118" height="118" rx="27"/>
+  </g>
+  <rect x="338" y="267" width="118" height="118" rx="27" fill="#22C55E"/>
+  <g font-family="system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif" font-weight="800" text-anchor="middle">
+    <text x="115" y="185" dominant-baseline="central" font-size="62" fill="#4F46E5">1</text><text x="256" y="185" dominant-baseline="central" font-size="62" fill="#4F46E5">2</text>
+    <text x="397" y="185" dominant-baseline="central" font-size="62" fill="#4F46E5">3</text><text x="115" y="326" dominant-baseline="central" font-size="62" fill="#4F46E5">4</text>
+    <text x="256" y="326" dominant-baseline="central" font-size="62" fill="#4F46E5">5</text><text x="397" y="326" dominant-baseline="central" font-size="62" fill="#FFFFFF">6</text>
+  </g>
+</symbol>
+<symbol id="cv-killer" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#312E81"/>
+  <g fill="#FFFFFF">
+    <rect x="56" y="56" width="118" height="118" rx="27"/><rect x="197" y="56" width="118" height="118" rx="27"/>
+    <rect x="338" y="56" width="118" height="118" rx="27"/><rect x="56" y="197" width="118" height="118" rx="27"/>
+    <rect x="197" y="197" width="118" height="118" rx="27"/><rect x="338" y="197" width="118" height="118" rx="27"/>
+    <rect x="56" y="338" width="118" height="118" rx="27"/>
+  </g>
+  <rect x="197" y="338" width="259" height="118" rx="27" fill="#DC2626"/>
+  <rect x="197" y="338" width="259" height="118" rx="27" fill="none" stroke="#FFFFFF" stroke-width="6.5" stroke-dasharray="16 13"/>
+  <g font-family="system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif" font-weight="800">
+    <g text-anchor="middle">
+      <text x="115" y="115" dominant-baseline="central" font-size="62" fill="#312E81">5</text><text x="397" y="115" dominant-baseline="central" font-size="62" fill="#312E81">6</text>
+      <text x="256" y="256" dominant-baseline="central" font-size="62" fill="#312E81">3</text><text x="115" y="397" dominant-baseline="central" font-size="62" fill="#312E81">2</text>
+    </g>
+    <text x="219" y="366" text-anchor="start" dominant-baseline="central" font-size="54" fill="#FFFFFF">17</text>
+  </g>
+</symbol>
+<symbol id="cv-pyr" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#3730A3"/>
+  <rect x="214" y="48" width="84" height="84" rx="19" fill="#F59E0B"/>
+  <g fill="#FFFFFF" fill-opacity="0.16">
+    <rect x="98" y="148" width="96" height="96" rx="22"/><rect x="208" y="148" width="96" height="96" rx="22"/>
+    <rect x="318" y="148" width="96" height="96" rx="22"/><rect x="98" y="258" width="96" height="96" rx="22"/>
+    <rect x="318" y="258" width="96" height="96" rx="22"/><rect x="98" y="368" width="96" height="96" rx="22"/>
+    <rect x="208" y="368" width="96" height="96" rx="22"/><rect x="318" y="368" width="96" height="96" rx="22"/>
+  </g>
+  <g fill="#FFFFFF">
+    <rect x="98" y="258" width="96" height="96" rx="22"/><rect x="208" y="258" width="96" height="96" rx="22"/><rect x="318" y="258" width="96" height="96" rx="22"/>
+  </g>
+  <g font-family="system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif" font-weight="800" text-anchor="middle">
+    <text x="256" y="90" dominant-baseline="central" font-size="40" fill="#1E1B39">20</text>
+    <text x="146" y="306" dominant-baseline="central" font-size="48" fill="#3730A3">4</text>
+    <text x="256" y="306" dominant-baseline="central" font-size="48" fill="#3730A3">×</text>
+    <text x="366" y="306" dominant-baseline="central" font-size="48" fill="#3730A3">5</text>
+  </g>
+</symbol>
+<symbol id="cv-bulls" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#1D4ED8"/>
+  <rect x="56" y="56" width="184" height="184" rx="42" fill="#FFFFFF"/>
+  <rect x="272" y="56" width="184" height="184" rx="42" fill="#FFFFFF"/>
+  <rect x="56" y="272" width="184" height="184" rx="42" fill="#FFFFFF"/>
+  <rect x="272" y="272" width="184" height="184" rx="42" fill="#F59E0B"/>
+  <g font-family="system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif" font-weight="800" text-anchor="middle">
+    <text x="148" y="148" dominant-baseline="central" font-size="110" fill="#1D4ED8">1</text>
+    <text x="364" y="148" dominant-baseline="central" font-size="110" fill="#1D4ED8">2</text>
+    <text x="148" y="366" dominant-baseline="central" font-size="110" fill="#1D4ED8">A</text>
+    <text x="364" y="366" dominant-baseline="central" font-size="110" fill="#1E1B39">B</text>
+  </g>
+</symbol>
+</defs>
+</svg>
 
-  <main class="arb-main" id="main">
-    <!-- ============ Hero ============ -->
-    <section class="arb-hero">
-      <h1 class="arb-big">Bulls &amp; <em>Cows</em></h1>
-      <div class="arb-hand" aria-hidden="true">
-        <span class="arb-chip">1</span>
-        <span class="arb-chip">A</span>
-        <span class="arb-chip">2</span>
-        <span class="arb-chip">B</span>
+<!-- ═══════════ 移动端顶栏 ═══════════ -->
+<div class="topbar">
+  <button class="burger" id="burger" aria-label="Open navigation" aria-expanded="false">
+    <svg viewBox="0 0 24 24" fill="none"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+  </button>
+  <a class="logo" href="/">Math<b>Duel</b></a>
+  <a class="btn-login" href="/games/bulls/" style="flex:none;padding:8px 18px">Play now</a>
+</div>
+<div class="overlay" id="overlay"></div>
+
+<!-- ═══════════ 侧边导航（Number Guess 1A2B 高亮；顶部 CTA Play now） ═══════════ -->
+<aside class="sidebar" id="sidebar">
+  <div class="sb-top">
+    <a class="logo" href="/">Math<b>Duel</b></a>
+    <button class="sb-collapse" id="collapse" title="Collapse navigation" aria-label="Collapse navigation">«</button>
+  </div>
+  <div class="sb-login">
+    <a class="btn-login" href="/games/bulls/"><span>Play now</span></a>
+    <button class="sb-theme" title="Toggle theme" aria-label="Toggle theme">
+      <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M20 13A8 8 0 1 1 11 4a6.5 6.5 0 0 0 9 9z"/></svg>
+    </button>
+  </div>
+  <nav class="sb-nav" aria-label="Site navigation">
+    <a class="nav-item" href="/"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg><label style="cursor:inherit">Home</label></a>
+    <span class="nav-item is-disabled" aria-disabled="true" style="opacity:.5;cursor:default" title="Coming soon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l2.5 2.5"/></svg><label style="cursor:inherit">Coin Shop 🪙</label></span>
+    <div class="nav-group">All games</div>
+    <a class="nav-item" href="/games/24-game/lobby/"><svg class="mini" aria-hidden="true"><use href="#cv-24"/></svg><label style="cursor:inherit">24 Game</label></a><a class="nav-item" href="/games/sudoku/lobby/"><svg class="mini" aria-hidden="true"><use href="#cv-sudoku"/></svg><label style="cursor:inherit">Sudoku 9×9</label></a><a class="nav-item" href="/games/sudoku-6x6/lobby/"><svg class="mini" aria-hidden="true"><use href="#cv-s6"/></svg><label style="cursor:inherit">Sudoku 6×6</label></a><a class="nav-item" href="/games/killer-sudoku/lobby/"><svg class="mini" aria-hidden="true"><use href="#cv-killer"/></svg><label style="cursor:inherit">Killer Sudoku</label></a><a class="nav-item" href="/games/number-pyramid/lobby/"><svg class="mini" aria-hidden="true"><use href="#cv-pyr"/></svg><label style="cursor:inherit">Number Pyramid</label></a><a class="nav-item" href="/games/equation-pyramid/lobby/"><svg class="mini" aria-hidden="true"><use href="#cv-pyr"/></svg><label style="cursor:inherit">Equation Pyramid</label></a><a class="nav-item active" href="/games/bulls/lobby/"><svg class="mini" aria-hidden="true"><use href="#cv-bulls"/></svg><label style="cursor:inherit">Number Guess 1A2B</label></a>
+    <div class="nav-group">Help</div>
+    <a class="nav-item" href="#"><svg viewBox="0 0 24 24"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19a2 2 0 0 1 2-2h13"/></svg><label style="cursor:inherit">How to play</label></a>
+  </nav>
+  <div class="nav-foot">
+    <span class="lang-pill"><b>EN</b> · 中文 · 日</span>
+    <span class="sb-copy">© 2026</span>
+  </div>
+</aside>
+
+<!-- ═══════════ 主区 ═══════════ -->
+<main class="main">
+
+  <!-- 游戏 Hero -->
+  <section class="g-hero">
+    <div class="wrap">
+      <span class="gcover" aria-hidden="true"><svg role="img" aria-label="Bulls &amp; Cows"><use href="#cv-bulls"/></svg></span>
+      <h1>Four digits. <em>Read the clues.</em></h1>
+      <p class="sub">Set a 4-digit secret from 1–9 with no repeats, then trade guesses. A is a right digit in the right place, B a right digit in the wrong place. First to 4A takes the round.</p>
+      <div class="chips">
+        <span class="chip"><span class="dot"></span>Turn-based · vs AI</span>
+        <span class="chip"><span class="dot"></span>Easy · Normal · Hard</span>
+        <span class="chip"><span class="dot"></span>3,024 possible codes</span>
       </div>
-      <p class="arb-sub">Set a 4-digit number, crack your opponent's. A is right digit right place, B is right digit wrong place. First to 4A wins.</p>
-    </section>
+      <div class="bulls-deco" id="heroDeco" aria-hidden="true">
+        <div class="bd-row">
+          <span class="bd-tile">1</span><span class="bd-tile">2</span><span class="bd-tile">3</span><span class="bd-tile">4</span>
+        </div>
+        <div class="bd-fb"><b>2</b>A<i>·</i><b>1</b>B</div>
+      </div>
+    </div>
+  </section>
 
-    <div class="arb-cols">
-      <!-- ============ 模式选择 ============ -->
-      <div>
-        <h2 class="arb-h2">Game modes</h2>
-        <div class="arb-modes" id="modeGrid">
-          <a class="arb-mode feat" href="/games/bulls/" data-mode="pva">
-            <div class="mi" aria-hidden="true">🤖</div>
-            <div class="mt">vs Computer</div>
-            <div class="md">Set your secret 4-digit number, then take turns guessing against the AI. Easy / Normal / Hard.</div>
-          </a>
-          <div class="arb-mode ghost">
-            <div class="mi" aria-hidden="true">🌐</div>
-            <div class="mt">Daily Challenge</div>
-            <div class="md">Coming soon — same puzzle worldwide, climb today's board.</div>
-          </div>
-          <div class="arb-mode ghost">
-            <div class="mi" aria-hidden="true">👥</div>
-            <div class="mt">Friend 1v1</div>
-            <div class="md">Coming soon — share a code, first to crack wins.</div>
-          </div>
-          <div class="arb-mode ghost">
-            <div class="mi" aria-hidden="true">🏁</div>
-            <div class="mt">Race · 99</div>
-            <div class="md">Coming soon — up to 99 players on the same number.</div>
-          </div>
-          <div class="arb-mode ghost">
-            <div class="mi" aria-hidden="true">🎲</div>
-            <div class="mt">Random Match</div>
-            <div class="md">Coming soon — get matched with a stranger instantly.</div>
-          </div>
+  <!-- 模式选择 + 右栏信息 -->
+  <div class="wrap lobby-grid">
+    <section aria-labelledby="modesTitle">
+      <h2 class="sec-h" id="modesTitle">Choose your mode<small>Tap a card to jump straight in.</small></h2>
+      <div class="modes" id="modeGrid">
+        <a class="mode arb-mode" href="/games/bulls/">
+          <div class="mi" aria-hidden="true">🤖</div>
+          <div class="mt">vs Computer</div>
+          <div class="md">Set your secret, then trade guesses with the AI. Easy / Normal / Hard.</div>
+        </a>
+        <div class="mode soon" aria-disabled="true">
+          <div class="mi" aria-hidden="true">🌐</div>
+          <div class="mt">Daily Challenge</div>
+          <div class="md">Same secret worldwide, one shot a day. Log your moves.</div>
+          <span class="soon-pill">SOON</span>
+        </div>
+        <div class="mode soon" aria-disabled="true">
+          <div class="mi" aria-hidden="true">👥</div>
+          <div class="mt">Friend 1v1</div>
+          <div class="md">Private rooms arrive with the live API.</div>
+          <span class="soon-pill">SOON</span>
+        </div>
+        <div class="mode soon" aria-disabled="true">
+          <div class="mi" aria-hidden="true">🏁</div>
+          <div class="mt">Race · 99</div>
+          <div class="md">Up to 99 players on the same number.</div>
+          <span class="soon-pill">SOON</span>
+        </div>
+        <div class="mode soon" aria-disabled="true">
+          <div class="mi" aria-hidden="true">🎲</div>
+          <div class="mt">Random Match</div>
+          <div class="md">Get matched with a stranger instantly.</div>
+          <span class="soon-pill">SOON</span>
         </div>
       </div>
+    </section>
 
-      <!-- ============ 右列：玩法规则 + 当前最佳 ============ -->
-      <div class="arb-side">
-        <section class="arb-card" aria-labelledby="howTitle">
-          <h3 id="howTitle">How it works</h3>
-          <p class="arb-note">Set a 4-digit secret from 1–9, no repeats. Take turns guessing your opponent's number; you can be the setter and the guesser simultaneously against the AI.</p>
-          <ul class="arb-leds">
-            <li><b>A</b> — right digit, right place</li>
-            <li><b>B</b> — right digit, wrong place</li>
-            <li>First to <b>4A</b> wins the round</li>
-          </ul>
-          <a class="arb-btn ghost block" href="/games/bulls/">Start a round</a>
-        </section>
+    <!-- 右栏 -->
+    <aside class="side">
+      <section class="panel" aria-labelledby="rulesTitle">
+        <h3 id="rulesTitle">How it works</h3>
+        <p class="pnote">Set a 4-digit secret from 1–9, no repeats. You and the AI each set one, then trade guesses — you are setter and guesser at the same time.</p>
+        <div class="arb-rules">
+          <div class="arb-rule"><b>1</b><span>Four digits from 1–9 with no repeats</span></div>
+          <div class="arb-rule"><b>A</b><span>Right digit, right place</span></div>
+          <div class="arb-rule"><b>B</b><span>Right digit, wrong place</span></div>
+          <div class="arb-rule"><b>4</b><span>First to 4A wins the round</span></div>
+        </div>
+        <a class="btn btn-amber block" href="/games/bulls/" id="startRound" style="margin-top:12px">Start a round</a>
+      </section>
 
-        <section class="arb-card" aria-labelledby="bestTitle">
-          <h3 id="bestTitle">Your best</h3>
-          <div id="bestBox">
-            <div class="arb-empty" id="bestEmpty">No rounds played yet — start your first round.</div>
-          </div>
-        </section>
-      </div>
+      <section class="panel" aria-labelledby="diffTitle">
+        <h3 id="diffTitle">Difficulty</h3>
+        <p class="pnote">How hard the AI thinks — pick it before the first move.</p>
+        <div class="bd-diff">
+          <div class="bd-diff-row"><b>Easy</b><span>Random guesses — a warm-up</span></div>
+          <div class="bd-diff-row"><b>Normal</b><span>Elimination — it narrows the field</span></div>
+          <div class="bd-diff-row"><b>Hard</b><span>Consistent &amp; tight — few wasted guesses</span></div>
+        </div>
+      </section>
+    </aside>
+  </div>
+
+  <!-- How to play -->
+  <section class="how wrap" aria-labelledby="howTitle">
+    <h2 class="sec-h" id="howTitle">How to play<small>Set → trade guesses → close it out.</small></h2>
+    <div class="how-grid">
+      <div class="step"><span class="sn">1</span><b>Set your secret</b><span>Pick four digits from 1–9 with no repeats. The AI sets one too.</span></div>
+      <div class="step"><span class="sn">2</span><b>Trade guesses</b><span>Each round you guess its number and it guesses yours.</span></div>
+      <div class="step"><span class="sn">3</span><b>Read the A&rsquo;s and B&rsquo;s</b><span>A means a right digit in the right place, B a right digit in the wrong place.</span></div>
+      <div class="step"><span class="sn">4</span><b>Close it out</b><span>First side to 4A takes the round — and keep your guess count low.</span></div>
     </div>
-  </main>
+  </section>
+</main>
 
-  <footer class="arb-foot">
-    <span><b>BULLS ARENA</b> · mode select</span>
-    <span class="arb-foot-links">
-      <a href="/">MathDuel home</a>
-      <a href="/games/bulls/">Game</a>
-    </span>
-  </footer>
+<!-- ═══════════ 页脚（与首页同一套） ═══════════ -->
+<footer class="site-footer main">
+  <div class="wrap">
+    <div class="sf-title">Explore the Duel family</div>
+    <div class="sf-matrix">
+      <a class="sf-item" href="https://boardduel.com"><span class="pip" style="background:#2FC4C9"></span>BoardDuel · Chess &amp; Card Games</a>
+      <a class="sf-item" href="https://mathduel.games"><span class="pip" style="background:#F59E0B"></span>MathDuel · Math Puzzle Games</a>
+      <a class="sf-item" href="https://memoryduel.com"><span class="pip" style="background:#4F46E5"></span>MemoryDuel · Knowledge Battles</a>
+    </div>
+    <div class="sf-links">
+      <a href="#">About</a><a href="#">Contact</a><a href="#">Privacy</a><a href="#">Terms</a><a href="#">How to play</a>
+    </div>
+    <div class="sf-copy">© 2026 MathDuel · Pure static · Privacy-first · Free to play</div>
+  </div>
+</footer>
 
-  <script type="module">
-    /* Bulls lobby · 轻量脚本：填充 Your best（localStorage 'md_best_bulls'） */
-    (function () {
-      var bestBox = document.getElementById('bestBox');
-      var bestEmpty = document.getElementById('bestEmpty');
-      if (!bestBox || !bestEmpty) return;
-      try {
-        var raw = localStorage.getItem('md_best_bulls');
-        if (!raw) return;
-        var v = JSON.parse(raw);
-        var html = '<div class="arb-best-row"><span class="arb-best-lbl">Best moves</span><b class="num">' + (v.moves || 0) + '</b></div>' +
-                   '<div class="arb-best-row"><span class="arb-best-lbl">Difficulty</span><b>' + (v.diff || 'normal') + '</b></div>';
-        bestEmpty.remove();
-        bestBox.insertAdjacentHTML('beforeend', html);
-      } catch (e) { /* ignore */ }
-    })();
-  </script>
-  <style>
-    /* Bulls lobby 局部样式 · 与 arena.css 共用 arb-* class，仅追加细节 */
-    .arb-leds { list-style: none; padding: 0; margin: 12px 0 18px; color: var(--text, #cbd5e1); font-size: 0.875rem; line-height: 1.7; }
-    .arb-leds b { color: var(--brand, #FF6A3C); font-weight: 700; }
-    .arb-best-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-top: 1px solid var(--a-line, #1f2937); font-size: 0.9375rem; }
-    .arb-best-row:first-child { border-top: 0; }
-    .arb-best-lbl { color: var(--text-muted, #94a3b8); font-size: 0.75rem; letter-spacing: 0.14em; text-transform: uppercase; }
-  </style>
+<script type="module" src="/src/games/bulls/lobby.ts"></script>
 </body>
 </html>

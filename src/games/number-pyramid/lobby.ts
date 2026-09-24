@@ -187,7 +187,6 @@ function wireDifficulty(): void {
 
 function boot(): void {
   wireLobbyChrome();
-  wireLobbyChrome();
   renderHeroPyr();
   markDailyDone();
   startCountdown();
