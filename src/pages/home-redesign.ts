@@ -208,13 +208,27 @@ function sidebarHtml(): string {
   
   
   const gamesGroup = `
-    <div class="nav-group">All games · 6</div>
-    ${miniNavItem(false, '/games/24-game/lobby/',   'cv-24',     '24 Game')}
-    ${miniNavItem(false, '/games/sudoku/',           'cv-sudoku', 'Sudoku 9×9')}
-    ${miniNavItem(false, '/games/sudoku-6x6/',       'cv-s6',     'Sudoku 6×6')}
-    ${miniNavItem(false, '/games/killer-sudoku/',    'cv-killer', 'Killer Sudoku')}
-    ${miniNavItem(false, '/games/equation-pyramid/', 'cv-pyr',    'Equation Pyramid')}
-    ${miniNavItem(false, '/games/bulls/',            'cv-bulls',  'Number Guess 1A2B')}
+    <div class="nav-group">All games · 7</div>
+    ${miniNavItem(false, '/games/24-game/lobby/',        'cv-24',     '24 Game')}
+    ${miniNavItem(false, '/games/sudoku/lobby/',         'cv-sudoku', 'Sudoku 9×9')}
+    ${miniNavItem(false, '/games/sudoku-6x6/lobby/',     'cv-s6',     'Sudoku 6×6')}
+    ${miniNavItem(false, '/games/killer-sudoku/lobby/',  'cv-killer', 'Killer Sudoku')}
+    ${miniNavItem(false, '/games/number-pyramid/lobby/', 'cv-pyr',    'Number Pyramid')}
+    ${miniNavItem(false, '/games/equation-pyramid/lobby/', 'cv-pyr',  'Equation Pyramid')}
+    ${miniNavItem(false, '/games/bulls/lobby/',          'cv-bulls',  'Number Guess 1A2B')}
+  `;
+
+  // 与各游戏页/lobby 页的静态壳保持同一份导航：
+  // Home → Coin Shop（未上线灰态）→ All games · 7 → Help
+  const coinShop = `
+    <span class="nav-item is-disabled" aria-disabled="true" style="opacity:.5;cursor:default" title="Coming soon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l2.5 2.5"/></svg><label style="cursor:inherit">Coin Shop 🪙</label></span>
+  `;
+
+  const helpGroup = `
+    <div class="nav-group">Help</div>
+    ${navItem(false, '#',
+      '<svg viewBox="0 0 24 24"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19a2 2 0 0 1 2-2h13"/></svg>',
+      'How to play')}
   `;
 
   
@@ -231,7 +245,9 @@ function sidebarHtml(): string {
     </div>
     <nav class="sb-nav" aria-label="Site navigation">
       ${home}
+      ${coinShop}
       ${gamesGroup}
+      ${helpGroup}
     </nav>
     <div class="nav-foot">
       <span class="lang-pill"><b>EN</b> · 中文 · 日</span>
