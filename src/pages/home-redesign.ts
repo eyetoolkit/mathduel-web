@@ -203,7 +203,7 @@ const HOME_CARDS: HomeCard[] = [
   { href: '/games/sudoku-6x6/lobby/',     cvId: 'cv-s6',     name: 'Sudoku 6×6',        tags: ['Solo', 'Beginner'],     live: true },
   { href: '/games/killer-sudoku/lobby/',  cvId: 'cv-killer', name: 'Killer Sudoku',     tags: ['Solo', 'Advanced'],     live: true },
   { href: '/games/equation-pyramid/lobby/', cvId: 'cv-pyr',  name: 'Equation Pyramid',  tags: ['Solo', 'Daily'],        live: true },
-  { href: '/games/bulls/lobby/',          cvId: 'cv-bulls',  name: 'Number Guess 1A2B', tags: ['1v1', 'PvP'],           live: true },
+  { href: '/games/bulls/lobby/',          cvId: 'cv-bulls',  name: 'Number Guess 1A2B', tags: ['Solo', 'Logic'],         live: true },
   { href: '/games/number-pyramid/lobby/', cvId: 'cv-numPyr', name: 'Number Pyramid',    tags: ['Solo', 'Daily'],        live: true },
 ];
 

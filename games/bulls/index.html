@@ -244,6 +244,29 @@
     </section>
   </main>
 
+  <!-- 右栏粘性（规则 + 持久化战绩，引导 + 填空） -->
+  <aside class="pg-aside" aria-label="Game info">
+    <div class="pg-panel">
+      <h3 class="pg-h3">🎯 How to play</h3>
+      <ol class="pg-rules">
+        <li>Set a <b>4-digit secret</b> with no repeats (digits 1–9).</li>
+        <li>The computer picks its own secret.</li>
+        <li>Take turns guessing. <b>A</b> = right digit &amp; right place. <b>B</b> = right digit &amp; wrong place.</li>
+        <li>First to <b>4A</b> wins.</li>
+      </ol>
+    </div>
+    <div class="pg-panel">
+      <h3 class="pg-h3">📊 Your record</h3>
+      <ul class="pg-stats">
+        <li><span>Wins</span><b id="stat-wins">0</b></li>
+        <li><span>Losses</span><b id="stat-losses">0</b></li>
+        <li><span>Best moves</span><b id="stat-best">—</b></li>
+        <li><span>Streak</span><b id="stat-streak">0</b></li>
+      </ul>
+      <p class="pg-hint">Stored on this device only. <a href="/privacy/">Privacy-first</a>.</p>
+    </div>
+  </aside>
+
   <script type="module" src="/src/games/bulls/index.ts"></script>
 
 </div><!-- /.pg-main -->

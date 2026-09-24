@@ -85,10 +85,63 @@ function showResult(playerWon: boolean): void {
   resultBox.hidden = false;
   const title = $('resultTitle')!;
   const sub = $('resultSub')!;
+  const myGuessCount = game.history.filter((h) => h.by === 0).length;
   title.textContent = playerWon ? 'You win' : 'Computer wins';
   sub.textContent = playerWon
-    ? `Cracked it in ${game.history.filter((h) => h.by === 0).length} guesses.`
+    ? `Cracked it in ${myGuessCount} guesses.`
     : `The answer was ${game.secrets[0]}. Try a harder level?`;
+  // F-205 / F-207: 记录战绩到 localStorage 并刷新右栏
+  recordResult(playerWon, myGuessCount);
+  renderRecord();
+}
+
+/* ───────────── 本地战绩（F-205 留存钩子） ───────────── */
+const REC_KEY = 'bulls_record_v1';
+interface Rec {
+  wins: number;
+  losses: number;
+  best: number; // 最少猜测次数（数字越小越 NB；0 表示没赢过）
+  streak: number;
+}
+function loadRec(): Rec {
+  try {
+    const s = localStorage.getItem(REC_KEY);
+    if (!s) return { wins: 0, losses: 0, best: 0, streak: 0 };
+    const o = JSON.parse(s) as Partial<Rec>;
+    return { wins: o.wins ?? 0, losses: o.losses ?? 0, best: o.best ?? 0, streak: o.streak ?? 0 };
+  } catch {
+    return { wins: 0, losses: 0, best: 0, streak: 0 };
+  }
+}
+function saveRec(r: Rec): void {
+  try {
+    localStorage.setItem(REC_KEY, JSON.stringify(r));
+  } catch {
+    /* private mode — silently no-op */
+  }
+}
+function recordResult(playerWon: boolean, myGuessCount: number): void {
+  const r = loadRec();
+  if (playerWon) {
+    r.wins += 1;
+    r.streak += 1;
+    if (myGuessCount > 0 && (r.best === 0 || myGuessCount < r.best)) r.best = myGuessCount;
+  } else {
+    r.losses += 1;
+    r.streak = 0;
+  }
+  saveRec(r);
+}
+function renderRecord(): void {
+  const r = loadRec();
+  const set = (id: string, v: string) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = v;
+  };
+  set('stat-wins', String(r.wins));
+  set('stat-losses', String(r.losses));
+  set('stat-best', r.best > 0 ? String(r.best) : '—');
+  set('stat-streak', String(r.streak));
 }
 
 /* ───────────── 交互 ───────────── */
@@ -180,3 +233,4 @@ secretInput.addEventListener('keydown', (e) => {
 });
 
 render();
+renderRecord();

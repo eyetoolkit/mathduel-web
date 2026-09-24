@@ -16,6 +16,32 @@
   .gb { padding: var(--s-8) var(--s-8) var(--s-16); }
 }
 
+/* ────────── 右栏粘性（玩法规则 + 个人战绩） ────────── */
+@media (min-width: 1120px) {
+  .pg-main {
+    /* 与 game-shell 的 .pg-main margin-left: var(--pg-sb-w) 协同：
+       用 grid 双栏填满（aside=280 主区=剩余） */
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 300px;
+    gap: 28px;
+    align-items: start;
+    padding: var(--s-8);
+  }
+}
+
+.pg-aside { position: sticky; top: 24px; display: grid; gap: 16px; }
+.pg-panel { background: var(--surface, #fff); border: 1px solid var(--border, #e5e7eb); border-radius: var(--r-2xl, 16px); padding: 18px; box-shadow: 0 1px 2px rgba(0,0,0,.04); }
+.pg-h3 { margin: 0 0 10px; font-size: 13px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; color: var(--ink, #1e1b39); }
+.pg-rules { padding-left: 18px; margin: 0; color: var(--ink, #1e1b39); font-size: 14px; line-height: 1.55; }
+.pg-rules li { margin: 4px 0; }
+.pg-rules b { font-weight: 700; color: var(--indigo, #3730a3); }
+.pg-stats { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 6px 12px; }
+.pg-stats li { display: flex; align-items: baseline; justify-content: space-between; padding: 4px 0; border-bottom: 1px dashed var(--border, #e5e7eb); font-size: 13px; color: var(--mute, #5b6079); }
+.pg-stats li b { font-weight: 800; color: var(--ink, #1e1b39); font-family: var(--font-display); }
+.pg-hint { margin: 8px 0 0; font-size: 12px; color: var(--mute-2, #9ca3af); }
+.pg-hint a { color: inherit; text-decoration: underline; }
+@media (max-width: 1119px) { .pg-aside { position: static; } }
+
 /* ---------- 棋盘 ---------- */
 .board {
   position: relative;
