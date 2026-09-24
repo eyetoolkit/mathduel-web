@@ -11,6 +11,7 @@
  *   - 字体用设计系统站内自托管的 Space Grotesk / Sora，模拟 Baloo 2 圆润感
  */
 import type { GameDef } from './home';
+import { wireLobbyChrome } from './lobby-chrome';
 
 const SHOW_BETA = (import.meta.env.VITE_SHOW_BETA ?? '') === '1';
 
@@ -403,8 +404,9 @@ export function renderHomeV2(): void {
 
   // 2. 行为绑定
   initCountdown();
-  initSidebarToggle();
-  initBurgerDrawer();
+  // 抽屉 / 遮罩 / 侧栏收窄统一走 pages/lobby-chrome（首页壳的收窄按钮 id 是 sbCollapse，
+  // 该模块两个 id 都认）。此前这里另有一份同名实现，与 lobby 页那份容易漂移。
+  wireLobbyChrome();
 }
 
 /* 每日倒计时（到下一个 UTC 零点，与服务端 daily 一致） */
@@ -423,34 +425,6 @@ function initCountdown(): void {
   }
   tick();
   setInterval(tick, 1000);
-}
-
-/* 桌面侧栏收窄 */
-function initSidebarToggle(): void {
-  const c = document.getElementById('sbCollapse');
-  if (!c) return;
-  c.addEventListener('click', () => {
-    document.body.classList.toggle('rail');
-  });
-}
-
-/* 移动端 burger 抽屉 */
-function initBurgerDrawer(): void {
-  const burger = document.getElementById('burger');
-  const overlay = document.getElementById('overlay');
-  if (!burger || !overlay) return;
-  const close = (): void => {
-    document.body.classList.remove('nav-open');
-    burger.setAttribute('aria-expanded', 'false');
-  };
-  burger.addEventListener('click', () => {
-    const open = document.body.classList.toggle('nav-open');
-    burger.setAttribute('aria-expanded', String(open));
-  });
-  overlay.addEventListener('click', close);
-  document.addEventListener('keydown', (e: KeyboardEvent) => {
-    if (e.key === 'Escape') close();
-  });
 }
 
 /* 让 GameDef 与旧 home.ts 兼容导出，避免 lint 失败 */

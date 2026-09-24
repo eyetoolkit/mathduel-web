@@ -11,6 +11,7 @@ import '@tri-sites/design-system/styles';
 // 共享 papergames 视觉（sidebar / footer / ladder / 移动端 drawer / .btn 等）
 import '../../styles/home-redesign.css';
 import './lobby.css';
+import { wireLobbyChrome } from '../../pages/lobby-chrome';
 import { dailyKeyStr } from './engine';
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T | null;
@@ -161,6 +162,7 @@ function initRoom(): void {
 
 /* ===================== 启动 ===================== */
 function boot(): void {
+  wireLobbyChrome();
   markDailyDone();
   startCountdown();
   initRoom();

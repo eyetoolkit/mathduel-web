@@ -1,16 +1,16 @@
 /**
- * Lobby 页共享的「页面骨架」交互。
+ * 纸感骨架（sidebar / topbar / overlay）的共享交互。
  * ------------------------------------------------------------
- * 各游戏 lobby 页的静态壳（sidebar / topbar / overlay）与首页同源，
- * 但首页的接线在 pages/home-redesign.ts 里，lobby 页不经过它。
- * 本模块只负责三件小事：移动端 burger 抽屉、遮罩/Esc 关闭、侧栏收窄。
- * 页面在 DOMContentLoaded 后调用一次即可；函数本身幂等，重复调用无副作用。
+ * 三个入口都用它，避免同一份逻辑被抄成几份、口径漂移：
+ *   1. 各游戏 lobby 页的静态壳（games/<id>/lobby/）
+ *   2. 24 点 lobby（静态壳，此前漏接 → 移动端抽屉与收窄按钮全死）
+ *   3. 首页（pages/home-redesign.ts 渲染的壳，收窄按钮 id 是 sbCollapse）
+ * 本模块负责三件小事：移动端 burger 抽屉、遮罩/Esc 关闭、侧栏收窄。
+ * 幂等 —— 重复调用无副作用，但重复「绑定」会让 toggle 相互抵消。
  */
 let wired = false;
 
 export function wireLobbyChrome(): void {
-  // 幂等：页面可能被多个入口调用（或将来被 hot-reload 重跑）。
-  // 重复绑定会让 burger 的 toggle 相互抵消 —— 抽屉永远打不开。
   if (wired) return;
   wired = true;
 
@@ -31,6 +31,7 @@ export function wireLobbyChrome(): void {
     });
   }
 
-  const collapse = document.getElementById('collapse');
+  // 收窄按钮两个名字都认：lobby 壳用 #collapse，首页壳用 #sbCollapse
+  const collapse = document.getElementById('collapse') ?? document.getElementById('sbCollapse');
   collapse?.addEventListener('click', () => document.body.classList.toggle('rail'));
 }
