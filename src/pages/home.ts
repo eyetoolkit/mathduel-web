@@ -119,7 +119,7 @@ const GAMES: GameDef[] = [
     desc: 'The classic logic grid — race your opponent square by square.',
     href: '/games/sudoku/lobby/',
     modes: 'Classic · Duel + Daily',
-    stage: 'beta',
+    stage: 'live',
     mini: MINI_SUDOKU9,
   },
   {
@@ -128,7 +128,7 @@ const GAMES: GameDef[] = [
     desc: 'A quicker grid for warm-ups and younger players.',
     href: '/games/sudoku-6x6/lobby/',
     modes: 'Beginner · Duel + Daily',
-    stage: 'beta',
+    stage: 'live',
     mini: MINI_SUDOKU66,
   },
   {
@@ -137,7 +137,7 @@ const GAMES: GameDef[] = [
     desc: 'Sudoku with cage sums — the hardest logic variant we host.',
     href: '/games/killer-sudoku/lobby/',
     modes: 'Advanced · Duel',
-    stage: 'beta',
+    stage: 'live',
     mini: miniKiller(),
   },
   {
@@ -146,7 +146,7 @@ const GAMES: GameDef[] = [
     desc: 'Pick three cells, build the equation, hit the target.',
     href: '/games/equation-pyramid/lobby/',
     modes: 'Precedence · Duel + Daily',
-    stage: 'beta',
+    stage: 'live',
     mini: MINI_EQUATION,
   },
   {
@@ -155,7 +155,7 @@ const GAMES: GameDef[] = [
     desc: 'Crack the secret code in fewest guesses.',
     href: '/games/bulls/lobby/',
     modes: 'Deduction · Duel',
-    stage: 'beta',
+    stage: 'live',
     mini: MINI_BULLS,
   },
   {

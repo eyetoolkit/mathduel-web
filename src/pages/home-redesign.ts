@@ -152,12 +152,12 @@ interface HomeCard {
   live: boolean;
 }
 const HOME_CARDS: HomeCard[] = [
-  { href: '/games/24-game/lobby/',   cvId: 'cv-24',     name: '24 Game',              tags: ['Solo', '1v1', 'Daily'], live: true  },
-  { href: '/games/sudoku/',           cvId: 'cv-sudoku', name: 'Sudoku 9×9',           tags: ['Solo', 'Daily'],        live: false },
-  { href: '/games/sudoku-6x6/',       cvId: 'cv-s6',     name: 'Sudoku 6×6',           tags: ['Solo', 'Beginner'],     live: false },
-  { href: '/games/killer-sudoku/',    cvId: 'cv-killer', name: 'Killer Sudoku',        tags: ['Solo', 'Advanced'],     live: false },
-  { href: '/games/equation-pyramid/', cvId: 'cv-pyr',    name: 'Equation Pyramid',     tags: ['Solo', 'Daily'],        live: false },
-  { href: '/games/bulls/',            cvId: 'cv-bulls',  name: 'Number Guess 1A2B',    tags: ['1v1', 'PvP'],           live: false },
+  { href: '/games/24-game/lobby/',        cvId: 'cv-24',     name: '24 Game',           tags: ['Solo', '1v1', 'Daily'], live: true },
+  { href: '/games/sudoku/lobby/',         cvId: 'cv-sudoku', name: 'Sudoku 9×9',        tags: ['Solo', 'Daily'],        live: true },
+  { href: '/games/sudoku-6x6/lobby/',     cvId: 'cv-s6',     name: 'Sudoku 6×6',        tags: ['Solo', 'Beginner'],     live: true },
+  { href: '/games/killer-sudoku/lobby/',  cvId: 'cv-killer', name: 'Killer Sudoku',     tags: ['Solo', 'Advanced'],     live: true },
+  { href: '/games/equation-pyramid/lobby/', cvId: 'cv-pyr',  name: 'Equation Pyramid',  tags: ['Solo', 'Daily'],        live: true },
+  { href: '/games/bulls/lobby/',          cvId: 'cv-bulls',  name: 'Number Guess 1A2B', tags: ['1v1', 'PvP'],           live: true },
 ];
 
 /** 在 beta 环境里，beta 游戏也视为 live（无灰态） */
