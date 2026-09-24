@@ -58,7 +58,7 @@ const CV_SYMBOLS = `
 </symbol>
 
 <symbol id="cv-s6" viewBox="0 0 512 512">
-  <rect width="512" height="512" fill="#4F46E5"/>
+  <rect width="512" height="512" fill="#3730A3"/>
   <g fill="#FFFFFF">
     <rect x="56" y="126" width="118" height="118" rx="27"/>
     <rect x="197" y="126" width="118" height="118" rx="27"/>
@@ -66,19 +66,19 @@ const CV_SYMBOLS = `
     <rect x="56" y="267" width="118" height="118" rx="27"/>
     <rect x="197" y="267" width="118" height="118" rx="27"/>
   </g>
-  <rect x="338" y="267" width="118" height="118" rx="27" fill="#22C55E"/>
+  <rect x="338" y="267" width="118" height="118" rx="27" fill="#F59E0B"/>
   <g font-family="system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif" font-weight="800" text-anchor="middle">
-    <text x="115" y="185" dominant-baseline="central" font-size="62" fill="#4F46E5">1</text>
-    <text x="256" y="185" dominant-baseline="central" font-size="62" fill="#4F46E5">2</text>
-    <text x="397" y="185" dominant-baseline="central" font-size="62" fill="#4F46E5">3</text>
-    <text x="115" y="326" dominant-baseline="central" font-size="62" fill="#4F46E5">4</text>
-    <text x="256" y="326" dominant-baseline="central" font-size="62" fill="#4F46E5">5</text>
+    <text x="115" y="185" dominant-baseline="central" font-size="62" fill="#3730A3">1</text>
+    <text x="256" y="185" dominant-baseline="central" font-size="62" fill="#3730A3">2</text>
+    <text x="397" y="185" dominant-baseline="central" font-size="62" fill="#3730A3">3</text>
+    <text x="115" y="326" dominant-baseline="central" font-size="62" fill="#3730A3">4</text>
+    <text x="256" y="326" dominant-baseline="central" font-size="62" fill="#3730A3">5</text>
     <text x="397" y="326" dominant-baseline="central" font-size="62" fill="#FFFFFF">6</text>
   </g>
 </symbol>
 
 <symbol id="cv-killer" viewBox="0 0 512 512">
-  <rect width="512" height="512" fill="#312E81"/>
+  <rect width="512" height="512" fill="#3730A3"/>
   <g fill="#FFFFFF">
     <rect x="56" y="56" width="118" height="118" rx="27"/>
     <rect x="197" y="56" width="118" height="118" rx="27"/>
@@ -88,14 +88,14 @@ const CV_SYMBOLS = `
     <rect x="338" y="197" width="118" height="118" rx="27"/>
     <rect x="56" y="338" width="118" height="118" rx="27"/>
   </g>
-  <rect x="197" y="338" width="259" height="118" rx="27" fill="#DC2626"/>
+  <rect x="197" y="338" width="259" height="118" rx="27" fill="#F59E0B"/>
   <rect x="197" y="338" width="259" height="118" rx="27" fill="none" stroke="#FFFFFF" stroke-width="6.5" stroke-dasharray="16 13"/>
   <g font-family="system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif" font-weight="800">
     <g text-anchor="middle">
-      <text x="115" y="115" dominant-baseline="central" font-size="62" fill="#312E81">5</text>
-      <text x="397" y="115" dominant-baseline="central" font-size="62" fill="#312E81">6</text>
-      <text x="256" y="256" dominant-baseline="central" font-size="62" fill="#312E81">3</text>
-      <text x="115" y="397" dominant-baseline="central" font-size="62" fill="#312E81">2</text>
+      <text x="115" y="115" dominant-baseline="central" font-size="62" fill="#3730A3">5</text>
+      <text x="397" y="115" dominant-baseline="central" font-size="62" fill="#3730A3">6</text>
+      <text x="256" y="256" dominant-baseline="central" font-size="62" fill="#3730A3">3</text>
+      <text x="115" y="397" dominant-baseline="central" font-size="62" fill="#3730A3">2</text>
     </g>
     <text x="219" y="366" text-anchor="start" dominant-baseline="central" font-size="54" fill="#FFFFFF">17</text>
   </g>
@@ -128,15 +128,15 @@ const CV_SYMBOLS = `
 </symbol>
 
 <symbol id="cv-bulls" viewBox="0 0 512 512">
-  <rect width="512" height="512" fill="#1D4ED8"/>
+  <rect width="512" height="512" fill="#3730A3"/>
   <rect x="56" y="56" width="184" height="184" rx="42" fill="#FFFFFF"/>
   <rect x="272" y="56" width="184" height="184" rx="42" fill="#FFFFFF"/>
   <rect x="56" y="272" width="184" height="184" rx="42" fill="#FFFFFF"/>
   <rect x="272" y="272" width="184" height="184" rx="42" fill="#F59E0B"/>
   <g font-family="system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif" font-weight="800" text-anchor="middle">
-    <text x="148" y="148" dominant-baseline="central" font-size="110" fill="#1D4ED8">1</text>
-    <text x="364" y="148" dominant-baseline="central" font-size="110" fill="#1D4ED8">2</text>
-    <text x="148" y="366" dominant-baseline="central" font-size="110" fill="#1D4ED8">A</text>
+    <text x="148" y="148" dominant-baseline="central" font-size="110" fill="#3730A3">1</text>
+    <text x="364" y="148" dominant-baseline="central" font-size="110" fill="#3730A3">2</text>
+    <text x="148" y="366" dominant-baseline="central" font-size="110" fill="#3730A3">A</text>
     <text x="364" y="366" dominant-baseline="central" font-size="110" fill="#1E1B39">B</text>
   </g>
 </symbol>
