@@ -1649,7 +1649,8 @@ function renderSide(): void {
       '<div class="panel"><h3>🎯 Quick Start</h3>' +
       '<div class="hint-step"><b>1</b><span><b>Deal</b>: 4 cards, values 1–13</span></div>' +
       '<div class="hint-step"><b>2</b><span><b>Make 24</b>: use + − × ÷ and ( ), each card once</span></div>' +
-      '<div class="hint-step"><b>3</b><span><b>Score</b>: faster and correct = longer streak</span></div></div>' +
+      '<div class="hint-step"><b>3</b><span><b>Score</b>: faster and correct = longer streak</span></div>' +
+      '<p class="brand-hint">A pocket puzzle born in the 1960s, now raced across continents. Five games, one Elo ladder — no login, no ads.</p></div>' +
       '<div class="panel"><h3>📈 My Stats</h3>' +
       statRow('Solved', scores.solved) +
       statRow('Skipped', scores.skipped) +

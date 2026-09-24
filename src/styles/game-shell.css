@@ -198,3 +198,33 @@ body.has-papergames-shell.rail .pg-main { margin-left: var(--pg-sb-rail); }
 @media (prefers-reduced-motion: reduce) {
   .pg-sidebar, .pg-main, .pg-footer { transition: none !important; }
 }
+
+/* === F-206 首登引导 === */
+.md-first-hint {
+  position: fixed;
+  left: 16px; right: 16px; bottom: 24px;
+  z-index: 80;
+  max-width: 520px;
+  margin: 0 auto;
+  background: rgba(255,255,255,.97);
+  color: var(--pg-ink, #1e1b39);
+  border: 1px solid var(--pg-line, #e5e7eb);
+  border-left: 4px solid var(--indigo, #3730a3);
+  border-radius: 14px;
+  padding: 14px 40px 14px 18px;
+  box-shadow: 0 12px 30px rgba(15,23,42,.18), 0 2px 6px rgba(15,23,42,.06);
+  backdrop-filter: blur(10px);
+  animation: mdHintIn .25s ease-out;
+  cursor: pointer;
+}
+.md-hint-t { font-weight: 800; font-size: 14px; margin-bottom: 4px; }
+.md-hint-b { font-size: 13px; line-height: 1.55; color: var(--pg-mute, #5b6079); }
+.md-hint-x {
+  position: absolute; top: 6px; right: 8px;
+  background: transparent; border: 0;
+  font-size: 18px; line-height: 1; color: var(--pg-mute, #5b6079); cursor: pointer; padding: 4px 8px;
+}
+.md-first-hint.md-hint-out { animation: mdHintOut .28s ease-in forwards; }
+@keyframes mdHintIn { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+@keyframes mdHintOut { to { transform: translateY(20px); opacity: 0; } }
+@media (max-width: 640px) { .md-first-hint { left: 12px; right: 12px; bottom: 16px; } }

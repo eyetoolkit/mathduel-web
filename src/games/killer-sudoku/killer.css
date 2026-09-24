@@ -361,6 +361,13 @@
   aspect-ratio: 1.15;
   position: relative;
 }
+
+/* F-209: mobile keypad — bigger tap targets, looser spacing */
+@media (max-width: 640px) {
+  .k9-pad { gap: 10px; max-width: 100%; padding: 0 4px; }
+  .k9-padfoot { gap: 10px; }
+  .k9-pk { padding: 14px 8px; font-size: 1.2rem; min-width: 56px; }
+}
 /* 剩余计数角标：该数字还差几个；集齐 9 个整键置灰 */
 .k9-pk .pk-left {
   position: absolute; right: 6px; bottom: 3px;

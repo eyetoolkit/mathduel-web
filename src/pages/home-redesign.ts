@@ -12,6 +12,7 @@
  */
 import type { GameDef } from './home';
 import { wireLobbyChrome } from './lobby-chrome';
+import { getTodaysDones, getDailyStreak, getBadges } from '../games/cross-game';
 
 const SHOW_BETA = (import.meta.env.VITE_SHOW_BETA ?? '') === '1';
 
@@ -305,20 +306,51 @@ function sidebarHtml(): string {
 
 /* ───────── 每日挑战 + 周赛 ───────── */
 function duoHtml(): string {
+  // F-210: cross-game daily tracker (localStorage-driven, no longer mock)
+  const dones: string[] = [];
+  let doneCount = 0;
+  let streak = 0;
+  let badgeSummary = '';
+  try {
+    dones.push(...getTodaysDones());
+    doneCount = dones.length;
+    streak = getDailyStreak();
+    const unlocked = getBadges().filter((b) => b.unlocked);
+    if (unlocked.length > 0) {
+      badgeSummary = unlocked.slice(0, 4).map((b) => '<span class="badge-mini" title="' + b.name + ': ' + b.hint + '">' + b.emoji + '</span>').join(' ');
+    }
+  } catch (e) { /* private mode */ }
+  const totalShown = 4;
+  const pct = Math.min(100, Math.round((doneCount / totalShown) * 100));
+  const dailyGames = [
+    { id: '24-game', href: '/games/24-game/?daily=1', cvId: 'cv-24', name: '24 Game' },
+    { id: 'sudoku', href: '/games/sudoku/?daily=1', cvId: 'cv-sudoku', name: 'Sudoku 9x9' },
+    { id: 'sudoku-6x6', href: '/games/sudoku-6x6/?daily=1', cvId: 'cv-s6', name: 'Sudoku 6x6' },
+    { id: 'equation-pyramid', href: '/games/equation-pyramid/?daily=1', cvId: 'cv-pyr', name: 'Pyramid' },
+  ];
+  const tiles = dailyGames.map((g) => {
+    const done = dones.includes(g.id);
+    return '<a class="dtile' + (done ? ' done' : '') + '" href="' + g.href + '"><svg aria-hidden="true"><use href="#' + g.cvId + '"/></svg>' + g.name + (done ? '<span class="ok">✓</span>' : '') + '</a>';
+  }).join('');
+  const dailyMsg =
+    doneCount === 0
+      ? 'Try today\'s Daily — <b>same puzzle worldwide</b>. Unlock rank stars by completing 5 in a row.'
+      : doneCount < totalShown
+        ? '<b>' + doneCount + '</b> of ' + totalShown + ' done today — ' + (totalShown - doneCount) + ' left for rank stars.'
+        : '<b>All ' + totalShown + '</b> done today — streak extended to <b>' + streak + ' day' + (streak === 1 ? '' : 's') + '</b>!';
   return `
     <div class="panel panel-daily">
       <div class="panel-head">
         <span class="panel-title"><span class="cal">◷</span> Daily Challenge</span>
-        <span class="panel-meta"><span class="star">⭐ <b>1</b>/4</span><span>🔥 3-day streak</span></span>
+        <span class="panel-meta">
+          <span class="star">⭐ <b id="dDone">${doneCount}</b>/${totalShown}</span>
+          <span>🔥 ${streak}-day streak</span>
+          ${badgeSummary ? '<span class="badges-mini">' + badgeSummary + '</span>' : ''}
+        </span>
       </div>
-      <div class="daily-tiles">
-        <a class="dtile done" href="/games/24-game/?daily=1"><svg aria-hidden="true"><use href="#cv-24"/></svg>24 Game<span class="ok">✓</span></a>
-        <a class="dtile" href="/games/equation-pyramid/?daily=1"><svg aria-hidden="true"><use href="#cv-pyr"/></svg>Pyramid</a>
-        <a class="dtile" href="/games/sudoku/?daily=1"><svg aria-hidden="true"><use href="#cv-sudoku"/></svg>Sudoku 9×9</a>
-        <a class="dtile" href="/games/sudoku-6x6/?daily=1"><svg aria-hidden="true"><use href="#cv-s6"/></svg>Sudoku 6×6</a>
-      </div>
-      <div class="progress"><i id="pbar" style="width:25%"></i></div>
-      <p class="daily-msg">1 of 4 done today — keep going for rank stars · <span class="cd" id="cd">--:--:--</span> until the global reset</p>
+      <div class="daily-tiles">${tiles}</div>
+      <div class="progress"><i id="pbar" style="width:${pct}%"></i></div>
+      <p class="daily-msg">${dailyMsg} · <span class="cd" id="cd">--:--:--</span> until the global reset</p>
     </div>
 
     <div class="panel">
@@ -457,6 +489,25 @@ export function renderHomeV2(): void {
 
       <!-- 天梯 -->
       <section class="ladder wrap" aria-label="Rank ladder">${ladderHtml()}</section>
+
+      <!-- F-206 (c): Why MathDuel? brand story -->
+      <section class="why wrap" aria-label="Why MathDuel">
+        <div class="why-card">
+          <div class="why-eyebrow">WHY MATHDUEL</div>
+          <h2 class="why-title">Math is more fun when you can prove it.</h2>
+          <p class="why-lead">
+            Every game on this site ships with a <b>Daily Challenge</b> — the same puzzle for everyone, everywhere,
+            at the same Shanghai date. No login, no ads, no data mining.
+            Just open the page and you can play.
+          </p>
+          <div class="why-grid">
+            <div><b>🔒 Privacy-first</b><span>Anonymous UUID stored only in your browser. Clear cookies to reset.</span></div>
+            <div><b>🌏 Same puzzle worldwide</b><span>Shanghai-date seeded generation. Compare with anyone on Earth.</span></div>
+            <div><b>🪙 No streak rewards</b><span>The only prize is breaking your own yesterday. No notifications, no upsell.</span></div>
+            <div><b>⚡ Free forever</b><span>Static pages on Cloudflare, ~0 cost per visitor. No paywall, ever.</span></div>
+          </div>
+        </div>
+      </section>
 
       <!-- 特性 -->
       <section class="feats"><div class="wrap">${featsHtml()}</div></section>
