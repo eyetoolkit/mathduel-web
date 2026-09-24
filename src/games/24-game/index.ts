@@ -1196,6 +1196,12 @@ const comp = new Competition({
     comp.timeLimit = timeLimit;
     compEnterGame();
     closeLobby();
+    // F-103: 开局后把 "Waiting to start…" 切到活跃状态，避免误导
+    const cs = $('compStatus');
+    if (cs) {
+      cs.textContent = `● Live · Round ${round}/${maxRounds}`;
+      cs.setAttribute('data-live', '1');
+    }
   },
   onProgress: (p) => {
     comp.done = p.doneCount;
@@ -1254,6 +1260,18 @@ function openLobby(): void {
 }
 const closeLobby = () => lobby.classList.remove('show');
 
+/**
+ * F-102 — 满员时给 startBtn 加 .ready-pulse 类，便于 host 看出"现在可以开始了"。
+ * worker 不自动开局是产品设计（hub 冻结，本端不改 worker），所以 lobby 必须
+ * 在视觉上引导 host 自己点 Start。
+ */
+function highlightStartIfReady(): void {
+  const sb = $<HTMLButtonElement>('startBtn');
+  if (!sb) return;
+  const full = Object.keys(comp.players).length >= 2;
+  sb.classList.toggle('ready-pulse', !!full && !comp.started);
+}
+
 /** 邀请链接：打开站点并预填房间码（与「Copy Invite Link」完全同一个 URL） */
 function roomInviteUrl(): string {
   return location.origin + location.pathname + '?room=' + encodeURIComponent(comp.room || '');
@@ -1271,6 +1289,8 @@ function showRoomView(): void {
   $('roomCode')!.textContent = comp.room;
   renderRoomQr();
   renderRoomPlayers();
+  // F-102: 满员时高亮 startBtn，提示 host 当前可开打（worker 不自动开局）
+  highlightStartIfReady();
   // 大厅房间视图也挂一条聊天（等待开局时就能闲聊——服务端任何时刻都接受 chat）
   const rp = $('roomPlayers');
   if (rp && !$('lobbyChat')) {
@@ -1310,6 +1330,7 @@ function renderRoomPlayers(): void {
   const sb = $<HTMLButtonElement>('startBtn')!;
   sb.disabled = !(comp.isHost && n >= 2);
   sb.textContent = n < 2 ? '🚀 Start Competition (2+ players)' : '🚀 Start Competition';
+  highlightStartIfReady();
 }
 
 function escapeHtml(s: unknown): string {
@@ -1541,7 +1562,11 @@ function updateCompTimer(left: number): void {
     bar.classList.toggle('low', frac < 0.3);
   }
   const st = $('compStatus');
-  if (st) st.textContent = comp.spectator ? '👀 Spectating this round' : `Round timer ${secs}s`;
+  if (st) {
+    st.textContent = comp.spectator ? '👀 Spectating this round' : `Round timer ${secs}s`;
+    // F-103: 开局后保持 data-live=1，让 CSS 高亮（不与计时文字冲突）
+    if (comp.started) st.setAttribute('data-live', '1');
+  }
 }
 
 function compLeave(silent: boolean): void {
