@@ -8,11 +8,16 @@
  * 本模块负责三件小事：移动端 burger 抽屉、遮罩/Esc 关闭、侧栏收窄。
  * 幂等 —— 重复调用无副作用，但重复「绑定」会让 toggle 相互抵消。
  */
+import { initTheme } from '../theme';
+
 let wired = false;
 
 export function wireLobbyChrome(): void {
   if (wired) return;
   wired = true;
+
+  // 白天/夜晚主题切换：首页与各 lobby 共用此模块，一处绑定覆盖全站
+  initTheme();
 
   const burger = document.getElementById('burger');
   const overlay = document.getElementById('overlay');
