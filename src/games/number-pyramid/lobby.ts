@@ -37,44 +37,6 @@ const fmt = (sec: number): string => `${sec.toFixed(1)}s`;
 const esc = (s: unknown): string =>
   String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c] as string);
 
-/* ===================== Hero：装饰性小塔 =====================
-   用 SVG 画一个 5-level 三角塔，每层给一个示例数，传递"金字塔 sum"主题。 */
-function renderHeroPyr(): void {
-  const el = $('heroPyr');
-  if (!el) return;
-  // 位置/尺寸全部用百分比（相对容器），任何视口下金字塔都等比缩放。
-  // 旧版把 100×100 的坐标当 px 用，brick 全部坍缩在容器左上角 100×100 内。
-  const ROW_H = 100 / 6.5;  // 纵向 100 等分
-  const CELL_W = 100 / 5.5; // 横向 100 等分
-  const levels = 5;
-  const labels = ['120', '64', '56', '34', '30', '26', '14', '12', '', '', '', '', '', '', ''];
-  // 给顶 9 格标数字（given，paper 视觉），其余空
-  const givenSet = new Set([0, 1, 2, 3, 4, 5, 7, 8]);
-
-  let bricks = '';
-  let cum = 0;
-  for (let level = 0; level < levels; level++) {
-    const row = levels - level;
-    const w = row * CELL_W;
-    const startX = (100 - w) / 2 + CELL_W / 2;
-    for (let col = 0; col < row; col++) {
-      const cx = startX + col * CELL_W;
-      const cy = ROW_H * (level + 0.5);
-      const w2 = CELL_W * 0.85;
-      const h2 = ROW_H * 0.72;
-      const x = cx - w2 / 2;
-      const y = cy - h2 / 2;
-      const isGiven = givenSet.has(cum);
-      const val = labels[cum];
-      const cls = isGiven ? 'brick given' : 'brick';
-      const r1 = (n: number) => Math.round(n * 100) / 100;
-      bricks += `<div class="${cls}" style="left:${r1(x)}%;top:${r1(y)}%;width:${r1(w2)}%;height:${r1(h2)}%;">${val}</div>`;
-      cum++;
-    }
-  }
-  el.innerHTML = bricks;
-}
-
 /* ===================== 倒计时 ===================== */
 function startCountdown(): void {
   const el = $('boardCountdown');
@@ -187,7 +149,6 @@ function wireDifficulty(): void {
 
 function boot(): void {
   wireLobbyChrome();
-  renderHeroPyr();
   markDailyDone();
   startCountdown();
   renderBoard();

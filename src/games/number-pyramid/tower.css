@@ -309,18 +309,43 @@
 }
 
 /* ===== 自适应 ===== */
-@media (max-width: 560px) {
-  .p1-arena { padding: 12px 8px 28px; }
-  .p1-hud { grid-template-columns: 1fr; }
-  .p1-pad { max-width: 320px; }
-  .p1-pk { font-size: 1rem; padding: 10px 6px; }
-  .p1-pk.erase, .p1-pk.notes { font-size: 0.78rem; }
+@media (max-width: 640px) {
+  .p1-arena { padding: 6px 8px 320px; gap: 6px; }
+  .p1-hud { grid-template-columns: 1fr 1fr; gap: 6px; padding: 8px 12px; }
   .p1-tab { padding: 6px 9px; font-size: 0.78rem; }
+  /* 模式横幅与顶部 tab 重复，移动端隐藏以腾出整屏空间 */
+  #modeBanner { display: none; }
+  /* 高度选择器按钮：取消全局 .p1-pk 的方形 aspect-ratio，压成正常高度，
+     否则单个按钮 ~120px 高，把棋盘顶到屏幕下半部、与底部键盘重叠 */
+  .p1-diff .p1-pk { aspect-ratio: auto; padding: 8px 6px; }
+  /* 缩小金字塔，给底部键盘留出整屏空间，避免与固定键盘重叠 */
+  .p1-board-wrap { width: min(260px, 82vw); padding: 10px; }
+
+  /* 数字键盘：固定到屏幕底部、改为 5 列紧凑布局，整局游戏无需滚动即可触达 */
+  .p1-pad {
+    position: fixed; left: 0; right: 0; bottom: 0;
+    max-width: 480px; margin: 0 auto; width: 100%;
+    background: var(--a-ink);
+    border-top: 1px solid var(--a-line);
+    padding: 8px 10px calc(8px + env(safe-area-inset-bottom));
+    gap: 6px; z-index: 50;
+    grid-template-columns: repeat(5, 1fr);
+  }
+  .p1-padfoot { display: contents; }   /* 让 0 / Erase / Notes 并入 5 列网格 */
+  .p1-pk {
+    aspect-ratio: 1; font-size: 1.15rem; padding: 6px 2px;
+  }
+  .p1-pk.zero { aspect-ratio: 1; }
+  .p1-pk.erase, .p1-pk.notes { aspect-ratio: 1; font-size: 0.78rem; }
 }
 
 /* ===== 🔴 关键修复：author 的 display:flex 会覆盖 UA 的 [hidden]{display:none}，
    导致结算遮罩从页面加载起就全屏拦截点击（同 killer .k9-overlay 教训） ===== */
 .p1-overlay[hidden] { display: none; }
+
+/* 🔴 同类坑：.p1-opp 的 display:flex 也会吃掉 [hidden]，
+   使对手条在 solo / 未开局时仍占位显示（还是被覆盖在棋盘上方抢空间）。显式补回。 */
+.p1-opp[hidden] { display: none; }
 
 /* 结果横幅：空内容不占位；胜利用 ember 高亮 */
 .p1-result:empty { display: none; }
