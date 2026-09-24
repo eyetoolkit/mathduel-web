@@ -1883,4 +1883,16 @@ refreshTop();
     const badge = $('modeBadge');
     if (badge) badge.style.display = 'inline-flex';
   }
+
+  // 全局 Esc 关闭 overlay 弹窗（仅当 #overlay 当前是 .show 状态；聊天/输入框不抢 Esc）
+  document.addEventListener('keydown', (ev) => {
+    if (ev.key !== 'Escape') return;
+    const t = ev.target as HTMLElement | null;
+    if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || (t as HTMLElement).isContentEditable)) return;
+    const ov = $('overlay');
+    if (ov && ov.classList.contains('show')) {
+      ev.preventDefault();
+      ov.classList.remove('show');
+    }
+  });
 })();

@@ -140,6 +140,52 @@ const CV_SYMBOLS = `
     <text x="364" y="366" dominant-baseline="central" font-size="110" fill="#1E1B39">B</text>
   </g>
 </symbol>
+
+<symbol id="cv-numPyr" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#3730A3"/>
+  <!-- 5-row pyramid: row 1 has 1 cell, row 5 has 5 cells. We only render visible numbers and a hole. -->
+  <g fill="#FFFFFF">
+    <!-- Row 1 -->
+    <rect x="222" y="40"  width="68" height="68" rx="15"/>
+    <!-- Row 2 -->
+    <rect x="150" y="128" width="68" height="68" rx="15"/>
+    <rect x="294" y="128" width="68" height="68" rx="15"/>
+    <!-- Row 3 -->
+    <rect x="78"  y="216" width="68" height="68" rx="15"/>
+    <rect x="222" y="216" width="68" height="68" rx="15"/>
+    <rect x="366" y="216" width="68" height="68" rx="15"/>
+    <!-- Row 4 -->
+    <rect x="42"  y="304" width="68" height="68" rx="15"/>
+    <rect x="150" y="304" width="68" height="68" rx="15"/>
+    <rect x="294" y="304" width="68" height="68" rx="15"/>
+    <rect x="402" y="304" width="68" height="68" rx="15"/>
+    <!-- Row 5 -->
+    <rect x="6"   y="392" width="68" height="68" rx="15"/>
+    <rect x="114" y="392" width="68" height="68" rx="15"/>
+    <rect x="222" y="392" width="68" height="68" rx="15"/>
+    <rect x="330" y="392" width="68" height="68" rx="15"/>
+    <rect x="438" y="392" width="68" height="68" rx="15"/>
+  </g>
+  <!-- Hole (question) at row 3 center cell -->
+  <rect x="222" y="216" width="68" height="68" rx="15" fill="#F59E0B"/>
+  <g font-family="system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif" font-weight="800" text-anchor="middle">
+    <text x="256" y="78"  dominant-baseline="central" font-size="44" fill="#3730A3">7</text>
+    <text x="184" y="166" dominant-baseline="central" font-size="40" fill="#3730A3">3</text>
+    <text x="328" y="166" dominant-baseline="central" font-size="40" fill="#3730A3">4</text>
+    <text x="112" y="254" dominant-baseline="central" font-size="36" fill="#3730A3">2</text>
+    <text x="256" y="254" dominant-baseline="central" font-size="48" fill="#1E1B39">?</text>
+    <text x="400" y="254" dominant-baseline="central" font-size="36" fill="#3730A3">6</text>
+    <text x="76"  y="342" dominant-baseline="central" font-size="32" fill="#3730A3">1</text>
+    <text x="184" y="342" dominant-baseline="central" font-size="32" fill="#3730A3">5</text>
+    <text x="328" y="342" dominant-baseline="central" font-size="32" fill="#3730A3">8</text>
+    <text x="436" y="342" dominant-baseline="central" font-size="32" fill="#3730A3">2</text>
+    <text x="40"  y="430" dominant-baseline="central" font-size="28" fill="#3730A3">3</text>
+    <text x="148" y="430" dominant-baseline="central" font-size="28" fill="#3730A3">6</text>
+    <text x="256" y="430" dominant-baseline="central" font-size="28" fill="#3730A3">9</text>
+    <text x="364" y="430" dominant-baseline="central" font-size="28" fill="#3730A3">4</text>
+    <text x="472" y="430" dominant-baseline="central" font-size="28" fill="#3730A3">7</text>
+  </g>
+</symbol>
 `;
 
 /* ───────── 6 个游戏 + 详情（与 home.ts GAMES 对齐，封面用 SVG symbol id） ───────── */
@@ -158,6 +204,7 @@ const HOME_CARDS: HomeCard[] = [
   { href: '/games/killer-sudoku/lobby/',  cvId: 'cv-killer', name: 'Killer Sudoku',     tags: ['Solo', 'Advanced'],     live: true },
   { href: '/games/equation-pyramid/lobby/', cvId: 'cv-pyr',  name: 'Equation Pyramid',  tags: ['Solo', 'Daily'],        live: true },
   { href: '/games/bulls/lobby/',          cvId: 'cv-bulls',  name: 'Number Guess 1A2B', tags: ['1v1', 'PvP'],           live: true },
+  { href: '/games/number-pyramid/lobby/', cvId: 'cv-numPyr', name: 'Number Pyramid',    tags: ['Solo', 'Daily'],        live: true },
 ];
 
 /** 在 beta 环境里，beta 游戏也视为 live（无灰态） */
@@ -213,7 +260,7 @@ function sidebarHtml(): string {
     ${miniNavItem(false, '/games/sudoku/lobby/',         'cv-sudoku', 'Sudoku 9×9')}
     ${miniNavItem(false, '/games/sudoku-6x6/lobby/',     'cv-s6',     'Sudoku 6×6')}
     ${miniNavItem(false, '/games/killer-sudoku/lobby/',  'cv-killer', 'Killer Sudoku')}
-    ${miniNavItem(false, '/games/number-pyramid/lobby/', 'cv-pyr',    'Number Pyramid')}
+    ${miniNavItem(false, '/games/number-pyramid/lobby/', 'cv-numPyr','Number Pyramid')}
     ${miniNavItem(false, '/games/equation-pyramid/lobby/', 'cv-pyr',  'Equation Pyramid')}
     ${miniNavItem(false, '/games/bulls/lobby/',          'cv-bulls',  'Number Guess 1A2B')}
   `;
@@ -221,7 +268,7 @@ function sidebarHtml(): string {
   // 与各游戏页/lobby 页的静态壳保持同一份导航：
   // Home → Coin Shop（未上线灰态）→ All games · 7 → Help
   const coinShop = `
-    <span class="nav-item is-disabled" aria-disabled="true" style="opacity:.5;cursor:default" title="Coming soon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l2.5 2.5"/></svg><label style="cursor:inherit">Coin Shop 🪙</label></span>
+    <span class="nav-item is-disabled" aria-disabled="true" style="opacity:.5;cursor:default" title="Coming soon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M12 7v5l3 2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg><label style="cursor:inherit">Coin Shop<span class="pill-soon">soon</span></label></span>
   `;
 
   const helpGroup = `
@@ -250,7 +297,7 @@ function sidebarHtml(): string {
       ${helpGroup}
     </nav>
     <div class="nav-foot">
-      <span class="lang-pill"><b>EN</b> · 中文 · 日</span>
+      <span class="lang-pill" title="More languages coming soon"><b>EN</b></span>
       <span class="sb-copy">© 2026</span>
     </div>
   `;
@@ -331,12 +378,12 @@ function footerHtml(): string {
     <div class="wrap">
       <div class="sf-title">Explore the Duel family</div>
       <div class="sf-matrix">
-        <a class="sf-item" href="https://boardduel.com"><span class="pip" style="background:#2FC4C9"></span>BoardDuel · Chess & Card Games</a>
-        <a class="sf-item" href="https://mathduel.games"><span class="pip" style="background:#F59E0B"></span>MathDuel · Math Puzzle Games</a>
-        <a class="sf-item" href="https://memoryduel.com"><span class="pip" style="background:#4F46E5"></span>MemoryDuel · Knowledge Battles</a>
+        <a class="sf-item" href="https://boardduel.com"><span class="pip" style="background:#2FC4C9"></span>BoardDuel — Chess &amp; Card Games</a>
+        <a class="sf-item" href="https://mathduel.games"><span class="pip" style="background:#F59E0B"></span>MathDuel — Math Puzzle Games</a>
+        <a class="sf-item" href="https://memoryduel.com"><span class="pip" style="background:#4F46E5"></span>MemoryDuel — Knowledge Battles</a>
       </div>
       <div class="sf-links">
-        <a href="/about/">About</a><a href="/contact/">Contact</a><a href="/privacy/">Privacy</a><a href="/terms/">Terms</a><a href="/games/24-game/lobby/">All games</a>
+        <a href="/about/">About</a><a href="/contact/">Contact</a><a href="/privacy/">Privacy</a><a href="/terms/">Terms</a><a href="/">All games</a>
       </div>
       <div class="sf-copy">© 2026 MathDuel · Pure static · Privacy-first · Free to play</div>
     </div>
@@ -345,12 +392,13 @@ function footerHtml(): string {
 
 /* ───────── 顶部移动端顶栏 ───────── */
 function topbarHtml(): string {
+  // 顶栏不放 Log in 按钮：站点明确"No login, no identity"（见 Privacy / Contact 页），
+  // 上线推广时该按钮是死链只会引诱访客点击成为噪音，故移除。
   return `
     <button class="burger" id="burger" aria-label="Open navigation" aria-expanded="false">
       <svg viewBox="0 0 24 24" fill="none"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
     </button>
     <a class="logo" href="/">Math<b>Duel</b></a>
-    <a class="btn-login" href="#" style="flex:none;padding:8px 18px">Log in / Sign up</a>
   `;
 }
 

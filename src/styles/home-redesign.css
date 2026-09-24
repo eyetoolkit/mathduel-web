@@ -84,7 +84,7 @@ body.home-v2 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden
 .home-v2 .logo { font-family: var(--font-display); font-weight: 800; font-size: 1.3rem; line-height: 1; white-space: nowrap; color: var(--ink); }
 .home-v2 .logo b { color: var(--indigo); font-weight: 800; }
 .home-v2 .sb-collapse {
-  margin-left: auto; flex: none; width: 26px; height: 26px; border-radius: 8px;
+  margin-left: auto; flex: none; width: 44px; height: 44px; border-radius: 8px;
   border: 1px solid var(--line); background: #fff; color: var(--mute);
   font-size: .8rem; line-height: 1; display: grid; place-items: center;
 }
@@ -98,7 +98,7 @@ body.home-v2 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden
 }
 .home-v2 .btn-login:hover { background: var(--indigo-bright); }
 .home-v2 .sb-theme {
-  flex: none; width: 38px; border: 1px solid var(--line); background: #fff; border-radius: 11px;
+  flex: none; width: 44px; height: 44px; border: 1px solid var(--line); background: #fff; border-radius: 11px;
   display: grid; place-items: center; color: var(--mute);
 }
 .home-v2 .sb-theme:hover { color: var(--ink); }
@@ -106,7 +106,8 @@ body.home-v2 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden
 .home-v2 .sb-nav { flex: 1; overflow-y: auto; padding-top: 10px; }
 .home-v2 .sb-nav::-webkit-scrollbar { width: 0; }
 .home-v2 .nav-item {
-  display: flex; align-items: center; gap: 11px; padding: 9px 10px; border-radius: 10px;
+  display: flex; align-items: center; gap: 11px; padding: 11px 10px; border-radius: 10px;
+  min-height: 44px;
   color: #3B3F58; font-weight: 500; font-size: .92rem; white-space: nowrap;
   cursor: pointer;
 }
@@ -129,8 +130,8 @@ body.rail .sidebar .nav-item label,
 body.rail .sidebar .nav-group,
 body.rail .sidebar .lang-pill,
 body.rail .sidebar .sb-copy { display: none; }
-body.rail .sidebar .nav-item { justify-content: center; padding: 10px 0; }
-body.rail .sidebar .btn-login { flex: none; width: 38px; padding: 9px 0; }
+body.rail .sidebar .nav-item { justify-content: center; padding: 11px 0; min-height: 44px; }
+body.rail .sidebar .btn-login { flex: none; width: 44px; padding: 9px 0; min-height: 44px; }
 body.rail .main { margin-left: var(--sb-rail); }
 
 /* ============ 主区 ============ */
@@ -345,7 +346,7 @@ body.rail .main { margin-left: var(--sb-rail); }
     border-bottom: 1px solid var(--line); padding: 11px 18px;
   }
   body.home-v2 .burger {
-    width: 38px; height: 38px; border: 1px solid var(--line); background: #fff;
+    width: 44px; height: 44px; border: 1px solid var(--line); background: #fff;
     border-radius: 10px; display: grid; place-items: center;
   }
   body.home-v2 .burger svg { width: 18px; height: 18px; stroke: var(--ink); stroke-width: 2; stroke-linecap: round; }

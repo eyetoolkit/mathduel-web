@@ -93,15 +93,20 @@ async function renderBoard(): Promise<void> {
   if (!host) return;
   const d = shanghaiDateKey();
   try {
-    // 线上权威榜单：/api/daily24/leaderboard（无需 cookie，游客也能看 top）
-    const res = await fetch(`/api/daily24/leaderboard?d=${d}`, { credentials: 'include' });
+    // 线上权威榜单：worker 已注册的路由 /api/daily/<game>/rank
+    // （前端曾写 /api/daily24/leaderboard，worker 端没有该别名 → 改用统一端点）
+    // 注意：worker 端的 /api/daily/<game>/rank 是按"每局最快"排行
+    //   （entry: {uuid, nickname, duration, solutions}），而 lobby 历史上按
+    //   5 题合集 s/totalTime 展示。这里降级为 "Best-of-day" 单局最快语义。
+    const res = await fetch(`/api/daily/24-game/rank?d=${d}`, { credentials: 'include' });
     if (!res.ok) throw new Error('leaderboard_unavailable');
     const data = await res.json();
-    const entries: any[] = Array.isArray(data.top) ? data.top : [];
+    const entries: any[] = Array.isArray(data.entries) ? data.entries : [];
 
-    const scoreOf = (times: unknown, total: unknown): string => {
-      const solved = Array.isArray(times) ? times.filter((x) => x != null).length : 0;
-      return `${solved}/${DAILY_TOTAL} \u00b7 ${Number(total ?? 0).toFixed(1)}s`;
+    const scoreOf = (e: any): string => {
+      const dur = Number(e?.duration);
+      if (!Number.isFinite(dur) || dur <= 0) return '\u2014';
+      return `${dur.toFixed(1)}s`;
     };
 
     let html = '';
@@ -110,16 +115,16 @@ async function renderBoard(): Promise<void> {
     } else {
       html = entries
         .slice(0, 3)
-        .map((e, i) => rowHtml(String(e.rank ?? i + 1), e.nickname || 'Player', scoreOf(e.times, e.total), `r${i + 1}`))
+        .map((e, i) => rowHtml(String(i + 1), e.nickname || 'Player', scoreOf(e), `r${i + 1}`))
         .join('');
     }
 
     const me = data.me;
-    if (me && me.rank) {
-      html += rowHtml('you', 'You', scoreOf(me.times, me.total), 'me');
+    if (me && (me.rank || Number.isFinite(me.duration))) {
+      html += rowHtml('you', 'You', scoreOf(me), 'me');
     } else {
       const mine = localDailyResult();
-      if (mine) html += rowHtml('you', 'You', `${mine.solved}/${mine.total} \u00b7 ${mine.totalTime.toFixed(1)}s`, 'me');
+      if (mine) html += rowHtml('you', 'You', `${mine.totalTime.toFixed(1)}s`, 'me');
     }
     host.innerHTML = html;
   } catch {
