@@ -1,14 +1,20 @@
 /**
  * Number Pyramid 竞赛适配器（服务端权威版）
- * 服务端协议（worker game-room.js，gameType='number-pyramid'）：
- *   - np_new_game{round,maxRounds,levels,cells:[{i,num,owner}],timeLimit,players}
- *     · num 有值 = 线索砖；null = 空格（上格 = 下层相邻两格之和）
- *   - 客户端 {type:'np_place', i, value} → 服务端校验 solution[i]===value
- *   - np_placed{i,value,correct,player,playerIndex,scores}（全员广播）
- *   - np_round_over{winner,winnerName,solution,players} / np_timeout{solution,players}
- *   - 终局 game_over{ranking,elo} 由外壳统一处理
+ *
+ * 双协议：
+ * A. CF DO（gameType='number-pyramid'）：
+ *    - np_new_game{round,maxRounds,levels,cells:[{i,num,owner}],timeLimit,players}
+ *    - 客户端 {type:'np_place', i, value} → 服务端逐格校验
+ *    - np_placed/np_round_over/np_timeout 回显
+ *
+ * B. SV 中继（gameType='number-pyramid' 经 mdcomp）：
+ *    - new_round{hasPuzzle:false,round,...} → 房主本地 generateTower(5) → set_puzzle
+ *    - puzzle{levels,cells[]}（不包含 solution）广播
+ *    - 客户端本地校验「上格 = 下层两格之和」 + 全部匹配 solution → shell.relaySubmit()
+ *    - 终局 race_over 由 SV 广播
  */
 import type { MpAdapter, RoundCtx, MpShell } from '../mp-client';
+import { generateTower } from '../../number-pyramid/engine';
 
 export interface NumberPyramidAdapterOpts {
   label: string;
@@ -22,12 +28,31 @@ interface PyramidCell { i: number; num: number | null; owner: 0 | 1 | 2 }
 
 const myName = () => (typeof localStorage !== 'undefined' ? localStorage.getItem('mp_name') || '' : '');
 
+/* SV 中继：校验整塔是否填满且每砖 = 下层两砖之和。
+   与 number-pyramid 引擎同款规则（生成塔时使用），用前缀和计算下标。 */
+function checkNumpyrComplete(grid: number[], sol: number[], lv: number): boolean {
+  if (grid.length !== sol.length) return false;
+  for (let i = 0; i < grid.length; i++) if (!grid[i] || grid[i] !== sol[i]) return false;
+  // 算式一致性
+  const idxAt = (level: number, col: number) => { let c = 0; for (let l = 0; l < level; l++) c += l + 1; return c + col; };
+  for (let level = lv - 2; level >= 0; level--) {
+    for (let col = 0; col <= level; col++) {
+      const a = grid[idxAt(level + 1, col)];
+      const b = grid[idxAt(level + 1, col + 1)];
+      const top = grid[idxAt(level, col)];
+      if (top !== a + b) return false;
+    }
+  }
+  return true;
+}
+
 export function createNumberPyramidAdapter(opts: NumberPyramidAdapterOpts): MpAdapter {
   const height = opts.height || 5;
   let cells: PyramidCell[] = [];
   let levels = height;
   let inputs: Record<number, HTMLInputElement> = {};
   let locked: Record<number, number> = {};
+  let solution: number[] = [];      // SV 中继：完整解（供本地校验）
 
 
   const render = (boardEl: HTMLElement, shell: MpShell) => {
@@ -61,12 +86,27 @@ export function createNumberPyramidAdapter(opts: NumberPyramidAdapterOpts): MpAd
           inp.placeholder = '?';
           inp.style.cssText = 'width:100%;height:100%;border:none;background:transparent;outline:none;text-align:center;font-weight:800;font-size:18px;color:#1A1B2E;-moz-appearance:textfield';
           inp.addEventListener('keydown', (e) => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur(); });
-          inp.addEventListener('change', () => {
-            const v = parseInt(inp.value, 10);
-            if (Number.isFinite(v) && v >= 1 && v <= 999) {
-              shell.sendAction({ type: 'np_place', i: cell.i, value: v });
+inp.addEventListener('change', () => {
+          const v = parseInt(inp.value, 10);
+          if (!Number.isFinite(v) || v < 1 || v > 999) return;
+          if (shell.relay) {
+            /* SV 中继：本地校验（若所有空格都填且全部匹配 solution → 立即 relaySubmit） */
+            const grid = new Array(solution.length).fill(0);
+            for (const c of cells) if (c.num != null) grid[c.i] = c.num;
+            grid[cell.i] = v;
+            if (checkNumpyrComplete(grid, solution, levels)) {
+              shell.relaySubmit();
+              // 把所有剩余空格填满（提示已收卷）
+              for (const c of cells) {
+                if (c.num == null) { c.num = solution[c.i]; locked[c.i] = solution[c.i]; }
+              }
+              const board = shell.boardEl;
+              if (board) render(board, shell);
             }
-          });
+            return;
+          }
+          shell.sendAction({ type: 'np_place', i: cell.i, value: v });
+        });
           inputs[cell.i] = inp;
           tile.appendChild(inp);
         }
@@ -110,15 +150,34 @@ export function createNumberPyramidAdapter(opts: NumberPyramidAdapterOpts): MpAd
       cells = sol.map((v, i) => ({ i, num: holeSet.has(i) ? null : v, owner: holeSet.has(i) ? 1 : 0 }));
       return { levels: height, cells };
     },
+    /* SV 中继出题：复用前端真实引擎 generateTower(5) */
+    makeRacePuzzle(_round: number) {
+      const tower = generateTower(height, Math.random);
+      solution = tower.solution.slice();
+      levels = tower.levels;
+      locked = {};
+      const outCells = tower.puzzle.map((v, i) => ({ i, num: v > 0 ? v : null, owner: 0 }));
+      return { levels: tower.levels, cells: outCells, _solution: solution };
+    },
     renderRound(payload: any, _ctx: RoundCtx, boardEl: HTMLElement, shell: MpShell) {
+      if (payload && payload.waiting) {
+        boardEl.innerHTML = '<p style="color:#6B7280;text-align:center;padding:40px 0">Host is generating puzzle…</p>';
+        return;
+      }
       if (payload && Array.isArray(payload.cells)) {
         levels = payload.levels || height;
         locked = {};
         cells = payload.cells.map((c: any) => ({ i: Number(c.i), num: c.num == null ? null : Number(c.num), owner: (c.owner || 0) as 0 | 1 | 2 }));
       } else if (!payload || !Array.isArray(payload.cells)) {
-        // 没有题目数据（异常）→ 空态
         boardEl.innerHTML = '<p style="color:#6B7280;text-align:center;padding:40px 0">Waiting for the server to deal…</p>';
         return;
+      }
+      // SV 中继：solution 仅来自房主本地的 _solution 字段；非房主拿不到（payload 上报前被剥除）
+      if (payload && Array.isArray(payload._solution)) {
+        solution = payload._solution.slice();
+      } else if (!shell.relay) {
+        // DO 路径不缓存 solution
+        solution = [];
       }
       render(boardEl, shell);
     },

@@ -82,6 +82,13 @@ export interface MpAdapter {
   onMessage(msg: any, shell: MpShell): boolean;
   /** 构造一个 DEMO 题目（本地预览用，不依赖服务端） */
   makeDemoPuzzle(round: number): any;
+  /**
+   * SV 竞速中继出题（可选）：
+   * 走硅谷服务器时，服务端不持引擎，由房主用本地引擎生成题目 → set_puzzle 上报 →
+   * 服务端原样广播给同房。不实现此方法的游戏无法走 SV 中继（只能继续用 CF DO）。
+   * 注意：payload 不得包含答案（solution），否则对手可直接抄答案。
+   */
+  makeRacePuzzle?(round: number): any;
   /** DEMO 下一轮题目时由外壳调用（可选，默认复用 renderRound） */
   demoStart?(shell: MpShell): void;
   /** 清理（切走模式时调用，可选） */
@@ -230,6 +237,10 @@ export class MpShell {
   myTime = 0;
   spectator = false;
   spectatorCount = 0;
+  /** SV 竞速中继模式：new_round{hasPuzzle:false} 时置位（房主出题上传 / 全员本地判定） */
+  relay = false;
+  /** 本回合是否已交卷（中继模式防重复提交） */
+  private relayDone = false;
 
   private players: Record<string, { score: number; avatar?: string | null; nickname?: string | null }> = {};
   private ws: WebSocket | null = null;
@@ -689,12 +700,79 @@ export class MpShell {
     this.maxRounds = d.maxRounds || 5;
     this.timeLimit = d.timeLimit || 30;
     if (d.players) this.players = this.absorbPlayers(d.players);
+    /* SV 中继模式：new_round{hasPuzzle:false} 等房主出题；puzzle{...} 由服务端广播已出的题目
+       两路必须分别处理：① 房主出题 → set_puzzle 上报；② 全员收到 puzzle → renderRound */
+    if (d.type === 'new_round' && d.hasPuzzle === false) {
+      this.relay = true;
+      this.relayDone = false;
+      const ctx: RoundCtx = { round: this.round, maxRounds: this.maxRounds, timeLimit: this.timeLimit, players: d.players || [], isHost: this.isHost };
+      this.cbRound = ctx;
+      this.cb.onRoundStart?.(ctx);
+      // 房主出题 → 上报服务端；非房主 → 占位等 puzzle 消息
+      if (this.isHost) this.sendHostPuzzle();
+      else this.adapter.renderRound({ waiting: true } as any, ctx, this.boardEl, this);
+      this.renderProgress();
+      this.renderSpecBar();
+      return;
+    }
+    if (d.type === 'new_round') {
+      // DO 服务端推的题（如 24 点 cards 自带、bulls 自带）—— 走原逻辑
+      this.relay = false;
+    }
+    if (d.type === 'puzzle') {
+      this.relay = true;
+      const ctx: RoundCtx = { round: this.round, maxRounds: this.maxRounds, timeLimit: this.timeLimit, players: d.players || [], isHost: this.isHost };
+      this.cbRound = ctx;
+      this.cb.onRoundStart?.(ctx);
+      this.adapter.renderRound(this.extractPayload(d), ctx, this.boardEl, this);
+      this.renderProgress();
+      this.renderSpecBar();
+      return;
+    }
     const ctx: RoundCtx = { round: this.round, maxRounds: this.maxRounds, timeLimit: this.timeLimit, players: d.players || [], isHost: this.isHost };
     this.cbRound = ctx;
     this.cb.onRoundStart?.(ctx);
     this.adapter.renderRound(this.extractPayload(d), ctx, this.boardEl, this);
     this.renderProgress();
     this.renderSpecBar();
+  }
+
+  /** 房主本地出题 → 上报 set_puzzle（仅 relay 模式）
+   * 重要：上报前剥除 _solution（仅房主本地保留）；服务端收到的 payload 不会泄漏答案 */
+  private sendHostPuzzle(): void {
+    const fn = this.adapter.makeRacePuzzle;
+    if (!fn) {
+      this.lobbyErr('该游戏暂未实现 SV 出题（缺少 makeRacePuzzle）');
+      return;
+    }
+    try {
+      const full = fn(this.round);
+      const safe = (full && typeof full === 'object') ? { ...full } : full;
+      // 房主自己持有的答案字段：
+      if (safe && typeof safe === 'object') delete safe._solution;
+      // 但房主本地仍要拿 solution 渲染校验：发完再渲染自己
+      this.send({ type: 'set_puzzle', payload: safe });
+      // 房主：自行渲染（含 solution）
+      if (full && typeof full === 'object') {
+        const ctx: RoundCtx = { round: this.round, maxRounds: this.maxRounds, timeLimit: this.timeLimit, players: this.getPlayerList(), isHost: true };
+        this.cbRound = ctx;
+        this.cb.onRoundStart?.(ctx);
+        this.adapter.renderRound(full, ctx, this.boardEl, this);
+      }
+    } catch (e: any) {
+      this.lobbyErr('出题失败: ' + (e?.message || 'unknown'));
+    }
+  }
+
+  private getPlayerList(): any[] {
+    return Object.keys(this.players).map((n) => ({ name: n, score: this.players[n].score }));
+  }
+
+  /** relay 模式本地完成判定（adapter 调用）→ 立即 send submit_answer */
+  relaySubmit(): void {
+    if (!this.relay || this.relayDone) return;
+    this.relayDone = true;
+    this.send({ type: 'submit_answer', result: true });
   }
 
   /** 从回合消息抽出给 adapter 的 payload（不同游戏字段不同，整包交给 adapter 即可） */

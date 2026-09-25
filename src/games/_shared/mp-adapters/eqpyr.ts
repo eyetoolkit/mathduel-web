@@ -1,10 +1,17 @@
 /**
  * Equation Pyramid 竞赛适配器（服务端 gameType='eqpyr'）
- * 协议（worker/.../durable/game-room.js）：
- *   - 服务端推送 eqpyr_new_game{round,maxRounds,target,cells:[{id,num,op}],solutionsCount,timeLimit,players}
- *   - 客户端发送 {type:'eqpyr_solve', equation:[ids] | 'A,B,C'}（3 个互异 id）
- *   - 服务端推送 eqpyr_solved{player,solver,players} / eqpyr_timeout{target,cells,players}
- *   - 终局 game_over{ranking,elo}（外壳原生处理）
+ *
+ * 两条协议路径：
+ * A. CF DO（room.gameType='equation-pyramid'）：
+ *    - 服务端推送 eqpyr_new_game{round,maxRounds,target,cells:[{id,num,op}],solutionsCount,timeLimit,players}
+ *    - 客户端发送 {type:'eqpyr_solve', equation:[ids] | 'A,B,C'}（3 个互异 id）
+ *    - 服务端推送 eqpyr_solved{player,solver,players} / eqpyr_timeout{target,cells,players}
+ *
+ * B. SV 中继（room.gameType='equation-pyramid' 走 mdcomp）：
+ *    - 服务端推送 new_round{hasPuzzle:false,round,...} —— 房主本地引擎出题后 set_puzzle
+ *    - 服务端推送 puzzle{gameType:'equation-pyramid',payload:{target,cells,solutionsCount}}
+ *    - 客户端本地解出 → shell.relaySubmit()（=submit_answer{result:true}，SV 仅计时不校验）
+ *    - 终局 race_over 由 SV 广播，外壳统一处理
  */
 import type { MpAdapter, RoundCtx, MpShell } from '../mp-client';
 import { generateBoard } from '../../equation-pyramid/engine';
@@ -69,6 +76,26 @@ export function createEqpyrAdapter(opts: EqpyrAdapterOpts): MpAdapter {
     submitBtn.disabled = true;
     submitBtn.addEventListener('click', () => {
       if (picks.length !== 3) return;
+      /* SV 中继模式：本地校验三格表达式是否等于 target（用 evaluate），等于就 relaySubmit
+         否则保留原 DO 协议发送 eqpyr_solve 让服务端验证。 */
+      const triple = picks.map((id) => {
+        const c = cells.find((x) => x.id === id)!;
+        return { num: c.num, op: c.op };
+      });
+      const ok = (() => {
+        if (!shell.relay) return null;          // DO 路径不本地判
+        // 符号映射：board.op 可能是 + - × ÷ 字符串
+        const v = (s: string): string => s === '×' ? '*' : s === '÷' ? '/' : s;
+        const expr = `${triple[0].num}${v(triple[0].op)}${triple[1].num}${v(triple[1].op)}${triple[2].num}`;
+        let r: number;
+        try { r = Math.round(eval(expr)); } catch { return false; }
+        return r === target;
+      })();
+      if (ok === true) {
+        shell.relaySubmit();
+        submitBtn.disabled = true;
+        return;
+      }
       shell.sendAction({ type: 'eqpyr_solve', equation: picks.slice() });
       submitBtn.disabled = true;
     });
@@ -123,6 +150,15 @@ export function createEqpyrAdapter(opts: EqpyrAdapterOpts): MpAdapter {
     timeLimit: opts.timeLimit,
     raceMax: opts.raceMax,
     makeDemoPuzzle(_round: number) {
+      const board = generateBoard(opts.tier || 'standard', Math.random);
+      return {
+        target: board.target,
+        cells: board.cells.map((c, i) => ({ id: NAMES[i], num: c.num, op: c.op })),
+        solutionsCount: board.solutions.length,
+      };
+    },
+    /* SV 中继出题：复用前端引擎，**只导出题目，不带 solution/solutions 数组**（防对手直接抄答案） */
+    makeRacePuzzle(_round: number) {
       const board = generateBoard(opts.tier || 'standard', Math.random);
       return {
         target: board.target,
