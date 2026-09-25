@@ -162,7 +162,7 @@ const SHELL_CSS = `
 .mp-tierflash{margin-top:10px;font-weight:700;color:#B45309}
 .mp-tierflash.demoted{color:#4F46E5}
 /* ---- Lobby modal ---- */
-.mp-lobby{position:fixed;inset:0;background:rgba(17,24,39,.5);display:none;align-items:center;justify-content:center;z-index:85;padding:20px}
+.mp-lobby{position:fixed;inset:0;background:rgba(17,24,39,.5);display:none;align-items:center;justify-content:center;z-index:85;padding:20px;overflow:auto}
 .mp-lobby.show{display:flex}
 .mp-lobby .box{background:#FFFFFF;border:1px solid #E5E7EB;border-radius:18px;padding:26px;max-width:440px;width:100%}
 .mp-lobby h2{margin:0 0 4px;font-size:22px}
