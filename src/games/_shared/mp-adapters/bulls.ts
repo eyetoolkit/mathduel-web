@@ -46,8 +46,8 @@ export function createBullsAdapter(opts: BullsAdapterOpts): MpAdapter {
 
     if (currentPhase === 'set_secret') {
       const title = document.createElement('div');
-      title.style.cssText = 'font-size:14px;color:#9fb1c6';
-      title.innerHTML = readySet.length ? `<b style="color:#F59E0B">Waiting…</b> ${readySet.length}/2 ready` : '<b style="color:#F59E0B">Set your 4-digit secret</b> (1-9, no repeats)';
+      title.style.cssText = 'font-size:14px;color:#6B7280';
+      title.innerHTML = readySet.length ? `<b style="color:#B45309">Waiting…</b> ${readySet.length}/2 ready` : '<b style="color:#B45309">Set your 4-digit secret</b> (1-9, no repeats)';
       wrap.appendChild(title);
 
       const input = document.createElement('input');
@@ -55,7 +55,7 @@ export function createBullsAdapter(opts: BullsAdapterOpts): MpAdapter {
       input.inputMode = 'numeric';
       input.maxLength = 4;
       input.value = mySecret;
-      input.style.cssText = 'width:160px;height:48px;background:#0d131c;border:2px solid #F59E0B;border-radius:10px;color:#F59E0B;font-size:28px;font-weight:800;letter-spacing:14px;text-align:center;font-family:inherit';
+      input.style.cssText = 'width:160px;height:48px;background:#F9FAFB;border:2px solid #F59E0B;border-radius:10px;color:#B45309;font-size:28px;font-weight:800;letter-spacing:14px;text-align:center;font-family:inherit';
       input.addEventListener('input', () => {
         mySecret = (input.value || '').replace(/\D/g, '').slice(0, 4);
         input.value = mySecret;
@@ -67,7 +67,7 @@ export function createBullsAdapter(opts: BullsAdapterOpts): MpAdapter {
       wrap.appendChild(input);
 
       const errEl = document.createElement('div');
-      errEl.style.cssText = 'min-height:18px;font-size:12px;color:#ff9b9b';
+      errEl.style.cssText = 'min-height:18px;font-size:12px;color:#DC2626';
       wrap.appendChild(errEl);
 
       const lockBtn = document.createElement('button');
@@ -84,13 +84,13 @@ export function createBullsAdapter(opts: BullsAdapterOpts): MpAdapter {
       wrap.appendChild(lockBtn);
 
       const tip = document.createElement('p');
-      tip.style.cssText = 'color:#7f93a8;font-size:12px;margin:4px 0 0';
+      tip.style.cssText = 'color:#9CA3AF;font-size:12px;margin:4px 0 0';
       tip.innerHTML = `Both players lock in to start guessing. You have ${Math.round((shell as any).timeLimit || 30)}s.`;
       wrap.appendChild(tip);
     } else if (currentPhase === 'guess') {
       const header = document.createElement('div');
-      header.style.cssText = 'display:flex;justify-content:space-between;width:100%;font-size:13px;color:#9fb1c6';
-      const mine = myName && turnName === myName ? '<b style="color:#F59E0B">Your turn</b>' : `Waiting · ${turnName || '—'} guessing`;
+      header.style.cssText = 'display:flex;justify-content:space-between;width:100%;font-size:13px;color:#6B7280';
+      const mine = myName && turnName === myName ? '<b style="color:#B45309">Your turn</b>' : `Waiting · ${turnName || '—'} guessing`;
       header.innerHTML = `<span>${mine}</span><span>Score: ${Object.entries(scores).map(([n, s]) => `${n} ${s}`).join(' · ') || '—'}</span>`;
       wrap.appendChild(header);
 
@@ -100,7 +100,7 @@ export function createBullsAdapter(opts: BullsAdapterOpts): MpAdapter {
       input.maxLength = 4;
       input.value = myGuess;
       input.disabled = !myName || turnName !== myName;
-      input.style.cssText = 'width:160px;height:48px;background:#0d131c;border:2px solid ' + (turnName === myName ? '#F59E0B' : '#2a3342') + ';border-radius:10px;color:#F59E0B;font-size:28px;font-weight:800;letter-spacing:14px;text-align:center;font-family:inherit';
+      input.style.cssText = 'width:160px;height:48px;background:#F9FAFB;border:2px solid ' + (turnName === myName ? '#F59E0B' : '#E5E7EB') + ';border-radius:10px;color:#B45309;font-size:28px;font-weight:800;letter-spacing:14px;text-align:center;font-family:inherit';
       input.addEventListener('input', () => {
         myGuess = (input.value || '').replace(/\D/g, '').slice(0, 4);
         input.value = myGuess;
@@ -112,7 +112,7 @@ export function createBullsAdapter(opts: BullsAdapterOpts): MpAdapter {
       wrap.appendChild(input);
 
       const errEl = document.createElement('div');
-      errEl.style.cssText = 'min-height:18px;font-size:12px;color:#ff9b9b';
+      errEl.style.cssText = 'min-height:18px;font-size:12px;color:#DC2626';
       if (lastGuessErr) errEl.textContent = lastGuessErr;
       wrap.appendChild(errEl);
 
@@ -137,9 +137,9 @@ export function createBullsAdapter(opts: BullsAdapterOpts): MpAdapter {
         hist.style.cssText = 'width:100%;margin-top:6px;display:flex;flex-direction:column;gap:4px;max-height:180px;overflow:auto';
         for (const h of history.slice(-8).reverse()) {
           const row = document.createElement('div');
-          row.style.cssText = 'display:flex;justify-content:space-between;align-items:center;background:#0d131c;border:1px solid #1a2230;border-radius:8px;padding:6px 10px;font-size:13px';
-          const color = h.guesser === myName ? '#F59E0B' : '#9fb1c6';
-          row.innerHTML = `<span style="color:${color}">${escapeHtml(h.guesser)} <b style="letter-spacing:4px">${escapeHtml(h.guess)}</b></span><span><b style="color:#7fe0a0">${h.a}A</b> <span style="color:#9fb1c6">${h.b}B</span></span>`;
+          row.style.cssText = 'display:flex;justify-content:space-between;align-items:center;background:#F9FAFB;border:1px solid #E5E7EB;border-radius:8px;padding:6px 10px;font-size:13px';
+          const color = h.guesser === myName ? '#F59E0B' : '#6B7280';
+          row.innerHTML = `<span style="color:${color}">${escapeHtml(h.guesser)} <b style="letter-spacing:4px">${escapeHtml(h.guess)}</b></span><span><b style="color:#16A34A">${h.a}A</b> <span style="color:#6B7280">${h.b}B</span></span>`;
           hist.appendChild(row);
         }
         wrap.appendChild(hist);
@@ -147,18 +147,18 @@ export function createBullsAdapter(opts: BullsAdapterOpts): MpAdapter {
     } else {
       // round_over
       const head = document.createElement('div');
-      head.style.cssText = 'font-size:14px;color:#9fb1c6;text-align:center';
-      head.innerHTML = lastRoundWinner === myName ? '<b style="color:#7fe0a0">🏆 You cracked it!</b>' : (lastRoundWinner ? `<b>${escapeHtml(lastRoundWinner)}</b> cracked it` : '<b>Round over</b>');
+      head.style.cssText = 'font-size:14px;color:#6B7280;text-align:center';
+      head.innerHTML = lastRoundWinner === myName ? '<b style="color:#16A34A">🏆 You cracked it!</b>' : (lastRoundWinner ? `<b>${escapeHtml(lastRoundWinner)}</b> cracked it` : '<b>Round over</b>');
       wrap.appendChild(head);
       const reason = document.createElement('div');
-      reason.style.cssText = 'font-size:12px;color:#7f93a8';
+      reason.style.cssText = 'font-size:12px;color:#9CA3AF';
       reason.textContent = lastRoundReason === 'cracked' ? 'Code broken — next round in 3s' : 'Time up — next round in 3s';
       wrap.appendChild(reason);
 
       if (oppSecret || mySecret) {
         const reveal = document.createElement('div');
         reveal.style.cssText = 'display:flex;gap:14px;margin-top:6px;font-size:13px';
-        reveal.innerHTML = `<span>Your code: <b style="color:#F59E0B;letter-spacing:4px">${escapeHtml(mySecret || '—')}</b></span><span>Opponent: <b style="color:#9fb1c6;letter-spacing:4px">${escapeHtml(oppSecret || '—')}</b></span>`;
+        reveal.innerHTML = `<span>Your code: <b style="color:#B45309;letter-spacing:4px">${escapeHtml(mySecret || '—')}</b></span><span>Opponent: <b style="color:#6B7280;letter-spacing:4px">${escapeHtml(oppSecret || '—')}</b></span>`;
         wrap.appendChild(reveal);
       }
     }

@@ -25,7 +25,7 @@ export function createEqpyrAdapter(opts: EqpyrAdapterOpts): MpAdapter {
   let myName = '';
 
   const render = (boardEl: HTMLElement, shell: MpShell) => {
-    if (!last) { boardEl.innerHTML = '<p style="color:#9fb1c6">Waiting for puzzle…</p>'; return; }
+    if (!last) { boardEl.innerHTML = '<p style="color:#6B7280">Waiting for puzzle…</p>'; return; }
     const { target, cells, solutionsCount } = last;
     picks = [];
     boardEl.innerHTML = '';
@@ -33,9 +33,9 @@ export function createEqpyrAdapter(opts: EqpyrAdapterOpts): MpAdapter {
     wrap.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:14px';
 
     const top = document.createElement('div');
-    top.style.cssText = 'display:flex;align-items:center;gap:12px;font-size:13px;color:#9fb1c6';
-    top.innerHTML = `<span style="font-size:12px;letter-spacing:.5px;text-transform:uppercase">Target</span><b style="font-size:30px;color:#F59E0B;letter-spacing:1px">${target}</b>${
-      solutionsCount != null ? `<span style="margin-left:8px;font-size:12px;color:#7f93a8">· ${solutionsCount} solution${solutionsCount === 1 ? '' : 's'}</span>` : ''
+    top.style.cssText = 'display:flex;align-items:center;gap:12px;font-size:13px;color:#6B7280';
+    top.innerHTML = `<span style="font-size:12px;letter-spacing:.5px;text-transform:uppercase">Target</span><b style="font-size:30px;color:#B45309;letter-spacing:1px">${target}</b>${
+      solutionsCount != null ? `<span style="margin-left:8px;font-size:12px;color:#9CA3AF">· ${solutionsCount} solution${solutionsCount === 1 ? '' : 's'}</span>` : ''
     }`;
     wrap.appendChild(top);
 
@@ -47,8 +47,8 @@ export function createEqpyrAdapter(opts: EqpyrAdapterOpts): MpAdapter {
       const btn = document.createElement('button');
       btn.type = 'button';
       btn.dataset.id = id;
-      btn.style.cssText = 'width:64px;height:64px;border-radius:10px;background:#10161f;border:1px solid #2a3342;color:#e8edf4;font-size:18px;font-weight:700;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;transition:background .15s,border-color .15s,transform .1s';
-      btn.innerHTML = `<span style="font-size:20px;line-height:1">${cell.num}</span><span style="font-size:11px;color:#7f93a8;line-height:1">${cell.op || '·'}</span>`;
+      btn.style.cssText = 'width:64px;height:64px;border-radius:10px;background:#FFFFFF;border:1px solid #E5E7EB;color:#1A1B2E;font-size:18px;font-weight:700;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;transition:background .15s,border-color .15s,transform .1s';
+      btn.innerHTML = `<span style="font-size:20px;line-height:1">${cell.num}</span><span style="font-size:11px;color:#9CA3AF;line-height:1">${cell.op || '·'}</span>`;
       btn.addEventListener('click', () => onPick(id));
       grid.appendChild(btn);
     }
@@ -56,7 +56,7 @@ export function createEqpyrAdapter(opts: EqpyrAdapterOpts): MpAdapter {
 
     const expr = document.createElement('div');
     expr.id = 'mpEqpyrExpr';
-    expr.style.cssText = 'min-height:24px;font-size:14px;color:#9fb1c6';
+    expr.style.cssText = 'min-height:24px;font-size:14px;color:#6B7280';
     expr.textContent = 'Pick 3 cells to form aᵒᵖ bᵒᵖ c = target';
     wrap.appendChild(expr);
 
@@ -75,7 +75,7 @@ export function createEqpyrAdapter(opts: EqpyrAdapterOpts): MpAdapter {
     const clearBtn = document.createElement('button');
     clearBtn.type = 'button';
     clearBtn.textContent = 'Clear';
-    clearBtn.style.cssText = 'background:#1b2330;color:#e8edf4;border:1px solid #2a3342;border-radius:9px;padding:9px 14px;font-weight:600;cursor:pointer;font-size:13px';
+    clearBtn.style.cssText = 'background:#F3F4F6;color:#1A1B2E;border:1px solid #E5E7EB;border-radius:9px;padding:9px 14px;font-weight:600;cursor:pointer;font-size:13px';
     clearBtn.addEventListener('click', () => { picks = []; refresh(); });
     actions.appendChild(submitBtn);
     actions.appendChild(clearBtn);
@@ -94,8 +94,8 @@ export function createEqpyrAdapter(opts: EqpyrAdapterOpts): MpAdapter {
       const buttons = grid.querySelectorAll<HTMLButtonElement>('button[data-id]');
       buttons.forEach((b) => {
         const i = picks.indexOf(b.dataset.id || '');
-        b.style.background = i >= 0 ? '#3a2f12' : '#10161f';
-        b.style.borderColor = i >= 0 ? '#F59E0B' : '#2a3342';
+        b.style.background = i >= 0 ? '#FEF3C7' : '#FFFFFF';
+        b.style.borderColor = i >= 0 ? '#F59E0B' : '#E5E7EB';
         b.style.transform = i >= 0 ? 'translateY(-1px)' : 'none';
       });
       const exprEl = boardEl.querySelector('#mpEqpyrExpr') as HTMLElement;
@@ -106,7 +106,7 @@ export function createEqpyrAdapter(opts: EqpyrAdapterOpts): MpAdapter {
             const c = cells.find((x) => x.id === id)!;
             return `${c.num}`;
           });
-          exprEl.innerHTML = `Selected: <b style="color:#F59E0B">${segs.join(' · ')}</b>`;
+          exprEl.innerHTML = `Selected: <b style="color:#B45309">${segs.join(' · ')}</b>`;
         }
       }
       submitBtn.disabled = picks.length !== 3;

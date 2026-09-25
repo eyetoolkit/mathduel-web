@@ -27,7 +27,7 @@ export function createSudokuAdapter(opts: SudokuAdapterOpts): MpAdapter {
     const max = MAX_BY_SIZE[size] || 9;
     const box = size === 6 ? 2 : 3;
     const wrap = document.createElement('div');
-    wrap.style.cssText = 'display:grid;grid-template-columns:repeat(' + size + ',1fr);gap:2px;width:min(420px,86vw);background:#26303d;padding:4px;border-radius:10px';
+    wrap.style.cssText = 'display:grid;grid-template-columns:repeat(' + size + ',1fr);gap:2px;width:min(420px,86vw);background:#E5E7EB;padding:4px;border-radius:10px';
     cells = [];
     for (let i = 0; i < size * size; i++) {
       const cell = document.createElement('div');
@@ -35,8 +35,8 @@ export function createSudokuAdapter(opts: SudokuAdapterOpts): MpAdapter {
       const br = c % box === box - 1 && c !== size - 1;
       const bb = r % box === box - 1 && r !== size - 1;
       cell.style.cssText = 'aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:' + (size === 6 ? 22 : 18) + 'px;font-weight:700;border-radius:5px;' +
-        (br ? 'border-right:2px solid #0a0e14;' : '') + (bb ? 'border-bottom:2px solid #0a0e14;' : '') +
-        (puzzle[i] ? 'background:#161d27;color:#7f93a8;' : 'background:#0d131c;color:#F59E0B;cursor:pointer;');
+        (br ? 'border-right:2px solid #9CA3AF;' : '') + (bb ? 'border-bottom:2px solid #9CA3AF;' : '') +
+        (puzzle[i] ? 'background:#F3F4F6;color:#9CA3AF;' : 'background:#F9FAFB;color:#B45309;cursor:pointer;');
       cell.dataset.i = String(i);
       if (puzzle[i]) cell.textContent = String(puzzle[i]);
       if (!puzzle[i]) {
@@ -52,7 +52,7 @@ export function createSudokuAdapter(opts: SudokuAdapterOpts): MpAdapter {
       if (opts.isKiller && cages && cages[r] && cages[r][c]) {
         cell.style.position = 'relative';
         const tag = document.createElement('span');
-        tag.style.cssText = 'position:absolute;top:1px;left:3px;font-size:9px;color:#9fb1c6';
+        tag.style.cssText = 'position:absolute;top:1px;left:3px;font-size:9px;color:#6B7280';
         tag.textContent = String(cages[r][c]);
         cell.appendChild(tag);
       }
@@ -62,7 +62,7 @@ export function createSudokuAdapter(opts: SudokuAdapterOpts): MpAdapter {
     boardEl.innerHTML = '';
     boardEl.appendChild(wrap);
     const hint = document.createElement('p');
-    hint.style.cssText = 'color:#9fb1c6;font-size:12px;margin-top:10px;text-align:center';
+    hint.style.cssText = 'color:#6B7280;font-size:12px;margin-top:10px;text-align:center';
     hint.textContent = 'Tap an empty cell to cycle 1–' + max + ' · first to fill the grid correctly wins';
     boardEl.appendChild(hint);
   };
@@ -97,7 +97,7 @@ export function createSudokuAdapter(opts: SudokuAdapterOpts): MpAdapter {
           const v = msg.value || 0;
           if (msg.player && msg.player !== myName()) {
             cells[i].textContent = v ? String(v) : '';
-            cells[i].style.color = '#7fe0a0';
+            cells[i].style.color = '#16A34A';
             grid[i] = v;
           }
         }

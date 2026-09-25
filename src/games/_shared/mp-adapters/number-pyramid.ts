@@ -24,14 +24,14 @@ export interface NumberPyramidAdapterOpts {
 interface PyramidCell { i: number; num: number | null; owner: 0 | 1 | 2 }
 
 const PROD_BLOCKED_HTML = `
-<div style="max-width:420px;margin:24px auto;text-align:center;color:#e8edf4">
+<div style="max-width:420px;margin:24px auto;text-align:center;color:#1A1B2E">
   <div style="font-size:42px;margin-bottom:6px">⏳</div>
   <h3 style="margin:0 0 8px;font-size:18px">Server-side multiplayer coming soon</h3>
-  <p style="color:#9fb1c6;font-size:13px;line-height:1.5;margin:0">
+  <p style="color:#6B7280;font-size:13px;line-height:1.5;margin:0">
     The Number Pyramid competition server is being upgraded. Until then you can preview the
     competition UI in <b>demo mode</b> from a non-production host, or play solo / duel locally.
   </p>
-  <p style="color:#7f93a8;font-size:12px;margin-top:14px">🎮 Try other multiplayer games: <b>Sudoku · Bulls & Cows · Equation Pyramid</b> are live now.</p>
+  <p style="color:#9CA3AF;font-size:12px;margin-top:14px">🎮 Try other multiplayer games: <b>Sudoku · Bulls & Cows · Equation Pyramid</b> are live now.</p>
 </div>`;
 
 export function createNumberPyramidAdapter(opts: NumberPyramidAdapterOpts): MpAdapter {
@@ -69,8 +69,8 @@ export function createNumberPyramidAdapter(opts: NumberPyramidAdapterOpts): MpAd
       const tile = document.createElement('div');
       tile.style.cssText = 'width:48px;height:48px;display:flex;align-items:center;justify-content:center;border-radius:8px;font-weight:800;font-size:18px;' +
         (cell.num != null
-          ? (cell.owner === 1 ? 'background:#3a2f12;border:1px solid #F59E0B;color:#F59E0B' : 'background:#10161f;border:1px solid #2a3342;color:#9fb1c6')
-          : 'background:#0d131c;border:1px solid #1a2230;color:#7f93a8');
+          ? (cell.owner === 1 ? 'background:#FEF3C7;border:1px solid #F59E0B;color:#B45309' : 'background:#FFFFFF;border:1px solid #E5E7EB;color:#6B7280')
+          : 'background:#F9FAFB;border:1px solid #E5E7EB;color:#9CA3AF');
       tile.textContent = cell.num != null ? String(cell.num) : '?';
       if (cell.num == null) {
         tile.style.cursor = 'pointer';
@@ -87,7 +87,7 @@ export function createNumberPyramidAdapter(opts: NumberPyramidAdapterOpts): MpAd
     }
     wrap.appendChild(grid);
     const hint = document.createElement('p');
-    hint.style.cssText = 'color:#9fb1c6;font-size:12px;margin:6px 0 0;text-align:center';
+    hint.style.cssText = 'color:#6B7280;font-size:12px;margin:6px 0 0;text-align:center';
     hint.textContent = 'Demo: tap a ? tile to claim it (1-9). Server-authoritative mode coming soon.';
     wrap.appendChild(hint);
     boardEl.appendChild(wrap);
