@@ -29,45 +29,51 @@ export function createNumberPyramidAdapter(opts: NumberPyramidAdapterOpts): MpAd
   let inputs: Record<number, HTMLInputElement> = {};
   let locked: Record<number, number> = {};
 
-  const rowLen = (lv: number) => lv; // 底层格数（levels 层 → 底层 levels 格）
 
   const render = (boardEl: HTMLElement, shell: MpShell) => {
     boardEl.innerHTML = '';
     inputs = {};
     const wrap = document.createElement('div');
-    wrap.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:10px;padding:8px 0';
-    const grid = document.createElement('div');
-    grid.style.cssText = 'display:grid;grid-template-columns:repeat(' + rowLen(levels) + ',52px);gap:5px;justify-content:center';
-    for (const cell of cells) {
-      const tile = document.createElement('div');
-      tile.style.cssText = 'width:52px;height:48px;display:flex;align-items:center;justify-content:center;border-radius:8px;font-weight:800;font-size:18px;';
-      if (cell.num != null) {
-        tile.style.cssText += 'background:#FEF3C7;border:1px solid #F59E0B;color:#B45309';
-        tile.textContent = String(cell.num);
-      } else if (locked[cell.i]) {
-        tile.style.cssText += 'background:#FFFFFF;border:1px solid #E5E7EB;color:#1A1B2E';
-        tile.textContent = String(locked[cell.i]);
-      } else {
-        tile.style.cssText += 'background:#F9FAFB;border:1px solid #E5E7EB';
-        const inp = document.createElement('input');
-        inp.type = 'number';
-        inp.min = '1';
-        inp.max = '999';
-        inp.placeholder = '?';
-        inp.style.cssText = 'width:100%;height:100%;border:none;background:transparent;outline:none;text-align:center;font-weight:800;font-size:18px;color:#1A1B2E;-moz-appearance:textfield';
-        inp.addEventListener('keydown', (e) => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur(); });
-        inp.addEventListener('change', () => {
-          const v = parseInt(inp.value, 10);
-          if (Number.isFinite(v) && v >= 1 && v <= 999) {
-            shell.sendAction({ type: 'np_place', i: cell.i, value: v });
-          }
-        });
-        inputs[cell.i] = inp;
-        tile.appendChild(inp);
+    wrap.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:6px;padding:8px 0';
+    // 金字塔形渲染：第 level 行渲染 level+1 格，居中对齐（idx 前缀和定位）
+    const idxAt = (level: number, col: number) => { let c = 0; for (let l = 0; l < level; l++) c += l + 1; return c + col; };
+    const byIdx = new Map<number, PyramidCell>(cells.map((c) => [c.i, c]));
+    for (let level = 0; level < levels; level++) {
+      const rowEl = document.createElement('div');
+      rowEl.style.cssText = 'display:flex;gap:5px;justify-content:center';
+      for (let col = 0; col <= level; col++) {
+        const cell = byIdx.get(idxAt(level, col));
+        if (!cell) continue;
+        const tile = document.createElement('div');
+        tile.style.cssText = 'width:52px;height:48px;display:flex;align-items:center;justify-content:center;border-radius:8px;font-weight:800;font-size:18px;';
+        if (cell.num != null) {
+          tile.style.cssText += 'background:#FEF3C7;border:1px solid #F59E0B;color:#B45309';
+          tile.textContent = String(cell.num);
+        } else if (locked[cell.i]) {
+          tile.style.cssText += 'background:#FFFFFF;border:1px solid #E5E7EB;color:#1A1B2E';
+          tile.textContent = String(locked[cell.i]);
+        } else {
+          tile.style.cssText += 'background:#F9FAFB;border:1px solid #E5E7EB';
+          const inp = document.createElement('input');
+          inp.type = 'number';
+          inp.min = '1';
+          inp.max = '999';
+          inp.placeholder = '?';
+          inp.style.cssText = 'width:100%;height:100%;border:none;background:transparent;outline:none;text-align:center;font-weight:800;font-size:18px;color:#1A1B2E;-moz-appearance:textfield';
+          inp.addEventListener('keydown', (e) => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur(); });
+          inp.addEventListener('change', () => {
+            const v = parseInt(inp.value, 10);
+            if (Number.isFinite(v) && v >= 1 && v <= 999) {
+              shell.sendAction({ type: 'np_place', i: cell.i, value: v });
+            }
+          });
+          inputs[cell.i] = inp;
+          tile.appendChild(inp);
+        }
+        rowEl.appendChild(tile);
       }
-      grid.appendChild(tile);
+      wrap.appendChild(rowEl);
     }
-    wrap.appendChild(grid);
     const hint = document.createElement('p');
     hint.style.cssText = 'color:#6B7280;font-size:12px;margin:6px 0 0;text-align:center';
     hint.textContent = 'Each brick = sum of the two below · type a number and press Enter';
