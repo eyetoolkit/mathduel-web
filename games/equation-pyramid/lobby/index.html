@@ -197,10 +197,8 @@
           <div class="ep-deco-c"><span class="op">−</span><span class="num">2</span></div>
           <div class="ep-deco-c"><span class="op">×</span><span class="num">5</span></div>
           <div class="ep-deco-c"><span class="op">+</span><span class="num">3</span></div>
-          <div class="ep-deco-c"><span class="op">÷</span><span class="num">9</span></div>
-        </div>
-      </div>
-    </div>
+          <div class="ep-deco-c"><span class="op">÷</span><span class="num">9</span></div></a>
+      </div></a>
   </section>
 
   <!-- 模式选择 + 右栏信息 -->
@@ -229,18 +227,18 @@
           <div class="mt">Solo Practice</div>
           <div class="md">No clock, no pressure. Three tiers, best times saved.</div>
         </a>
-        <div class="mode soon" aria-disabled="true">
+        <a class="mode" href="/games/equation-pyramid/?mode=battle" data-mode="battle">
           <div class="mi" aria-hidden="true">👥</div>
           <div class="mt">Friend Duel</div>
           <div class="md">Private rooms arrive with the live API.</div>
-          <span class="soon-pill">SOON</span>
+          <span class="soon-pill">PLAY</span>
         </div>
-        <div class="mode soon" aria-disabled="true">
-          <div class="mi" aria-hidden="true">🎲</div>
-          <div class="mt">Random Match</div>
-          <div class="md">Get matched with a stranger instantly.</div>
-          <span class="soon-pill">SOON</span>
-        </div>
+        <a class="mode" href="/games/equation-pyramid/?mode=battle" data-mode="random">
+            <div class="mi" aria-hidden="true">🎲</div>
+            <div class="mt">Random Match</div>
+            <div class="md"></div>
+            <span class="soon-pill">PLAY</span>
+          </a>
       </div>
 
       <!-- 难度行：选择写进模式卡 href，卡片仍是纯 <a href> -->
@@ -250,8 +248,7 @@
           <button class="arb-dbtn" type="button" data-t="warmup">Warm-up<small>6–12 ways</small></button>
           <button class="arb-dbtn" type="button" data-t="standard">Standard<small>4–7 ways</small></button>
           <button class="arb-dbtn" type="button" data-t="tricky">Tricky<small>exactly 3</small></button>
-        </div>
-      </div>
+        </div></a>
     </section>
 
     <!-- 右栏 -->
@@ -260,8 +257,7 @@
         <h3 id="boardTitle">Global Daily Hunt</h3>
         <p class="pnote">One seeded board per day — same puzzle for everyone, one shot.</p>
         <div id="boardRows" aria-live="polite">
-          <div class="arb-empty">Loading today's board…</div>
-        </div>
+          <div class="arb-empty">Loading today's board…</div></a>
         <a class="btn btn-amber block" href="/games/equation-pyramid/?mode=daily" id="boardPlay" style="margin-top:12px">Play today’s hunt</a>
       </section>
 
@@ -271,8 +267,7 @@
           <div class="arb-rule"><b>1</b><span>Click three cells — the click order is the formula</span></div>
           <div class="arb-rule"><b>2</b><span>The first cell’s operator is the anchor (struck, not hidden)</span></div>
           <div class="arb-rule"><b>3</b><span>Multiply and divide first, then add and subtract</span></div>
-          <div class="arb-rule"><b>4</b><span>Bank every solution that hits the target — gold chips earned</span></div>
-        </div>
+          <div class="arb-rule"><b>4</b><span>Bank every solution that hits the target — gold chips earned</span></div></a>
       </section>
     </aside>
   </div>
@@ -284,8 +279,7 @@
       <div class="step"><span class="sn">1</span><b>Pick three cells</b><span>The click order is the formula — the first cell’s operator anchors it.</span></div>
       <div class="step"><span class="sn">2</span><b>Mind the order</b><span>Multiply and divide first, then add and subtract.</span></div>
       <div class="step"><span class="sn">3</span><b>Bank the target</b><span>Every equation that hits the target earns gold chips.</span></div>
-      <div class="step"><span class="sn">4</span><b>Race the bot</b><span>Duel: last banked equation takes the round — wrong picks cost +2.5s.</span></div>
-    </div>
+      <div class="step"><span class="sn">4</span><b>Race the bot</b><span>Duel: last banked equation takes the round — wrong picks cost +2.5s.</span></div></a>
   </section>
 
   <!-- 天梯 -->
@@ -298,8 +292,7 @@
         <div class="tier"><i style="height:28px"></i><span>Gold</span></div>
         <div class="tier"><i style="height:34px"></i><span>Platinum</span></div>
         <div class="tier"><i style="height:40px"></i><span>Diamond</span></div>
-        <div class="tier master"><i style="height:48px"></i><span>Master</span></div>
-      </div>
+        <div class="tier master"><i style="height:48px"></i><span>Master</span></div></a>
     </div>
   </section>
 </main>
@@ -316,8 +309,7 @@
     <div class="sf-links">
       <a href="#">About</a><a href="#">Contact</a><a href="#">Privacy</a><a href="#">Terms</a><a href="#">How to play</a>
     </div>
-    <div class="sf-copy">© 2026 MathDuel · Pure static · Privacy-first · Free to play</div>
-  </div>
+    <div class="sf-copy">© 2026 MathDuel · Pure static · Privacy-first · Free to play</div></a>
 </footer>
 
 <script type="module" src="/src/games/equation-pyramid/lobby.ts"></script>

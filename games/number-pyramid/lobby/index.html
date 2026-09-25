@@ -185,8 +185,7 @@
         <span class="chip"><span class="dot"></span>Solo · Duel · Daily</span>
         <span class="chip"><span class="dot"></span>Up to 21 bricks</span>
         <span class="chip"><span class="dot"></span>Global daily tower</span>
-      </div>
-    </div>
+      </div></a>
   </section>
 
   <!-- 模式选择 + 右栏信息 -->
@@ -215,18 +214,18 @@
           <div class="mt">Solo Practice</div>
           <div class="md">No clock, no pressure. Three heights, best times saved.</div>
         </a>
-        <div class="mode soon" aria-disabled="true">
-          <div class="mi" aria-hidden="true">👥</div>
-          <div class="mt">Friend 1v1</div>
-          <div class="md">Private rooms arrive with the live API.</div>
-          <span class="soon-pill">SOON</span>
-        </div>
-        <div class="mode soon" aria-disabled="true">
-          <div class="mi" aria-hidden="true">🎲</div>
-          <div class="mt">Random Match</div>
-          <div class="md">Get matched with a stranger instantly.</div>
-          <span class="soon-pill">SOON</span>
-        </div>
+        <a class="mode" href="/games/number-pyramid/?mode=battle" data-mode="battle">
+            <div class="mi" aria-hidden="true">👥</div>
+            <div class="mt">Friend 1v1</div>
+            <div class="md"></div>
+            <span class="soon-pill">PLAY</span>
+          </a>
+        <a class="mode" href="/games/number-pyramid/?mode=battle" data-mode="random">
+            <div class="mi" aria-hidden="true">🎲</div>
+            <div class="mt">Random Match</div>
+            <div class="md"></div>
+            <span class="soon-pill">PLAY</span>
+          </a>
       </div>
 
       <!-- 难度行：选择写进模式卡 href，卡片仍是纯 <a href> -->
@@ -236,8 +235,7 @@
           <button class="arb-dbtn" type="button" data-h="4">Swift<small>4 levels · 10</small></button>
           <button class="arb-dbtn" type="button" data-h="5">Standard<small>5 levels · 15</small></button>
           <button class="arb-dbtn" type="button" data-h="6">Deep<small>6 levels · 21</small></button>
-        </div>
-      </div>
+        </div></a>
     </section>
 
     <!-- 右栏 -->
@@ -246,8 +244,7 @@
         <h3 id="boardTitle">Global Daily Tower</h3>
         <p class="pnote">One seeded tower per day — same puzzle for everyone, one shot.</p>
         <div id="boardRows" aria-live="polite">
-          <div class="arb-empty">Loading today's board…</div>
-        </div>
+          <div class="arb-empty">Loading today's board…</div></a>
         <a class="btn btn-amber block" href="/games/number-pyramid/?mode=daily" id="boardPlay" style="margin-top:12px">Play today’s tower</a>
       </section>
 
@@ -257,8 +254,7 @@
           <div class="arb-rule"><b>1</b><span>Each brick equals the sum of the two bricks directly beneath it</span></div>
           <div class="arb-rule"><b>2</b><span>Given bricks (paper) are fixed — only the blanks are yours to fill</span></div>
           <div class="arb-rule"><b>3</b><span>Pencil marks let you note candidates; toggle Notes (✏) to jot them</span></div>
-          <div class="arb-rule"><b>4</b><span>Duel: you and the bot each own half the bricks — first side done wins</span></div>
-        </div>
+          <div class="arb-rule"><b>4</b><span>Duel: you and the bot each own half the bricks — first side done wins</span></div></a>
       </section>
     </aside>
   </div>
@@ -270,8 +266,7 @@
       <div class="step"><span class="sn">1</span><b>Know the rule</b><span>Each brick equals the sum of the two bricks directly beneath it.</span></div>
       <div class="step"><span class="sn">2</span><b>Start from what’s given</b><span>Apex and edge bricks pin down the rest — fill what follows.</span></div>
       <div class="step"><span class="sn">3</span><b>Race the bot</b><span>Duel splits the bricks — wrong digits cost +2.5s.</span></div>
-      <div class="step"><span class="sn">4</span><b>Climb higher</b><span>Swift 4, Standard 5, Deep 6 — taller towers, bigger apex.</span></div>
-    </div>
+      <div class="step"><span class="sn">4</span><b>Climb higher</b><span>Swift 4, Standard 5, Deep 6 — taller towers, bigger apex.</span></div></a>
   </section>
 
   <!-- 天梯 -->
@@ -284,8 +279,7 @@
         <div class="tier"><i style="height:28px"></i><span>Gold</span></div>
         <div class="tier"><i style="height:34px"></i><span>Platinum</span></div>
         <div class="tier"><i style="height:40px"></i><span>Diamond</span></div>
-        <div class="tier master"><i style="height:48px"></i><span>Master</span></div>
-      </div>
+        <div class="tier master"><i style="height:48px"></i><span>Master</span></div></a>
     </div>
   </section>
 </main>
@@ -302,8 +296,7 @@
     <div class="sf-links">
       <a href="#">About</a><a href="#">Contact</a><a href="#">Privacy</a><a href="#">Terms</a><a href="#">How to play</a>
     </div>
-    <div class="sf-copy">© 2026 MathDuel · Pure static · Privacy-first · Free to play</div>
-  </div>
+    <div class="sf-copy">© 2026 MathDuel · Pure static · Privacy-first · Free to play</div></a>
 </footer>
 
 <script type="module" src="/src/games/number-pyramid/lobby.ts"></script>

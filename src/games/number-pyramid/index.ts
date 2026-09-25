@@ -1,3 +1,6 @@
+/* === 通用竞赛外壳（1v1+多人+随机匹配） === */
+import { mountCompetition } from "../_shared/mp-client";
+import { createNumberPyramidAdapter } from "../_shared/mp-adapters/number-pyramid";
 /**
  * 数字金字塔 · 牌桌逻辑（beta：全本地，无 API）
  * 塔规则：第 k 层第 i 格 = 第 k+1 层 i 格 + 第 k+1 层 i+1 格。
@@ -819,5 +822,15 @@ if (isH(hFromUrl)) {
     b.classList.toggle('active', b.dataset.h === hFromUrl);
   });
 }
-if (isMode(modeFromUrl)) enterMode(modeFromUrl);
-else location.replace(LOBBY_URL);
+if (modeFromUrl === "battle") {
+  mountCompetition({
+    adapter: createNumberPyramidAdapter({ label: 'Number Pyramid', height: st.height, rounds: 3, timeLimit: 180 }),
+    tabsEl: document.querySelector("#tabs") as HTMLElement | null,
+    tabLabel: "Competition",
+    hideOnOpen: ['#boardWrap'],
+  });
+} else if (isMode(modeFromUrl)) {
+  enterMode(modeFromUrl);
+} else {
+  location.replace(LOBBY_URL);
+}

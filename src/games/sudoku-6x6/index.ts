@@ -1,3 +1,6 @@
+/* === 通用竞赛外壳（1v1+多人+随机匹配） === */
+import { mountCompetition } from "../_shared/mp-client";
+import { createSudokuAdapter } from "../_shared/mp-adapters/sudoku";
 /**
  * 6×6 数独 · UI 编排（beta 版：全部本地，无 API 依赖）
  * 模式：solo（3 难度）/ daily（seeded 每日一题）/ timed（45s 连解）/ duel（vs 本地 bot 竞速）
@@ -784,8 +787,18 @@ $('overlay')!.addEventListener('click', (e) => {
 // 不带 mode 直达牌桌时回落到模式选择页，与 24 点「lobby → card table」的两段式保持一致。
 const isMode = (m: string): m is Mode => m === 'solo' || m === 'daily' || m === 'timed' || m === 'duel';
 const modeFromUrl = new URLSearchParams(location.search).get('mode') || '';
-if (isMode(modeFromUrl)) enterMode(modeFromUrl);
-else location.replace(LOBBY_URL);
+if (modeFromUrl === "battle") {
+  mountCompetition({
+    adapter: createSudokuAdapter({ gameType: 'sudoku-6x6', label: 'Sudoku 6x6', size: 6, difficulty: st.diff, rounds: 3, timeLimit: 240 }),
+    tabsEl: document.querySelector("#tabs") as HTMLElement | null,
+    tabLabel: "Competition",
+    hideOnOpen: ['#playView'],
+  });
+} else if (isMode(modeFromUrl)) {
+  enterMode(modeFromUrl);
+} else {
+  location.replace(LOBBY_URL);
+}
 
 renderSide();
 botSay(BOT_LINES.hello[Math.floor(Math.random() * BOT_LINES.hello.length)]);

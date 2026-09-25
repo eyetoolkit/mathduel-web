@@ -186,8 +186,7 @@
         <span class="chip"><span class="dot"></span>45s timed runs</span>
         <span class="chip"><span class="dot"></span>Global daily grid</span>
       </div>
-      <div class="arb-grid6" id="heroGrid" aria-hidden="true"></div>
-    </div>
+      <div class="arb-grid6" id="heroGrid" aria-hidden="true"></div></a>
   </section>
 
   <!-- 模式选择 + 右栏信息 -->
@@ -216,18 +215,18 @@
           <div class="mt">Solo Practice</div>
           <div class="md">No clock, no pressure — best times saved.</div>
         </a>
-        <div class="mode soon" aria-disabled="true">
-          <div class="mi" aria-hidden="true">👥</div>
-          <div class="mt">Friend 1v1</div>
-          <div class="md">Private rooms arrive with the live API.</div>
-          <span class="soon-pill">SOON</span>
-        </div>
-        <div class="mode soon" aria-disabled="true">
-          <div class="mi" aria-hidden="true">🎲</div>
-          <div class="mt">Random Match</div>
-          <div class="md">Get matched with a stranger instantly.</div>
-          <span class="soon-pill">SOON</span>
-        </div>
+        <a class="mode" href="/games/sudoku-6x6/?mode=battle" data-mode="battle">
+            <div class="mi" aria-hidden="true">👥</div>
+            <div class="mt">Friend 1v1</div>
+            <div class="md"></div>
+            <span class="soon-pill">PLAY</span>
+          </a>
+        <a class="mode" href="/games/sudoku-6x6/?mode=battle" data-mode="random">
+            <div class="mi" aria-hidden="true">🎲</div>
+            <div class="mt">Random Match</div>
+            <div class="md"></div>
+            <span class="soon-pill">PLAY</span>
+          </a>
       </div>
 
     </section>
@@ -238,8 +237,7 @@
         <h3 id="boardTitle">Global Daily Grid</h3>
         <p class="pnote">One seeded 6×6 per day — same puzzle for everyone, one shot.</p>
         <div id="boardRows" aria-live="polite">
-          <div class="arb-empty">Loading today's board…</div>
-        </div>
+          <div class="arb-empty">Loading today's board…</div></a>
         <a class="btn btn-amber block" href="/games/sudoku-6x6/?mode=daily" id="boardPlay" style="margin-top:12px">Play today’s grid</a>
       </section>
 
@@ -249,8 +247,7 @@
           <div class="arb-rule"><b>1</b><span>Every row, column and 2×3 block holds 1–6 exactly once</span></div>
           <div class="arb-rule"><b>2</b><span>Paper cells are fixed clues — everything else is yours to place</span></div>
           <div class="arb-rule"><b>3</b><span>Duel: you and the bot each own half the empty cells — first side done wins</span></div>
-          <div class="arb-rule"><b>4</b><span>Wrong digits flash teal and cost you +2.5s in duels</span></div>
-        </div>
+          <div class="arb-rule"><b>4</b><span>Wrong digits flash teal and cost you +2.5s in duels</span></div></a>
       </section>
     </aside>
   </div>
@@ -262,8 +259,7 @@
       <div class="step"><span class="sn">1</span><b>Scan the grid</b><span>Six cells per row, six per column — fixed clues anchor every 2×3 block.</span></div>
       <div class="step"><span class="sn">2</span><b>Place what you know</b><span>Tap a cell, tap a number. Duplicates light up instantly.</span></div>
       <div class="step"><span class="sn">3</span><b>Race the bot</b><span>Duel splits the empty cells — first side done wins, mistakes cost +2.5s.</span></div>
-      <div class="step"><span class="sn">4</span><b>Chain your clears</b><span>Timed runs give 45 seconds — back-to-back grids build streaks.</span></div>
-    </div>
+      <div class="step"><span class="sn">4</span><b>Chain your clears</b><span>Timed runs give 45 seconds — back-to-back grids build streaks.</span></div></a>
   </section>
 
   <!-- 天梯 -->
@@ -276,8 +272,7 @@
         <div class="tier"><i style="height:28px"></i><span>Gold</span></div>
         <div class="tier"><i style="height:34px"></i><span>Platinum</span></div>
         <div class="tier"><i style="height:40px"></i><span>Diamond</span></div>
-        <div class="tier master"><i style="height:48px"></i><span>Master</span></div>
-      </div>
+        <div class="tier master"><i style="height:48px"></i><span>Master</span></div></a>
     </div>
   </section>
 </main>
@@ -294,8 +289,7 @@
     <div class="sf-links">
       <a href="#">About</a><a href="#">Contact</a><a href="#">Privacy</a><a href="#">Terms</a><a href="#">How to play</a>
     </div>
-    <div class="sf-copy">© 2026 MathDuel · Pure static · Privacy-first · Free to play</div>
-  </div>
+    <div class="sf-copy">© 2026 MathDuel · Pure static · Privacy-first · Free to play</div></a>
 </footer>
 
 <script type="module" src="/src/games/sudoku-6x6/lobby.ts"></script>

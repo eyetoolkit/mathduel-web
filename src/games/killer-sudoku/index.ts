@@ -1,3 +1,6 @@
+/* === 通用竞赛外壳（1v1+多人+随机匹配） === */
+import { mountCompetition } from "../_shared/mp-client";
+import { createSudokuAdapter } from "../_shared/mp-adapters/sudoku";
 /**
  * 杀手数独 · 牌桌逻辑（beta 版：全部本地，无 API 依赖）
  * 模式：solo（3 难度按笼子数）/ daily（seeded 每日一题·固定 standard 29 笼）/ timed（45s 连解）/ duel（vs 本地 bot）
@@ -903,5 +906,15 @@ if (isDiff(dFromUrl)) {
     b.classList.toggle('active', b.dataset.d === dFromUrl);
   });
 }
-if (isMode(modeFromUrl)) enterMode(modeFromUrl);
-else location.replace(LOBBY_URL);
+if (modeFromUrl === "battle") {
+  mountCompetition({
+    adapter: createSudokuAdapter({ gameType: 'killer-sudoku', label: 'Killer Sudoku', size: 9, isKiller: true, difficulty: st.diff, rounds: 3, timeLimit: 300 }),
+    tabsEl: document.querySelector("#tabs") as HTMLElement | null,
+    tabLabel: "Competition",
+    hideOnOpen: ['#boardWrap'],
+  });
+} else if (isMode(modeFromUrl)) {
+  enterMode(modeFromUrl);
+} else {
+  location.replace(LOBBY_URL);
+}

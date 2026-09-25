@@ -1,3 +1,6 @@
+/* === 通用竞赛外壳（1v1+多人+随机匹配） === */
+import { mountCompetition } from "../_shared/mp-client";
+import { createEqpyrAdapter } from "../_shared/mp-adapters/eqpyr";
 /**
  * 等式金字塔 · 牌桌逻辑
  * 玩法：3×3 board，每格 = 数字 + 上行运算符；target 是 apex 目标。
@@ -620,5 +623,15 @@ if (isT(tFromUrl)) {
     b.classList.toggle('active', b.dataset.t === tFromUrl);
   });
 }
-if (isMode(modeFromUrl)) enterMode(modeFromUrl);
-else location.replace(LOBBY_URL);
+if (modeFromUrl === "battle") {
+  mountCompetition({
+    adapter: createEqpyrAdapter({ label: 'Equation Pyramid', tier: st.tier, rounds: 3, timeLimit: 60 }),
+    tabsEl: document.querySelector("#tabs") as HTMLElement | null,
+    tabLabel: "Competition",
+    hideOnOpen: [],
+  });
+} else if (isMode(modeFromUrl)) {
+  enterMode(modeFromUrl);
+} else {
+  location.replace(LOBBY_URL);
+}

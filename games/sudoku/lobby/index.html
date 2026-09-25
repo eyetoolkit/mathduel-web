@@ -186,8 +186,7 @@
         <span class="chip"><span class="dot"></span>Pencil marks &amp; notes</span>
         <span class="chip"><span class="dot"></span>Global daily grid</span>
       </div>
-      <div class="arb-grid9" id="heroGrid" aria-hidden="true"></div>
-    </div>
+      <div class="arb-grid9" id="heroGrid" aria-hidden="true"></div></a>
   </section>
 
   <!-- 模式选择 + 右栏信息 -->
@@ -216,18 +215,18 @@
           <div class="mt">Solo Practice</div>
           <div class="md">No clock, no pressure. Three difficulties, best times saved.</div>
         </a>
-        <div class="mode soon" aria-disabled="true">
-          <div class="mi" aria-hidden="true">👥</div>
-          <div class="mt">Friend 1v1</div>
-          <div class="md">Private rooms arrive with the live API.</div>
-          <span class="soon-pill">SOON</span>
-        </div>
-        <div class="mode soon" aria-disabled="true">
-          <div class="mi" aria-hidden="true">🎲</div>
-          <div class="mt">Random Match</div>
-          <div class="md">Get matched with a stranger instantly.</div>
-          <span class="soon-pill">SOON</span>
-        </div>
+        <a class="mode" href="/games/sudoku/?mode=battle" data-mode="battle">
+            <div class="mi" aria-hidden="true">👥</div>
+            <div class="mt">Friend 1v1</div>
+            <div class="md"></div>
+            <span class="soon-pill">PLAY</span>
+          </a>
+        <a class="mode" href="/games/sudoku/?mode=battle" data-mode="random">
+            <div class="mi" aria-hidden="true">🎲</div>
+            <div class="mt">Random Match</div>
+            <div class="md"></div>
+            <span class="soon-pill">PLAY</span>
+          </a>
       </div>
 
       <!-- 难度行（9×9 专属）：选择写进模式卡 href，卡片仍是纯 <a href> -->
@@ -237,8 +236,7 @@
           <button class="arb-dbtn" type="button" data-d="easy">Easy<small>40 clues</small></button>
           <button class="arb-dbtn" type="button" data-d="standard">Medium<small>32 clues</small></button>
           <button class="arb-dbtn" type="button" data-d="hard">Hard<small>26 clues</small></button>
-        </div>
-      </div>
+        </div></a>
     </section>
 
     <!-- 右栏 -->
@@ -247,8 +245,7 @@
         <h3 id="boardTitle">Global Daily Grid</h3>
         <p class="pnote">One seeded grid per day — same puzzle for everyone, one shot.</p>
         <div id="boardRows" aria-live="polite">
-          <div class="arb-empty">Loading today's board…</div>
-        </div>
+          <div class="arb-empty">Loading today's board…</div></a>
         <a class="btn btn-amber block" href="/games/sudoku/?mode=daily" id="boardPlay" style="margin-top:12px">Play today's grid</a>
       </section>
 
@@ -258,8 +255,7 @@
           <div class="arb-rule"><b>1</b><span>Every row, column and 3×3 box holds 1–9 exactly once</span></div>
           <div class="arb-rule"><b>2</b><span>Paper cells are fixed clues — everything else is yours to place</span></div>
           <div class="arb-rule"><b>3</b><span>Pencil marks let you note candidates; toggle Notes (✏) to jot them</span></div>
-          <div class="arb-rule"><b>4</b><span>Duel: you and the bot each own half the empty cells — first side done wins</span></div>
-        </div>
+          <div class="arb-rule"><b>4</b><span>Duel: you and the bot each own half the empty cells — first side done wins</span></div></a>
       </section>
     </aside>
   </div>
@@ -271,8 +267,7 @@
       <div class="step"><span class="sn">1</span><b>Scan the grid</b><span>Fixed clues anchor every row, column and 3×3 box — start from the crowded units.</span></div>
       <div class="step"><span class="sn">2</span><b>Place what you know</b><span>Tap a cell, tap a number. Duplicates light up instantly so mistakes never stick.</span></div>
       <div class="step"><span class="sn">3</span><b>Pencil, then commit</b><span>Pencil in candidates with Notes, then commit when a digit is certain.</span></div>
-      <div class="step"><span class="sn">4</span><b>Race the bot</b><span>In Duel, you and GridBot split the empty cells — first side to finish its half wins.</span></div>
-    </div>
+      <div class="step"><span class="sn">4</span><b>Race the bot</b><span>In Duel, you and GridBot split the empty cells — first side to finish its half wins.</span></div></a>
   </section>
 
   <!-- 天梯 -->
@@ -285,8 +280,7 @@
         <div class="tier"><i style="height:28px"></i><span>Gold</span></div>
         <div class="tier"><i style="height:34px"></i><span>Platinum</span></div>
         <div class="tier"><i style="height:40px"></i><span>Diamond</span></div>
-        <div class="tier master"><i style="height:48px"></i><span>Master</span></div>
-      </div>
+        <div class="tier master"><i style="height:48px"></i><span>Master</span></div></a>
     </div>
   </section>
 </main>
@@ -303,8 +297,7 @@
     <div class="sf-links">
       <a href="#">About</a><a href="#">Contact</a><a href="#">Privacy</a><a href="#">Terms</a><a href="#">How to play</a>
     </div>
-    <div class="sf-copy">© 2026 MathDuel · Pure static · Privacy-first · Free to play</div>
-  </div>
+    <div class="sf-copy">© 2026 MathDuel · Pure static · Privacy-first · Free to play</div></a>
 </footer>
 
 <script type="module" src="/src/games/sudoku/lobby.ts"></script>

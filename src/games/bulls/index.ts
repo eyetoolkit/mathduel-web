@@ -234,3 +234,18 @@ secretInput.addEventListener('keydown', (e) => {
 
 render();
 renderRecord();
+
+/* === 通用竞赛外壳（1v1+多人+随机匹配） === */
+(() => {
+  if (new URLSearchParams(location.search).get("mode") !== "battle") return;
+  import("../_shared/mp-client").then(({ mountCompetition }) => {
+    return import("../_shared/mp-adapters/bulls").then(({ createBullsAdapter }) =>
+      mountCompetition({
+        adapter: createBullsAdapter({ label: "Bulls & Cows" }),
+        tabsEl: document.querySelector("#tabs") as HTMLElement | null,
+        tabLabel: "Competition",
+        hideOnOpen: ["#playBox", "#board"],
+      })
+    );
+  }).catch((e) => console.error("[bulls] competition load failed", e));
+})();

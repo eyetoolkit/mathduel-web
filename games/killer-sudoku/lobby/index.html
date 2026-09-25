@@ -186,8 +186,7 @@
         <span class="chip"><span class="dot"></span>Cage sums only</span>
         <span class="chip"><span class="dot"></span>Global daily cage</span>
       </div>
-      <div class="arb-cage-deco" id="heroCages" aria-hidden="true"></div>
-    </div>
+      <div class="arb-cage-deco" id="heroCages" aria-hidden="true"></div></a>
   </section>
 
   <!-- 模式选择 + 右栏信息 -->
@@ -216,18 +215,18 @@
           <div class="mt">Solo Practice</div>
           <div class="md">No clock, no pressure. Three cage counts, best times saved.</div>
         </a>
-        <div class="mode soon" aria-disabled="true">
-          <div class="mi" aria-hidden="true">👥</div>
-          <div class="mt">Friend 1v1</div>
-          <div class="md">Private rooms arrive with the live API.</div>
-          <span class="soon-pill">SOON</span>
-        </div>
-        <div class="mode soon" aria-disabled="true">
-          <div class="mi" aria-hidden="true">🎲</div>
-          <div class="mt">Random Match</div>
-          <div class="md">Get matched with a stranger instantly.</div>
-          <span class="soon-pill">SOON</span>
-        </div>
+        <a class="mode" href="/games/killer-sudoku/?mode=battle" data-mode="battle">
+            <div class="mi" aria-hidden="true">👥</div>
+            <div class="mt">Friend 1v1</div>
+            <div class="md"></div>
+            <span class="soon-pill">PLAY</span>
+          </a>
+        <a class="mode" href="/games/killer-sudoku/?mode=battle" data-mode="random">
+            <div class="mi" aria-hidden="true">🎲</div>
+            <div class="mt">Random Match</div>
+            <div class="md"></div>
+            <span class="soon-pill">PLAY</span>
+          </a>
       </div>
 
       <!-- 难度行：选择写进模式卡 href，卡片仍是纯 <a href> -->
@@ -237,8 +236,7 @@
           <button class="arb-dbtn" type="button" data-d="gentle">Gentle<small>26 cages</small></button>
           <button class="arb-dbtn" type="button" data-d="standard">Standard<small>29 cages</small></button>
           <button class="arb-dbtn" type="button" data-d="fierce">Fierce<small>34 cages</small></button>
-        </div>
-      </div>
+        </div></a>
     </section>
 
     <!-- 右栏 -->
@@ -247,8 +245,7 @@
         <h3 id="boardTitle">Global Daily Cage</h3>
         <p class="pnote">One seeded cage-grid per day — same puzzle for everyone, one shot.</p>
         <div id="boardRows" aria-live="polite">
-          <div class="arb-empty">Loading today's board…</div>
-        </div>
+          <div class="arb-empty">Loading today's board…</div></a>
         <a class="btn btn-amber block" href="/games/killer-sudoku/?mode=daily" id="boardPlay" style="margin-top:12px">Play today’s cage</a>
       </section>
 
@@ -258,8 +255,7 @@
           <div class="arb-rule"><b>1</b><span>Every row, column and 3×3 box holds 1–9 exactly once</span></div>
           <div class="arb-rule"><b>2</b><span>Inside each dashed cage the digits are distinct and add to the corner number</span></div>
           <div class="arb-rule"><b>3</b><span>Zero givens — the cage sum is the only thing the puzzle tells you</span></div>
-          <div class="arb-rule"><b>4</b><span>Duel: you and the bot each own half the cells — first side done wins</span></div>
-        </div>
+          <div class="arb-rule"><b>4</b><span>Duel: you and the bot each own half the cells — first side done wins</span></div></a>
       </section>
     </aside>
   </div>
@@ -271,8 +267,7 @@
       <div class="step"><span class="sn">1</span><b>Read the cages</b><span>Every dashed cage’s digits are distinct and add to its corner number.</span></div>
       <div class="step"><span class="sn">2</span><b>Deduce, don’t guess</b><span>Zero givens — cage sums are the only clues you get.</span></div>
       <div class="step"><span class="sn">3</span><b>Race the bot</b><span>Duel splits the empty cells — first side done wins.</span></div>
-      <div class="step"><span class="sn">4</span><b>Chain your clears</b><span>Timed runs give 90 seconds — back-to-back grids build streaks.</span></div>
-    </div>
+      <div class="step"><span class="sn">4</span><b>Chain your clears</b><span>Timed runs give 90 seconds — back-to-back grids build streaks.</span></div></a>
   </section>
 
   <!-- 天梯 -->
@@ -285,8 +280,7 @@
         <div class="tier"><i style="height:28px"></i><span>Gold</span></div>
         <div class="tier"><i style="height:34px"></i><span>Platinum</span></div>
         <div class="tier"><i style="height:40px"></i><span>Diamond</span></div>
-        <div class="tier master"><i style="height:48px"></i><span>Master</span></div>
-      </div>
+        <div class="tier master"><i style="height:48px"></i><span>Master</span></div></a>
     </div>
   </section>
 </main>
@@ -303,8 +297,7 @@
     <div class="sf-links">
       <a href="#">About</a><a href="#">Contact</a><a href="#">Privacy</a><a href="#">Terms</a><a href="#">How to play</a>
     </div>
-    <div class="sf-copy">© 2026 MathDuel · Pure static · Privacy-first · Free to play</div>
-  </div>
+    <div class="sf-copy">© 2026 MathDuel · Pure static · Privacy-first · Free to play</div></a>
 </footer>
 
 <script type="module" src="/src/games/killer-sudoku/lobby.ts"></script>

@@ -1,3 +1,6 @@
+/* === 通用竞赛外壳（1v1+多人+随机匹配） === */
+import { mountCompetition } from "../_shared/mp-client";
+import { createSudokuAdapter } from "../_shared/mp-adapters/sudoku";
 /**
  * 9×9 数独 · UI 编排（beta 版：全部本地，无 API 依赖）
  * 模式：solo（3 难度）/ daily（seeded 每日一题）/ timed（45s 连解）/ duel（vs 本地 bot 竞速）
@@ -866,8 +869,18 @@ if (isDiff(dFromUrl)) {
   });
 }
 
-if (isMode(modeFromUrl)) enterMode(modeFromUrl);
-else location.replace(LOBBY_URL);
+if (modeFromUrl === "battle") {
+  mountCompetition({
+    adapter: createSudokuAdapter({ gameType: 'sudoku', label: 'Sudoku', size: 9, difficulty: st.diff, rounds: 3, timeLimit: 240 }),
+    tabsEl: document.querySelector("#tabs") as HTMLElement | null,
+    tabLabel: "Competition",
+    hideOnOpen: ['#playView'],
+  });
+} else if (isMode(modeFromUrl)) {
+  enterMode(modeFromUrl);
+} else {
+  location.replace(LOBBY_URL);
+}
 
 renderSide();
 botSay(BOT_LINES.hello[Math.floor(Math.random() * BOT_LINES.hello.length)]);
