@@ -822,7 +822,7 @@ if (isH(hFromUrl)) {
     b.classList.toggle('active', b.dataset.h === hFromUrl);
   });
 }
-if (modeFromUrl === "battle") {
+if (modeFromUrl === "battle" || modeFromUrl === "random") {
   mountCompetition({
     adapter: createNumberPyramidAdapter({ label: 'Number Pyramid', height: st.height, rounds: 3, timeLimit: 180 }),
     tabsEl: document.querySelector("#tabs") as HTMLElement | null,

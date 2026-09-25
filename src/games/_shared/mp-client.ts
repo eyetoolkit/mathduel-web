@@ -349,6 +349,7 @@ export class MpShell {
             <input class="mp-input" id="mpJoinCode" maxlength="6" placeholder="ROOM CODE"/>
             <button class="mp-btn primary" id="mpJoin">Join</button>
           </div>
+          <button class="mp-btn" id="mpRandom" style="width:100%;margin-top:12px">🎲 Find Random Opponent</button>
         </div>
         <div class="mp-room" id="mpRoom">
           <div class="hint">Room ready — share this code:</div>
@@ -390,6 +391,7 @@ export class MpShell {
       this.lobbyErr('');
       this.joinRoom(code, name);
     });
+    el.querySelector('#mpRandom')!.addEventListener('click', () => this.startRandomMatch());
     el.querySelector('#mpStart')!.addEventListener('click', () => this.startRace());
     el.querySelector('#mpShare')!.addEventListener('click', () => this.copyInvite());
     el.querySelector('#mpCopy')!.addEventListener('click', () => this.copyCode());
@@ -442,6 +444,82 @@ export class MpShell {
       const s = localStorage.getItem('mp_name');
       if (s) ni.value = s;
     }
+  }
+
+  /* ===================== 随机匹配 ===================== */
+  private matchId = '';
+  private matchPoll: number | null = null;
+
+  async startRandomMatch(): Promise<void> {
+    if (this.demo) { this.lobbyErr('Random match needs the live site'); return; }
+    const name = (this.lobbyEl.querySelector('#mpName') as HTMLInputElement).value.trim();
+    if (!name) { this.lobbyErr('Enter a name'); return; }
+    this.myName = name;
+    localStorage.setItem('mp_name', name);
+    this.lobbyErr('');
+    const btn = this.lobbyEl.querySelector('#mpRandom') as HTMLButtonElement | null;
+    if (btn) { btn.disabled = true; btn.textContent = '🎲 Looking for an opponent…'; }
+    try {
+      const r = await fetch('/api/match/join', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ gameType: this.adapter.gameType, name }),
+      });
+      const d = await r.json().catch(() => ({}));
+      if (d && d.status === 'matched' && d.code) {
+        this.isHost = false;
+        this.connectWS(d.code);
+        this.resetRandomBtn();
+        return;
+      }
+      if (d && d.status === 'waiting' && d.matchId) {
+        this.matchId = d.matchId;
+        this.lobbyErr('🎲 Searching — this stays open for 30s…');
+        this.pollRandomMatch();
+        return;
+      }
+      this.lobbyErr('Match unavailable, try Create Room');
+    } catch {
+      this.lobbyErr('Connection failed, please retry');
+    }
+    this.resetRandomBtn();
+  }
+
+  private pollRandomMatch(): void {
+    if (this.matchPoll) window.clearInterval(this.matchPoll);
+    const startedAt = Date.now();
+    this.matchPoll = window.setInterval(async () => {
+      if (!this.matchId) { this.stopRandomMatch(false); return; }
+      try {
+        const r = await fetch('/api/match/poll?matchId=' + encodeURIComponent(this.matchId) + '&game=' + encodeURIComponent(this.adapter.gameType));
+        const d = await r.json().catch(() => ({}));
+        if (d && d.status === 'matched' && d.code) {
+          this.stopRandomMatch(false);
+          this.isHost = false;
+          this.connectWS(d.code);
+          return;
+        }
+      } catch { /* 网络抖动继续轮询 */ }
+      if (Date.now() - startedAt > 30000) {
+        this.stopRandomMatch(true);
+        this.lobbyErr('No opponent right now — try Create Room');
+        this.resetRandomBtn();
+      }
+    }, 2500);
+  }
+
+  private stopRandomMatch(cancel: boolean): void {
+    if (this.matchPoll) { window.clearInterval(this.matchPoll); this.matchPoll = null; }
+    if (cancel && this.matchId) {
+      const id = this.matchId; const game = this.adapter.gameType;
+      try { fetch('/api/match/cancel', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ matchId: id, gameType: game }) }); } catch { /* ignore */ }
+    }
+    this.matchId = '';
+  }
+
+  private resetRandomBtn(): void {
+    const btn = this.lobbyEl.querySelector('#mpRandom') as HTMLButtonElement | null;
+    if (btn) { btn.disabled = false; btn.textContent = '🎲 Find Random Opponent'; }
   }
 
   /* ===================== 建房 / 加入 ===================== */
@@ -603,7 +681,7 @@ export class MpShell {
 
   /** 通用回合开始处理（adapter 未显式消费时兜底） */
   private handleRoundMsg(d: any): void {
-    const isRoundStart = ['new_round', 'round_resume', 'sudoku_new_game', 'eqpyr_new_game', 'bulls_new_round'].includes(d.type);
+    const isRoundStart = ['new_round', 'round_resume', 'sudoku_new_game', 'eqpyr_new_game', 'bulls_new_round', 'np_new_game'].includes(d.type);
     if (!isRoundStart) return;
     this.active = true;
     this.started = true;
@@ -740,6 +818,8 @@ export class MpShell {
 
   leave(silent = false): void {
     this.active = false; this.started = false; this.waiting = false; this.spectator = false; this.spectatorCount = 0;
+    this.stopRandomMatch(true);
+    this.resetRandomBtn();
     if (this.ping) { window.clearInterval(this.ping); this.ping = null; }
     this.demoBots.forEach((id) => window.clearTimeout(id)); this.demoBots = [];
     this.demoChatTimers.forEach((id) => window.clearTimeout(id)); this.demoChatTimers = [];
@@ -963,7 +1043,7 @@ export function mountCompetition(cfg: MountConfig): MpShell {
   const params = new URLSearchParams(location.search);
   const rc = (params.get('room') || '').trim().toUpperCase();
   const startMode = params.get('mode');
-  if (startMode === tabMode || rc) {
+  if (startMode === tabMode || startMode === 'random' || rc) {
     window.setTimeout(() => {
       cfg.hideOnOpen?.forEach((sel) => document.querySelectorAll(sel).forEach((e) => (e as HTMLElement).style.display = 'none'));
       shell.open();

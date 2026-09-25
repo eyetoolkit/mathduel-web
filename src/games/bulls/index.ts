@@ -237,7 +237,8 @@ renderRecord();
 
 /* === 通用竞赛外壳（1v1+多人+随机匹配） === */
 (() => {
-  if (new URLSearchParams(location.search).get("mode") !== "battle") return;
+  const m = new URLSearchParams(location.search).get("mode");
+  if (m !== "battle" && m !== "random") return;
   import("../_shared/mp-client").then(({ mountCompetition }) => {
     return import("../_shared/mp-adapters/bulls").then(({ createBullsAdapter }) =>
       mountCompetition({

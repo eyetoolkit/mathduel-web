@@ -1892,7 +1892,7 @@ refreshTop();
 
   if (startMode === 'daily') window.setTimeout(() => setMode('daily'), 0);
   else if (startMode === 'timed') window.setTimeout(() => setMode('timed'), 0);
-  else if (startMode === 'battle') window.setTimeout(() => setMode('battle'), 0);
+  else if (startMode === 'battle' || startMode === 'random') window.setTimeout(() => setMode('battle'), 0);
 
   if (rc) {
     window.setTimeout(() => {

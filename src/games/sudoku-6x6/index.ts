@@ -787,7 +787,7 @@ $('overlay')!.addEventListener('click', (e) => {
 // 不带 mode 直达牌桌时回落到模式选择页，与 24 点「lobby → card table」的两段式保持一致。
 const isMode = (m: string): m is Mode => m === 'solo' || m === 'daily' || m === 'timed' || m === 'duel';
 const modeFromUrl = new URLSearchParams(location.search).get('mode') || '';
-if (modeFromUrl === "battle") {
+if (modeFromUrl === "battle" || modeFromUrl === "random") {
   mountCompetition({
     adapter: createSudokuAdapter({ gameType: 'sudoku-6x6', label: 'Sudoku 6x6', size: 6, difficulty: st.diff, rounds: 3, timeLimit: 240 }),
     tabsEl: document.querySelector("#tabs") as HTMLElement | null,

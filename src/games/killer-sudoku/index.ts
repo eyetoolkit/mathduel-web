@@ -906,7 +906,7 @@ if (isDiff(dFromUrl)) {
     b.classList.toggle('active', b.dataset.d === dFromUrl);
   });
 }
-if (modeFromUrl === "battle") {
+if (modeFromUrl === "battle" || modeFromUrl === "random") {
   mountCompetition({
     adapter: createSudokuAdapter({ gameType: 'killer-sudoku', label: 'Killer Sudoku', size: 9, isKiller: true, difficulty: st.diff, rounds: 3, timeLimit: 300 }),
     tabsEl: document.querySelector("#tabs") as HTMLElement | null,
