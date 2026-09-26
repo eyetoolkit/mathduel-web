@@ -274,7 +274,7 @@ function sidebarHtml(): string {
 
   const helpGroup = `
     <div class="nav-group">Help</div>
-    ${navItem(false, '#',
+    ${navItem(false, '#how-to-play',
       '<svg viewBox="0 0 24 24"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19a2 2 0 0 1 2-2h13"/></svg>',
       'How to play')}
   `;
@@ -509,8 +509,8 @@ export function renderHomeV2(): void {
         </div>
       </section>
 
-      <!-- 特性 -->
-      <section class="feats"><div class="wrap">${featsHtml()}</div></section>
+      <!-- 特性（"How it works" 锚点：sidebar How to play 跳这里） -->
+      <section class="feats" id="how-to-play"><div class="wrap">${featsHtml()}</div></section>
     </main>
 
     <!-- 页脚 -->
