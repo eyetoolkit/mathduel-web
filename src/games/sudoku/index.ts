@@ -284,26 +284,23 @@ function buildGridLines(board: HTMLElement): void {
     svg.setAttribute('preserveAspectRatio', 'none');
     svg.setAttribute('shape-rendering', 'crispEdges');
     svg.setAttribute('aria-hidden', 'true');
-    // 读取棋盘当前主题 token，颜色随主题切换
-    const cs = getComputedStyle(board);
-    const cCell = cs.getPropertyValue('--s9-line-cell').trim() || '#e5e1f0';
-    const cBox = cs.getPropertyValue('--s9-line-box').trim() || '#3730a3';
-    const rect = (x: number, y: number, w: number, h: number, color: string): void => {
+    const rect = (x: number, y: number, w: number, h: number, cls: string): void => {
       const r = document.createElementNS(NS, 'rect');
       r.setAttribute('x', String(x));
       r.setAttribute('y', String(y));
       r.setAttribute('width', String(w));
       r.setAttribute('height', String(h));
-      r.style.fill = color;
+      // 颜色留在 CSS（.l-cell/.l-box → var(--s9-line-*)），主题切换自动跟随，无需重建
+      r.setAttribute('class', cls);
       svg.appendChild(r);
     };
     for (let i = 1; i <= 8; i++) {
       // 3×3 宫线：i=3、6（第 3、6 格后）为粗线，其余为细线
       const box = i % 3 === 0;
       const w = box ? thick : thin;
-      const color = box ? cBox : cCell;
-      rect(i * cell - w / 2, 0, w, W, color);
-      rect(0, i * cell - w / 2, W, w, color);
+      const cls = box ? 'l-box' : 'l-cell';
+      rect(i * cell - w / 2, 0, w, W, cls);
+      rect(0, i * cell - w / 2, W, w, cls);
     }
     board.appendChild(svg);
   };

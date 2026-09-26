@@ -61,8 +61,11 @@ body.arena:not(.skin-paper) .s9-board {
   --s9-notes: #64748b;
   --s9-conflict: #fca5a5;
 }
-/* SVG 网格线覆盖层（由 index.ts 的 buildGridLines 注入：细线 + 宫粗线两级） */
+/* SVG 网格线覆盖层（由 index.ts 的 buildGridLines 注入：细线 + 宫粗线两级）；
+   颜色由 CSS token 驱动（主题切换自动跟随，无需 JS 重建） */
 .s9-board .grid-lines { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 3; display: block; }
+.s9-board .grid-lines .l-cell { fill: var(--s9-line-cell); }
+.s9-board .grid-lines .l-box { fill: var(--s9-line-box); }
 
 .s9-board .c9cell {
   aspect-ratio: 1;
