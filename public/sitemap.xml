@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:xhtml="http://www.w3.org/1999/xhtml">
-  <!-- 首页 + 7 个游戏 + 7 个 lobby（新增 bulls/lobby 入口后随 v3 一起上线） -->
+  <!-- 首页 + 5 个游戏（24-game / sudoku 4×4 / sudoku 9×9 / sudoku 6×6 / equation-pyramid）+ 5 个 lobby -->
   <url>
     <loc>https://mathduel.games/</loc>
     <lastmod>2026-09-23</lastmod>
@@ -56,19 +56,7 @@
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
-    <loc>https://mathduel.games/games/number-pyramid/</loc>
-    <lastmod>2026-09-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://mathduel.games/games/number-pyramid/lobby/</loc>
-    <lastmod>2026-09-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
+      <url>
     <loc>https://mathduel.games/games/equation-pyramid/</loc>
     <lastmod>2026-09-23</lastmod>
     <changefreq>weekly</changefreq>
@@ -80,16 +68,4 @@
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
-    <loc>https://mathduel.games/games/bulls/</loc>
-    <lastmod>2026-09-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://mathduel.games/games/bulls/lobby/</loc>
-    <lastmod>2026-09-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-</urlset>
+    </urlset>

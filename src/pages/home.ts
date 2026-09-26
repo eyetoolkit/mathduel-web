@@ -83,12 +83,6 @@ const MINI_EQUATION = `
     </div>
   </div>`;
 
-const MINI_BULLS = `
-  <div class="mB">
-    <div class="mB-g"><span>3</span><span>4</span><span>5</span><span>6</span></div>
-    <div class="mB-v"><b>2A</b> 1B</div>
-    <div class="mB-hint">5 of 8 tries used</div>
-  </div>`;
 
 const MINI_TOWER = `
   <div class="miniPyr">
@@ -147,15 +141,6 @@ const GAMES: GameDef[] = [
     mini: MINI_EQUATION,
   },
   {
-    id: 'bulls',
-    title: 'Bulls 1A2B',
-    desc: 'Crack the secret code in fewest guesses.',
-    href: '/games/bulls/lobby/',
-    modes: 'Deduction · Duel',
-    stage: 'live',
-    mini: MINI_BULLS,
-  },
-  {
     id: 'sum-tower',
     title: 'Sum Tower',
     desc: "Bricks that add up — the gentle one, on its way.",
@@ -191,7 +176,7 @@ function soonCardHtml(g: GameDef): string {
     </a>`;
 }
 
-/** 游戏网格：6 个竞技场 + 1 个 Coming soon 预告卡 */
+/** 游戏网格：5 个竞技场 + 1 个 Coming soon 预告卡 */
 export function renderGameGrid(host: HTMLElement | null): void {
   if (!host) return;
   const html = GAMES.map((g) => (g.stage === 'coming' ? soonCardHtml(g) : isVisible(g) ? gameCardHtml(g) : '')).join('');
