@@ -277,7 +277,7 @@ body.rail .main { margin-left: var(--sb-rail); }
   font-size: .78rem; color: var(--mute);
 }
 .home-v2 .tiers { flex: 1; display: flex; gap: 10px; align-items: flex-end; min-width: 320px; }
-.home-v2 .tier { flex: 1; text-align: center; }
+.home-v2 .tier { flex: 1; text-align: center; min-width: 0; }
 .home-v2 .tier i { display: block; border-radius: 7px 7px 3px 3px; background: #DCDEF3; margin: 0 4px; }
 .home-v2 .tier span { display: block; font-size: .7rem; font-weight: 600; color: var(--mute); margin-top: 6px; letter-spacing: .04em; }
 .home-v2 .tier.master i { background: var(--amber); }
