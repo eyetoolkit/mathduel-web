@@ -127,6 +127,30 @@ export function createSudokuAdapter(opts: SudokuAdapterOpts): MpAdapter {
   let clsWrong = 0;
   let clsStart = 0;
 
+  /* practice 房间：同一道题、每人一张盘。此标记决定是否还要把别人的落子
+     画到自己盘上 —— 共享盘时代靠广播别人的 index 来同步，练习房必须关掉。 */
+  let practiceMode = false;
+
+  const fmtMs = (ms: number): string => (Number(ms) > 0 ? (Number(ms) / 1000).toFixed(1) + 's' : '0s');
+
+  /** 在牌桌上方贴一条轻量提示（每种场景复用同一个节点，避免刷屏） */
+  const notifyPractice = (shell: any, text: string, tone: 'ok' | 'warn'): void => {
+    try {
+      const boardEl = shell && (shell as any).boardEl;
+      if (!boardEl || !boardEl.parentElement) return;
+      let el = boardEl.parentElement.querySelector('.md-practice-note') as HTMLElement | null;
+      if (!el) {
+        el = document.createElement('div');
+        el.className = 'md-practice-note';
+        boardEl.parentElement.insertBefore(el, boardEl);
+      }
+      el.textContent = text;
+      el.setAttribute('style',
+        'margin:8px 0;padding:9px 12px;border-radius:10px;font-weight:700;font-size:.85rem;'
+        + (tone === 'ok' ? 'background:#ECFDF5;color:#047857' : 'background:#FFFBEB;color:#B45309'));
+    } catch { /* ignore */ }
+  };
+
   return {
     gameType: opts.gameType,
     label: opts.label,
@@ -162,6 +186,7 @@ export function createSudokuAdapter(opts: SudokuAdapterOpts): MpAdapter {
       return { puzzle, _solution: pz.solution.slice(), cages, size: opts.size, isKiller: !!opts.isKiller };
     },
     renderRound(payload: any, _ctx: RoundCtx, boardEl: HTMLElement, shell: MpShell) {
+      practiceMode = !!(payload && payload.practice);
       if (payload && payload.waiting) {
         boardEl.innerHTML = '<p style="color:#6B7280;text-align:center;padding:40px 0">Host is generating puzzle…</p>';
         return;
@@ -193,7 +218,9 @@ export function createSudokuAdapter(opts: SudokuAdapterOpts): MpAdapter {
         const i = msg.index ?? (msg.row != null && msg.col != null ? msg.row * opts.size + msg.col : -1);
         if (i >= 0 && cells[i]) {
           const v = msg.value || 0;
-          if (msg.player && msg.player !== myName()) {
+          /* practice（每人一张盘）时别人填的格子与自己这张盘无关，
+           再画上来只会把对方的错误答案灌进本地 grid —— 这里必须挡住。 */
+        if (msg.player && msg.player !== myName() && !practiceMode) {
             cells[i].textContent = v ? String(v) : '';
             cells[i].style.color = '#16A34A';
             grid[i] = v;
@@ -206,6 +233,40 @@ export function createSudokuAdapter(opts: SudokuAdapterOpts): MpAdapter {
         }
         return true;
       }
+      /* ── 每人一张盘：本盘做完 / 本盘超时（服务端按考生各自的 deadline 判）──
+         消息是单发给本人的，round 是本人这盘的序号（房间 round 只代表批次）。 */
+      if (msg.type === 'sudoku_board_done' || msg.type === 'sudoku_board_timeout') {
+        const solved = msg.type === 'sudoku_board_done';
+        const wrong = Number(msg.wrong || 0);
+        notifyPractice(_shell,
+          solved
+            ? '\u2705 Board ' + Number(msg.round || 1) + '/' + Number(msg.maxRounds || 0)
+              + ' solved in ' + fmtMs(msg.timeMs)
+              + (wrong ? ' \u00b7 ' + wrong + ' wrong' : '')
+              + ' \u2014 loading your next board\u2026'
+            : '\u23f1 Board ' + Number(msg.round || 1) + '/' + Number(msg.maxRounds || 0)
+              + ' time up \u2014 loading your next board\u2026',
+          solved ? 'ok' : 'warn');
+        if (isClassroom() && (_shell as any).room) {
+          reportRound(String((_shell as any).room), {
+            round: Number(msg.round || 1),
+            solved,
+            duration_ms: Number(msg.timeMs || 0),
+            wrong,
+            ops: [],
+          });
+        }
+        clsRight = 0; clsWrong = 0; clsStart = Date.now();
+        return true;
+      }
+
+      /* 本人已做完全部盘 —— 房间还没结束（同学在继续），提示等待即可 */
+      if (msg.type === 'sudoku_all_done') {
+        notifyPractice(_shell,
+          '\ud83c\udf89 All boards finished \u2014 waiting for the rest of the class\u2026', 'ok');
+        return true;
+      }
+
       if (msg.type === 'sudoku_game_over') {
         if (isClassroom() && (_shell as any).room) {
           reportRound(String((_shell as any).room), {
