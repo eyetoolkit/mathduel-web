@@ -171,7 +171,9 @@ const SHELL_CSS = `
 /* ---- Lobby modal ---- */
 .mp-lobby{position:fixed;inset:0;background:rgba(17,24,39,.5);display:none;align-items:center;justify-content:center;z-index:85;padding:20px;overflow:auto}
 .mp-lobby.show{display:flex}
-.mp-lobby .box{background:#FFFFFF;border:1px solid #E5E7EB;border-radius:18px;padding:26px;max-width:440px;width:100%}
+.mp-lobby .box{background:#FFFFFF;border:1px solid #E5E7EB;border-radius:18px;padding:26px;max-width:440px;width:100%;position:relative}
+.mp-lobby .mp-x{position:absolute;top:12px;right:14px;width:32px;height:32px;border:none;background:transparent;border-radius:8px;font-size:17px;color:#6B7280;cursor:pointer;line-height:1}
+.mp-lobby .mp-x:hover{background:#F3F4F6;color:#1A1B2E}
 .mp-lobby h2{margin:0 0 4px;font-size:22px}
 .mp-lobby .hint{color:#6B7280;font-size:13px;margin-bottom:16px}
 .mp-field{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
@@ -239,6 +241,8 @@ export class MpShell {
   spectatorCount = 0;
   /** SV 竞速中继模式：new_round{hasPuzzle:false} 时置位（房主出题上传 / 全员本地判定） */
   relay = false;
+  /** 竞赛视图完全关闭（Leave / ✕）后的回调：用于恢复被隐藏的页面元素 */
+  onClose?: () => void;
   /** 本回合是否已交卷（中继模式防重复提交） */
   private relayDone = false;
 
@@ -330,7 +334,7 @@ export class MpShell {
 
     this.boardEl = root.querySelector('#mpBoard') as HTMLElement;
 
-    root.querySelector('#mpLeave')!.addEventListener('click', () => this.leave(false));
+    root.querySelector('#mpLeave')!.addEventListener('click', () => this.close());
     this.wireChat();
     this.cb.onMount?.(root);
     return root;
@@ -341,6 +345,7 @@ export class MpShell {
     el.className = 'mp-lobby';
     el.innerHTML = `
       <div class="box">
+        <button class="mp-x" id="mpLobbyClose" type="button" aria-label="Close">✕</button>
         <h2>🏆 ${this.adapter.label} — Competition</h2>
         <div class="hint">Create a room, share the code, race friends or the world.</div>
         <div class="mp-field"><label>Your name</label><input class="mp-input" id="mpName" maxlength="18" placeholder="Player"/></div>
@@ -406,6 +411,7 @@ export class MpShell {
     el.querySelector('#mpStart')!.addEventListener('click', () => this.startRace());
     el.querySelector('#mpShare')!.addEventListener('click', () => this.copyInvite());
     el.querySelector('#mpCopy')!.addEventListener('click', () => this.copyCode());
+    el.querySelector('#mpLobbyClose')!.addEventListener('click', () => this.close());
     return el;
   }
 
@@ -444,11 +450,20 @@ export class MpShell {
 
   close(): void {
     this.leave(true);
+    this.lobbyEl.classList.remove('show');
     this.root.classList.remove('show');
+    this.onClose?.();
   }
 
   openLobby(): void {
     this.lobbyEl.classList.add('show');
+    // 视图状态复位：有进行中的房间 → 房间视图；否则回到「建/加入」表单
+    const form = this.lobbyEl.querySelector('#mpForm') as HTMLElement | null;
+    const room = this.lobbyEl.querySelector('#mpRoom') as HTMLElement | null;
+    if (form && room) {
+      if (this.room && this.active) { form.style.display = 'none'; room.classList.add('show'); }
+      else { form.style.display = ''; room.classList.remove('show'); }
+    }
     const ni = this.lobbyEl.querySelector('#mpName') as HTMLInputElement;
     if (this.myName) ni.value = this.myName;
     else {
@@ -607,7 +622,8 @@ export class MpShell {
 
   private onRoomReady(code: string): void {
     this.room = code;
-    this.lobbyEl.classList.remove('show');
+    // 保持 lobby 弹窗打开：showRoomView() 会在弹窗内部把表单换成「房间码 + 二维码」视图
+    // （此前在这里 remove('show') 会把整层弹窗关掉，用户永远看不到房间码 —— P0 修复）
     this.cb.onRoomReady?.(code);
     this.showRoomView();
   }
@@ -694,6 +710,8 @@ export class MpShell {
   private handleRoundMsg(d: any): void {
     const isRoundStart = ['new_round', 'round_resume', 'sudoku_new_game', 'eqpyr_new_game', 'bulls_new_round', 'np_new_game'].includes(d.type);
     if (!isRoundStart) return;
+    // 回合开始 → 收起 lobby 弹窗，露出牌桌
+    this.lobbyEl.classList.remove('show');
     this.active = true;
     this.started = true;
     this.round = d.round || 1;
@@ -843,6 +861,28 @@ export class MpShell {
     if (!cv) return;
     try {
       const url = this.inviteUrl();
+      const g = window as any;
+      if (typeof g.qrcode === 'function') {
+        // 真·可扫描二维码（与 24 点同款 qrcode.min.js）
+        const qr = g.qrcode(0, 'M');
+        qr.addData(url);
+        qr.make();
+        const mm = qr.getModuleCount();
+        const ctx = cv.getContext('2d');
+        if (ctx) {
+          const cell = Math.max(2, Math.floor(cv.width / mm));
+          const off = Math.floor((cv.width - cell * mm) / 2);
+          ctx.fillStyle = '#FFFFFF';
+          ctx.fillRect(0, 0, cv.width, cv.height);
+          ctx.fillStyle = '#111827';
+          for (let r = 0; r < mm; r++) {
+            for (let c = 0; c < mm; c++) {
+              if (qr.isDark(r, c)) ctx.fillRect(off + c * cell, off + r * cell, cell, cell);
+            }
+          }
+          return;
+        }
+      }
       drawQrFallback(cv, url);
     } catch { /* 二维码失败不影响主流程 */ }
   }
@@ -926,6 +966,7 @@ export class MpShell {
   private demoJoinRoom(code: string, name: string): void { this.room = code; this.isHost = false; this.demoFill(name); this.onRoomReady(this.room); this.cb.onPlayersChanged?.(this.players, false, this.room); }
 
   private demoStartRace(): void {
+    this.lobbyEl.classList.remove('show');
     this.started = true; this.active = true; this.round = 1; this.maxRounds = 5; this.timeLimit = 30;
     this.doneList = []; this.done = 0; this.mySubmitted = false;
     const ctx: RoundCtx = { round: 1, maxRounds: 5, timeLimit: 30, players: [], isHost: this.isHost };
@@ -1103,6 +1144,24 @@ export function mountCompetition(cfg: MountConfig): MpShell {
   const shell = new MpShell(cfg.adapter, cfg.callbacks || {});
   shell.mount(cfg.mountPoint);
 
+  // 记录被隐藏的页面元素，关闭竞赛视图时恢复原样
+  const hiddenEls: HTMLElement[] = [];
+  const hidePage = () => {
+    cfg.hideOnOpen?.forEach((sel) => document.querySelectorAll(sel).forEach((e) => {
+      const el = e as HTMLElement;
+      if (!hiddenEls.includes(el)) {
+        (el as any).__mpPrevDisplay = el.style.display;
+        el.style.display = 'none';
+        hiddenEls.push(el);
+      }
+    }));
+  };
+  const restorePage = () => {
+    hiddenEls.forEach((el) => { el.style.display = (el as any).__mpPrevDisplay ?? ''; });
+    hiddenEls.length = 0;
+  };
+  shell.onClose = restorePage;
+
   const tabLabel = cfg.tabLabel || 'Competition';
   const tabMode = 'battle';
   if (cfg.tabsEl) {
@@ -1111,7 +1170,7 @@ export function mountCompetition(cfg: MountConfig): MpShell {
     tab.dataset.mode = tabMode;
     tab.textContent = tabLabel;
     tab.addEventListener('click', () => {
-      cfg.hideOnOpen?.forEach((sel) => document.querySelectorAll(sel).forEach((e) => (e as HTMLElement).style.display = 'none'));
+      hidePage();
       shell.open();
     });
     cfg.tabsEl.appendChild(tab);
@@ -1123,7 +1182,7 @@ export function mountCompetition(cfg: MountConfig): MpShell {
   const startMode = params.get('mode');
   if (startMode === tabMode || startMode === 'random' || rc) {
     window.setTimeout(() => {
-      cfg.hideOnOpen?.forEach((sel) => document.querySelectorAll(sel).forEach((e) => (e as HTMLElement).style.display = 'none'));
+      hidePage();
       shell.open();
       if (rc) {
         const ji = shell.lobbyEl.querySelector('#mpJoinCode') as HTMLInputElement | null;
