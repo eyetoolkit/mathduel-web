@@ -1087,7 +1087,10 @@ export class MpShell {
 
   private eloBlockHtml(elo: EloEntry[]): string {
     if (!elo || !elo.length) return '';
-    const rows = elo.slice(0, 10).map((e) => {
+    // 无有效评级（未登录 uuid / AI / skipped）的条目会渲染成 "null 0"——整块隐藏
+    const rated = elo.filter((e) => typeof e.elo === 'number');
+    if (!rated.length) return '';
+    const rows = rated.slice(0, 10).map((e) => {
       const cls = e.delta > 0 ? 'up' : e.delta < 0 ? 'down' : 'flat';
       const dtxt = (e.delta > 0 ? '+' : '') + e.delta;
       const avg = typeof e.elo === 'number' ? Math.round(e.elo - e.delta) : null;

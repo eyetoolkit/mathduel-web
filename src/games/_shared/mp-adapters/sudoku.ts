@@ -43,11 +43,37 @@ export function createSudokuAdapter(opts: SudokuAdapterOpts): MpAdapter {
       /* relay 模式：所有空格已填 + 全部匹配 solution（不依赖题面冲突检测，因 solution 唯一）
          比 sudoku 引擎的冲突检查更严格；solution 是房主出题时本地引擎生成、自带唯一解 */
       if (!shell.relay) return;
-      if (grid.length !== solution.length) return;
+      if (solution.length !== grid.length) {
+        /* 非房主中继：广播题面不带答案（solution=[]）→ 本地按「填满 + 行/列/宫无冲突」判定。
+           原实现在此永远 return，导致非房主永远无法交卷、每回合只能等超时（P0，2026-09-26 e2e 发现）。
+           SV 仅计时，submit_answer 本就信任客户端声明，此处按同信任级放行 */
+        if (grid.length !== size * size || grid.some((v) => !v)) return;
+        if (hasConflict()) return;
+        shell.relaySubmit();
+        return;
+      }
       for (let i = 0; i < grid.length; i++) {
         if (!grid[i] || grid[i] !== solution[i]) return;
       }
       shell.relaySubmit();
+    };
+    /* 行/列/宫无重复检查（box 为宫宽高） */
+    const hasConflict = () => {
+      for (let r = 0; r < size; r++) {
+        const seen = new Set<number>();
+        for (let c = 0; c < size; c++) { const v = grid[r * size + c]; if (!v) continue; if (seen.has(v)) return true; seen.add(v); }
+      }
+      for (let c = 0; c < size; c++) {
+        const seen = new Set<number>();
+        for (let r = 0; r < size; r++) { const v = grid[r * size + c]; if (!v) continue; if (seen.has(v)) return true; seen.add(v); }
+      }
+      for (let br = 0; br < size; br += box) {
+        for (let bc = 0; bc < size; bc += box) {
+          const seen = new Set<number>();
+          for (let r = br; r < br + box; r++) for (let c = bc; c < bc + box; c++) { const v = grid[r * size + c]; if (!v) continue; if (seen.has(v)) return true; seen.add(v); }
+        }
+      }
+      return false;
     };
     for (let i = 0; i < size * size; i++) {
       const cell = document.createElement('div');

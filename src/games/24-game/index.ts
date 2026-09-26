@@ -1394,8 +1394,11 @@ function showRaceRoundResult(d: { round: number; ranking: RaceEntry[] }): void {
 /** Elo 结算块（设计稿 result badge）：服务端 game_over.elo 产出，平局/无 uuid 时可能为空 */
 function eloBlockHtml(elo?: EloEntry[]): string {
   if (!elo || !elo.length) return '';
+  // 无有效评级（未登录 uuid / skipped）的条目会渲染成 "null 0"——整块隐藏
+  const ratedElo = elo.filter((e) => typeof e.elo === 'number');
+  if (!ratedElo.length) return '';
   const mine = elo.find((e) => e.name === comp.myName);
-  const rows = elo
+  const rows = ratedElo
     .slice(0, 10)
     .map((e) => {
       const isMe = e.name === comp.myName;
