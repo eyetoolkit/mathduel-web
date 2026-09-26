@@ -31,7 +31,18 @@
 .home-v2 .lobby-grid {
   display: grid; grid-template-columns: 1.55fr 1fr; gap: 24px;
   align-items: start; padding: 36px 0 8px;
+  position: relative;
 }
+/* 淡棋盘格底纹（呼应参考页 BoardDuel 的 checkerboard；indigo 极淡，仅作氛围） */
+.home-v2 .lobby-grid::before {
+  content: ""; position: absolute; inset: -34px -18px; z-index: 0; border-radius: 26px;
+  background-image:
+    linear-gradient(45deg, rgba(55, 48, 163, .045) 25%, transparent 25%, transparent 75%, rgba(55, 48, 163, .045) 75%),
+    linear-gradient(45deg, rgba(55, 48, 163, .045) 25%, transparent 25%, transparent 75%, rgba(55, 48, 163, .045) 75%);
+  background-size: 54px 54px; background-position: 0 0, 27px 27px;
+  pointer-events: none;
+}
+.home-v2 .lobby-grid > section, .home-v2 .lobby-grid > aside { position: relative; z-index: 1; }
 .home-v2 .sec-h {
   font-family: var(--font-display); font-weight: 800;
   font-size: 1.22rem; margin-bottom: 14px;
@@ -47,11 +58,40 @@
   position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center;
   text-align: center; background: #fff; border: 1.5px solid var(--line); border-radius: 16px;
   padding: 22px 12px 18px; color: var(--ink);
+  /* 高度由内容自适应（与五子棋 lobby 同款）；六卡内容同构（图标+标题）天然等高，无需 min-height 硬撑 */
   transition: transform .16s ease, border-color .16s ease, box-shadow .16s ease;
 }
 .home-v2 .mode:hover { transform: translateY(-3px); border-color: var(--indigo-bright); box-shadow: 0 10px 22px rgba(30, 27, 75, .08); }
 .home-v2 .mode:active { transform: translateY(-1px); }
-.home-v2 .mode .mi { font-size: 2.2rem; line-height: 1; margin-bottom: 10px; }
+/* 模式图标：cv-* 同款几何封面 tile —— 靛蓝渐变方底 + 白色图形 + 琥珀点缀，卡通微表情保留 */
+.home-v2 .mode .mi {
+  width: 62px; height: 62px; margin-bottom: 12px; border-radius: 18px;
+  display: grid; place-items: center;
+  background: linear-gradient(152deg, #4338CA 0%, #3730A3 100%);
+  box-shadow: 0 8px 18px rgba(55, 48, 163, .28), inset 0 1px 0 rgba(255, 255, 255, .28);
+  transition: transform .28s cubic-bezier(.34, 1.56, .64, 1), box-shadow .28s ease;
+}
+.home-v2 .mode .mi-ico { width: 38px; height: 38px; display: block; }
+.home-v2 .mode:hover .mi {
+  transform: translateY(-5px) rotate(-3deg) scale(1.06);
+  box-shadow: 0 16px 28px rgba(55, 48, 163, .36), inset 0 1px 0 rgba(255, 255, 255, .32);
+}
+.home-v2 .mode:active .mi { transform: translateY(-2px) rotate(-1deg) scale(1.02); }
+/* Daily 卡：tile 保持靛蓝（琥珀已由顶部 rail + 倒计时承载），hover 略提亮 */
+.home-v2 .mode.daily:hover .mi {
+  box-shadow: 0 16px 28px rgba(55, 48, 163, .42), inset 0 1px 0 rgba(255, 255, 255, .34);
+}
+/* 暗色：tile 提亮一档，白色图形在深底更跳 */
+html[data-theme="dark"] .home-v2 .mode .mi {
+  background: linear-gradient(152deg, #5B54D6 0%, #4338CA 100%);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, .4), inset 0 1px 0 rgba(255, 255, 255, .18);
+}
+html[data-theme="dark"] .home-v2 .mode:hover .mi {
+  box-shadow: 0 16px 28px rgba(0, 0, 0, .5), inset 0 1px 0 rgba(255, 255, 255, .24);
+}
+@media (prefers-reduced-motion: reduce) {
+  .home-v2 .mode .mi, .home-v2 .mode:hover .mi, .home-v2 .mode:active .mi { transition: none; transform: none; }
+}
 .home-v2 .mode .mt {
   font-family: var(--font-display); font-weight: 800;
   font-size: 1.02rem; line-height: 1.25;
@@ -201,7 +241,8 @@
   .home-v2 .g-hero .gcover { width: 88px; height: 88px; }
   .home-v2 .modes { gap: 10px; }
   .home-v2 .mode { padding: 15px 8px 13px; border-radius: 13px; }
-  .home-v2 .mode .mi { font-size: 1.7rem; margin-bottom: 7px; }
+  .home-v2 .mode .mi { width: 54px; height: 54px; border-radius: 16px; margin-bottom: 9px; }
+  .home-v2 .mode .mi-ico { width: 33px; height: 33px; }
   .home-v2 .mode .mt { font-size: .9rem; }
   .home-v2 .tag-done { font-size: .54rem; padding: 1px 6px; }
   .home-v2 .mode .cd-row { font-size: .66rem; margin-top: 5px; }

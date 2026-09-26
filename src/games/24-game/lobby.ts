@@ -26,25 +26,6 @@ function shanghaiDateKey(d = new Date()): string {
   return `${sh.getUTCFullYear()}${String(sh.getUTCMonth() + 1).padStart(2, '0')}${String(sh.getUTCDate()).padStart(2, '0')}`;
 }
 
-/** 距离上海时间次日 00:00 的剩余秒数 */
-function secondsToShanghaiMidnight(now = Date.now()): number {
-  const sh = now + SH_OFFSET;
-  const nextMidnight = (Math.floor(sh / 86400000) + 1) * 86400000;
-  return Math.max(0, Math.round((nextMidnight - sh) / 1000));
-}
-
-function startCountdown(): void {
-  const el = $('boardCountdown');
-  if (!el) return;
-  const paint = () => {
-    const s = secondsToShanghaiMidnight();
-    const p = (n: number) => String(n).padStart(2, '0');
-    el.textContent = `${p(Math.floor(s / 3600))}:${p(Math.floor((s % 3600) / 60))}:${p(s % 60)}`;
-  };
-  paint();
-  window.setInterval(paint, 1000);
-}
-
 /* ===================== 今日完成标记 ===================== */
 function completedToday(): boolean {
   try {
@@ -169,7 +150,6 @@ function initRoom(): void {
 function boot(): void {
   wireLobbyChrome();
   markDailyDone();
-  startCountdown();
   initRoom();
   void renderBoard();
 }
