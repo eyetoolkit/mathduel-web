@@ -11,19 +11,20 @@
 import type { MpAdapter, RoundCtx, MpShell } from '../mp-client';
 import { generatePuzzle as genSudoku9 } from '../../sudoku/engine';
 import { generatePuzzle as genSudoku6 } from '../../sudoku-6x6/engine';
+import { generatePuzzle as genSudoku4 } from '../../sudoku-4x4/engine';
 import { generateKiller } from '../../killer-sudoku/engine';
 
 export interface SudokuAdapterOpts {
-  gameType: string;        // 'sudoku' | 'sudoku-6x6' | 'killer-sudoku'
+  gameType: string;        // 'sudoku' | 'sudoku-6x6' | 'sudoku-4x4' | 'killer-sudoku'
   label: string;
-  size: 9 | 6;
+  size: 9 | 6 | 4;
   isKiller?: boolean;
   difficulty?: string;
   rounds?: number;
   timeLimit?: number;
 }
 
-const MAX_BY_SIZE: Record<number, number> = { 9: 9, 6: 6 };
+const MAX_BY_SIZE: Record<number, number> = { 9: 9, 6: 6, 4: 4 };
 
 export function createSudokuAdapter(opts: SudokuAdapterOpts): MpAdapter {
   let grid: number[] = [];
@@ -34,7 +35,7 @@ export function createSudokuAdapter(opts: SudokuAdapterOpts): MpAdapter {
 
   const render = (boardEl: HTMLElement, shell: MpShell, size: number, cages?: any) => {
     const max = MAX_BY_SIZE[size] || 9;
-    const box = size === 6 ? 2 : 3;
+    const box = size === 4 ? 2 : size === 6 ? 2 : 3;
     const wrap = document.createElement('div');
     wrap.style.cssText = 'display:grid;grid-template-columns:repeat(' + size + ',1fr);gap:2px;width:min(420px,86vw);background:#E5E7EB;padding:4px;border-radius:10px';
     cells = [];
@@ -53,7 +54,7 @@ export function createSudokuAdapter(opts: SudokuAdapterOpts): MpAdapter {
       const r = Math.floor(i / size), c = i % size;
       const br = c % box === box - 1 && c !== size - 1;
       const bb = r % box === box - 1 && r !== size - 1;
-      cell.style.cssText = 'aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:' + (size === 6 ? 22 : 18) + 'px;font-weight:700;border-radius:5px;' +
+      cell.style.cssText = 'aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:' + (size === 4 ? 28 : size === 6 ? 22 : 18) + 'px;font-weight:700;border-radius:5px;' +
         (br ? 'border-right:2px solid #9CA3AF;' : '') + (bb ? 'border-bottom:2px solid #9CA3AF;' : '') +
         (puzzle[i] ? 'background:#F3F4F6;color:#9CA3AF;' : 'background:#F9FAFB;color:#B45309;cursor:pointer;');
       cell.dataset.i = String(i);
@@ -112,6 +113,8 @@ export function createSudokuAdapter(opts: SudokuAdapterOpts): MpAdapter {
       let pz: any;
       if (opts.isKiller) {
         pz = generateKiller(opts.difficulty as any || 'standard', rng);
+      } else if (opts.size === 4) {
+        pz = genSudoku4(rng);
       } else if (opts.size === 6) {
         pz = genSudoku6(opts.difficulty as any || 'standard', rng);
       } else {

@@ -1,20 +1,11 @@
 /**
  * 4×4 数独引擎（纯函数，无 DOM 依赖）· 小朋友入门款
  * 盘面：16 格一维数组；0 = 空。块 = 2 行高 × 2 列宽（4 个 2×2 宫）。
- * 生成：变换法产满解（瞬时，无需回溯）→ 按难度挖洞（保持唯一解）。
- * 与 9×9 / 6×6 引擎同款接口与范式；差异点：N=4、2×2 宫、线索数（Easy10/Medium8/Hard6）。
+ * 生成：变换法产满解（瞬时，无需回溯）→ 固定挖洞（保持唯一解）。
+ * 与 9×9 / 6×6 引擎同款接口与范式；差异点：N=4、2×2 宫、固定 6 空 / 10 线索（单档，无难度分级）。
  */
 
 export type Grid = number[]; // length 16
-export type Difficulty = 'easy' | 'standard' | 'hard';
-
-/** 各难度的「线索数」（印刷在难度按钮上，适合学龄前/低年级） */
-export const CLUES_BY_DIFF: Record<Difficulty, number> = { easy: 10, standard: 8, hard: 6 };
-export const HOLES_BY_DIFF: Record<Difficulty, number> = {
-  easy: 16 - CLUES_BY_DIFF.easy,
-  standard: 16 - CLUES_BY_DIFF.standard,
-  hard: 16 - CLUES_BY_DIFF.hard,
-};
 
 export const N = 4;
 export const idx = (r: number, c: number): number => r * N + c;
@@ -42,6 +33,17 @@ export function mulberry32(seed: number): () => number {
     t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
+}
+
+/** 站点日期键（UTC+8 次日零点为界，与 24 点每日挑战一致） */
+export function shanghaiDateKey(now?: Date): string {
+  const d = now ?? new Date();
+  const utc8 = new Date(d.getTime() + 8 * 3600 * 1000);
+  return (
+    utc8.getUTCFullYear().toString() +
+    String(utc8.getUTCMonth() + 1).padStart(2, '0') +
+    String(utc8.getUTCDate()).padStart(2, '0')
+  );
 }
 
 function shuffle<T>(arr: T[], rng: () => number): T[] {
@@ -151,14 +153,14 @@ export interface Puzzle {
   solution: Grid;
   puzzle: Grid; // 挖洞后
   holes: number[]; // 空格下标
-  diff: Difficulty;
 }
 
-/** 生成唯一解谜题：随机挖洞，破坏唯一性则放回（16 格极小，预算充裕） */
-export function generatePuzzle(diff: Difficulty, rng: () => number): Puzzle {
+/** 生成唯一解谜题：随机挖洞，破坏唯一性则放回（16 格极小，预算充裕）。
+ *  固定 6 空 / 10 线索（原 Easy 档，小朋友友好且保证可解）。已取消难度分级。 */
+export function generatePuzzle(rng: () => number): Puzzle {
   const solution = generateSolved(rng);
   const puzzle = solution.slice();
-  const target = HOLES_BY_DIFF[diff];
+  const target = 6; // 固定 6 空 / 10 线索
   const holes: number[] = [];
   let budget = 600;
 
@@ -184,7 +186,12 @@ export function generatePuzzle(diff: Difficulty, rng: () => number): Puzzle {
     guard++;
   }
 
-  return { solution, puzzle, holes, diff };
+  return { solution, puzzle, holes };
+}
+
+/** 每日题（确定性种子，全球同题；固定 6 空单档） */
+export function dailyPuzzle4x4(dateKey: string): Puzzle {
+  return generatePuzzle(mulberry32(hashString('s4-' + dateKey)));
 }
 
 /** 是否全部按解填满（值正确） */

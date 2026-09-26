@@ -1,9 +1,9 @@
 /**
- * 4×4 数独 · UI 编排（小朋友入门款：全部本地，无 API 依赖）
- * 模式：solo（3 难度）/ timed（45s 连解）
+ * 4×4 数独 · UI 编排（小朋友入门款）
+ * 模式：solo / daily（每日种子题）/ timed（45s 连解）/ battle（好友对战）/ random（随机匹配，走竞赛外壳）
  * 视觉：24 ARENA 同款 token（body.arena remap），三级 SVG 网格线（2×2 宫粗线），
  *       大字号数字（clamp 1.8–2.7rem），2×2 数字键盘呼应宫结构。
- * 与 9×9 同范式；砍掉 daily/duel/联机（小朋友版保持极简）。
+ * 单档（无难度分级）；battle/random 由 mountCompetition 接管（CF DO 路径）。
  */
 
 import '@tri-sites/design-system/styles';
@@ -19,10 +19,13 @@ import {
   boxOf,
   rowOf,
   mulberry32,
-  type Difficulty,
+  dailyPuzzle4x4,
+  shanghaiDateKey,
   type Grid,
   type Puzzle,
 } from './engine';
+import { mountCompetition } from '../_shared/mp-client';
+import { createSudokuAdapter } from '../_shared/mp-adapters/sudoku';
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T | null;
 
@@ -37,18 +40,15 @@ mountHeader(($('header') as HTMLElement | null) ?? document.createElement('div')
     ],
 });
 
-type Mode = 'solo' | 'timed';
+type Mode = 'solo' | 'timed' | 'daily';
 
 const TIMED_LIMIT = 45;
 const MAX_MISTAKES = 3; // 累计 3 次错误即负
-
-const diffLabel = (d: Difficulty): string => ({ easy: 'Easy', standard: 'Medium', hard: 'Hard' })[d];
 
 /* ─── 状态 ─── */
 const st = {
   view: 'lobby' as 'lobby' | 'play',
   mode: 'solo' as Mode,
-  diff: 'easy' as Difficulty, // 小朋友默认 Easy
   puzzle: null as Puzzle | null,
   grid: new Array(16).fill(0) as Grid,
   filledBy: new Array(16).fill(0) as number[], // 1 玩家填（着色用）
@@ -120,9 +120,12 @@ function startRound(): void {
     st.timedStreak = 0;
     st.puzzle = newRoundPuzzle();
     banner(`<div class="banner daily timed"><div class="daily-top"><div class="daily-meta"><div class="b-title">⏱ Timed · ${TIMED_LIMIT}s per grid</div><div class="b-sub">Solved <b id="tmSolved">0</b> · Streak <b id="tmStreak">0</b> · wrong digits just flash</div></div></div></div>`);
+  } else if (st.mode === 'daily') {
+    st.puzzle = newRoundPuzzle();
+    banner(`<div class="banner"><div class="daily-top"><div class="daily-meta"><div class="b-title">📅 Daily Grid · ${shanghaiDateKey()}</div><div class="b-sub">Same puzzle for everyone today · best time saved locally</div></div></div></div>`);
   } else {
     st.puzzle = newRoundPuzzle();
-    banner(`<div class="banner"><div class="daily-top"><div class="daily-meta"><div class="b-title">🎯 Solo · ${diffLabel(st.diff)}</div><div class="b-sub">Unique solution · best time saved locally</div></div></div></div>`);
+    banner(`<div class="banner"><div class="daily-top"><div class="daily-meta"><div class="b-title">🎯 Solo</div><div class="b-sub">Unique solution · best time saved locally</div></div></div></div>`);
   }
   resetBoard();
   renderBoard();
@@ -133,7 +136,8 @@ function startRound(): void {
 let roundNonce = 0;
 function newRoundPuzzle(): Puzzle {
   roundNonce = (roundNonce + 1) | 0;
-  return generatePuzzle(st.diff, mulberry32((Date.now() ^ (roundNonce * 0x9e3779b9)) >>> 0));
+  if (st.mode === 'daily') return dailyPuzzle4x4(shanghaiDateKey());
+  return generatePuzzle(mulberry32((Date.now() ^ (roundNonce * 0x9e3779b9)) >>> 0));
 }
 
 function resetBoard(keepClock = false): void {
@@ -412,7 +416,7 @@ function winSolo(): void {
   const t = st.elapsed;
   let extra = '';
   const b = readJSON<Record<string, number>>(LS_BEST, {});
-  const k = st.diff;
+  const k = st.mode; // 'solo' | 'daily'
   if (!b[k] || t < b[k]) {
     b[k] = Math.round(t * 10) / 10;
     writeJSON(LS_BEST, b);
@@ -506,20 +510,18 @@ function renderSide(): void {
   const filled = st.grid.filter((v) => v).length;
   const holes = p ? p.holes.length : 0;
   let bestRow = '';
-  if (st.mode === 'solo') {
+  if (st.mode !== 'timed') {
     const b = readJSON<Record<string, number>>(LS_BEST, {});
+    const label = st.mode === 'daily' ? 'Daily' : 'Solo';
     bestRow =
-      '<div class="panel"><h3>🏅 Best times</h3>' +
-      (['easy', 'standard', 'hard'] as Difficulty[])
-        .map((d) => `<div class="stat-row"><span>${diffLabel(d)}</span><b>${b[d] ? fmt(b[d]) : '—'}</b></div>`)
-        .join('') +
+      '<div class="panel"><h3>🏅 Best time</h3>' +
+      `<div class="stat-row"><span>${label}</span><b>${b[st.mode] ? fmt(b[st.mode]) : '—'}</b></div>` +
       '</div>';
   }
   el.innerHTML =
     '<div class="panel"><h3>▦ Grid status</h3>' +
     `<div class="stat-row"><span>Cells filled</span><b id="statFilled">${filled}/16</b></div>` +
     `<div class="stat-row"><span>Empty (this puzzle)</span><b>${holes}</b></div>` +
-    `<div class="stat-row"><span>Difficulty</span><b>${diffLabel(st.diff)}</b></div>` +
     `<div class="stat-row"><span>Mistakes</span><span class="lives" id="sideLives"><i class="${st.mistakes < 1 ? '' : 'off'}"></i><i class="${st.mistakes < 2 ? '' : 'off'}"></i><i class="${st.mistakes < 3 ? '' : 'off'}"></i></span></div>` +
     '<div class="hint-step"><b>·</b><span>Click a cell, then tap a number — or type 1–4, arrows to move. Toggle Notes (✏) to pencil candidates; Backspace erases.</span></div></div>' +
     bestRow;
@@ -543,14 +545,6 @@ function hideModal(): void {
 /* ═══ 事件绑定 ═══ */
 document.querySelectorAll<HTMLButtonElement>('#tabs .tab').forEach((t) => {
   t.addEventListener('click', () => enterMode(t.dataset.mode as Mode));
-});
-
-document.querySelectorAll<HTMLButtonElement>('#diffPick button').forEach((b) => {
-  b.addEventListener('click', () => {
-    st.diff = b.dataset.d as Difficulty;
-    document.querySelectorAll<HTMLButtonElement>('#diffPick button').forEach((x) => x.classList.toggle('active', x === b));
-    if (st.mode === 'solo') startRound();
-  });
 });
 
 $('s4pad')!.addEventListener('click', (e) => {
@@ -662,23 +656,20 @@ function giveHint(): void {
   checkWin();
 }
 
-/* ═══ boot：深链 ?mode= / ?d= ═══ */
-const isMode = (x: string): x is Mode => x === 'solo' || x === 'timed';
+/* ═══ boot：深链 ?mode= ═══ */
+const isMode = (x: string): x is Mode => x === 'solo' || x === 'timed' || x === 'daily';
 const qs = new URLSearchParams(location.search);
 const modeFromUrl = qs.get('mode') || '';
 
-// 深链 ?d=easy|standard|hard —— 由模式选择页的难度行带入。
-// 必须在 enterMode() 之前落到 st.diff，否则会先用默认难度发牌再被覆盖。
-const isDiff = (x: string): x is Difficulty => x === 'easy' || x === 'standard' || x === 'hard';
-const dFromUrl = qs.get('d') || '';
-if (isDiff(dFromUrl)) {
-  st.diff = dFromUrl;
-  document.querySelectorAll<HTMLButtonElement>('#diffPick button').forEach((b) => {
-    b.classList.toggle('active', b.dataset.d === dFromUrl);
+// 好友对战 / 随机匹配 → 走通用竞赛外壳（CF DO 路径，worker 端出题）
+if (modeFromUrl === 'battle' || modeFromUrl === 'random') {
+  mountCompetition({
+    adapter: createSudokuAdapter({ gameType: 'sudoku-4x4', label: 'Sudoku 4×4', size: 4, rounds: 3, timeLimit: 240 }),
+    tabsEl: document.querySelector('#tabs') as HTMLElement | null,
+    tabLabel: 'Competition',
+    hideOnOpen: ['#playView'],
   });
-}
-
-if (isMode(modeFromUrl)) {
+} else if (isMode(modeFromUrl)) {
   enterMode(modeFromUrl);
 } else {
   location.replace(LOBBY_URL);
