@@ -417,10 +417,10 @@ body.rail .main { margin-left: var(--sb-rail); }
   body.home-v2 .daily-tiles { grid-template-columns: repeat(2, 1fr); }
   body.home-v2 .feats-grid { grid-template-columns: 1fr; }
   body.home-v2 .ladder-panel { padding: 18px; }
-  /* 窄屏：天梯改为多行 wrap，不再被 320px 硬下限撑出横向滚动 */
+  /* 窄屏：天梯改为多行 wrap，tiers 自身获得可换行的最小宽度，避免子 tier min-content 撑出横向滚动 */
   body.home-v2 .ladder .tiers { min-width: 0; flex-wrap: wrap; justify-content: space-between; }
-  body.home-v2 .ladder .tier { flex: 0 1 auto; min-width: 48px; }
-  body.home-v2 .ladder-title { white-space: normal; }
+  body.home-v2 .ladder .tier { flex: 1 1 48px; min-width: 0; max-width: 100%; }
+  body.home-v2 .ladder-title { white-space: normal; flex-basis: 100%; }
 }
 @media (prefers-reduced-motion: reduce) {
   body.home-v2 *, body.home-v2 *::before, body.home-v2 *::after {
