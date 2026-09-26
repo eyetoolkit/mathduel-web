@@ -623,7 +623,7 @@ if (isT(tFromUrl)) {
     b.classList.toggle('active', b.dataset.t === tFromUrl);
   });
 }
-if (modeFromUrl === "battle" || modeFromUrl === "random") {
+if (modeFromUrl === "battle" || modeFromUrl === "random" || (new URLSearchParams(location.search).get('room') || '').trim()) {
   mountCompetition({
     adapter: createEqpyrAdapter({ label: 'Equation Pyramid', tier: st.tier, rounds: 3, timeLimit: 60 }),
     tabsEl: document.querySelector("#tabs") as HTMLElement | null,

@@ -922,7 +922,7 @@ if (isDiff(dFromUrl)) {
   });
 }
 
-if (modeFromUrl === "battle" || modeFromUrl === "random") {
+if (modeFromUrl === "battle" || modeFromUrl === "random" || (new URLSearchParams(location.search).get('room') || '').trim()) {
   mountCompetition({
     adapter: createSudokuAdapter({ gameType: 'sudoku', label: 'Sudoku', size: 9, difficulty: st.diff, rounds: 3, timeLimit: 240 }),
     tabsEl: document.querySelector("#tabs") as HTMLElement | null,

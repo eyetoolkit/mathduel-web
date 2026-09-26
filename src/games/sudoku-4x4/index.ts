@@ -662,7 +662,7 @@ const qs = new URLSearchParams(location.search);
 const modeFromUrl = qs.get('mode') || '';
 
 // 好友对战 / 随机匹配 → 走通用竞赛外壳（CF DO 路径，worker 端出题）
-if (modeFromUrl === 'battle' || modeFromUrl === 'random') {
+if (modeFromUrl === 'battle' || modeFromUrl === 'random' || (new URLSearchParams(location.search).get('room') || '').trim()) {
   mountCompetition({
     adapter: createSudokuAdapter({ gameType: 'sudoku-4x4', label: 'Sudoku 4×4', size: 4, rounds: 3, timeLimit: 240 }),
     tabsEl: document.querySelector('#tabs') as HTMLElement | null,
