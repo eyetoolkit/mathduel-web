@@ -417,9 +417,10 @@ body.rail .main { margin-left: var(--sb-rail); }
   body.home-v2 .daily-tiles { grid-template-columns: repeat(2, 1fr); }
   body.home-v2 .feats-grid { grid-template-columns: 1fr; }
   body.home-v2 .ladder-panel { padding: 18px; }
-  /* 窄屏：天梯6段挤在一行：标题占满一行，tiers 关掉 wrap、把 tier 改 flex:0 让文字自然排 */
-  body.home-v2 .ladder .tiers { min-width: 0; flex-wrap: nowrap; gap: 6px; justify-content: space-between; }
-  body.home-v2 .ladder .tier { flex: 0 1 auto; min-width: 0; }
+  /* 窄屏：天梯6段挤在一行 + 等高（顶端对齐），不再让矩形高度差造成"Master 像在第二行" */
+  body.home-v2 .ladder .tiers { min-width: 0; flex-wrap: nowrap; gap: 6px; align-items: flex-start; justify-content: space-between; }
+  body.home-v2 .ladder .tier { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; }
+  body.home-v2 .ladder .tier i { width: 100%; max-width: 24px; margin: 0 auto; }
   body.home-v2 .ladder .tier span { font-size: .64rem; letter-spacing: 0; }
   body.home-v2 .ladder-title { white-space: normal; flex-basis: 100%; }
 }
