@@ -152,6 +152,24 @@ tr:last-child td{border-bottom:0}
 .hd .ghost:hover{border-color:var(--indigo);color:var(--indigo)}
 .pill.mode{background:rgba(245,158,11,.14);color:var(--warn)}
 
+/* ═══════════ A1 洞察面板：报告首屏先给结论 ═══════════ */
+.insights{background:linear-gradient(160deg,#EEF0FB,#F6F3FF);border:1px solid #D9DCF5;border-radius:14px;padding:14px 15px;margin-bottom:16px}
+.ins-hl{font-family:var(--disp);font-weight:700;font-size:1.02rem;color:var(--indigo);line-height:1.35;margin-bottom:10px}
+.ins-item{display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-top:1px solid rgba(55,48,163,.1)}
+.ins-item:first-of-type{border-top:0}
+.ins-ic{font-size:1.05rem;line-height:1;width:20px;text-align:center;flex:none}
+.ins-tx{flex:1;min-width:0}
+.ins-t{display:block;font-size:.86rem;font-weight:600;color:var(--ink);line-height:1.35}
+.ins-d{display:block;font-size:.72rem;color:var(--mute);margin-top:2px;font-family:var(--disp)}
+.ins-act{margin-left:auto;flex:none;align-self:center;background:var(--indigo);color:#fff;border:0;border-radius:9px;font-weight:700;font-size:.74rem;padding:7px 12px;transition:background .12s}
+.ins-act:hover{background:var(--indigo-bright)}
+.sev-high{--sev:var(--red)} .sev-med{--sev:var(--warn)} .sev-info{--sev:var(--mute)} .sev-good{--sev:var(--green)}
+.ins-item::before{content:"";position:absolute}
+.ins-item.sev-high{border-left:3px solid var(--red);padding-left:10px;margin-left:-1px}
+.ins-item.sev-med{border-left:3px solid var(--warn);padding-left:10px;margin-left:-1px}
+.ins-item.sev-good{border-left:3px solid var(--green);padding-left:10px;margin-left:-1px}
+.ins-item.sev-info{border-left:3px solid var(--line);padding-left:10px;margin-left:-1px}
+
 .secttl .caveat{font-family:var(--ui);font-size:.66rem;font-weight:700;color:var(--mute);letter-spacing:.04em}
 .secttl .linkbtn{margin-left:auto;background:transparent;border:1.5px solid var(--line);border-radius:9px;font-weight:700;font-size:.72rem;padding:5px 10px;color:var(--indigo)}
 .secttl .linkbtn:hover{border-color:var(--indigo)}

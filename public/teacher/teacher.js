@@ -186,6 +186,9 @@ function renderOverview() {
   const due = assignment.dueAt ? new Date(assignment.dueAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : null;
   $('aDue').textContent = due ? '📅 due ' + due : '📅 no due';
 
+  // A1：报告首屏先给结论（谁没掌握 / 最难的一批 / 还没开始的人）
+  renderInsights(report);
+
   // 班级运算薄弱点（服务端算好的百分比）
   $('weakTtl').textContent = 'Class weak spot · ' + (assignment.gameLabel || assignment.game);
   const w = $('weak');
@@ -252,12 +255,60 @@ function renderBoard() {
   $('bDone').textContent = `✅ ${(report && report.summary && report.summary.started) || 0}/${(report && report.summary && report.summary.students) || 0}`;
 }
 
+/* ─── A1：洞察面板（报告首屏先给结论）─── */
+function renderInsights(rep) {
+  const box = $('insights');
+  if (!box) return;
+  if (!rep || !rep.insights || !rep.insights.items || !rep.insights.items.length) {
+    box.style.display = 'none';
+    box.innerHTML = '';
+    return;
+  }
+  const ins = rep.insights;
+  box.style.display = '';
+  let html = '';
+  if (ins.headline) html += `<div class="ins-hl">${esc(ins.headline)}</div>`;
+  for (const it of ins.items) {
+    const sev = it.severity || 'info';
+    let act = '';
+    if (it.action && it.action.type === 'reteach') {
+      act = '<button class="ins-act" data-act="reteach">↺ Re-teach these</button>';
+    } else if (it.action && it.action.type === 'copy_invite') {
+      act = '<button class="ins-act" data-act="copy">🔗 Copy invite</button>';
+    }
+    html += `<div class="ins-item sev-${esc(sev)}">`
+      + `<span class="ins-ic">${esc(it.icon || '')}</span>`
+      + `<div class="ins-tx"><span class="ins-t">${esc(it.text || '')}</span>`
+      + (it.detail ? `<span class="ins-d">${esc(it.detail)}</span>` : '')
+      + `</div>${act}</div>`;
+  }
+  box.innerHTML = html;
+}
+
+/* ─── A2：从洞察一键生成再练作业 ─── */
+async function reteachFromReport() {
+  if (!assignment) { toast('No assignment loaded'); return; }
+  if (!await ensureAuth()) return;
+  try {
+    const d = await api('/teacher/assignments/' + assignment.id + '/reteach', { method: 'POST', body: JSON.stringify({}) });
+    assignment = d.assignment;
+    $('roomCode').textContent = d.roomCode;
+    $('roomUrl').textContent = d.inviteUrl;
+    $('roomBox').style.display = 'flex';
+    $('qrBox').style.display = 'none';
+    await loadClass(current);
+    toast('↺ Re-teach room ' + d.roomCode + ' ready for ' + (d.targetedCount || 0) + ' student(s)');
+  } catch (e) { toast('⚠ ' + e.message); }
+}
+
 function emptyState() {
   ['aDone', 'aTotal', 'aPend'].forEach((id) => $(id).textContent = '0');
   $('aGame').textContent = '—';
   $('aMode').textContent = '—';
   ['weak', 'glance', 'stuBody'].forEach((s) => $(s).innerHTML = '');
   $('weak').innerHTML = '<div class="mini" style="padding:10px 0">Assign your first practice to see class data.</div>';
+  const ib = $('insights');
+  if (ib) { ib.style.display = 'none'; ib.innerHTML = ''; }
 }
 
 /* ─── tabs ─── */
@@ -275,6 +326,29 @@ $('tabOver').addEventListener('click', () => switchTab('over'));
 $('tabAssign').addEventListener('click', () => switchTab('assign'));
 $('tabBoard').addEventListener('click', () => switchTab('board'));
 $('boardBtn').addEventListener('click', () => switchTab('board'));
+
+/* A3：练习模式默认不计时 —— 切换 MODE 时启用/禁用计时字段 */
+function syncTimeField() {
+  const isPrac = $('fMode').value === 'practice';
+  $('fTime').disabled = isPrac;
+  $('fTime').style.opacity = isPrac ? '.5' : '1';
+  const lbl = $('fTimeLbl');
+  if (lbl) lbl.textContent = isPrac ? 'TIME PER ROUND (s) — untimed' : 'TIME PER ROUND (s)';
+}
+$('fMode').addEventListener('change', syncTimeField);
+syncTimeField();   // 默认 practice → 初始即禁用
+
+/* 洞察面板按钮：再练 / 复制邀请（事件委托，避免每次重渲染重复绑定） */
+$('insights').addEventListener('click', async (e) => {
+  const btn = e.target.closest('button[data-act]');
+  if (!btn) return;
+  if (btn.dataset.act === 'reteach') { await reteachFromReport(); return; }
+  if (btn.dataset.act === 'copy') {
+    const txt = $('roomUrl').textContent;
+    try { await navigator.clipboard.writeText(txt); toast('🔗 Invite copied to clipboard'); }
+    catch { toast('🔗 ' + txt); }
+  }
+});
 
 /* ─── live standings (Board) ─── */
 function startLive() { stopLive(); liveTimer = setInterval(pollLive, 5000); }
@@ -348,6 +422,7 @@ $('genBtn').addEventListener('click', async () => {
         classId: current,
         game: $('fGame').value,
         mode: $('fMode').value,
+        untimed: $('fMode').value === 'practice',   // A3：练习默认不计时（NCTM 2023）
         difficulty: $('fDiff').value,
         rounds: parseInt($('fRounds').value, 10) || 5,
         timeLimit: parseInt($('fTime').value, 10) || 60,
