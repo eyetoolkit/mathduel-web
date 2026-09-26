@@ -18,13 +18,6 @@ const LS_DAILY = 'np_daily_v1';
 const LS_BEST = 'np_best_v1';
 const LS_H = 'np_height_v1';
 
-const SH_OFFSET = 8 * 3600000;
-function secondsToShanghaiMidnight(now = Date.now()): number {
-  const sh = now + SH_OFFSET;
-  const nextMidnight = (Math.floor(sh / 86400000) + 1) * 86400000;
-  return Math.max(0, Math.round((nextMidnight - sh) / 1000));
-}
-
 const readJSON = <T>(k: string, fb: T): T => {
   try {
     const v = localStorage.getItem(k);
@@ -36,19 +29,6 @@ const readJSON = <T>(k: string, fb: T): T => {
 const fmt = (sec: number): string => `${sec.toFixed(1)}s`;
 const esc = (s: unknown): string =>
   String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c] as string);
-
-/* ===================== 倒计时 ===================== */
-function startCountdown(): void {
-  const el = $('boardCountdown');
-  if (!el) return;
-  const paint = (): void => {
-    const s = secondsToShanghaiMidnight();
-    const p = (n: number) => String(n).padStart(2, '0');
-    el.textContent = `${p(Math.floor(s / 3600))}:${p(Math.floor((s % 3600) / 60))}:${p(s % 60)}`;
-  };
-  paint();
-  window.setInterval(paint, 1000);
-}
 
 /* ===================== 今日完成标记 ===================== */
 function markDailyDone(): void {
@@ -150,7 +130,6 @@ function wireDifficulty(): void {
 function boot(): void {
   wireLobbyChrome();
   markDailyDone();
-  startCountdown();
   renderBoard();
   wireDifficulty();
 }
