@@ -1,5 +1,5 @@
 /**
- * 数独家族竞赛适配器（sudoku / sudoku-6x6 / killer-sudoku）
+ * 数独家族竞赛适配器（sudoku / sudoku-6x6；killer-sudoku 对局页已下线，协议与 engine 保留）
  *
  * 双协议：
  * - CF DO：服务端推 sudoku_new_game{puzzle,solution[,cages,size]}，客户端逐格 sendAction('sudoku_place',...)，DO 校验

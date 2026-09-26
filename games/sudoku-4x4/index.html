@@ -4,9 +4,9 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#0E1419" />
-  <title>Killer Sudoku · Cage-Sum Arena | MathDuel</title>
-  <meta name="description" content="Standard Sudoku rules plus cage-sum constraints: every dashed cage must add up to the number in its corner. Three difficulties by cage count, zero givens." />
-  <link rel="canonical" href="https://mathduel.games/games/killer-sudoku/" />
+  <title>Sudoku 4×4 — First Grid for Little Solvers | MathDuel</title>
+  <meta name="description" content="A gentle 4×4 sudoku for young solvers: fill 1–4 so every row, column and 2×2 box has each digit once. Big tiles, friendly hints, zero pressure." />
+  <link rel="canonical" href="https://mathduel.games/games/sudoku-4x4/" />
   <!-- PWA + favicons -->
   <link rel="icon" href="/favicon.ico" sizes="any" />
   <link rel="icon" href="/icon.svg" type="image/svg+xml" />
@@ -15,7 +15,7 @@
   <!-- Open Graph / Twitter -->
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="MathDuel" />
-  <meta property="og:url" content="https://mathduel.games/games/killer-sudoku/" />
+  <meta property="og:url" content="https://mathduel.games/games/sudoku-4x4/" />
   <meta property="og:image" content="https://mathduel.games/og-image.svg" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
@@ -25,14 +25,14 @@
   <meta name="twitter:creator" content="@mathduel" />
   <meta name="twitter:image" content="https://mathduel.games/og-image.svg" />
   <!-- hreflang (站点仅英文版，x-default = en) -->
-  <link rel="alternate" hreflang="en" href="https://mathduel.games/games/killer-sudoku/" />
-  <link rel="alternate" hreflang="x-default" href="https://mathduel.games/games/killer-sudoku/" />
+  <link rel="alternate" hreflang="en" href="https://mathduel.games/games/sudoku-4x4/" />
+  <link rel="alternate" hreflang="x-default" href="https://mathduel.games/games/sudoku-4x4/" />
   <link rel="preload" href="/fonts/space-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin />
   <link rel="preload" href="/fonts/sora-latin.woff2" as="font" type="font/woff2" crossorigin />
 </head>
 <body class="arena skin-paper has-papergames-shell">
-  
-<!-- ═══════════ 6 个游戏封面 SVG symbol（与首页同源） ═══════════ -->
+
+<!-- ═══════════ 游戏封面 SVG symbol（与首页同源） ═══════════ -->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
 <defs>
 <symbol id="cv-24" viewBox="0 0 512 512">
@@ -46,6 +46,19 @@
     <text x="364" y="148" dominant-baseline="central" font-size="80" fill="#3730A3">11</text>
     <text x="148" y="366" dominant-baseline="central" font-size="86" fill="#3730A3">+</text>
     <text x="364" y="366" dominant-baseline="central" font-size="72" fill="#1E1B39">24</text>
+  </g>
+</symbol>
+<symbol id="cv-s4" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#3730A3"/>
+  <rect x="76" y="76" width="168" height="168" rx="38" fill="#FFFFFF"/>
+  <rect x="268" y="76" width="168" height="168" rx="38" fill="#FFFFFF"/>
+  <rect x="76" y="268" width="168" height="168" rx="38" fill="#FFFFFF"/>
+  <rect x="268" y="268" width="168" height="168" rx="38" fill="#F59E0B"/>
+  <g font-family="system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif" font-weight="800" text-anchor="middle">
+    <text x="160" y="160" dominant-baseline="central" font-size="92" fill="#3730A3">1</text>
+    <text x="352" y="160" dominant-baseline="central" font-size="92" fill="#3730A3">2</text>
+    <text x="160" y="352" dominant-baseline="central" font-size="92" fill="#3730A3">3</text>
+    <text x="352" y="352" dominant-baseline="central" font-size="92" fill="#1E1B39">4</text>
   </g>
 </symbol>
 <symbol id="cv-sudoku" viewBox="0 0 512 512">
@@ -77,24 +90,6 @@
     <text x="115" y="185" dominant-baseline="central" font-size="62" fill="#4F46E5">1</text><text x="256" y="185" dominant-baseline="central" font-size="62" fill="#4F46E5">2</text>
     <text x="397" y="185" dominant-baseline="central" font-size="62" fill="#4F46E5">3</text><text x="115" y="326" dominant-baseline="central" font-size="62" fill="#4F46E5">4</text>
     <text x="256" y="326" dominant-baseline="central" font-size="62" fill="#4F46E5">5</text><text x="397" y="326" dominant-baseline="central" font-size="62" fill="#FFFFFF">6</text>
-  </g>
-</symbol>
-<symbol id="cv-killer" viewBox="0 0 512 512">
-  <rect width="512" height="512" fill="#312E81"/>
-  <g fill="#FFFFFF">
-    <rect x="56" y="56" width="118" height="118" rx="27"/><rect x="197" y="56" width="118" height="118" rx="27"/>
-    <rect x="338" y="56" width="118" height="118" rx="27"/><rect x="56" y="197" width="118" height="118" rx="27"/>
-    <rect x="197" y="197" width="118" height="118" rx="27"/><rect x="338" y="197" width="118" height="118" rx="27"/>
-    <rect x="56" y="338" width="118" height="118" rx="27"/>
-  </g>
-  <rect x="197" y="338" width="259" height="118" rx="27" fill="#DC2626"/>
-  <rect x="197" y="338" width="259" height="118" rx="27" fill="none" stroke="#FFFFFF" stroke-width="6.5" stroke-dasharray="16 13"/>
-  <g font-family="system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif" font-weight="800">
-    <g text-anchor="middle">
-      <text x="115" y="115" dominant-baseline="central" font-size="62" fill="#312E81">5</text><text x="397" y="115" dominant-baseline="central" font-size="62" fill="#312E81">6</text>
-      <text x="256" y="256" dominant-baseline="central" font-size="62" fill="#312E81">3</text><text x="115" y="397" dominant-baseline="central" font-size="62" fill="#312E81">2</text>
-    </g>
-    <text x="219" y="366" text-anchor="start" dominant-baseline="central" font-size="54" fill="#FFFFFF">17</text>
   </g>
 </symbol>
 <symbol id="cv-pyr" viewBox="0 0 512 512">
@@ -137,7 +132,7 @@
     <svg viewBox="0 0 24 24" fill="none"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
   </button>
   <a class="logo" href="/">Math<b>Duel</b></a>
-  <a class="btn-play-top" href="/games/killer-sudoku/?mode=daily">Play now</a>
+  <a class="btn-play-top" href="/games/sudoku-4x4/?mode=solo">Play now</a>
 </div>
 <div class="pg-overlay" id="pgOverlay"></div>
 
@@ -148,14 +143,14 @@
     <button class="sb-collapse" id="pgCollapse" title="Collapse sidebar" aria-label="Collapse sidebar">«</button>
   </div>
   <div class="sb-login">
-    <a class="btn-play" href="/games/killer-sudoku/?mode=daily"><span>Play now</span></a>
+    <a class="btn-play" href="/games/sudoku-4x4/?mode=solo"><span>Play now</span></a>
     <a class="sb-back" href="/" title="Home" aria-label="Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></a>
   </div>
   <nav class="sb-nav" aria-label="Site navigation">
     <a class="nav-item" href="/"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg><label style="cursor:inherit">Home</label></a>
     <span class="nav-item is-disabled" aria-disabled="true" style="opacity:.5;cursor:default" title="Coming soon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l2.5 2.5"/></svg><label style="cursor:inherit">Coin Shop 🪙</label></span>
     <div class="nav-group">All games</div>
-    <a class="nav-item" href="/games/24-game/lobby/"><svg class="mini" aria-hidden="true"><use href="#cv-24"/></svg><label style="cursor:inherit">24 Game</label></a><a class="nav-item" href="/games/sudoku/lobby/"><svg class="mini" aria-hidden="true"><use href="#cv-sudoku"/></svg><label style="cursor:inherit">Sudoku 9×9</label></a><a class="nav-item" href="/games/sudoku-6x6/lobby/"><svg class="mini" aria-hidden="true"><use href="#cv-s6"/></svg><label style="cursor:inherit">Sudoku 6×6</label></a><a class="nav-item active" href="/games/killer-sudoku/lobby/"><svg class="mini" aria-hidden="true"><use href="#cv-killer"/></svg><label style="cursor:inherit">Killer Sudoku</label></a><a class="nav-item" href="/games/number-pyramid/lobby/"><svg class="mini" aria-hidden="true"><use href="#cv-pyr"/></svg><label style="cursor:inherit">Number Pyramid</label></a><a class="nav-item" href="/games/equation-pyramid/lobby/"><svg class="mini" aria-hidden="true"><use href="#cv-pyr"/></svg><label style="cursor:inherit">Equation Pyramid</label></a><a class="nav-item" href="/games/bulls/lobby/"><svg class="mini" aria-hidden="true"><use href="#cv-bulls"/></svg><label style="cursor:inherit">Number Guess 1A2B</label></a>
+    <a class="nav-item" href="/games/24-game/lobby/"><svg class="mini" aria-hidden="true"><use href="#cv-24"/></svg><label style="cursor:inherit">24 Game</label></a><a class="nav-item active" href="/games/sudoku-4x4/lobby/"><svg class="mini" aria-hidden="true"><use href="#cv-s4"/></svg><label style="cursor:inherit">Sudoku 4×4</label></a><a class="nav-item" href="/games/sudoku/lobby/"><svg class="mini" aria-hidden="true"><use href="#cv-sudoku"/></svg><label style="cursor:inherit">Sudoku 9×9</label></a><a class="nav-item" href="/games/sudoku-6x6/lobby/"><svg class="mini" aria-hidden="true"><use href="#cv-s6"/></svg><label style="cursor:inherit">Sudoku 6×6</label></a><a class="nav-item" href="/games/number-pyramid/lobby/"><svg class="mini" aria-hidden="true"><use href="#cv-pyr"/></svg><label style="cursor:inherit">Number Pyramid</label></a><a class="nav-item" href="/games/equation-pyramid/lobby/"><svg class="mini" aria-hidden="true"><use href="#cv-pyr"/></svg><label style="cursor:inherit">Equation Pyramid</label></a><a class="nav-item" href="/games/bulls/lobby/"><svg class="mini" aria-hidden="true"><use href="#cv-bulls"/></svg><label style="cursor:inherit">Number Guess 1A2B</label></a>
     <div class="nav-group">Help</div>
     <a class="nav-item" href="#"><svg viewBox="0 0 24 24"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19a2 2 0 0 1 2-2h13"/></svg><label style="cursor:inherit">How to play</label></a>
   </nav>
@@ -168,107 +163,64 @@
 <!-- ═══════════ 主区：游戏对局内容（保留 body.arena 旧深色皮肤） ═══════════ -->
 <div class="pg-main">
 
-  <main class="k9-arena">
-    <div class="k9-top">
-      <div class="k9-tabs" id="tabs">
-        <button class="k9-tab" data-mode="solo">Solo</button>
-        <button class="k9-tab" data-mode="daily">Daily</button>
-        <button class="k9-tab" data-mode="timed">Timed</button>
-        <button class="k9-tab" data-mode="duel">Duel Bot</button>
-      </div>
-      <button class="k9-back" id="backLobby" type="button" title="Mode select">← Mode select</button>
-    </div>
-
-    <div class="k9-opp" id="oppHead" hidden>
-      <div class="k9-player">
-        <div class="k9-av" aria-hidden="true"></div>
-        <div>
-          <div class="k9-pn">Bot <span class="k9-side opp"><span class="d"></span>Opponent</span></div>
-          <div class="k9-ps" id="oppPace">— · ~6s per cell</div>
+  <!-- ═══ Play · 模式选择已独立到 /games/sudoku-4x4/lobby/ ═══ -->
+  <main class="g24 s4-play" id="playView">
+    <section class="board" id="boardCol" aria-label="Sudoku 4x4 board">
+      <div class="g24-bar">
+        <nav class="tabs" id="tabs" aria-label="Game modes">
+          <button class="tab" data-mode="solo">Solo</button>
+          <button class="tab" data-mode="timed">Timed</button>
+        </nav>
+        <div class="top-stats">
+          <span class="chip" id="stMain">Ready</span>
+          <button class="icon-btn" id="backLobby" title="Back to lobby">🏠 Lobby</button>
         </div>
       </div>
-      <div class="k9-status" id="oppStatus"><span class="d"></span>Filled · 0 / 0</div>
-    </div>
 
-    <div id="modeBanner"></div>
+      <div id="modeBanner"></div>
 
-    <div class="k9-diff" id="diffPick" role="group" aria-label="Difficulty by cage count">
-      <button class="k9-pk" data-d="gentle">Gentle<small>26 cages</small></button>
-      <button class="k9-pk active" data-d="standard">Standard<small>29 cages</small></button>
-      <button class="k9-pk" data-d="fierce">Fierce<small>34 cages</small></button>
-    </div>
-
-    <!-- ============ 棋盘：9×9 CSS grid + 笼子 SVG 层 + 角标和值层 ============ -->
-    <div class="k9-board-wrap" id="boardWrap">
-      <div class="k9-board" id="k9board" role="grid" aria-label="9x9 killer sudoku board"></div>
-      <svg class="k9-cage" id="k9cage" viewBox="0 0 9 9" preserveAspectRatio="none" aria-hidden="true"></svg>
-      <div class="k9-sum" id="k9sum" aria-hidden="true"></div>
-    </div>
-
-    <!-- ============ HUD：当前 cage 算术 + 进度 ============ -->
-    <div class="k9-hud" id="hud" aria-live="polite">
-      <div class="k9-hud-row"><span class="k9-hl">This cage</span><span class="k9-arith num" id="hudThis">— · pick a cell</span></div>
-      <div class="k9-hud-row"><span class="k9-hl">Cages cleared</span><span class="k9-arith num" id="hudCages">0 / 0</span></div>
-      <div class="k9-hud-row"><span class="k9-hl">Time</span><span class="k9-arith num" id="hudTime">0:00</span></div>
-      <div class="k9-hud-row"><span class="k9-hl">Mistakes</span><span class="k9-lives" id="hudLives"><i></i><i></i><i></i><i></i><i></i></span></div>
-    </div>
-
-    <div class="k9-pad" id="k9pad">
-      <button class="k9-pk" data-v="1">1<span class="pk-left"></span></button>
-      <button class="k9-pk" data-v="2">2<span class="pk-left"></span></button>
-      <button class="k9-pk" data-v="3">3<span class="pk-left"></span></button>
-      <button class="k9-pk" data-v="4">4<span class="pk-left"></span></button>
-      <button class="k9-pk" data-v="5">5<span class="pk-left"></span></button>
-      <button class="k9-pk" data-v="6">6<span class="pk-left"></span></button>
-      <button class="k9-pk" data-v="7">7<span class="pk-left"></span></button>
-      <button class="k9-pk" data-v="8">8<span class="pk-left"></span></button>
-      <button class="k9-pk" data-v="9">9<span class="pk-left"></span></button>
-      <div class="k9-padfoot">
-        <button class="k9-pk erase" data-act="erase" id="eraseBtn">⌫ Erase</button>
-        <button class="k9-pk notes" data-act="notes" id="notesBtn">✎ Notes</button>
-      </div>
-    </div>
-
-    <div class="k9-tools" id="padTools">
-      <button class="k9-tool" id="hintBtn" title="Reveal a cell">💡 Hint</button>
-      <button class="k9-tool" id="newBtn" title="Fresh board">🔄 New</button>
-    </div>
-
-    <div id="result" class="k9-result" hidden></div>
-
-    <div class="k9-you" id="youHead">
-      <div class="k9-player">
-        <div class="k9-av you" aria-hidden="true"></div>
-        <div>
-          <div class="k9-pn">You <span class="k9-side you"><span class="d"></span>You</span></div>
-          <div class="k9-ps" id="youPace">— pace</div>
+      <div class="table-head">
+        <div class="target"><span class="lbl">Target</span><b>1–4</b></div>
+        <div class="diff-pick" id="diffPick" role="group" aria-label="Difficulty">
+          <button data-d="easy" class="active">Easy</button>
+          <button data-d="standard">Medium</button>
+          <button data-d="hard">Hard</button>
+        </div>
+        <div class="diff-pick-hint" aria-hidden="true">
+          <span><b>Easy</b> · 10 givens</span>
+          <span><b>Medium</b> · 8 givens</span>
+          <span><b>Hard</b> · 6 givens</span>
         </div>
       </div>
-      <div class="k9-status you" id="youStatus"><span class="d"></span>Filled · 0 / 0</div>
-    </div>
 
-    <div class="k9-chatdock" id="chatDock" hidden>
-      <div class="k9-chatlog" id="chatLog" aria-live="polite"></div>
-      <div class="k9-quickline">
-        <button class="k9-qb" data-msg="nice">nice</button>
-        <button class="k9-qb" data-msg="close">close</button>
-        <button class="k9-qb" data-msg="think">thinking…</button>
-        <button class="k9-qb" data-msg="oof">oof</button>
+      <div class="s4-board-wrap">
+        <div class="s4-board" id="s4board" role="grid" aria-label="4 by 4 sudoku grid"></div>
+        <div class="s4-pad" id="s4pad">
+          <button class="pk" data-v="1">1<small class="pk-left"></small></button>
+          <button class="pk" data-v="2">2<small class="pk-left"></small></button>
+          <button class="pk" data-v="3">3<small class="pk-left"></small></button>
+          <button class="pk" data-v="4">4<small class="pk-left"></small></button>
+          <div class="s4-padfoot">
+            <button class="pk erase" data-act="erase">⌫ Erase</button>
+            <button class="pk notes" data-act="notes" id="notesBtn">✏ Notes</button>
+          </div>
+        </div>
+        <div class="s9-padtools hidden" id="padTools">
+          <button class="btn ghost" id="hintBtn">💡 Hint</button>
+          <button class="btn ghost" id="newBtn">↻ New Grid</button>
+        </div>
       </div>
-    </div>
 
-    <!-- ============ Modal + Toast ============ -->
-    <div class="k9-overlay" id="overlay" hidden>
-      <div class="k9-modal" id="modal" role="dialog" aria-modal="true">
-        <div class="k9-mtitle" id="mTitle">—</div>
-        <div class="k9-msub" id="mSub">—</div>
-        <div class="k9-mact" id="mActs"></div>
-      </div>
-    </div>
-    <div class="k9-toast" id="toast" hidden></div>
+      <div class="result" id="result" role="status">Pick a cell, then a number</div>
+    </section>
+
+    <aside class="side" id="side"></aside>
   </main>
 
-  <script type="module" src="/src/games/killer-sudoku/index.ts"></script>
+  <div class="overlay" id="overlay"><div class="modal" id="modal" role="dialog" aria-modal="true"></div></div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script type="module" src="/src/games/sudoku-4x4/index.ts"></script>
 
 </div><!-- /.pg-main -->
 

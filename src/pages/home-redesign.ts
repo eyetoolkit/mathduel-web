@@ -78,27 +78,17 @@ const CV_SYMBOLS = `
   </g>
 </symbol>
 
-<symbol id="cv-killer" viewBox="0 0 512 512">
+<symbol id="cv-s4" viewBox="0 0 512 512">
   <rect width="512" height="512" fill="#3730A3"/>
-  <g fill="#FFFFFF">
-    <rect x="56" y="56" width="118" height="118" rx="27"/>
-    <rect x="197" y="56" width="118" height="118" rx="27"/>
-    <rect x="338" y="56" width="118" height="118" rx="27"/>
-    <rect x="56" y="197" width="118" height="118" rx="27"/>
-    <rect x="197" y="197" width="118" height="118" rx="27"/>
-    <rect x="338" y="197" width="118" height="118" rx="27"/>
-    <rect x="56" y="338" width="118" height="118" rx="27"/>
-  </g>
-  <rect x="197" y="338" width="259" height="118" rx="27" fill="#F59E0B"/>
-  <rect x="197" y="338" width="259" height="118" rx="27" fill="none" stroke="#FFFFFF" stroke-width="6.5" stroke-dasharray="16 13"/>
-  <g font-family="system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif" font-weight="800">
-    <g text-anchor="middle">
-      <text x="115" y="115" dominant-baseline="central" font-size="62" fill="#3730A3">5</text>
-      <text x="397" y="115" dominant-baseline="central" font-size="62" fill="#3730A3">6</text>
-      <text x="256" y="256" dominant-baseline="central" font-size="62" fill="#3730A3">3</text>
-      <text x="115" y="397" dominant-baseline="central" font-size="62" fill="#3730A3">2</text>
-    </g>
-    <text x="219" y="366" text-anchor="start" dominant-baseline="central" font-size="54" fill="#FFFFFF">17</text>
+  <rect x="76" y="76" width="168" height="168" rx="38" fill="#FFFFFF"/>
+  <rect x="268" y="76" width="168" height="168" rx="38" fill="#FFFFFF"/>
+  <rect x="76" y="268" width="168" height="168" rx="38" fill="#FFFFFF"/>
+  <rect x="268" y="268" width="168" height="168" rx="38" fill="#F59E0B"/>
+  <g font-family="system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif" font-weight="800" text-anchor="middle">
+    <text x="160" y="160" dominant-baseline="central" font-size="92" fill="#3730A3">1</text>
+    <text x="352" y="160" dominant-baseline="central" font-size="92" fill="#3730A3">2</text>
+    <text x="160" y="352" dominant-baseline="central" font-size="92" fill="#3730A3">3</text>
+    <text x="352" y="352" dominant-baseline="central" font-size="92" fill="#1E1B39">4</text>
   </g>
 </symbol>
 
@@ -200,9 +190,9 @@ interface HomeCard {
 }
 const HOME_CARDS: HomeCard[] = [
   { href: '/games/24-game/lobby/',        cvId: 'cv-24',     name: '24 Game',           tags: ['Solo', '1v1', 'Daily'], live: true },
+  { href: '/games/sudoku-4x4/lobby/',     cvId: 'cv-s4',     name: 'Sudoku 4×4',        tags: ['Solo', 'Beginner'],     live: true },
   { href: '/games/sudoku/lobby/',         cvId: 'cv-sudoku', name: 'Sudoku 9×9',        tags: ['Solo', 'Daily'],        live: true },
   { href: '/games/sudoku-6x6/lobby/',     cvId: 'cv-s6',     name: 'Sudoku 6×6',        tags: ['Solo', 'Beginner'],     live: true },
-  { href: '/games/killer-sudoku/lobby/',  cvId: 'cv-killer', name: 'Killer Sudoku',     tags: ['Solo', 'Advanced'],     live: true },
   { href: '/games/equation-pyramid/lobby/', cvId: 'cv-pyr',  name: 'Equation Pyramid',  tags: ['Solo', 'Daily'],        live: true },
   { href: '/games/bulls/lobby/',          cvId: 'cv-bulls',  name: 'Number Guess 1A2B', tags: ['Solo', 'Logic'],         live: true },
   { href: '/games/number-pyramid/lobby/', cvId: 'cv-numPyr', name: 'Number Pyramid',    tags: ['Solo', 'Daily'],        live: true },
@@ -258,9 +248,9 @@ function sidebarHtml(): string {
   const gamesGroup = `
     <div class="nav-group">All games · 7</div>
     ${miniNavItem(false, '/games/24-game/lobby/',        'cv-24',     '24 Game')}
+    ${miniNavItem(false, '/games/sudoku-4x4/lobby/',     'cv-s4',     'Sudoku 4×4')}
     ${miniNavItem(false, '/games/sudoku/lobby/',         'cv-sudoku', 'Sudoku 9×9')}
     ${miniNavItem(false, '/games/sudoku-6x6/lobby/',     'cv-s6',     'Sudoku 6×6')}
-    ${miniNavItem(false, '/games/killer-sudoku/lobby/',  'cv-killer', 'Killer Sudoku')}
     ${miniNavItem(false, '/games/number-pyramid/lobby/', 'cv-numPyr','Number Pyramid')}
     ${miniNavItem(false, '/games/equation-pyramid/lobby/', 'cv-pyr',  'Equation Pyramid')}
     ${miniNavItem(false, '/games/bulls/lobby/',          'cv-bulls',  'Number Guess 1A2B')}

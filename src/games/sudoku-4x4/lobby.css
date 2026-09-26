@@ -1,0 +1,45 @@
+/* ============================================================
+   4×4 SUDOKU · 模式选择页（Lobby）—— 仅放 4×4 专属组件
+   骨架 / 顶栏 / 模式卡 / 页脚复用 ../24-game/lobby.css + ../sudoku/lobby.css，
+   与 9×9 / 24 点的模式选择页保持同一套结构与 --a-* 皮肤。
+   ============================================================ */
+
+/* Hero 装饰：一行 4 大格（对应 2×2 宫约束），比 9×9 的格子更大更童趣 */
+.arb-grid4 {
+  display: flex;
+  gap: 10px;
+  margin: 18px 0 4px;
+  flex-wrap: wrap;
+}
+.arb-grid4 .arb-cell {
+  width: 56px;
+  height: 62px;
+  border-radius: 12px;
+  background: var(--a-paper);
+  color: var(--a-ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--a-disp);
+  font-weight: 800;
+  font-size: 1.7rem;
+  font-variant-numeric: tabular-nums;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.45);
+}
+/* 第 4 格（ember 高亮）暗示「这一格由你填」 */
+.arb-grid4 .arb-cell.hl {
+  background: var(--a-ember);
+  color: #160a04;
+}
+
+@media (max-width: 560px) {
+  .arb-grid4 {
+    gap: 7px;
+  }
+  .arb-grid4 .arb-cell {
+    width: 44px;
+    height: 50px;
+    font-size: 1.35rem;
+    border-radius: 10px;
+  }
+}

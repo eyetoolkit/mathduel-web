@@ -63,15 +63,12 @@ const MINI_SUDOKU66 = `<div class="board mini66">
 <div class="c given">5</div><div class="c"></div><div class="c"></div><div class="c given bx-c">6</div><div class="c"></div><div class="c"></div>
 </div>`;
 
-function miniKiller(): string {
-  // 9×9，局部 cage 虚线 + 角标和（装饰用真实感的 cage 划分），与 Killer Sudoku 视觉一致
-  const sumAt: Record<number, string> = { 0: '11', 3: '22', 4: '12', 9: '16', 10: '6', 11: '9', 18: '19', 19: '13', 20: '25', 27: '18' };
-  const dashed = new Set([1, 2, 4, 5, 10, 11, 12, 13, 19, 20, 21, 27, 28]);
+function miniS4(): string {
+  // 4×4，2×2 宫布局 + 琥珀点缀，与 Sudoku 4×4 视觉一致
   let cells = '';
-  for (let i = 0; i < 81; i++) {
-    const s = sumAt[i];
-    const d = dashed.has(i) ? ' dashed' : '';
-    cells += `<div class="kc${d}">${s ? `<i>${s}</i>` : ''}</div>`;
+  for (let i = 0; i < 16; i++) {
+    const amber = i === 15 ? ' amber' : '';
+    cells += `<div class="kc${amber}"></div>`;
   }
   return `<div class="miniK">${cells}</div>`;
 }
@@ -114,6 +111,15 @@ const GAMES: GameDef[] = [
     mini: MINI_24,
   },
   {
+    id: 'sudoku-4x4',
+    title: 'Sudoku 4×4',
+    desc: 'A gentle first grid — 1–4, 2×2 boxes, made for young solvers.',
+    href: '/games/sudoku-4x4/lobby/',
+    modes: 'Beginner · Solo',
+    stage: 'live',
+    mini: miniS4(),
+  },
+  {
     id: 'sudoku',
     title: 'Sudoku 9×9',
     desc: 'The classic logic grid — race your opponent square by square.',
@@ -130,15 +136,6 @@ const GAMES: GameDef[] = [
     modes: 'Beginner · Duel + Daily',
     stage: 'live',
     mini: MINI_SUDOKU66,
-  },
-  {
-    id: 'killer-sudoku',
-    title: 'Killer Sudoku',
-    desc: 'Sudoku with cage sums — the hardest logic variant we host.',
-    href: '/games/killer-sudoku/lobby/',
-    modes: 'Advanced · Duel',
-    stage: 'live',
-    mini: miniKiller(),
   },
   {
     id: 'equation-pyramid',

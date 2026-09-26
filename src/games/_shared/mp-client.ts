@@ -6,7 +6,7 @@
  * 每游戏一个 adapter，由本外壳在收到回合消息时转发给 adapter。
  *
  * 关键：后端竞赛是「按游戏类型、服务端权威」的（见 worker/.../durable/game-room.js）：
- *   · sudoku / sudoku-6x6 / killer-sudoku → sudoku_new_game + sudoku_place
+ *   · sudoku / sudoku-6x6 → sudoku_new_game + sudoku_place
  *   · equation-pyramid（服务端 gameType=eqpyr）→ eqpyr_new_game + eqpyr_solve
  *   · bulls → bulls_new_round / bulls_phase / bulls_set_secret / bulls_guess
  *   · 24 → new_round(cards) + submit_answer

@@ -1,0 +1,155 @@
+/* ============================================================
+   4×4 SUDOKU ARENA · 组件样式（小朋友入门款）
+   Token remap 复用 ../24-game/arena.css（body.arena），本文件只放
+   数独专属组件：4×4 棋盘（三级 SVG 网格线）/ 2×2 数字键盘 / 侧栏。
+   设计稿：sudoku4x4-redesign.html（2026-09-26），与 9×9 同套 token：
+   MathDuel 靛蓝映射 --line-box #3730A3、--line-outer #1E1B4B、
+   --accent/--user-ink #4F46E5；状态底色紫罗兰浅调。
+   ============================================================ */
+
+/* ─── 棋盘（Screen 2 hero）─── */
+/* ① 三级网格线：宫内细线(1 物理px) < 2×2 宫粗线(2 物理px) < 外框，SVG crispEdges
+      覆盖层按 1/dpr 折算，跨 Windows 125%/150% 缩放均匀；线色走 CSS 类（主题切换免重建）
+   ② cell border:0 + box-sizing:border-box；数字大字号（clamp 1.8–2.7rem，童趣）
+   ③ given 高对比（浅 #1E293B on #F1F5F9 ≈ 13:1）；状态色不透明预混合 */
+.s4-board-wrap { margin-top: 6px; }
+.s4-board {
+  /* 4 格局部 token：与皮肤作用域共存，skin-paper / 深色均定义 */
+  --s4-cell-bg: #ffffff;
+  --s4-given-bg: #f1f5f9;
+  --s4-given-ink: #1e293b;
+  --s4-peer-bg: #f5f3ff;
+  --s4-sel-bg: #ede9fe;
+  --s4-same-bg: #e9d5ff;
+  --s4-line-cell: #e5e1f0;
+  --s4-line-box: #3730a3;
+  --s4-line-outer: #1e1b4b;
+  --s4-accent: #4f46e5;
+  --s4-accent-soft: #ede9fe;
+  --s4-user-ink: #4f46e5;
+  --s4-conflict: #dc2626;
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  width: min(420px, 100%); margin: 0 auto;
+  background: var(--s4-cell-bg); border-radius: 16px; padding: 0;
+  /* 外框 = 三级线最粗一级 */
+  border: 3px solid var(--s4-line-outer);
+  box-sizing: border-box;
+  user-select: none; position: relative; overflow: hidden;
+}
+/* 暗色主题（body.arena 不带 skin-paper）——当前对局页恒浅色，token 休眠备用 */
+body.arena:not(.skin-paper) .s4-board {
+  --s4-cell-bg: #0f172a;
+  --s4-given-bg: #1e293b;
+  --s4-given-ink: #e5e7eb;
+  --s4-peer-bg: #1b1530;
+  --s4-sel-bg: #2a2150;
+  --s4-same-bg: #3b2d6b;
+  --s4-line-cell: #334155;
+  --s4-line-box: #818cf8;
+  --s4-line-outer: #a5b4fc;
+  --s4-accent: #818cf8;
+  --s4-accent-soft: #2a2150;
+  --s4-user-ink: #a5b4fc;
+  --s4-conflict: #fca5a5;
+}
+/* SVG 网格线覆盖层（由 index.ts 的 buildGridLines 注入：细线 + 宫粗线两级） */
+.s4-board .grid-lines { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 3; display: block; }
+.s4-board .grid-lines .l-cell { fill: var(--s4-line-cell); }
+.s4-board .grid-lines .l-box { fill: var(--s4-line-box); }
+
+.s4-board .c4cell {
+  aspect-ratio: 1;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--s4-cell-bg);
+  border: 0;
+  box-sizing: border-box;
+  font-family: var(--font-sans); font-weight: 700;
+  font-size: clamp(1.8rem, 11vw, 2.7rem); font-variant-numeric: tabular-nums;
+  /* 数字垂直居中四件套 */
+  line-height: 1;
+  text-box: trim-both cap alphabetic;
+  padding-top: 0.08em;
+  color: var(--s4-user-ink);
+  cursor: pointer;
+  transition: background 0.12s, box-shadow 0.12s, color 0.12s;
+  position: relative;
+}
+@media (max-width: 767px) {
+  .s4-board .c4cell { padding-top: 0.02em; }
+}
+
+/* cell 状态（层级：given 底 > peer/same 底 > sel 底 + ring） */
+.s4-board .c4cell.given { background: var(--s4-given-bg); color: var(--s4-given-ink); cursor: default; }
+.s4-board .c4cell.entry { color: var(--s4-user-ink); }
+.s4-board .c4cell.sel {
+  background: var(--s4-sel-bg);
+  box-shadow: inset 0 0 0 2.5px var(--s4-accent);
+  z-index: 2;
+}
+.s4-board .c4cell.peer { background: var(--s4-peer-bg); }
+.s4-board .c4cell.same { background: var(--s4-same-bg); }
+/* 冲突（设计稿）：左侧红条 + 红数字 */
+.s4-board .c4cell.conflict {
+  color: var(--s4-conflict);
+  box-shadow: inset 3px 0 0 0 var(--s4-conflict);
+}
+
+/* 落子 pop / 错误 shake（对照 9×9 的一次性动效） */
+.s4-board .c4cell.pop span { animation: s4pop 0.28s var(--ease-spring, cubic-bezier(0.34, 1.56, 0.64, 1)); }
+@keyframes s4pop {
+  0% { transform: scale(0.4); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+.s4-board .c4cell.shake { animation: s4shake 0.32s ease; }
+@keyframes s4shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-3px); }
+  50% { transform: translateX(3px); }
+  75% { transform: translateX(-2px); }
+}
+
+/* ─── pencil marks：cell 内的 2×2 候选微格 ─── */
+.s4-board .c4cell.marks { align-items: stretch; justify-content: stretch; padding: 0; }
+.s4-board .c4cell .n4 {
+  display: grid; grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(2, 1fr);
+  width: 100%; height: 100%; padding: 4%;
+}
+.s4-board .c4cell .n4 i {
+  display: flex; align-items: center; justify-content: center;
+  font-style: normal; font-family: var(--font-sans); font-weight: 500;
+  font-size: 0.34em; line-height: 1; color: transparent;
+}
+.s4-board .c4cell .n4 i.on { color: var(--s4-user-ink); opacity: 0.62; }
+
+/* ─── 数字键盘（2×2 呼应 2×2 宫）─── */
+.s4-pad { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; max-width: 300px; margin: 16px auto 0; }
+.s4-pad .pk {
+  position: relative;
+  padding: 18px 0; border-radius: 14px;
+  background: var(--s4-cell-bg); border: 1px solid var(--s4-line-cell);
+  color: var(--s4-accent); font-family: var(--font-sans); font-size: clamp(1.4rem, 7vw, 1.9rem);
+  font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.12s, transform 0.06s, border-color 0.12s, color 0.12s;
+}
+.s4-pad .pk:hover { background: var(--s4-accent-soft); }
+.s4-pad .pk:active { transform: translateY(1px); }
+.s4-pad .s4-padfoot { grid-column: 1 / -1; display: flex; gap: 10px; }
+.s4-pad .s4-padfoot .pk { flex: 1; padding: 12px; font-size: 0.95rem; color: var(--text-muted); }
+.s4-pad .pk.erase:hover { color: var(--text); background: transparent; }
+.s4-pad .pk.notes:hover { color: var(--s4-accent); }
+.s4-pad .pk.notes.on { border-color: var(--s4-accent); background: var(--s4-accent-soft); color: var(--s4-accent); }
+/* 剩余计数角标：该数字盘面还差几个；集齐 4 个整键置灰 */
+.s4-pad .pk .pk-left {
+  position: absolute; top: 6px; right: 9px;
+  font-size: 0.62rem; font-weight: 600; line-height: 1;
+  color: var(--text-muted); font-variant-numeric: tabular-nums;
+}
+.s4-pad .pk.done { opacity: 0.32; cursor: default; }
+.s4-pad .pk.done:hover { border-color: var(--s4-line-cell); background: var(--s4-cell-bg); color: var(--s4-accent); }
+.s4-pad .pk:focus-visible { outline: 2px solid var(--s4-accent); outline-offset: 2px; }
+
+/* ─── 结算 ─── */
+.s4-verdict { font-family: var(--font-display); font-weight: 800; font-size: 1.7rem; color: var(--brand-text); }
+.s4-newbest { margin-top: 8px; font-size: 0.85rem; color: var(--warning-strong); font-weight: 600; }
+.modal .s4-verdict { text-align: center; }

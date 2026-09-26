@@ -16,7 +16,7 @@
  * 不上传服务端，纯本地（隐私优先），F-205 / F-206 同源
  */
 
-export type GameId = '24-game' | 'sudoku' | 'sudoku-6x6' | 'killer-sudoku' | 'number-pyramid' | 'equation-pyramid' | 'bulls';
+export type GameId = '24-game' | 'sudoku-4x4' | 'sudoku' | 'sudoku-6x6' | 'number-pyramid' | 'equation-pyramid' | 'bulls';
 export type Mode = 'solo' | 'daily' | 'duel' | 'timed' | 'practice' | 'competition';
 
 const KEY = 'mathduel_progress_v1';
@@ -177,7 +177,7 @@ export function getBadges(): Badge[] {
 }
 
 /** 全部 7 款游戏的 id 顺序（用于首页 daily 面板遍历） */
-export const ALL_GAMES: GameId[] = ['24-game', 'sudoku', 'sudoku-6x6', 'killer-sudoku', 'number-pyramid', 'equation-pyramid', 'bulls'];
+export const ALL_GAMES: GameId[] = ['24-game', 'sudoku-4x4', 'sudoku', 'sudoku-6x6', 'number-pyramid', 'equation-pyramid', 'bulls'];
 
 const HINT_KEY = (gameId: GameId) => `md_hint_${gameId}_v1`;
 
@@ -268,9 +268,9 @@ export async function copyResultToClipboard(text: string): Promise<boolean> {
 export function formatShareText(gameId: GameId, summary: { mode: string; duration?: number; extra?: string }): string {
   const labels: Record<GameId, string> = {
     '24-game': '24 Game',
+    'sudoku-4x4': 'Sudoku 4×4',
     'sudoku': 'Sudoku 9×9',
     'sudoku-6x6': 'Sudoku 6×6',
-    'killer-sudoku': 'Killer Sudoku',
     'number-pyramid': 'Number Pyramid',
     'equation-pyramid': 'Equation Pyramid',
     'bulls': 'Bulls & Cows',
