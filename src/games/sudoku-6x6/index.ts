@@ -272,6 +272,8 @@ function renderBoard(): void {
       const t = (e.target as HTMLElement).closest<HTMLElement>('[data-i]');
       if (t) selectCell(Number(t.dataset.i));
     });
+    // 首次构建棋盘后注入 SVG 网格线覆盖层（粗 2×3 宫 + 细线），并监听尺寸/DPR 变化
+    buildGridLines(el);
   }
   conflictCache = findConflicts(st.grid);
   [...el.children].forEach((cell, i) => {
@@ -283,6 +285,64 @@ function renderBoard(): void {
     if (c.innerHTML !== html) c.innerHTML = html;
   });
   updateGridStats();
+}
+
+/* ════════ 2026-09-26 修复：SVG 网格线覆盖层 ════════
+   根因：① 1px border 在小数 DPR 下细线深浅不一/消失；② 暗色主题下细线/粗线同色同宽感
+         → 宫结构不可见（用户反馈「棋盘显示异常」）
+   方案：JS 按当前 DPR 生成 SVG rect 网格线（shape-rendering: crispEdges 逐线吸附整数设备像素）。
+         细线 = 1 物理px，2×3 宫粗线 = 2 物理px 且用更亮的 --sd-grid-line-strong。
+         ResizeObserver 监听尺寸变化 + matchMedia('resolution') 监听缩放/DPR 变化 → 重建。 */
+function buildGridLines(board: HTMLElement): void {
+  const build = (): void => {
+    const old = board.querySelector('.grid-lines');
+    if (old) old.remove();
+    const dpr = window.devicePixelRatio || 1;
+    const W = board.clientWidth; // padding-box 宽（含 2px border）
+    if (!W) return;
+    // 因棋盘 border: 2px，content 区 = W - 4px；用 clientWidth 整体绘制，border 由 cell 自身外侧负责
+    const cell = W / 6;
+    const thin = 1 / dpr, thick = 2 / dpr;
+    const NS = 'http://www.w3.org/2000/svg';
+    const svg = document.createElementNS(NS, 'svg');
+    svg.setAttribute('class', 'grid-lines');
+    svg.setAttribute('viewBox', '0 0 ' + W + ' ' + W);
+    svg.setAttribute('preserveAspectRatio', 'none');
+    svg.setAttribute('shape-rendering', 'crispEdges');
+    svg.setAttribute('aria-hidden', 'true');
+    const rect = (x: number, y: number, w: number, h: number, strong: boolean): void => {
+      const r = document.createElementNS(NS, 'rect');
+      r.setAttribute('x', String(x));
+      r.setAttribute('y', String(y));
+      r.setAttribute('width', String(w));
+      r.setAttribute('height', String(h));
+      // 读取棋盘当前主题 token，颜色随主题切换
+      const cs = getComputedStyle(board);
+      const colorVar = strong ? '--sd-grid-line-strong' : '--sd-grid-line';
+      const color = cs.getPropertyValue(colorVar).trim() || (strong ? '#1e1b39' : '#64748b');
+      r.style.fill = color;
+      svg.appendChild(r);
+    };
+    for (let i = 1; i <= 5; i++) {
+      // 竖线：第 3 列后 = 粗线（0-based col 2 → i=3）
+      const vt = i === 3 ? thick : thin;
+      rect(i * cell - vt / 2, 0, vt, W, i === 3);
+      // 横线：第 2、4 行后 = 粗线（每 2 行一条粗线）
+      const ht = i === 2 || i === 4 ? thick : thin;
+      rect(0, i * cell - ht / 2, W, ht, i === 2 || i === 4);
+    }
+    board.appendChild(svg);
+  };
+  const schedule = (): void => { requestAnimationFrame(build); };
+  schedule();
+  window.addEventListener('resize', schedule);
+  if ('ResizeObserver' in window) new ResizeObserver(schedule).observe(board);
+  // DPR/缩放变化监听：resolution 媒体查询一次性监听链
+  const watchDpr = (): void => {
+    const mq = matchMedia(`(resolution: ${window.devicePixelRatio || 1}dppx)`);
+    mq.addEventListener('change', () => { schedule(); watchDpr(); }, { once: true });
+  };
+  watchDpr();
 }
 
 /* ═══ 侧栏 Grid status 实时刷新 + 数字键盘剩余计数 ═══ */
