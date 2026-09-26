@@ -8,9 +8,13 @@
 # must-revalidate：客户端拿到过期响应时必须先回源验证，比 no-cache 多一层 CDN 缓存
 # CSP 修复说明：connect-src 已包含 https://mathduel.games 与 wss://mathduel.games，
 #   但 production CSP 没放行 static.cloudflareinsights.com（CSP 拦掉 RUM 数据，见 B-003）
+# 2026-09-26 老师端：追加 challenges.cloudflare.com（Turnstile 人机验证）。
+#   /api/auth/login 在生产强制校验 turnstile_token（实测传 skip 返回 400 turnstile_failed），
+#   而 Turnstile 部件本身是两个子资源：外链脚本（script-src）+ 验证 iframe（frame-src）。
+#   二者缺一都只会出现「控件渲染不出来、点了没反应」的静默失败，故一并放行。
 
 /*
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob: https:; connect-src 'self' https://mathduel.games https://static.cloudflareinsights.com wss://mathduel.games; frame-ancestors 'self'; base-uri 'self'; form-action 'self'
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob: https:; connect-src 'self' https://mathduel.games https://static.cloudflareinsights.com wss://mathduel.games https://challenges.cloudflare.com; frame-src 'self' https://challenges.cloudflare.com; frame-ancestors 'self'; base-uri 'self'; form-action 'self'
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
   X-Frame-Options: SAMEORIGIN

@@ -15,6 +15,8 @@
  * 非生产域名自动降级为本地 DEMO（模拟 99 人实时榜），便于预览验收。
  */
 
+import { isClassroom, ensureStudentCode, reportRound } from './teacher-track';
+
 const PROD_HOST = 'mathduel.games';
 
 export function isProdEnv(): boolean {
@@ -622,6 +624,9 @@ export class MpShell {
 
   private onRoomReady(code: string): void {
     this.room = code;
+    /* 老师端课堂作业（链接带 tid=1）：入房后一次性绑定班级代号。
+       不在课堂上（普通好友对战）不会触发，保证教室外零打扰。 */
+    if (isClassroom()) ensureStudentCode(code).catch(() => { /* 跳过归因不影响游戏 */ });
     // 保持 lobby 弹窗打开：showRoomView() 会在弹窗内部把表单换成「房间码 + 二维码」视图
     // （此前在这里 remove('show') 会把整层弹窗关掉，用户永远看不到房间码 —— P0 修复）
     this.cb.onRoomReady?.(code);
@@ -669,10 +674,12 @@ export class MpShell {
         this.cb.onProgress?.({ doneCount: this.done, total: this.total, done: d.ranking || [] });
         this.cb.onRoundResult?.({ round: d.round || this.round, ranking: d.ranking || [] });
         this.showRoundResult(d);
+        this.reportClassroomRound(d);
         break;
       case 'round_timeout':
         this.cb.onRoundResult?.({ round: d.round || this.round, ranking: d.ranking || [] });
         this.showRoundResult(d);
+        this.reportClassroomRound(d);
         break;
       case 'game_over':
       case 'race_over':
@@ -704,6 +711,21 @@ export class MpShell {
         // adapter 没消费：当作题目开始类（new_round / round_resume / sudoku_new_game / eqpyr_new_game / bulls_*）
         this.handleRoundMsg(d);
     }
+  }
+
+  /** 老师端学情回写：competition 的 round_result.ranking 每行 = 一个玩家的 {name,time,ok}，
+      服务端权威判定已在其中（超时未交卷也会以 ok:false 出现在榜尾），直接取「我自己」那行上报，
+      不必再依赖引擎侧数据，也不会出现客户端虚报成绩。 */
+  private reportClassroomRound(d: any): void {
+    if (!isClassroom() || !this.room) return;
+    const self = (d.ranking || []).find((r: any) => r && r.name === this.myName);
+    reportRound(this.room, {
+      round: d.round || this.round || 1,
+      solved: !!(self && self.ok),
+      duration_ms: Number.isFinite(self && self.time) ? Math.round(self.time) : 0,
+      wrong: self && self.ok === false ? 1 : 0,
+      ops: [],
+    });
   }
 
   /** 通用回合开始处理（adapter 未显式消费时兜底） */

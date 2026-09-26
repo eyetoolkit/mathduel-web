@@ -13,6 +13,7 @@ import { generatePuzzle as genSudoku9 } from '../../sudoku/engine';
 import { generatePuzzle as genSudoku6 } from '../../sudoku-6x6/engine';
 import { generatePuzzle as genSudoku4 } from '../../sudoku-4x4/engine';
 import { generateKiller } from '../../killer-sudoku/engine';
+import { isClassroom, reportRound } from '../teacher-track';
 
 export interface SudokuAdapterOpts {
   gameType: string;        // 'sudoku' | 'sudoku-6x6' | 'sudoku-4x4' | 'killer-sudoku'
@@ -119,6 +120,13 @@ export function createSudokuAdapter(opts: SudokuAdapterOpts): MpAdapter {
     boardEl.appendChild(hint);
   };
 
+  /* 老师端学情：数独 competition 是「全班同一张盘」（服务端广播同一 puzzle，
+     谁先填满谁触发结束），没有 per-round ranking 可依赖 —— 故改用「本人填对 /
+     填错格数」作为口径，整盘结束（sudoku_game_over）时上报一次。 */
+  let clsRight = 0;
+  let clsWrong = 0;
+  let clsStart = 0;
+
   return {
     gameType: opts.gameType,
     label: opts.label,
@@ -176,6 +184,11 @@ export function createSudokuAdapter(opts: SudokuAdapterOpts): MpAdapter {
         // 由外壳 handleRoundMsg 兜底渲染；这里返回 false 让外壳处理
         return false;
       }
+      if (msg.type === 'sudoku_new_game' || msg.type === 'sudoku_new_round') {
+        // 新一盘：重置本盘统计
+        clsRight = 0; clsWrong = 0; clsStart = Date.now();
+        return false;   // 交给外壳兜底渲染
+      }
       if (msg.type === 'sudoku_placed') {
         const i = msg.index ?? (msg.row != null && msg.col != null ? msg.row * opts.size + msg.col : -1);
         if (i >= 0 && cells[i]) {
@@ -186,7 +199,25 @@ export function createSudokuAdapter(opts: SudokuAdapterOpts): MpAdapter {
             grid[i] = v;
           }
         }
+        // 老师端：统计本人填格对错（`correct` 由服务端权威判定，客户端无法虚报）
+        if (isClassroom() && msg.player && msg.player === myName()) {
+          if (msg.correct) clsRight++;
+          else clsWrong++;
+        }
         return true;
+      }
+      if (msg.type === 'sudoku_game_over') {
+        if (isClassroom() && (_shell as any).room) {
+          reportRound(String((_shell as any).room), {
+            round: Number(((_shell as any).round) || 1),
+            solved: clsRight > 0,
+            duration_ms: clsStart ? Date.now() - clsStart : 0,
+            wrong: clsWrong,
+            ops: [],
+          });
+        }
+        clsRight = 0; clsWrong = 0; clsStart = 0;
+        return false;   // 交给外壳处理终局结算 / 下一盘
       }
       return false;
     },

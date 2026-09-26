@@ -12,6 +12,7 @@
  */
 
 import { generate24Puzzle, type Difficulty } from './engine';
+import { isClassroom, ensureStudentCode, reportRound, opsFromExpression } from '../_shared/teacher-track';
 
 export interface RaceEntry {
   name: string;
@@ -109,6 +110,8 @@ export class Competition {
   private demoChatTimers: number[] = [];
   private doneList: RaceEntry[] = [];
   private mySubmitted = false;
+  /** 本轮最后提交用到的运算符（老师端学情的 ops_used 来源，24 点专用） */
+  private lastOps: string[] = [];
   private cb: CompCallbacks;
   private diff: Difficulty = 'standard';
   private raceMax = 99;
@@ -229,6 +232,22 @@ export class Competition {
     if (this.ws && this.ws.readyState === 1) this.ws.send(JSON.stringify(obj));
   }
 
+  /** 老师端学情回写：round_result.ranking 每行 = {name,time,ok}，取「我自己」那行上报。
+      判定来自服务端（超时未交卷也以 ok:false 出现在榜尾），客户端无法虚报。 */
+  private reportClassroomRound(d: any): void {
+    if (!isClassroom() || !this.room) return;
+    const self = (d.ranking || []).find((r: any) => r && r.name === this.myName);
+    const ok = !!(self && self.ok);
+    reportRound(this.room, {
+      round: d.round || this.round || 1,
+      solved: ok,
+      duration_ms: Number.isFinite(self && self.time) ? Math.round(self.time) : 0,
+      wrong: ok ? 0 : 1,
+      ops: ok ? this.lastOps : [],
+    });
+    this.lastOps = [];
+  }
+
   /** 服务器消息分发（完整移植原协议，含 round_resume 断线续局） */
   private handleMsg(d: any): void {
     switch (d.type) {
@@ -238,6 +257,8 @@ export class Competition {
         this.players = {};
         if (d.players) d.players.forEach((n: string) => (this.players[n] = { score: 0 }));
         this.players[this.myName] = { score: 0 };
+        /* 老师端课堂作业（链接带 tid=1）：入房后一次性绑定班级代号 */
+        if (isClassroom()) ensureStudentCode(this.room).catch(() => { /* 跳过归因不影响游戏 */ });
         this.cb.onRoomReady(this.room);
         this.cb.onPlayersChanged(this.players, this.isHost, this.room);
         break;
@@ -292,10 +313,12 @@ export class Competition {
           this.done = (d.ranking || []).length;
           this.cb.onProgress({ doneCount: this.done, total: this.total, done: d.ranking || [] });
           this.cb.onRoundResult({ round: d.round || this.round, ranking: d.ranking || [] });
+          this.reportClassroomRound(d);
         }
         break;
       case 'round_timeout':
         this.cb.onRoundResult({ round: d.round || this.round, ranking: d.ranking || [] });
+        this.reportClassroomRound(d);
         break;
       case 'game_over':
       case 'race_over':
@@ -325,6 +348,7 @@ export class Competition {
   submit(correct: boolean, formula: string): void {
     if (!this.active || this.waiting || this.spectator) return;
     this.waiting = true;
+    this.lastOps = correct ? opsFromExpression(formula) : [];
     if (this.demo) this.demoSubmit(correct, formula);
     else this.send({ type: 'submit_answer', result: correct, formula: correct ? formula : undefined });
   }
