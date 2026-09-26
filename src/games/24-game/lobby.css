@@ -35,7 +35,7 @@
 }
 /* 淡棋盘格底纹（呼应参考页 BoardDuel 的 checkerboard；indigo 极淡，仅作氛围） */
 .home-v2 .lobby-grid::before {
-  content: ""; position: absolute; inset: -34px -18px; z-index: 0; border-radius: 26px;
+  content: ""; position: absolute; inset: -34px 0; z-index: 0; border-radius: 26px;
   background-image:
     linear-gradient(45deg, rgba(55, 48, 163, .045) 25%, transparent 25%, transparent 75%, rgba(55, 48, 163, .045) 75%),
     linear-gradient(45deg, rgba(55, 48, 163, .045) 25%, transparent 25%, transparent 75%, rgba(55, 48, 163, .045) 75%);

@@ -417,6 +417,9 @@ body.rail .main { margin-left: var(--sb-rail); }
   body.home-v2 .daily-tiles { grid-template-columns: repeat(2, 1fr); }
   body.home-v2 .feats-grid { grid-template-columns: 1fr; }
   body.home-v2 .ladder-panel { padding: 18px; }
+  /* 窄屏：天梯不再硬撑 320px，避免撑出横向滚动 */
+  body.home-v2 .ladder .tiers { min-width: 0; }
+  body.home-v2 .ladder-title { white-space: normal; }
 }
 @media (prefers-reduced-motion: reduce) {
   body.home-v2 *, body.home-v2 *::before, body.home-v2 *::after {
