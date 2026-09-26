@@ -10,45 +10,97 @@
    与 24 点共用 ../24-game/lobby.css 骨架，本文件不再包含 lobby 样式。 */
 
 /* ─── 棋盘（Screen 2 hero）─── */
+/* 2026-09-26 按设计稿 boardduel-sudoku9x9-redesign.html 重做（宫为本）：
+   ① 三级网格线：宫内细线(1 物理px) < 3×3 宫粗线(2 物理px) < 外框，由 SVG crispEdges
+      覆盖层绘制（按 1/dpr 折算），跨 Windows 125%/150% 缩放均匀，无细线深浅不一
+   ② 弃 1px border 网格线（DPR 小数下深浅不一/消失），cell border:0 + box-sizing:border-box
+   ③ given 数字高对比（浅 #1E293B on #F1F5F9 ≈ 13:1；原 var(--bg) 1.00:1 全消失）
+   ④ 数字垂直居中：line-height:1 + text-box:trim + padding-top em 补偿（桌面 0.08/移动 0.02）
+   ⑤ 状态色全部不透明预混合（浅/暗各一套 hex），不再用 rgba
+   ⑥ MathDuel 靛蓝映射（设计稿注释给定）：--line-box #3730A3、--line-outer #1E1B4B、
+      --accent/--user-ink #4F46E5；状态底色沿用设计稿的紫罗兰浅调（与靛蓝同族） */
 .s9-board-wrap { margin-top: 6px; }
 .s9-board {
+  /* 9 格局部 token：与皮肤作用域共存，skin-paper / 深色均定义 */
+  --s9-cell-bg: #ffffff;
+  --s9-given-bg: #f1f5f9;
+  --s9-given-ink: #1e293b;
+  --s9-peer-bg: #f5f3ff;
+  --s9-sel-bg: #ede9fe;
+  --s9-same-bg: #e9d5ff;
+  --s9-line-cell: #e5e1f0;
+  --s9-line-box: #3730a3;
+  --s9-line-outer: #1e1b4b;
+  --s9-accent: #4f46e5;
+  --s9-accent-soft: #ede9fe;
+  --s9-user-ink: #4f46e5;
+  --s9-notes: #94a3b8;
+  --s9-conflict: #dc2626;
   display: grid; grid-template-columns: repeat(9, 1fr);
   width: min(540px, 100%); margin: 0 auto;
-  background: var(--bg); border-radius: 14px; padding: 6px;
-  border: 2px solid var(--border-strong, #2a3741);
-  user-select: none;
+  background: var(--s9-cell-bg); border-radius: 14px; padding: 0;
+  /* 外框 = 三级线最粗一级，颜色取 --line-outer（最深的靛蓝墨） */
+  border: 3px solid var(--s9-line-outer);
+  box-sizing: border-box;
+  user-select: none; position: relative; overflow: hidden;
 }
+/* 暗色主题（body.arena 不带 skin-paper） */
+body.arena:not(.skin-paper) .s9-board {
+  --s9-cell-bg: #0f172a;
+  --s9-given-bg: #1e293b;
+  --s9-given-ink: #e5e7eb;
+  --s9-peer-bg: #1b1530;
+  --s9-sel-bg: #2a2150;
+  --s9-same-bg: #3b2d6b;
+  --s9-line-cell: #334155;
+  --s9-line-box: #818cf8;
+  --s9-line-outer: #a5b4fc;
+  --s9-accent: #818cf8;
+  --s9-accent-soft: #2a2150;
+  --s9-user-ink: #a5b4fc;
+  --s9-notes: #64748b;
+  --s9-conflict: #fca5a5;
+}
+/* SVG 网格线覆盖层（由 index.ts 的 buildGridLines 注入：细线 + 宫粗线两级） */
+.s9-board .grid-lines { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 3; display: block; }
+
 .s9-board .c9cell {
-  aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
-  background: var(--surface); color: var(--text-muted);
-  font-family: var(--font-sans); font-weight: 600;
-  font-size: clamp(1rem, 4.4vw, 1.5rem); font-variant-numeric: tabular-nums;
-  border-right: 1px solid var(--border); border-bottom: 1px solid var(--border);
-  cursor: pointer; transition: background 0.12s, box-shadow 0.12s, color 0.12s;
+  aspect-ratio: 1;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--s9-cell-bg);
+  border: 0;
+  box-sizing: border-box;
+  font-family: var(--font-sans); font-weight: 700; /* Inter 未托管 600，避免合成字重 */
+  font-size: clamp(1.1rem, 5.4vw, 1.7rem); font-variant-numeric: tabular-nums;
+  /* 数字垂直居中四件套 */
+  line-height: 1;
+  text-box: trim-both cap alphabetic;
+  padding-top: 0.08em;
+  color: var(--s9-user-ink);
+  cursor: pointer;
+  transition: background 0.12s, box-shadow 0.12s, color 0.12s;
   position: relative;
 }
-/* 末列 / 末行去掉单线 */
-.s9-board .c9cell:nth-child(9n) { border-right: 0; }
-.s9-board .c9cell:nth-last-child(-n + 9) { border-bottom: 0; }
-/* 3×3 宫线：竖线在 col3、6 后（0-based col 2、5），横线在 row3、6 后（row 2、5）；
-   2px 加粗让 9×9 的「宫」层级从噪声中跳出来（设计稿明确：box > cell） */
-.s9-board .c9cell.bx-c { border-right: 2px solid var(--text-muted); }
-.s9-board .c9cell.bx-r { border-bottom: 2px solid var(--text-muted); }
+@media (max-width: 767px) {
+  /* 移动端字号更小，同一 em 折算的补偿量偏大 → 用更小的 em 值 */
+  .s9-board .c9cell { padding-top: 0.02em; }
+}
 
-/* cell 状态（hero element） */
-.s9-board .c9cell.given { background: var(--a-paper, #f4f6f2); color: var(--bg); font-weight: 700; cursor: default; }
-.s9-board .c9cell.entry { color: var(--brand); }
+/* cell 状态（hero element；层级：given 底 > peer/same 底 > sel 底 + ring） */
+.s9-board .c9cell.given { background: var(--s9-given-bg); color: var(--s9-given-ink); cursor: default; }
+.s9-board .c9cell.entry { color: var(--s9-user-ink); }
 .s9-board .c9cell.bot { color: var(--teal, #2fc4c9); }
 .s9-board .c9cell.sel {
-  background: var(--brand-subtle); color: var(--brand);
-  box-shadow: inset 0 0 0 2px var(--brand);
+  background: var(--s9-sel-bg);
+  box-shadow: inset 0 0 0 2.5px var(--s9-accent);
+  z-index: 2;
 }
-.s9-board .c9cell.peer { background: var(--surface-raised); }
-.s9-board .c9cell.same { color: var(--teal, #2fc4c9); box-shadow: inset 0 0 0 1.5px var(--teal-dim, #1e8a8e); }
+.s9-board .c9cell.peer { background: var(--s9-peer-bg); }
+.s9-board .c9cell.same { background: var(--s9-same-bg); }
+/* 冲突（设计稿）：左侧红条 + 红数字，不再整格铺色 */
 .s9-board .c9cell.conflict {
-  color: var(--teal, #2fc4c9);
-  box-shadow: inset 0 0 0 2px var(--teal-dim, #1e8a8e);
-  background: rgba(47, 196, 201, 0.12);
+  color: var(--s9-conflict);
+  box-shadow: inset 3px 0 0 0 var(--s9-conflict);
 }
 .s9-board .c9cell.lock { box-shadow: inset 0 0 0 1px var(--border); }
 /* 「ember corner」：duel 中我方可填格右上角的 ember 三角（banner 承诺的视觉标记） */
@@ -86,29 +138,34 @@
 }
 .s9-board .c9cell .n9 i.on { color: var(--a-ember-dim, #ff8b66); }
 
-/* ─── 数字键盘 ─── */
-.s9-pad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; max-width: 380px; margin: 16px auto 0; }
+/* ─── 数字键盘（2026-09-26：3×3 排布呼应棋盘宫结构，剩余计数移右上角）─── */
+.s9-pad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; max-width: 420px; margin: 14px auto 0; }
 .s9-pad .pk {
-  aspect-ratio: 1.25; border-radius: 12px; background: var(--surface); border: 1px solid var(--border);
-  color: var(--text); font-family: var(--font-sans); font-size: 1.4rem; font-weight: 600; cursor: pointer;
+  position: relative;
+  padding: 14px 0; border-radius: 13px;
+  background: var(--s9-cell-bg); border: 1px solid var(--s9-line-cell);
+  color: var(--s9-accent); font-family: var(--font-sans); font-size: clamp(1.1rem, 5vw, 1.5rem);
+  font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1; cursor: pointer;
   display: flex; align-items: center; justify-content: center;
-  transition: border-color 0.12s, color 0.12s, background 0.12s;
+  transition: background 0.12s, transform 0.06s, border-color 0.12s, color 0.12s;
 }
-.s9-pad .pk:hover { border-color: var(--brand); color: var(--brand); }
+.s9-pad .pk:hover { background: var(--s9-accent-soft); }
+.s9-pad .pk:active { transform: translateY(1px); }
 .s9-pad .s9-padfoot { grid-column: 1 / -1; display: flex; gap: 8px; }
 .s9-pad .s9-padfoot .pk { flex: 1; aspect-ratio: auto; padding: 11px; font-size: 0.95rem; color: var(--text-muted); }
-.s9-pad .pk.erase:hover { color: var(--text); }
-.s9-pad .pk.notes:hover { color: var(--brand); }
-.s9-pad .pk.notes.on { border-color: var(--brand); background: var(--brand-subtle); color: var(--brand); }
-/* 剩余计数角标：该数字盘面还差几个；集齐 9 个整键置灰 */
-.s9-pad .pk { position: relative; }
+.s9-pad .pk.erase:hover { color: var(--text); background: transparent; }
+.s9-pad .pk.notes:hover { color: var(--s9-accent); }
+.s9-pad .pk.notes.on { border-color: var(--s9-accent); background: var(--s9-accent-soft); color: var(--s9-accent); }
+/* 剩余计数角标：该数字盘面还差几个；集齐 9 个整键置灰（设计稿：top-right） */
 .s9-pad .pk .pk-left {
-  position: absolute; right: 6px; bottom: 3px;
-  font-size: 0.62rem; font-weight: 700; line-height: 1;
+  position: absolute; top: 5px; right: 7px;
+  font-size: 0.6rem; font-weight: 600; line-height: 1;
   color: var(--text-muted); font-variant-numeric: tabular-nums;
 }
-.s9-pad .pk.done { opacity: 0.35; }
-.s9-pad .pk.done:hover { border-color: var(--border); color: var(--text-muted); }
+.s9-pad .pk.done { opacity: 0.32; cursor: default; }
+.s9-pad .pk.done:hover { border-color: var(--s9-line-cell); background: var(--s9-cell-bg); color: var(--s9-accent); }
+/* 键盘可达性 */
+.s9-pad .pk:focus-visible { outline: 2px solid var(--s9-accent); outline-offset: 2px; }
 @media (max-width: 560px) {
   .s9-pad { gap: 6px; }
   .s9-pad .pk { font-size: 1.2rem; }

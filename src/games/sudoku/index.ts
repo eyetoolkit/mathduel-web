@@ -266,6 +266,59 @@ function cellClass(i: number): string {
   return cls.join(' ');
 }
 
+/** 三级网格线的中间两级（细线 + 3×3 宫粗线），SVG crispEdges 按 1/dpr 折算物理像素；
+ *  外框最粗一级由 .s9-board 的 CSS border 承担。ResizeObserver + matchMedia(resolution) 监听重建。 */
+function buildGridLines(board: HTMLElement): void {
+  const build = (): void => {
+    const old = board.querySelector('.grid-lines');
+    if (old) old.remove();
+    const dpr = window.devicePixelRatio || 1;
+    const W = board.clientWidth;
+    if (!W) return;
+    const cell = W / 9;
+    const thin = 1 / dpr, thick = 2 / dpr;
+    const NS = 'http://www.w3.org/2000/svg';
+    const svg = document.createElementNS(NS, 'svg');
+    svg.setAttribute('class', 'grid-lines');
+    svg.setAttribute('viewBox', `0 0 ${W} ${W}`);
+    svg.setAttribute('preserveAspectRatio', 'none');
+    svg.setAttribute('shape-rendering', 'crispEdges');
+    svg.setAttribute('aria-hidden', 'true');
+    // 读取棋盘当前主题 token，颜色随主题切换
+    const cs = getComputedStyle(board);
+    const cCell = cs.getPropertyValue('--s9-line-cell').trim() || '#e5e1f0';
+    const cBox = cs.getPropertyValue('--s9-line-box').trim() || '#3730a3';
+    const rect = (x: number, y: number, w: number, h: number, color: string): void => {
+      const r = document.createElementNS(NS, 'rect');
+      r.setAttribute('x', String(x));
+      r.setAttribute('y', String(y));
+      r.setAttribute('width', String(w));
+      r.setAttribute('height', String(h));
+      r.style.fill = color;
+      svg.appendChild(r);
+    };
+    for (let i = 1; i <= 8; i++) {
+      // 3×3 宫线：i=3、6（第 3、6 格后）为粗线，其余为细线
+      const box = i % 3 === 0;
+      const w = box ? thick : thin;
+      const color = box ? cBox : cCell;
+      rect(i * cell - w / 2, 0, w, W, color);
+      rect(0, i * cell - w / 2, W, w, color);
+    }
+    board.appendChild(svg);
+  };
+  const schedule = (): void => { requestAnimationFrame(build); };
+  schedule();
+  window.addEventListener('resize', schedule);
+  if ('ResizeObserver' in window) new ResizeObserver(schedule).observe(board);
+  // DPR/缩放变化监听：resolution 媒体查询一次性监听链
+  const watchDpr = (): void => {
+    const mq = matchMedia(`(resolution: ${window.devicePixelRatio || 1}dppx)`);
+    mq.addEventListener('change', () => { schedule(); watchDpr(); }, { once: true });
+  };
+  watchDpr();
+}
+
 function renderBoard(): void {
   const el = $('s9board')!;
   if (!el.dataset.built) {
@@ -275,10 +328,13 @@ function renderBoard(): void {
       const t = (e.target as HTMLElement).closest<HTMLElement>('[data-i]');
       if (t) selectCell(Number(t.dataset.i));
     });
+    // 首次构建棋盘后注入 SVG 网格线覆盖层（宫粗线 + 细线），并监听尺寸/DPR 变化
+    buildGridLines(el);
   }
   conflictCache = findConflicts(st.grid);
   [...el.children].forEach((cell, i) => {
     const c = cell as HTMLElement;
+    if (!c.classList.contains('c9cell')) return; // 跳过 SVG 覆盖层等非 cell 子元素
     const v = st.grid[i];
     const cls = cellClass(i);
     if (c.className !== cls) c.className = cls;
