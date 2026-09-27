@@ -180,7 +180,7 @@ export function openShareOverlay(d: ShareData, streak: number): void {
       ? '🏆 Competition Results'
       : d.daily
         ? d.success || d.solved === d.total
-          ? '🎉 今日挑战成功!'
+          ? '🎉 Daily Challenge Complete!'
           : '📅 Daily Challenge Results'
         : '🏆 My 24 Score';
   }
