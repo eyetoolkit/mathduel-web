@@ -219,3 +219,18 @@ tr:last-child td{border-bottom:0}
   .rail .rl{display:none}
   .cls{flex:none}
 }
+
+/* ── 作业历史下拉 / 学生下钻 / 班级删除（2026-09-27 审查修复） ── */
+.asgsel{max-width:230px;border:1.5px solid #E3E7F0;border-radius:999px;padding:4px 10px;font:inherit;font-size:.72rem;background:#fff;color:var(--ink)}
+table tbody tr.clickable{cursor:pointer}
+table tbody tr.clickable:hover{background:#F6F7FC}
+.smodal{position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;background:rgba(16,20,42,.45)}
+.sbox{background:#fff;border-radius:16px;padding:18px;width:min(440px,92vw);max-height:70vh;overflow:auto;box-shadow:0 20px 60px rgba(16,20,42,.3)}
+.shead{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:10px}
+.shead b{font-family:var(--disp);font-size:1rem;color:var(--ink)}
+#sBody table{width:100%;border-collapse:collapse;font-size:.78rem}
+#sBody th,#sBody td{text-align:left;padding:6px 8px;border-bottom:1px solid #EEF0F6}
+.cls{position:relative}
+.cdel{position:absolute;top:8px;right:8px;font-size:.72rem;color:#B6BDD6;line-height:1;padding:2px 5px;border-radius:6px}
+.cdel:hover{color:#DC2626;background:#FDECEC}
+@media (max-width:720px){.asgsel{max-width:100%}}

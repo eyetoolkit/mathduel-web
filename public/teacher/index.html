@@ -41,6 +41,8 @@
           <span class="pill pend">⏳ <span class="d" id="aPend">0</span> pending</span>
           <span class="pill" id="aDue">📅 no due</span>
           <span class="pill mode" id="aMode">—</span>
+          <select id="asgSel" class="asgsel" style="display:none" aria-label="Assignment history"></select>
+          <button class="linkbtn" id="delAsgBtn" style="display:none">🗑 Delete assignment</button>
         </div>
 
         <div class="insights" id="insights" style="display:none"></div>
@@ -137,6 +139,13 @@
     <p class="compliance"><b>Teacher-managed · FERPA-light.</b> Students join by code; we keep only anonymous codes, not real names. COPPA/GDPR handled on the game side.</p>
   </section>
 </main>
+
+<div class="smodal" id="smodal" style="display:none" role="dialog" aria-modal="true">
+  <div class="sbox">
+    <div class="shead"><b id="sTitle">—</b><button class="ghost" id="sClose" aria-label="Close">✕</button></div>
+    <div id="sBody"></div>
+  </div>
+</div>
 
 <div class="toast" id="toast"></div>
 

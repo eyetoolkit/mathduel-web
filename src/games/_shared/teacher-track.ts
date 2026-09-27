@@ -149,7 +149,9 @@ export function ensureStudentCode(room: string): Promise<string | null> {
         if (j && j.ok === false) {
           errEl.textContent = j.reason === 'not_on_roster'
             ? 'This code is not on the class list — check with your teacher.'
-            : 'Not accepted. Check with your teacher.';
+            : j.reason === 'expired'
+              ? 'This assignment has closed — ask your teacher.'
+              : 'Not accepted. Check with your teacher.';
           okBtn.disabled = false;
           okBtn.textContent = 'Start';
           return;

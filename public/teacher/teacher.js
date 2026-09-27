@@ -22,6 +22,7 @@ let roster = [];
 let assignment = null;
 let report = null;
 let games = [];
+let assignmentList = [];
 let liveTimer = null;
 
 /* ─── API ─── */
@@ -210,13 +211,43 @@ async function loadClass(id) {
   renderRail();
   try {
     roster = (await api('/teacher/classes/' + id + '/roster')).roster || [];
-    const list = (await api('/teacher/assignments?classId=' + id)).assignments || [];
-    assignment = list.length ? await api('/teacher/assignments/' + list[list.length - 1].id) : { assignment: null, report: null };
-    report = assignment.report;
-    assignment = assignment.assignment;
+    assignmentList = (await api('/teacher/assignments?classId=' + id)).assignments || [];
   } catch (e) { toast('⚠ ' + e.message); return; }
+  // 默认打开最新一份作业；历史作业用 Overview 顶部的下拉切换
+  await loadAssignment(assignmentList.length ? assignmentList[assignmentList.length - 1].id : null);
+}
+
+/* 加载指定作业的报告（历史切换共用） */
+async function loadAssignment(aid) {
+  if (!aid) { assignment = null; report = null; renderAsgPicker(); renderOverview(); renderBoard(); return; }
+  try {
+    const d = await api('/teacher/assignments/' + aid);
+    assignment = d.assignment;
+    report = d.report;
+  } catch (e) { toast('⚠ ' + e.message); return; }
+  renderAsgPicker();
   renderOverview();
   renderBoard();
+}
+
+/* 作业历史下拉（含再练标记与日期） */
+function renderAsgPicker() {
+  const sel = $('asgSel');
+  const del = $('delAsgBtn');
+  if (!sel) return;
+  sel.innerHTML = '';
+  if (!assignmentList.length) { sel.style.display = 'none'; if (del) del.style.display = 'none'; return; }
+  sel.style.display = '';
+  if (del) del.style.display = assignment ? '' : 'none';
+  assignmentList.slice().reverse().forEach((a) => {
+    const o = document.createElement('option');
+    o.value = a.id;
+    const dt = a.createdAt ? new Date(a.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : '';
+    const flag = a.targetCount ? ' · ↺' + a.targetCount : '';
+    o.textContent = (a.title || a.gameLabel || a.game) + (dt ? ' · ' + dt : '') + flag;
+    if (assignment && a.id === assignment.id) o.selected = true;
+    sel.appendChild(o);
+  });
 }
 
 /* ─── render ─── */
@@ -229,8 +260,23 @@ function renderRail() {
     b.className = 'cls' + (c.id === current ? ' on' : '');
     const words = String(c.name || '??').trim().split(/\s+/);
     const code = (words[words.length - 1] || '??').replace(/[^A-Za-z0-9]/g, '').slice(0, 4).toUpperCase() || '??';
-    b.innerHTML = `<span class="ci">${esc(code)}</span><span><span class="cn">${esc(c.name)}</span><br><span class="cs">${esc(c.grade || 'class')}</span></span>`;
+    b.innerHTML = `<span class="ci">${esc(code)}</span><span><span class="cn">${esc(c.name)}</span><br><span class="cs">${esc(c.grade || 'class')}</span></span><span class="cdel" title="Delete class">✕</span>`;
     b.addEventListener('click', () => loadClass(c.id));
+    b.querySelector('.cdel').addEventListener('click', async (ev) => {
+      ev.stopPropagation();
+      if (!confirm('Delete class "' + c.name + '" with all its assignments and reports? This cannot be undone.')) return;
+      try {
+        await api('/teacher/classes/' + c.id, { method: 'DELETE' });
+        classes = classes.filter((x) => x.id !== c.id);
+        if (current === c.id) {
+          current = classes.length ? classes[0].id : null;
+          roster = []; assignmentList = []; assignment = null; report = null;
+        }
+        if (current) await loadClass(current);
+        else { renderRail(); emptyState(); }
+        toast('🗑 Class deleted');
+      } catch (e) { toast('⚠ ' + e.message); }
+    });
     rail.insertBefore(b, add);
   });
 }
@@ -261,9 +307,12 @@ function renderOverview() {
   const w = $('weak');
   w.innerHTML = '';
   if (!(report.ops || []).length) {
-    w.innerHTML = '<div class="mini" style="padding:10px 0">No attempts yet — students need to finish a round first.</div>';
-  }
-  (report.ops || []).forEach(({ op, sym, v }) => {
+    // 服务端对不上报运算符的游戏（数独/金字塔）返回空 ops —— 不再渲染 0% 假条形
+    const msg = assignment.game === '24-game'
+      ? 'No attempts yet — students need to finish a round first.'
+      : 'Operator breakdown applies to 24-Point assignments. Per-student accuracy is shown below.';
+    w.innerHTML = '<div class="mini" style="padding:10px 0">' + msg + '</div>';
+  } else (report.ops || []).forEach(({ op, sym, v }) => {
     if (op !== 'divide' && op !== 'multiply' && op !== 'add' && op !== 'subtract') return;
     const cls = v < 60 ? 'low' : v < 85 ? 'mid' : 'hi';
     const el = document.createElement('div');
@@ -288,9 +337,13 @@ function renderOverview() {
   });
   const gaps = (report.ops || []).slice().filter(o => ['divide', 'multiply', 'add', 'subtract'].includes(o.op)).sort((a, b) => a.v - b.v);
   const biggest = gaps[0];
-  $('glanceNote').textContent = biggest && biggest.v < 70
-    ? `${biggest.sym} combinations are the class's biggest gap — worth a reteach.`
-    : (rows.length ? 'No major gaps — the class is on track.' : 'Waiting for student attempts.');
+  if (!gaps.length) {
+    $('glanceNote').textContent = rows.length ? 'Summary based on accuracy and completion.' : 'Waiting for student attempts.';
+  } else {
+    $('glanceNote').textContent = biggest.v < 70
+      ? `${biggest.sym} combinations are the class's biggest gap — worth a reteach.`
+      : 'No major gaps — the class is on track.';
+  }
 
   const tb = $('stuBody');
   tb.innerHTML = '';
@@ -300,6 +353,9 @@ function renderOverview() {
   }
   rows.forEach((r) => {
     const tr = document.createElement('tr');
+    tr.className = 'clickable';
+    tr.title = 'Click for round-by-round detail';
+    tr.addEventListener('click', () => openStudent(r.code));
     const doneOk = assignment.rounds ? r.solved >= assignment.rounds : r.solved > 0;
     const ak = r.acc >= 85;
     const weak = r.weak ? `<span class="tagv weak">${esc(r.weak)}</span>` : '<span class="mini">—</span>';
@@ -318,7 +374,7 @@ function renderBoard() {
   $('bClass').textContent = `${c ? c.name : 'Class'} · ${assignment.gameLabel || assignment.game}`;
   $('bTitle').textContent = assignment.title || '—';
   $('bCode').textContent = assignment.roomCode || '—';
-  $('bTime').textContent = `⏱ ${assignment.timeLimit || '—'}s · ${assignment.rounds || '—'} rounds`;
+  $('bTime').textContent = `⏱ ${assignment.timeLimit ? assignment.timeLimit + 's' : 'untimed'} · ${assignment.rounds || '—'} rounds`;
   $('bDone').textContent = `✅ ${(report && report.summary && report.summary.started) || 0}/${(report && report.summary && report.summary.students) || 0}`;
 }
 
@@ -374,6 +430,8 @@ function emptyState() {
   $('aMode').textContent = '—';
   ['weak', 'glance', 'stuBody'].forEach((s) => $(s).innerHTML = '');
   $('weak').innerHTML = '<div class="mini" style="padding:10px 0">Assign your first practice to see class data.</div>';
+  const sel = $('asgSel'); if (sel) { sel.style.display = 'none'; sel.innerHTML = ''; }
+  const dab = $('delAsgBtn'); if (dab) dab.style.display = 'none';
   const ib = $('insights');
   if (ib) { ib.style.display = 'none'; ib.innerHTML = ''; }
 }
@@ -411,7 +469,8 @@ $('insights').addEventListener('click', async (e) => {
   if (!btn) return;
   if (btn.dataset.act === 'reteach') { await reteachFromReport(); return; }
   if (btn.dataset.act === 'copy') {
-    const txt = $('roomUrl').textContent;
+    const txt = (assignment && assignment.inviteUrl) || $('roomUrl').textContent || '';
+    if (!txt) { toast('Generate or pick an assignment first'); return; }
     try { await navigator.clipboard.writeText(txt); toast('🔗 Invite copied to clipboard'); }
     catch { toast('🔗 ' + txt); }
   }
@@ -572,8 +631,63 @@ function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, (m) => (
 let toastId = null;
 function toast(m) { const t = $('toast'); t.textContent = m; t.className = 'toast show'; clearTimeout(toastId); toastId = setTimeout(() => t.classList.remove('show'), 2600); }
 async function ensureAuth() {
-  try { await api('/teacher/me'); return true; } catch (e) { return false; }
+  try { await api('/teacher/me'); return true; }
+  catch (e) { if (e.message !== 'auth_required') toast('⚠ ' + e.message); return false; }
 }
+
+/* ─── 作业历史切换 / 删除作业 ─── */
+$('asgSel').addEventListener('change', async () => {
+  try { await loadAssignment($('asgSel').value); } catch (e) { toast('⚠ ' + e.message); }
+});
+$('delAsgBtn').addEventListener('click', async () => {
+  if (!assignment) return;
+  if (!confirm('Delete this assignment and its report? This cannot be undone.')) return;
+  try {
+    await api('/teacher/assignments/' + assignment.id, { method: 'DELETE' });
+    toast('🗑 Assignment deleted');
+    await loadClass(current);
+  } catch (e) { toast('⚠ ' + e.message); }
+});
+
+/* ─── 学生逐轮下钻弹层 ─── */
+async function openStudent(code) {
+  if (!assignment) return;
+  try {
+    const d = await api('/teacher/assignments/' + assignment.id + '/student?code=' + encodeURIComponent(code));
+    $('sTitle').textContent = code + ' · ' + (assignment.gameLabel || assignment.game);
+    const recs = d.records || [];
+    $('sBody').innerHTML = recs.length
+      ? '<table><thead><tr><th>Round</th><th>Result</th><th>Time</th><th>Ops</th></tr></thead><tbody>'
+        + recs.map((r) => '<tr><td>#' + esc(r.round) + '</td><td>'
+          + (r.solved ? '✅ solved' : '❌ ' + (r.wrong || 0) + ' wrong') + '</td><td>'
+          + (r.solved && r.duration_ms ? fmtMs(r.duration_ms) : '—') + '</td><td class="mini">'
+          + (esc((r.ops || []).join(' ')) || '—') + '</td></tr>').join('')
+        + '</tbody></table>'
+      : '<p class="mini">No rounds recorded yet.</p>';
+    $('smodal').style.display = 'flex';
+  } catch (e) { toast('⚠ ' + e.message); }
+}
+$('sClose').addEventListener('click', () => { $('smodal').style.display = 'none'; });
+$('smodal').addEventListener('click', (e) => { if (e.target === $('smodal')) $('smodal').style.display = 'none'; });
+
+/* ─── tabs 键盘导航（方向键在 Overview/Assign/Board 间移动）─── */
+document.querySelector('.tabs').addEventListener('keydown', (e) => {
+  if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+  const order = ['tabOver', 'tabAssign', 'tabBoard'];
+  const i = order.indexOf(document.activeElement && document.activeElement.id);
+  if (i < 0) return;
+  const nx = order[(i + (e.key === 'ArrowRight' ? 1 : order.length - 1)) % order.length];
+  $(nx).focus();
+  $(nx).click();
+});
+
+/* ─── turnstile 未加载完成时的友好提示（此前只会永远 turnstile_failed）─── */
+$('authSend').addEventListener('click', () => {
+  if (tsToken === 'skip' && !window.turnstile) {
+    showAuth('Human check is still loading — wait a few seconds, or use Google/GitHub below.');
+    waitTurnstile();
+  }
+}, true); /* capture：提示后主 handler 照常执行，token 就绪即正常提交 */
 
 /* screenshot hook: ?view=assign | ?view=board pre-switches tabs */
 const v = new URLSearchParams(location.search).get('view');
