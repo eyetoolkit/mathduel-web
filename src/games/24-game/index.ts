@@ -561,15 +561,15 @@ function renderDailyPreStart(): void {
     '<div class="banner daily">' +
     '<div class="daily-top"><div class="daily-meta">' +
     `<div class="b-title">📅 Daily Challenge ${daily.key}</div>` +
-    `<div class="b-sub">${DAILY_N} 道不同难度 · 全球同题 · 每题 ${DAILY_WINDOW} 秒 · 服务端统一计时</div>` +
+    `<div class="b-sub">${DAILY_N} puzzles · same set worldwide · ${DAILY_WINDOW}s each · server-timed</div>` +
     '</div></div>' +
     '<div class="db-diffs">' + diffChips + '</div>' +
-    '<button class="btn primary db-start" id="dbStart">🂠 开始挑战</button>' +
-    `<p class="db-hint">点击开始后将同时揭牌并启动计时；${DAILY_N} 题全部在限时内解出即「挑战成功」</p>` +
+    '<button class="btn primary db-start" id="dbStart">🂠 Start Challenge</button>' +
+    `<p class="db-hint">Cards reveal and the timer starts when you begin; solve all ${DAILY_N} to win</p>` +
     '</div>';
   cardsEl.innerHTML = Array.from({ length: DAILY_N }, () => '<div class="cb"><span class="cb-q">?</span></div>').join('');
   resultEl.className = 'result';
-  resultEl.textContent = '准备开始每日挑战';
+  resultEl.textContent = 'Ready to start the Daily Challenge';
   const sb = $('dbStart');
   if (sb) sb.onclick = beginDaily;
 }
@@ -581,13 +581,13 @@ async function beginDaily(): Promise<void> {
   const sb = $('dbStart') as HTMLButtonElement | null;
   if (sb) {
     sb.disabled = true;
-    sb.textContent = '⏳ 正在取题…';
+    sb.textContent = '⏳ Fetching puzzles…';
   }
   const online = await loadDailyPuzzles();
   if (!online) buildLocalPuzzles();
   dailyFetching = false;
   if (!daily.active) return; // 取题期间用户切走了模式
-  if (!online) toast('离线模式 — 本局不上全球榜');
+  if (!online) toast('Offline mode — not on the global leaderboard');
   daily.started = true;
   daily.startTs = Date.now();
   daily.qStartTs = Date.now(); // 与服务端「拉题即开 Q1」对齐（响应延迟百毫秒级，对 60s 窗口无感）
@@ -692,7 +692,7 @@ async function dailySolve(): Promise<void> {
       daily.solved = Math.max(0, daily.solved - 1);
       daily.submits[q] = { solved: false, solution: null, time: daily.limit };
       resultEl.className = 'result bad';
-      resultEl.textContent = '⏰ 服务器判定超时';
+      resultEl.textContent = '⏰ Server flagged timeout';
       advanceDaily(false);
       return;
     }
@@ -847,7 +847,7 @@ async function loadDailyBoard(): Promise<void> {
   const el = $('dailyBoard');
   if (!el) return;
   if (!daily.canSubmit) {
-    el.innerHTML = '<div class="race-empty">🌐 离线模式 — 未接入全球榜</div>';
+    el.innerHTML = '<div class="race-empty">🌐 Offline — not connected to global board</div>';
     return;
   }
   try {
@@ -856,7 +856,7 @@ async function loadDailyBoard(): Promise<void> {
     const data = await res.json();
     const top: DailyRankRow[] = Array.isArray(data.top) ? data.top : [];
     if (!top.length) {
-      el.innerHTML = '<div class="race-empty">还没有人完成今天的挑战，抢首杀！</div>';
+      el.innerHTML = '<div class="race-empty">Be the first to clear today’s challenge!</div>';
       return;
     }
     let html = top
@@ -874,10 +874,10 @@ async function loadDailyBoard(): Promise<void> {
       .join('');
     const me = data.me as DailyRankRow | null;
     if (me && me.rank)
-      html += dailyRow(String(me.rank), '你', dailyScoreText(me.times, me.total), 'me', avatarIcon(profile.avatar), dailySpeedBadge(me.total));
+      html += dailyRow(String(me.rank), 'You', dailyScoreText(me.times, me.total), 'me', avatarIcon(profile.avatar), dailySpeedBadge(me.total));
     el.innerHTML = html;
   } catch {
-    el.innerHTML = '<div class="race-empty">🌐 全球榜加载失败</div>';
+    el.innerHTML = '<div class="race-empty">🌐 Global leaderboard failed to load</div>';
   }
 }
 
@@ -1623,18 +1623,18 @@ function renderSide(): void {
       '<div class="hint-step" style="margin-top:10px"><b>·</b><span>Same puzzle worldwide — race the clock</span></div></div>';
     if (!daily.started) {
       sideEl.innerHTML =
-        '<div class="panel"><h3>📅 每日挑战规则</h3>' +
-        '<div class="hint-step"><b>1</b><span>每天同一套 5 题，全球同题</span></div>' +
-        '<div class="hint-step"><b>2</b><span>难度递增：Easy → Medium → Hard</span></div>' +
-        '<div class="hint-step"><b>3</b><span>每题限时 60 秒，超时自动揭晓答案</span></div>' +
-        '<div class="hint-step"><b>4</b><span>5 题全在限时内解出 = 挑战成功</span></div>' +
-        '<div class="hint-step"><b>5</b><span>服务端权威计时 · 排名按总用时</span></div></div>' +
+        '<div class="panel"><h3>📅 Daily Challenge Rules</h3>' +
+        '<div class="hint-step"><b>1</b><span>Same 5 puzzles daily, worldwide</span></div>' +
+        '<div class="hint-step"><b>2</b><span>Increasing difficulty: Easy → Medium → Hard</span></div>' +
+        '<div class="hint-step"><b>3</b><span>60s per puzzle, answer auto-revealed on timeout</span></div>' +
+        '<div class="hint-step"><b>4</b><span>Solve all 5 in time = Challenge cleared</span></div>' +
+        '<div class="hint-step"><b>5</b><span>Server-authoritative timing · ranked by total time</span></div></div>' +
         myStats;
     } else {
       sideEl.innerHTML =
         '<div class="panel"><h3>🏆 Today’s Global Board</h3>' +
         '<div class="race-hint">🥇 ≤30s · 🥈 ≤60s · 🥉 ≤120s</div>' +
-        '<div class="race-list" id="dailyBoard"><div class="race-empty">加载中…</div></div></div>' +
+        '<div class="race-list" id="dailyBoard"><div class="race-empty">Loading…</div></div></div>' +
         myStats;
       void loadDailyBoard();
     }
