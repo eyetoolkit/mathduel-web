@@ -3,7 +3,7 @@
    与 24 点 / 6×6 / 9×9 / killer / number-pyramid 同骨架，
    自有前缀 `ep-`（equation pyramid）。
    设计稿要点：
-     · 3×3 board，每格 = 上行运算符（mute-2 + 删除线时是 anchor）+ 数字；
+     · 金字塔 board：顶层 target（1 格），9 个 cell 按 2/3/4 三行居中收窄；每格 = 上行运算符（mute + anchor 时删除线）+ 数字；
      · target card（paper）位于 apex（顶部居中）；
      · strip（equation 条）三 slot + 两 sop + = result；
      · tray 收集 banked solutions（gold chips）+ hollow dots；
@@ -98,27 +98,28 @@
   flex-direction: column;
   align-items: center;
 }
+/* 顶层 apex：宽度对齐单个 cell，金字塔尖 */
 .ep-target-card {
-  width: 132px;
-  padding: 9px 12px 11px;
+  width: calc((100% - 3 * var(--ep-gap, 10px)) / 4);
+  padding: 8px 4px 10px;
   background: var(--a-paper);
   color: var(--a-ink);
   border-radius: 14px;
   text-align: center;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.45);
 }
 .ep-target-card small {
   display: block;
-  font-size: 0.62rem;
+  font-size: 0.58rem;
   font-weight: 700;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--a-mute-2);
 }
 .ep-target-card b {
   display: block;
-  font-size: 1.85rem;
+  font-size: 1.7rem;
   font-weight: 800;
   font-family: var(--a-disp);
   font-variant-numeric: tabular-nums;
@@ -126,14 +127,23 @@
   margin-top: 2px;
 }
 
+/* 金字塔布局：target 为顶层（1 格），cell 按 2/3/4 三行向下展开 */
 .ep-grid {
+  --ep-gap: 10px;
   width: 100%;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ep-gap);
+}
+.ep-row {
+  display: flex;
+  justify-content: center;
+  gap: var(--ep-gap);
 }
 .epc {
   position: relative;
+  /* 每格 = 4 列基准宽度（底行 4 格铺满，上层行居中收窄 → 三角轮廓） */
+  width: calc((100% - 3 * var(--ep-gap)) / 4);
   aspect-ratio: 1;
   display: flex;
   align-items: center;
@@ -147,11 +157,11 @@
 }
 .epc .ep-op {
   position: absolute;
-  top: 5px;
+  top: 4px;
   left: 50%;
   transform: translateX(-50%);
   font-family: var(--a-ui);
-  font-size: 0.78rem;
+  font-size: 1.08rem;
   font-weight: 700;
   color: var(--a-mute);
   line-height: 1;
@@ -409,7 +419,10 @@
 @media (max-width: 560px) {
   .ep-arena { padding: 12px 8px 28px; }
   .ep-hud { grid-template-columns: repeat(2, 1fr); }
-  .ep-target-card b { font-size: 1.6rem; }
+  .ep-target-card b { font-size: 1.45rem; }
+  .epc .ep-op { font-size: 0.95rem; }
+  .epc .ep-num { font-size: 1.3rem; }
+  .ep-grid { --ep-gap: 7px; }
   .ep-slot { min-width: 38px; height: 40px; font-size: 1.1rem; }
   .ep-slot b { font-size: 1.05rem; }
   .ep-sop { font-size: 1rem; }

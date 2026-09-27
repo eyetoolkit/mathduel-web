@@ -4,7 +4,7 @@ import { recordDaily } from '../cross-game';
 import { createEqpyrAdapter } from "../_shared/mp-adapters/eqpyr";
 /**
  * 等式金字塔 · 牌桌逻辑
- * 玩法：3×3 board，每格 = 数字 + 上行运算符；target 是 apex 目标。
+ * 玩法：金字塔 board（顶层 target，9 格按 2/3/4 三行展开），每格 = 数字 + 上行运算符；target 是 apex 目标。
  * 玩家按点击顺序选 3 格：第 1 格 = anchor（op 删除线）；
  * 公式 = a [b.op] b [c.op] c = target，按 ×÷ 优先 +− 次之 计算。
  * 难度按「解的数量」分：Warm-up 6-12 / Standard 4-7 / Tricky 恰好 3。
@@ -213,14 +213,21 @@ function renderTarget(): void {
 function renderBoard(): void {
   const el = $('epgrid')!;
   if (!el.dataset.built) {
+    // 金字塔布局：顶层 target（HTML 静态），9 个 cell 按 2/3/4 三行排布
     el.innerHTML = '';
-    for (let i = 0; i < 9; i++) {
-      const d = document.createElement('div');
-      d.className = 'epc';
-      d.dataset.i = String(i);
-      d.setAttribute('role', 'gridcell');
-      d.innerHTML = '<span class="ep-op">·</span><span class="ep-num">·</span>';
-      el.appendChild(d);
+    let i = 0;
+    for (const n of [2, 3, 4]) {
+      const row = document.createElement('div');
+      row.className = 'ep-row';
+      for (let k = 0; k < n; k++, i++) {
+        const d = document.createElement('div');
+        d.className = 'epc';
+        d.dataset.i = String(i);
+        d.setAttribute('role', 'gridcell');
+        d.innerHTML = '<span class="ep-op">·</span><span class="ep-num">·</span>';
+        row.appendChild(d);
+      }
+      el.appendChild(row);
     }
     el.dataset.built = '1';
     el.addEventListener('click', (e) => {
@@ -230,8 +237,10 @@ function renderBoard(): void {
     });
   }
   // 更新内容 + 状态类
+  const cells = el.querySelectorAll<HTMLElement>('.epc');
   for (let i = 0; i < 9; i++) {
-    const cell = el.children[i] as HTMLElement;
+    const cell = cells[i];
+    if (!cell) continue;
     const c = st.board!.cells[i];
     cell.querySelector('.ep-op')!.textContent = c.op;
     cell.querySelector('.ep-num')!.textContent = String(c.num);
