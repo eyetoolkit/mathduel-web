@@ -39,6 +39,7 @@ export default defineConfig({
         'sudoku-4x4-lobby': resolve(here, 'games/sudoku-4x4/lobby/index.html'),
         'equation-pyramid': resolve(here, 'games/equation-pyramid/index.html'),
         'equation-pyramid-lobby': resolve(here, 'games/equation-pyramid/lobby/index.html'),
+        'worksheets': resolve(here, 'worksheets/index.html'),
       },
     },
   },

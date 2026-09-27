@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en" data-site="mathduel">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Printable Math Worksheets — 24 Point, Sudoku & Pyramid Puzzles | MathDuel</title>
+  <meta name="description" content="Generate unlimited printable math worksheets from MathDuel games: 24 Point challenges, 4x4 / 6x6 / 9x9 sudoku and equation pyramids. Every set is unique, with an answer key. Free, no account." />
+  <link rel="canonical" href="https://mathduel.games/worksheets/" />
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="MathDuel" />
+  <meta property="og:url" content="https://mathduel.games/worksheets/" />
+  <meta property="og:title" content="Printable Math Worksheets — MathDuel" />
+  <meta property="og:description" content="Unlimited printable puzzle sets with answer keys. Free, no account." />
+  <link rel="alternate" hreflang="en" href="https://mathduel.games/worksheets/" />
+  <link rel="alternate" hreflang="x-default" href="https://mathduel.games/worksheets/" />
+</head>
+<body class="ws">
+  <header class="ws-top ws-ui">
+    <div class="ws-brand"><b>Math</b><i>Duel</i><span>Worksheets</span></div>
+    <nav class="ws-games" id="gameTabs" role="tablist" aria-label="Worksheet type"></nav>
+    <div class="ws-opts">
+      <label class="ws-opt"><span id="lblDiff">Difficulty</span>
+        <select id="optDiff"></select>
+      </label>
+      <label class="ws-opt"><span>Puzzles</span>
+        <select id="optCount"></select>
+      </label>
+      <label class="ws-opt ws-chk"><input type="checkbox" id="optAnswers" checked />
+        <span>Answer key</span>
+      </label>
+      <button class="ws-btn prim" id="genBtn" type="button">↻ New set</button>
+      <button class="ws-btn" id="printBtn" type="button">🖨 Print</button>
+    </div>
+  </header>
+
+  <main class="ws-stage">
+    <section class="sheet" id="sheet" aria-label="Worksheet preview">
+      <div class="ws-empty" id="empty">
+        <h1>Printable math worksheets, infinite variations</h1>
+        <p>Pick a game above, choose a difficulty, and generate a fresh puzzle set —
+           every set is generated on the spot, so no two are alike. Print it with the
+           answer key for homework, early-finishers or substitute plans.</p>
+        <p class="ws-cta">Start with <b>24 Point</b> — the classroom favourite.</p>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="/src/pages/worksheets.ts"></script>
+</body>
+</html>

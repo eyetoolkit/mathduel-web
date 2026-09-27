@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>MathDuel · Join this game</title>
+<meta name="robots" content="noindex" />
+<style>
+  /* 投影页：为课堂一体机/白板优化 —— 高对比、无滚动、一切够大 */
+  :root { --ink:#10142A; --indigo:#3730A3; --amber:#F59E0B; --paper:#F6F5EF; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  html,body { height:100%; }
+  body {
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    background: var(--paper); color: var(--ink);
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap: 2.5vh; padding: 3vh 4vw; text-align:center; overflow:hidden;
+  }
+  .brand { font-size: clamp(20px, 3.4vmin, 34px); font-weight:800; letter-spacing:.01em; }
+  .brand b { color: var(--indigo); } .brand i { font-style:normal; color: var(--amber); }
+  .gametitle { font-size: clamp(16px, 2.8vmin, 28px); color:#4A5068; font-weight:600; min-height:1.2em; }
+  .code {
+    font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace;
+    font-size: clamp(64px, 16vmin, 200px); font-weight:800; letter-spacing:.12em;
+    color: var(--indigo); line-height:1;
+  }
+  .row { display:flex; align-items:center; gap: 4vw; flex-wrap:wrap; justify-content:center; }
+  #qr { width: min(34vmin, 340px); height: min(34vmin, 340px); image-rendering: pixelated;
+        background:#fff; padding: 1.2vmin; border-radius: 12px; box-shadow: 0 6px 24px rgba(16,20,42,.14); }
+  .how { display:flex; flex-direction:column; gap: 1.4vh; align-items:flex-start; text-align:left; }
+  .how .step { font-size: clamp(15px, 2.6vmin, 26px); font-weight:600; }
+  .how .step em { font-style:normal; color: var(--indigo); font-weight:800; }
+  .joinurl {
+    font-family: ui-monospace, Consolas, monospace;
+    font-size: clamp(16px, 3.2vmin, 34px); font-weight:700; color: var(--ink);
+    background:#fff; border:2px solid #E3E7F0; border-radius: 10px; padding: .35em .7em;
+  }
+  .fs {
+    position:fixed; top:14px; right:14px; border:2px solid #D9DCF5; background:#fff; color:var(--ink);
+    border-radius:10px; padding:8px 14px; font-weight:700; font-size:14px; cursor:pointer;
+  }
+  .fs:hover { border-color: var(--indigo); color: var(--indigo); }
+</style>
+</head>
+<body>
+  <button class="fs" id="fsBtn" type="button">⛶ Fullscreen</button>
+  <div class="brand"><b>Math</b><i>Duel</i></div>
+  <div class="gametitle" id="gt"></div>
+  <div class="code" id="rc">·····</div>
+  <div class="row">
+    <canvas id="qr"></canvas>
+    <div class="how">
+      <div class="step"><em>1</em> &nbsp;Open camera</div>
+      <div class="step"><em>2</em> &nbsp;Scan the code</div>
+      <div class="step"><em>3</em> &nbsp;You're in — no account needed</div>
+      <div class="joinurl">mathduel.games/join</div>
+    </div>
+  </div>
+
+<script src="/shared/qrcode.min.js"></script>
+<script>
+(function () {
+  'use strict';
+  var q = new URLSearchParams(location.search);
+  var code = (q.get('c') || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8);
+  var title = (q.get('t') || '').slice(0, 60);
+  if (title) document.getElementById('gt').textContent = title;
+  document.getElementById('rc').textContent = code || '·····';
+  document.title = 'Join ' + code + ' · MathDuel';
+
+  /* 二维码指向万能 join 页（而非直链游戏页）：join 页会解析房间对应的游戏再跳转，
+     换游戏/换模式不用重印投影页，也避免链接过长降低扫码成功率。 */
+  var target = 'https://mathduel.games/join/?c=' + encodeURIComponent(code);
+  try {
+    var qr = window.qrcode(0, 'M');
+    qr.addData(target);
+    qr.make();
+    var cv = document.getElementById('qr');
+    var side = 560;                       // 内部分辨率放大，投影不糊
+    cv.width = side; cv.height = side;
+    var ctx = cv.getContext('2d');
+    var mm = qr.getModuleCount();
+    var cell = Math.floor(side / mm);
+    var off = Math.floor((side - cell * mm) / 2);
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(0, 0, side, side);
+    ctx.fillStyle = '#10142A';
+    for (var r = 0; r < mm; r++) {
+      for (var c = 0; c < mm; c++) {
+        if (qr.isDark(r, c)) ctx.fillRect(off + c * cell, off + r * cell, cell, cell);
+      }
+    }
+  } catch (e) {
+    document.getElementById('qr').style.display = 'none';
+  }
+
+  document.getElementById('fsBtn').addEventListener('click', function () {
+    var el = document.documentElement;
+    if (document.fullscreenElement) { document.exitFullscreen(); return; }
+    if (el.requestFullscreen) el.requestFullscreen().catch(function () {});
+  });
+})();
+</script>
+</body>
+</html>

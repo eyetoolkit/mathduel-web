@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Join a game · MathDuel</title>
+<meta name="description" content="Enter a MathDuel room code to join your class game — no account needed." />
+<style>
+  :root { --ink:#10142A; --indigo:#3730A3; --amber:#F59E0B; --paper:#F6F5EF; --line:#E3E7F0; --err:#DC2626; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body {
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    background: var(--paper); color: var(--ink); min-height:100vh;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    padding: 24px 18px;
+  }
+  .card {
+    width:min(420px, 94vw); background:#fff; border:1px solid var(--line); border-radius:18px;
+    padding: 28px 24px; box-shadow: 0 10px 40px rgba(16,20,42,.08); text-align:center;
+  }
+  .brand { font-size:1.35rem; font-weight:800; margin-bottom:4px; }
+  .brand b { color:var(--indigo); } .brand i { font-style:normal; color:var(--amber); }
+  .sub { color:#6B7290; font-size:.85rem; margin-bottom:22px; }
+  #codeInput {
+    width:100%; text-align:center; font-family: ui-monospace, Consolas, monospace;
+    font-size:2rem; font-weight:800; letter-spacing:.35em; text-transform:uppercase;
+    padding:14px 0 14px .35em; border:2px solid var(--line); border-radius:12px; color:var(--ink);
+  }
+  #codeInput:focus { outline:none; border-color:var(--indigo); }
+  #goBtn {
+    width:100%; margin-top:14px; background:var(--indigo); color:#fff; border:0; border-radius:12px;
+    font-weight:800; font-size:1.05rem; padding:14px; cursor:pointer;
+  }
+  #goBtn:disabled { opacity:.55; cursor:default; }
+  #msg { min-height:1.2em; margin-top:12px; font-size:.82rem; font-weight:600; }
+  #msg.err { color:var(--err); }
+  #msg.ok  { color:#15803D; }
+  .hint { margin-top:16px; font-size:.75rem; color:#9AA0B5; line-height:1.5; }
+  .foot { margin-top:18px; font-size:.78rem; color:#9AA0B5; }
+  .foot a { color:var(--indigo); font-weight:700; text-decoration:none; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="brand"><b>Math</b><i>Duel</i></div>
+    <div class="sub">Enter the room code from your teacher or friend</div>
+    <input id="codeInput" inputmode="latin" autocomplete="off" autocapitalize="characters"
+           maxlength="5" placeholder="ABCDE" aria-label="Room code" />
+    <button id="goBtn" type="button">Join game →</button>
+    <div id="msg" role="status"></div>
+    <div class="hint">Scanned a QR code? You'll jump straight in.<br />No account, no download — just play.</div>
+  </div>
+  <div class="foot"><a href="/">MathDuel</a> · mental-math duels for classrooms</div>
+
+<script>
+(function () {
+  'use strict';
+  var input = document.getElementById('codeInput');
+  var btn = document.getElementById('goBtn');
+  var msg = document.getElementById('msg');
+
+  /* gameType → 游戏页 slug。与 worker 建房约定一致：
+     24 点建 '24'；数独系同名；金字塔建 'eqpyr'（不是 equation-pyramid）。 */
+  var SLUG = {
+    '24': '24-game',
+    'sudoku': 'sudoku',
+    'sudoku-6x6': 'sudoku-6x6',
+    'sudoku-4x4': 'sudoku-4x4',
+    'eqpyr': 'equation-pyramid',
+    'equation-pyramid': 'equation-pyramid'
+  };
+  var RETIRED = { 'killer-sudoku': 1, 'number-pyramid': 1, 'bulls': 1 };
+
+  function say(text, cls) {
+    msg.textContent = text || '';
+    msg.className = cls || '';
+  }
+
+  function redirectFor(meta) {
+    var slug = SLUG[meta.gameType];
+    if (!slug) return null;
+    /* 教师作业房（mode=battle|practice）复刻邀请链接形态：
+       mode=battle 保证对战外壳挂载，tid=1 触发班级代号归因；
+       其他来源（好友房等）只透传 room=，由游戏页自己的深链逻辑接管。 */
+    var teacher = meta.mode === 'battle' || meta.mode === 'practice';
+    var qs = '?room=' + encodeURIComponent(meta.code) + (teacher ? '&mode=battle&tid=1' : '');
+    return '/games/' + slug + '/' + qs;
+  }
+
+  function resolve(code) {
+    say('Looking up room ' + code + '…');
+    btn.disabled = true;
+    fetch('/api/rooms/' + encodeURIComponent(code), { credentials: 'same-origin' })
+      .then(function (r) { return r.json().then(function (j) { return { status: r.status, j: j }; }); })
+      .then(function (res) {
+        if (res.status === 404) {
+          say('Room not found — check the code, or ask for a new link.', 'err');
+          btn.disabled = false; return;
+        }
+        if (!res.ok) {
+          say('Something went wrong — please try again.', 'err');
+          btn.disabled = false; return;
+        }
+        var url = redirectFor(res.j || {});
+        if (!url) {
+          say('This game has retired — ask your teacher for a new assignment.', 'err');
+          btn.disabled = false; return;
+        }
+        say('Joining…', 'ok');
+        location.replace(url);
+      })
+      .catch(function () {
+        say('Network error — check your connection and retry.', 'err');
+        btn.disabled = false;
+      });
+  }
+
+  function submit() {
+    var code = (input.value || '').trim().toUpperCase();
+    if (!/^[A-Z0-9]{4,8}$/.test(code)) { say('Enter the 5-character room code.', 'err'); return; }
+    resolve(code);
+  }
+
+  btn.addEventListener('click', submit);
+  input.addEventListener('keydown', function (e) { if (e.key === 'Enter') submit(); });
+  input.addEventListener('input', function () {
+    input.value = input.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+    say('');
+  });
+
+  /* 扫码深链：/join/?c=CODE（投影页二维码即指向这里）→ 直接解析跳转 */
+  try {
+    var p = new URLSearchParams(location.search);
+    var deep = (p.get('c') || p.get('room') || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+    if (deep) { input.value = deep; resolve(deep); }
+    else { setTimeout(function () { input.focus(); }, 80); }
+  } catch (e) { /* ignore */ }
+})();
+</script>
+</body>
+</html>

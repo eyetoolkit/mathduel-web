@@ -580,6 +580,14 @@ $('qrBtn').addEventListener('click', () => {
   drawQR($('qrCanvas'), $('roomUrl').textContent);
 });
 
+/* 投影：新开大屏页（超大房间码 + 入房二维码），课堂一体机/白板直接全屏 */
+$('projBtn').addEventListener('click', () => {
+  const c = ($('roomCode').textContent || '').trim();
+  if (!c) { toast('Generate a room first'); return; }
+  const t = (assignment && assignment.title) || '';
+  window.open('/teacher/project/?c=' + encodeURIComponent(c) + '&t=' + encodeURIComponent(t), '_blank', 'noopener');
+});
+
 function drawQR(cv, text) {
   try {
     const g = window;
