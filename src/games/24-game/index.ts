@@ -1928,3 +1928,4 @@ refreshTop();
     }
   });
 })();
+// force-rebuild: trigger fresh CF Pages build so 24-game bundle reflects audit i18n fix
