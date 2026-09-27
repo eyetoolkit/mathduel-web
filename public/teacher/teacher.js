@@ -97,6 +97,12 @@ function setAuthMode(mode) {
 $('tabLogin').addEventListener('click', () => setAuthMode('login'));
 $('tabSignup').addEventListener('click', () => setAuthMode('signup'));
 
+/* OAuth 快捷登录：worker 读 referer 判定来源页，回调后原路跳回 /teacher/
+   并种好会话 cookie → 页面加载时 ensureAuth() 探测通过直接进面板。
+   OAuth 账号无密码（password_hash=''），这是它们进教师端的唯一通道。 */
+$('oauthGoogle').addEventListener('click', () => { location.href = '/api/auth/oauth/google'; });
+$('oauthGithub').addEventListener('click', () => { location.href = '/api/auth/oauth/github'; });
+
 const LOGIN_ERRORS = {
   turnstile_failed: 'Human check failed — please retry.',
   invalid_credentials: 'Wrong email or password.',
