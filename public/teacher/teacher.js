@@ -38,12 +38,13 @@ async function api(path, opts = {}) {
   return data;
 }
 
-/* ─── auth（复用站点现有账号体系） ─── */
+/* ─── auth（复用站点现有账号体系：login + register） ─── */
 let tsToken = 'skip';
+let tsWidget = null;
 function renderTurnstile() {
   try {
-    if (!window.turnstile) return false;
-    window.turnstile.render('#turnstile-container', {
+    if (!window.turnstile || tsWidget !== null) return tsWidget !== null;
+    tsWidget = window.turnstile.render('#turnstile-container', {
       sitekey: TS_SITEKEY,
       theme: 'light',
       callback: (t) => { tsToken = t; },
@@ -61,12 +62,55 @@ function waitTurnstile() {
     if (renderTurnstile() || n > 40) clearInterval(iv);
   }, 200);
 }
+/* token 是一次性的：每次提交（无论成败）后必须 reset 出新 token，
+   否则下一次提交永远 turnstile_failed。此前用重复 render，容器已占用会静默失败。 */
+function resetTurnstile() {
+  tsToken = 'skip';
+  try {
+    if (window.turnstile && tsWidget !== null) window.turnstile.reset(tsWidget);
+    else { tsWidget = null; waitTurnstile(); }
+  } catch (e) { tsWidget = null; waitTurnstile(); }
+}
 
 function showAuth(msg) {
   $('auth').classList.add('on');
   if (msg) $('authErr').textContent = msg;
 }
 function hideAuth() { $('auth').classList.remove('on'); $('authErr').textContent = ''; }
+
+/* ─── login / signup 双模式 ─── */
+let authMode = 'login';
+const HINTS = {
+  login: 'Sign in with your MathDuel account to open your classes.',
+  signup: 'Create a free account — teachers and players share the same account system. We\u2019ll email you a verification link.',
+};
+function setAuthMode(mode) {
+  authMode = mode;
+  $('tabLogin').classList.toggle('on', mode === 'login');
+  $('tabSignup').classList.toggle('on', mode === 'signup');
+  $('authName').style.display = mode === 'signup' ? '' : 'none';
+  $('authHint').textContent = HINTS[mode];
+  $('authSend').textContent = mode === 'signup' ? 'Create account' : 'Sign in';
+  $('authErr').textContent = '';
+  $('authPass').autocomplete = mode === 'signup' ? 'new-password' : 'current-password';
+}
+$('tabLogin').addEventListener('click', () => setAuthMode('login'));
+$('tabSignup').addEventListener('click', () => setAuthMode('signup'));
+
+const LOGIN_ERRORS = {
+  turnstile_failed: 'Human check failed — please retry.',
+  invalid_credentials: 'Wrong email or password.',
+  email_not_verified: 'Please verify your email first — we sent you a link when you registered.',
+};
+const REGISTER_ERRORS = {
+  turnstile_failed: 'Human check failed — please retry.',
+  invalid_email: 'That email address doesn\u2019t look right.',
+  password_too_short: 'Password must be at least 8 characters.',
+  nickname_length_invalid: 'Name must be 2\u201320 characters.',
+  email_already_registered: 'This email already has an account — switch to Sign in.',
+  ip_register_limit: 'Too many sign-ups from this network today — try again tomorrow.',
+  email_service_unavailable: 'Sign-up is temporarily unavailable — please try again later.',
+};
 
 $('authSend').addEventListener('click', async () => {
   const email = $('authEmail').value.trim();
@@ -75,6 +119,27 @@ $('authSend').addEventListener('click', async () => {
   $('authSend').disabled = true;
   $('authErr').textContent = '';
   try {
+    if (authMode === 'signup') {
+      const nickname = $('authName').value.trim();
+      if (nickname.length < 2 || nickname.length > 20) { showAuth('Please enter your name (2\u201320 characters).'); return; }
+      const res = await fetch(API + '/auth/register', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, nickname, turnstile_token: tsToken }),
+      });
+      const j = await res.json().catch(() => ({}));
+      resetTurnstile();
+      if (!res.ok) {
+        showAuth(REGISTER_ERRORS[j.error] || (j.error || 'Sign-up failed'));
+        return;
+      }
+      // 注册成功 → 切回登录，引导去邮箱验证
+      $('authPass').value = '';
+      setAuthMode('login');
+      showAuth('Account created! Check your inbox for the verification link, then sign in here.');
+      return;
+    }
     const res = await fetch(API + '/auth/login', {
       method: 'POST',
       credentials: 'same-origin',
@@ -82,19 +147,15 @@ $('authSend').addEventListener('click', async () => {
       body: JSON.stringify({ email, password, turnstile_token: tsToken }),
     });
     const j = await res.json().catch(() => ({}));
+    resetTurnstile();
     if (!res.ok) {
-      const map = {
-        turnstile_failed: 'Human check failed — please refresh and retry.',
-        invalid_credentials: 'Wrong email or password.',
-        email_not_verified: 'Please verify your email first (check your inbox).',
-      };
-      showAuth(map[j.error] || (j.error || 'Login failed'));
-      waitTurnstile();
+      showAuth(LOGIN_ERRORS[j.error] || (j.error || 'Login failed'));
       return;
     }
     hideAuth();
     await boot();
   } catch (e) {
+    resetTurnstile();
     showAuth('Network error — please retry.');
   } finally {
     $('authSend').disabled = false;

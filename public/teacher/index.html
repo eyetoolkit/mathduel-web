@@ -143,13 +143,16 @@
 <!-- auth overlay: reuses the site's existing email+password auth (no new BaaS) -->
 <div class="auth on" id="auth">
   <div class="box">
-    <h2>Teacher sign-in</h2>
+    <div class="auth-tabs">
+      <button type="button" class="atab on" id="tabLogin">Sign in</button>
+      <button type="button" class="atab" id="tabSignup">Create account</button>
+    </div>
     <p class="mini" id="authHint">Sign in with your MathDuel account to open your classes.</p>
+    <input id="authName" type="text" placeholder="Your name (min 2 characters)" autocomplete="nickname" maxlength="20" style="display:none" />
     <input id="authEmail" type="email" placeholder="you@school.org" autocomplete="email" />
-    <input id="authPass" type="password" placeholder="password" autocomplete="current-password" />
+    <input id="authPass" type="password" placeholder="password (min 8 characters)" autocomplete="current-password" />
     <div id="turnstile-container"></div>
     <button id="authSend">Sign in</button>
-    <p class="mini alt">No account? <a href="/" target="_blank" rel="noopener">Register on MathDuel</a>, then come back and sign in.</p>
     <p class="mini errbox" id="authErr"></p>
   </div>
 </div>

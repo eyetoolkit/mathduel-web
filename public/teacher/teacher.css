@@ -198,6 +198,14 @@ tr:last-child td{border-bottom:0}
 #turnstile-container{min-height:65px;margin:10px 0;display:flex;align-items:center;justify-content:center}
 .auth input + .auth input{margin-top:9px}
 
+/* ── Sign in / Create account 分段切换 ──
+   注意必须覆盖上面 `.auth button` 的通配全宽靛蓝样式 */
+.auth .auth-tabs{display:flex;gap:4px;background:var(--indigo-soft);border:1px solid var(--line);border-radius:12px;padding:4px;margin-bottom:14px}
+.auth .atab{margin-top:0;flex:1;width:auto;background:transparent;color:var(--mute);border:0;border-radius:9px;font-weight:700;font-size:.85rem;padding:8px 10px;cursor:pointer;font-family:var(--ui)}
+.auth .atab:hover{background:transparent;color:var(--ink)}
+.auth .atab.on{background:var(--card);color:var(--indigo);box-shadow:0 1px 4px rgba(16,20,42,.12)}
+.auth .atab.on:hover{background:var(--card);color:var(--indigo)}
+
 @media(max-width:820px){
   .shell{grid-template-columns:1fr}
   .rail{flex-direction:row;overflow-x:auto;gap:8px}

@@ -353,7 +353,7 @@ function footerHtml(): string {
         <a class="sf-item" href="https://memoryduel.com"><span class="pip" style="background:#4F46E5"></span>MemoryDuel — Knowledge Battles</a>
       </div>
       <div class="sf-links">
-        <a href="/about/">About</a><a href="/contact/">Contact</a><a href="/privacy/">Privacy</a><a href="/terms/">Terms</a><a href="/">All games</a>
+        <a href="/teacher/">For teachers</a><a href="/about/">About</a><a href="/contact/">Contact</a><a href="/privacy/">Privacy</a><a href="/terms/">Terms</a><a href="/">All games</a>
       </div>
       <div class="sf-copy">© 2026 MathDuel · Pure static · Privacy-first · Free to play</div>
     </div>
