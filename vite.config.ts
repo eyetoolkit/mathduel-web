@@ -40,6 +40,7 @@ export default defineConfig({
         'equation-pyramid': resolve(here, 'games/equation-pyramid/index.html'),
         'equation-pyramid-lobby': resolve(here, 'games/equation-pyramid/lobby/index.html'),
         'worksheets': resolve(here, 'worksheets/index.html'),
+        'daily': resolve(here, 'daily/index.html'),
       },
     },
   },

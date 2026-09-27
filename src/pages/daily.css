@@ -1,0 +1,119 @@
+/* ═══════════════════════════════════════════════════════════════
+   MathDuel Daily Hub 样式（papergame 纸感，与首页同一套 token）
+   ═══════════════════════════════════════════════════════════════ */
+:root {
+  --ink: #1E1B39; --mute: #5B6079; --line: #E3E6F0; --line2: #C7CBEE;
+  --white: #FFFFFF; --indigo: #3730A3; --amber: #F59E0B; --paper: #F4F5F9;
+  --good: #15803D;
+  --ui: 'Space Grotesk', 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif;
+  --disp: 'Sora', 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body.dhub {
+  background: var(--paper); color: var(--ink); font-family: var(--ui);
+  min-height: 100vh; display: flex; flex-direction: column;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ─── 顶栏 ─── */
+.dh-top {
+  position: sticky; top: 0; z-index: 10; display: flex; align-items: center; gap: 14px;
+  padding: 12px 20px; background: rgba(244,245,249,.92); border-bottom: 1px solid var(--line);
+  backdrop-filter: blur(6px);
+}
+.dh-brand { font-family: var(--disp); font-weight: 800; font-size: 17px; color: var(--ink); text-decoration: none; }
+.dh-brand b { color: var(--indigo); } .dh-brand i { font-style: normal; color: var(--amber); }
+.dh-sub { font-size: 12.5px; font-weight: 700; color: var(--mute); letter-spacing: .08em; text-transform: uppercase; }
+.dh-streak { margin-left: auto; display: flex; align-items: center; gap: 7px; background: var(--white);
+  border: 1.5px solid var(--line); border-radius: 999px; padding: 6px 14px; }
+.dh-streak b { font-family: var(--disp); font-size: 1.05rem; }
+.dh-streak-lbl { font-size: .74rem; color: var(--mute); font-weight: 700; }
+
+/* ─── Hero ─── */
+.dh-main { width: 100%; max-width: 980px; margin: 0 auto; padding: 26px 20px 40px; flex: 1; }
+.hero { display: flex; align-items: center; gap: 24px; margin-bottom: 22px; }
+.hero h1 { font-family: var(--disp); font-size: 1.7rem; margin: 0 0 4px; letter-spacing: -.02em; }
+.dh-date { color: var(--mute); font-weight: 700; font-size: .85rem; margin: 0 0 6px; }
+.hero-sub { color: var(--mute); font-size: .88rem; line-height: 1.6; margin: 0; max-width: 560px; }
+.hero-r { margin-left: auto; text-align: center; }
+.ring {
+  width: 92px; height: 92px; border-radius: 50%; display: grid; place-items: center;
+  background: conic-gradient(#F59E0B 0deg, #E3E6F0 0deg);
+  position: relative;
+}
+.ring::after { content: ''; position: absolute; inset: 9px; border-radius: 50%; background: var(--white); }
+.ring span { position: relative; z-index: 1; font-family: var(--disp); font-weight: 800; font-size: 1.15rem; }
+.ring.full { animation: pop .4s ease; }
+@keyframes pop { 50% { transform: scale(1.08); } }
+.ring-lbl { display: block; margin-top: 6px; font-size: .74rem; font-weight: 700; color: var(--mute); }
+
+/* ─── 每日卡片 ─── */
+.dh-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+.dcard {
+  display: flex; align-items: center; gap: 14px; text-decoration: none; color: var(--ink);
+  background: var(--white); border: 1.5px solid var(--line); border-radius: 16px; padding: 16px 18px;
+  transition: transform .12s ease, border-color .12s ease, box-shadow .12s ease;
+}
+.dcard:hover { transform: translateY(-2px); border-color: var(--hue, var(--indigo)); box-shadow: 0 10px 26px -14px rgba(30,27,57,.35); }
+.dcard.done { border-color: #BBE5C8; background: #F4FBF6; }
+.dcard-ic {
+  width: 46px; height: 46px; border-radius: 12px; flex: none;
+  display: grid; place-items: center; background: var(--hue, var(--indigo));
+}
+.dcard-ic svg { width: 24px; height: 24px; stroke: #fff; fill: rgba(255,255,255,.16); stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.dcard-body { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.dcard-name { font-weight: 800; font-family: var(--disp); font-size: 1.02rem; }
+.dcard-blurb { color: var(--mute); font-size: .78rem; line-height: 1.45; }
+.dcard-cta { margin-left: auto; flex: none; font-weight: 800; font-size: .84rem; color: var(--indigo); white-space: nowrap; }
+.dcard-cta .ok { color: var(--good); }
+
+/* ─── 榜单 ─── */
+.dh-ranks { margin-top: 34px; }
+.dh-ranks-head { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 12px; }
+.dh-ranks h2 { font-family: var(--disp); font-size: 1.2rem; margin: 0; letter-spacing: -.01em; }
+.rank-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+.rtab {
+  border: 1.5px solid var(--line); background: var(--white); color: var(--ink);
+  border-radius: 999px; padding: 7px 14px; font-weight: 700; font-size: .8rem; cursor: pointer;
+  font-family: var(--ui);
+}
+.rtab:hover { border-color: var(--indigo); color: var(--indigo); }
+.rtab.on { background: var(--indigo); border-color: var(--indigo); color: #fff; }
+.rank-panel {
+  background: var(--white); border: 1.5px solid var(--line); border-radius: 16px; padding: 8px 16px;
+  min-height: 120px;
+}
+.rhead, .rrow {
+  display: grid; grid-template-columns: 56px 1fr 130px 110px; gap: 10px; align-items: center;
+  padding: 10px 4px; font-size: .88rem;
+}
+.rhead { color: var(--mute); font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em;
+  border-bottom: 1px solid var(--line); }
+.rrow { border-bottom: 1px dashed var(--line); }
+.rrow:last-child { border-bottom: 0; }
+.rrow.top1 { background: linear-gradient(90deg, #FFFBEB, transparent); border-radius: 8px; }
+.r-rank { font-weight: 800; }
+.rname { font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: inline-block; max-width: 100%; }
+.rtime, .relo { font-weight: 800; font-variant-numeric: tabular-nums; }
+.rgame, .rsol { color: var(--mute); font-weight: 700; }
+.tier { font-style: normal; }
+.rempty, .rload { padding: 34px 10px; text-align: center; color: var(--mute); font-size: .88rem; }
+.rank-note { color: var(--mute); font-size: .74rem; margin: 10px 2px 0; line-height: 1.5; }
+
+/* ─── 页脚 ─── */
+.dh-foot {
+  border-top: 1px solid var(--line); padding: 16px 20px 26px; display: flex; gap: 18px; flex-wrap: wrap;
+  justify-content: center;
+}
+.dh-foot a { color: var(--mute); text-decoration: none; font-size: .82rem; font-weight: 700; }
+.dh-foot a:hover { color: var(--indigo); }
+
+/* ─── 窄屏 ─── */
+@media (max-width: 720px) {
+  .hero { flex-direction: column; align-items: flex-start; }
+  .hero-r { margin-left: 0; display: flex; align-items: center; gap: 10px; }
+  .dh-grid { grid-template-columns: 1fr; }
+  .rhead, .rrow { grid-template-columns: 44px 1fr 90px 70px; font-size: .8rem; }
+  .dh-sub { display: none; }
+}

@@ -230,6 +230,10 @@ function sidebarHtml(): string {
     </div>
     <nav class="sb-nav" aria-label="Site navigation">
       ${home}
+      <a class="nav-item daily" href="/daily/">
+        <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c1 3-2 4-2 7a4 4 0 0 0 8 0c0-1.5-.6-2.6-1.4-3.6C16 8.6 15 9.6 15 9.6 15.4 6.5 13.6 4.3 12 3z"/><path d="M8.5 13.5A4.5 4.5 0 0 0 12 21a4.5 4.5 0 0 0 3.5-7.5"/></svg>
+        <label style="cursor:inherit">Daily challenge</label>
+      </a>
       ${coinShop}
       ${gamesGroup}
       ${helpGroup}
@@ -261,10 +265,10 @@ function duoHtml(): string {
   const totalShown = 4;
   const pct = Math.min(100, Math.round((doneCount / totalShown) * 100));
   const dailyGames = [
-    { id: '24-game', href: '/games/24-game/?daily=1', cvId: 'cv-24', name: '24 Game' },
-    { id: 'sudoku', href: '/games/sudoku/?daily=1', cvId: 'cv-sudoku', name: 'Sudoku 9x9' },
-    { id: 'sudoku-6x6', href: '/games/sudoku-6x6/?daily=1', cvId: 'cv-s6', name: 'Sudoku 6x6' },
-    { id: 'equation-pyramid', href: '/games/equation-pyramid/?daily=1', cvId: 'cv-pyr', name: 'Pyramid' },
+    { id: '24-game', href: '/games/24-game/?mode=daily', cvId: 'cv-24', name: '24 Game' },
+    { id: 'sudoku', href: '/games/sudoku/?mode=daily', cvId: 'cv-sudoku', name: 'Sudoku 9x9' },
+    { id: 'sudoku-6x6', href: '/games/sudoku-6x6/?mode=daily', cvId: 'cv-s6', name: 'Sudoku 6x6' },
+    { id: 'equation-pyramid', href: '/games/equation-pyramid/?mode=daily', cvId: 'cv-pyr', name: 'Pyramid' },
   ];
   const tiles = dailyGames.map((g) => {
     const done = dones.includes(g.id);
@@ -353,7 +357,7 @@ function footerHtml(): string {
         <a class="sf-item" href="https://memoryduel.com"><span class="pip" style="background:#4F46E5"></span>MemoryDuel — Knowledge Battles</a>
       </div>
       <div class="sf-links">
-        <a href="/teacher/">For teachers</a><a href="/about/">About</a><a href="/contact/">Contact</a><a href="/privacy/">Privacy</a><a href="/terms/">Terms</a><a href="/">All games</a>
+        <a href="/daily/">Daily &amp; Ranks</a><a href="/worksheets/">Worksheets</a><a href="/teacher/">For teachers</a><a href="/about/">About</a><a href="/contact/">Contact</a><a href="/privacy/">Privacy</a><a href="/terms/">Terms</a><a href="/">All games</a>
       </div>
       <div class="sf-copy">© 2026 MathDuel · Pure static · Privacy-first · Free to play</div>
     </div>
@@ -410,7 +414,7 @@ export function renderHomeV2(): void {
           <h1>Make your <em>brain</em> smarter, 5 minutes a day</h1>
           <p class="sub">Sudoku reasoning · 24-point speed math · equation climbs · code-breaking — six hand-picked math games,<br>same puzzle worldwide. Just tap and play.</p>
           <div class="cta-row">
-            <a class="btn btn-amber" href="/games/24-game/?daily=1">Start today's challenge</a>
+            <a class="btn btn-amber" href="/games/24-game/?mode=daily">Start today's challenge</a>
             <a class="btn btn-ghost" href="/games/24-game/lobby/">Challenge a friend</a>
           </div>
           <div class="chips">

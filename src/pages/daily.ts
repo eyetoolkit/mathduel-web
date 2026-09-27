@@ -1,0 +1,163 @@
+/* ═══════════════════════════════════════════════════════════════
+   MathDuel Daily Challenge Hub
+   ────────────────────────────────────────────────────────────────
+   - 5 款游戏每日挑战卡（深链 ?mode=daily，与各游戏深链契约一致）
+   - streak / 今日完成度：cross-game.ts localStorage（免登录、纯本地）
+   - 榜单：Elo ladder（scope=all）+ 各游戏今日完赛榜（/api/daily/:game/rank）
+     —— 全部来自已有端点，零后端改动
+   ═══════════════════════════════════════════════════════════════ */
+import './daily.css';
+import {
+  getDailyStreak, getTodaysDones, todayKey,
+  type GameId,
+} from '../games/cross-game';
+
+interface DailyCardDef {
+  id: GameId;
+  name: string;
+  blurb: string;
+  href: string;
+  icon: string;   // 内联 SVG
+  hue: string;    // 卡片强调色
+}
+
+const CARDS: DailyCardDef[] = [
+  {
+    id: '24-game', name: '24 Point', blurb: 'Make 24 from four numbers — 6 puzzles today.',
+    href: '/games/24-game/?mode=daily', hue: '#3730A3',
+    icon: '<svg viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="3" width="8" height="8" rx="2"/><rect x="3" y="13" width="8" height="8" rx="2"/><rect x="13" y="13" width="8" height="8" rx="2"/></svg>',
+  },
+  {
+    id: 'sudoku-4x4', name: 'Sudoku 4×4', blurb: 'The friendly starter grid — one seeded puzzle.',
+    href: '/games/sudoku-4x4/?mode=daily', hue: '#0E9F6E',
+    icon: '<svg viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/><path d="M11.5 4v16M4 11.5h16" stroke-width="2"/></svg>',
+  },
+  {
+    id: 'sudoku', name: 'Sudoku 9×9', blurb: 'The classic — today’s seeded medium grid.',
+    href: '/games/sudoku/?mode=daily', hue: '#3730A3',
+    icon: '<svg viewBox="0 0 24 24"><path d="M4 4h16v16H4z" fill="none" stroke-width="2"/><path d="M9.3 4v16M14.6 4v16M4 9.3h16M4 14.6h16"/></svg>',
+  },
+  {
+    id: 'sudoku-6x6', name: 'Sudoku 6×6', blurb: 'The next step up — one seeded puzzle.',
+    href: '/games/sudoku-6x6/?mode=daily', hue: '#B45309',
+    icon: '<svg viewBox="0 0 24 24"><path d="M4 4h16v16H4z" fill="none" stroke-width="2"/><path d="M12 4v16M4 12h16"/></svg>',
+  },
+  {
+    id: 'equation-pyramid', name: 'Equation Pyramid', blurb: 'Tap three cells that hit the target.',
+    href: '/games/equation-pyramid/?mode=daily', hue: '#DC2626',
+    icon: '<svg viewBox="0 0 24 24"><path d="M12 4l9 16H3z" fill="none" stroke-width="2" stroke-linejoin="round"/><path d="M12 4v16M7.5 12h9" stroke-width="1.6"/></svg>',
+  },
+];
+
+const $ = (id: string): HTMLElement => document.getElementById(id) as HTMLElement;
+
+/* ─── streak + 日期 + 完成度 ─── */
+let dones: GameId[] = [];
+try {
+  dones = getTodaysDones();
+  $('streakN').textContent = String(getDailyStreak());
+} catch { /* private mode */ }
+
+{
+  const k = todayKey();
+  const pretty = `${k.slice(0, 4)}-${k.slice(4, 6)}-${k.slice(6, 8)}`;
+  $('dateLine').textContent = `${pretty} · Shanghai day`;
+}
+
+function renderRing(): void {
+  const n = dones.length;
+  const pct = Math.round((n / CARDS.length) * 100);
+  $('ringTxt').textContent = `${n}/${CARDS.length}`;
+  const ring = $('ring');
+  ring.style.background =
+    `conic-gradient(#F59E0B ${pct * 3.6}deg, #E3E6F0 0deg)`;
+  ring.classList.toggle('full', n === CARDS.length);
+}
+
+/* ─── 卡片 ─── */
+function renderCards(): void {
+  const host = $('cards');
+  host.textContent = '';
+  for (const c of CARDS) {
+    const done = dones.includes(c.id);
+    const a = document.createElement('a');
+    a.className = 'dcard' + (done ? ' done' : '');
+    a.href = c.href;
+    a.style.setProperty('--hue', c.hue);
+    a.innerHTML = `
+      <span class="dcard-ic">${c.icon}</span>
+      <span class="dcard-body">
+        <span class="dcard-name">${c.name}</span>
+        <span class="dcard-blurb">${c.blurb}</span>
+      </span>
+      <span class="dcard-cta">${done ? '<b class="ok">✓ Done today</b>' : 'Play now →'}</span>`;
+    host.appendChild(a);
+  }
+  renderRing();
+}
+renderCards();
+
+/* ─── 榜单 ─── */
+interface EloEntry { nickname: string; game: string; elo: number; tier: { name: string; emoji: string; color: string }; games: number; }
+interface DailyEntry { nickname: string; duration: number; solutions: number; }
+
+const panel = $('rankPanel');
+const tabs = Array.from(document.querySelectorAll<HTMLButtonElement>('.rtab'));
+
+function esc(s: unknown): string {
+  return String(s ?? '').replace(/[&<>"']/g, (ch) =>
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch] as string));
+}
+
+function fmtDur(sec: number): string {
+  if (!isFinite(sec)) return '—';
+  return sec >= 60 ? `${Math.floor(sec / 60)}m ${Math.round(sec % 60)}s` : `${sec.toFixed(1)}s`;
+}
+
+function rowHtml(i: number, cols: string[]): string {
+  return `<div class="rrow${i < 3 ? ' top' + (i + 1) : ''}">
+    <span class="r-rank">${['🥇', '🥈', '🥉'][i] || '#' + (i + 1)}</span>${cols.map((c) => `<span>${c}</span>`).join('')}</div>`;
+}
+
+async function loadRank(kind: string): Promise<void> {
+  panel.innerHTML = '<div class="rload">Loading…</div>';
+  try {
+    if (kind === 'elo') {
+      const r = await fetch('/api/elo/leaderboard?scope=all&limit=10', { credentials: 'include' });
+      const j = await r.json();
+      const entries: EloEntry[] = j.entries || [];
+      if (!entries.length) { panel.innerHTML = '<div class="rempty">No rated duels yet — play a competition round to enter the ladder.</div>'; return; }
+      panel.innerHTML =
+        '<div class="rhead"><span>#</span><span>Player</span><span>Best game</span><span>Elo</span></div>' +
+        entries.map((e, i) => rowHtml(i, [
+          `<b class="rname">${esc(e.nickname)}</b>`,
+          `<span class="rgame">${esc(e.game)}</span>`,
+          `<span class="relo"><i class="tier" style="color:${esc(e.tier && e.tier.color)}">${esc(e.tier && e.tier.emoji)}</i> ${e.elo}</span>`,
+        ])).join('');
+      return;
+    }
+    const r = await fetch(`/api/daily/${encodeURIComponent(kind)}/rank?limit=10`, { credentials: 'include' });
+    const j = await r.json();
+    const entries: DailyEntry[] = j.entries || [];
+    if (!entries.length) {
+      panel.innerHTML = '<div class="rempty">No finishers yet today — be the first on the board!</div>';
+      return;
+    }
+    panel.innerHTML =
+      '<div class="rhead"><span>#</span><span>Player</span><span>Time</span><span>Solutions</span></div>' +
+      entries.map((e, i) => rowHtml(i, [
+        `<b class="rname">${esc(e.nickname)}</b>`,
+        `<span class="rtime">${fmtDur(e.duration)}</span>`,
+        `<span class="rsol">${e.solutions}</span>`,
+      ])).join('');
+  } catch {
+    panel.innerHTML = '<div class="rempty">Could not load the board — check your connection.</div>';
+  }
+}
+
+tabs.forEach((t) => t.addEventListener('click', () => {
+  tabs.forEach((x) => x.classList.toggle('on', x === t));
+  loadRank(t.dataset.rank || 'elo');
+}));
+
+loadRank('elo');

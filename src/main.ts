@@ -8,9 +8,13 @@
 import '@tri-sites/design-system/styles';
 import './styles/home-redesign.css';
 import { renderHomeV2 } from './pages/home-redesign';
+import { registerSW } from './pwa';
 
 // 主页装配
 renderHomeV2();
+
+// PWA（静默失败，不影响站点功能）
+registerSW();
 
 // 年份（页脚）
 const yearEl = document.getElementById('year');

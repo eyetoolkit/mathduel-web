@@ -33,5 +33,19 @@
     "education",
     "puzzle"
   ],
-  "lang": "en"
+  "lang": "en",
+  "shortcuts": [
+    {
+      "name": "Daily Challenge Hub",
+      "short_name": "Daily",
+      "description": "Today's five seeded puzzles and the leaderboards",
+      "url": "/daily/"
+    },
+    {
+      "name": "Printable Worksheets",
+      "short_name": "Worksheets",
+      "description": "Generate printable math worksheet sets",
+      "url": "/worksheets/"
+    }
+  ]
 }

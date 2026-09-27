@@ -9,12 +9,16 @@
  * 幂等 —— 重复调用无副作用，但重复「绑定」会让 toggle 相互抵消。
  */
 import { initTheme } from '../theme';
+import { registerSW } from '../pwa';
 
 let wired = false;
 
 export function wireLobbyChrome(): void {
   if (wired) return;
   wired = true;
+
+  // PWA service worker（各游戏页/lobby 页共用此模块，一处注册全站覆盖；静默失败）
+  registerSW();
 
   // 白天/夜晚主题切换：首页与各 lobby 共用此模块，一处绑定覆盖全站
   initTheme();

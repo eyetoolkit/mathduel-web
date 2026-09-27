@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en" data-site="mathduel">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Daily Challenge Hub — five fresh puzzles every day | MathDuel</title>
+  <meta name="description" content="Five daily math puzzles, one seeded set worldwide: 24 Point, Equation Pyramid and Sudoku 4x4 / 6x6 / 9x9. Build a streak — no account needed. Plus today's finishers and the Elo ladder." />
+  <link rel="canonical" href="https://mathduel.games/daily/" />
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="MathDuel" />
+  <meta property="og:url" content="https://mathduel.games/daily/" />
+  <meta property="og:title" content="Daily Challenge Hub — MathDuel" />
+  <meta property="og:description" content="Five seeded puzzles a day. Keep the streak alive — no account needed." />
+  <link rel="alternate" hreflang="en" href="https://mathduel.games/daily/" />
+  <link rel="alternate" hreflang="x-default" href="https://mathduel.games/daily/" />
+</head>
+<body class="dhub">
+  <header class="dh-top">
+    <a class="dh-brand" href="/"><b>Math</b><i>Duel</i></a>
+    <span class="dh-sub">Daily Challenge Hub</span>
+    <span class="dh-streak" id="streak" title="Consecutive days with at least one daily finished">
+      <span class="flame">🔥</span><b id="streakN">0</b><span class="dh-streak-lbl">day streak</span>
+    </span>
+  </header>
+
+  <main class="dh-main">
+    <section class="hero">
+      <div class="hero-l">
+        <h1>Today's five</h1>
+        <p class="dh-date" id="dateLine"></p>
+        <p class="hero-sub">One seeded puzzle set worldwide, refreshed at midnight (UTC+8).
+           Finish any of them to keep the streak. Nothing is uploaded — progress lives in your browser.</p>
+      </div>
+      <div class="hero-r">
+        <div class="ring" id="ring"><span id="ringTxt">0/5</span></div>
+        <span class="ring-lbl">today</span>
+      </div>
+    </section>
+
+    <section class="dh-grid" id="cards"></section>
+
+    <section class="dh-ranks">
+      <div class="dh-ranks-head">
+        <h2>Leaderboards</h2>
+        <div class="rank-tabs" id="rankTabs" role="tablist">
+          <button class="rtab on" data-rank="elo" role="tab">🏆 Elo ladder</button>
+          <button class="rtab" data-rank="24-game" role="tab">24 Game</button>
+          <button class="rtab" data-rank="sudoku" role="tab">Sudoku 9×9</button>
+          <button class="rtab" data-rank="sudoku-6x6" role="tab">Sudoku 6×6</button>
+          <button class="rtab" data-rank="equation-pyramid" role="tab">Pyramid</button>
+        </div>
+      </div>
+      <div class="rank-panel" id="rankPanel" aria-live="polite"></div>
+      <p class="rank-note">Daily boards rank <b>today's finishers by time</b> (Shanghai day). Elo ladder is the all-time PvP rating across games. Anonymized nicknames only.</p>
+    </section>
+  </main>
+
+  <footer class="dh-foot">
+    <a href="/worksheets/">🖨 Worksheets</a>
+    <a href="/games/24-game/lobby/">Games</a>
+    <a href="/teacher/">Teachers</a>
+    <a href="/">mathduel.games</a>
+  </footer>
+
+  <script type="module" src="/src/pages/daily.ts"></script>
+</body>
+</html>
