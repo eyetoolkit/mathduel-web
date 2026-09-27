@@ -207,6 +207,15 @@ function sidebarHtml(): string {
       'How to play')}
   `;
 
+  // 老师端入口：独立分组 + 常驻琥珀高亮，让它在靛蓝导航里自然跳出来
+  const teacherGroup = `
+    <div class="nav-group">For teachers</div>
+    <a class="nav-item teacher" href="/teacher/">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 9L12 5 2 9l10 4 10-4z"/><path d="M6 11v5c0 1 2.7 2.5 6 2.5S18 17 18 16v-5"/></svg>
+      <label style="cursor:inherit">Teacher dashboard</label>
+    </a>
+  `;
+
   
   return `
     <div class="sb-top">
@@ -224,6 +233,7 @@ function sidebarHtml(): string {
       ${coinShop}
       ${gamesGroup}
       ${helpGroup}
+      ${teacherGroup}
     </nav>
     <div class="nav-foot">
       <span class="lang-pill" title="More languages coming soon"><b>EN</b></span>

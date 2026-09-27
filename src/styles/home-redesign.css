@@ -114,6 +114,11 @@ body.home-v2 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden
 .home-v2 .nav-item svg { flex: none; width: 19px; height: 19px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .home-v2 .nav-item:hover { background: #F1F2FA; color: var(--ink); }
 .home-v2 .nav-item.active { background: var(--indigo-soft); color: var(--indigo); font-weight: 700; }
+
+/* 老师端入口：琥珀色软底，让它在靛蓝导航里自然跳出，hover/active 仍走原配色 */
+.home-v2 .nav-item.teacher { background: #FFF6E5; color: #B45309; font-weight: 600; }
+.home-v2 .nav-item.teacher svg { stroke: #B45309; }
+.home-v2 .nav-item.teacher:hover { background: #FFEFD2; color: #92400E; }
 .home-v2 .nav-group { margin: 14px 0 4px; padding: 0 10px; font-size: .72rem; font-weight: 700; letter-spacing: .12em; color: var(--mute-2); }
 .home-v2 .nav-item .mini { flex: none; width: 21px; height: 21px; border-radius: 6px; display: block; }
 
@@ -465,6 +470,9 @@ html[data-theme="dark"] body.home-v2 .sb-theme:hover { color: var(--ink); border
 html[data-theme="dark"] body.home-v2 .nav-item { color: #C7CAE6; }
 html[data-theme="dark"] body.home-v2 .nav-item:hover { background: #21233F; color: var(--ink); }
 html[data-theme="dark"] body.home-v2 .nav-item.active { background: var(--indigo-soft); color: var(--indigo-bright); }
+html[data-theme="dark"] body.home-v2 .nav-item.teacher { background: #2A2118; color: #FBBF24; }
+html[data-theme="dark"] body.home-v2 .nav-item.teacher svg { stroke: #FBBF24; }
+html[data-theme="dark"] body.home-v2 .nav-item.teacher:hover { background: #35281C; color: #FCD34D; }
 
 /* 面板 / 卡片 / 信息块（白底 → 暗色，覆盖 home-redesign 与 lobby.css 的 #fff） */
 html[data-theme="dark"] body.home-v2 .panel,
