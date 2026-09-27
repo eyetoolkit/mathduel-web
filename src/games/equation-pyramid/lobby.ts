@@ -29,14 +29,6 @@ const fmt = (sec: number): string => `${sec.toFixed(1)}s`;
 const esc = (s: unknown): string =>
   String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c] as string);
 
-/* ===================== Hero：9-cell 装饰 =====================
-   演示 pick order：选 p1=9、p2=4、p3=4 → 9 - 4 × 4 = -7（target） */
-function renderHero(): void {
-  const el = $('heroDeco');
-  if (!el) return;
-  el.innerHTML = el.innerHTML; // HTML 已经画好
-}
-
 /* ===================== 今日完成标记 ===================== */
 function markDailyDone(): void {
   const done = readJSON<Record<string, number>>(LS_DAILY, {});
@@ -136,7 +128,6 @@ function wireDifficulty(): void {
 
 function boot(): void {
   wireLobbyChrome();
-  renderHero();
   markDailyDone();
   renderBoard();
   wireDifficulty();
