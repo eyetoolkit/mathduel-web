@@ -153,6 +153,21 @@ tr:last-child td{border-bottom:0}
 .pill.mode{background:rgba(245,158,11,.14);color:var(--warn)}
 
 /* ═══════════ A1 洞察面板：报告首屏先给结论 ═══════════ */
+.trend{background:linear-gradient(160deg,#EEF0FB,#F6F3FF);border:1px solid #D9DCF5;border-radius:14px;padding:14px 15px;margin-bottom:16px}
+.tr-hl{font-weight:800;font-size:.86rem;color:var(--ink);margin-bottom:8px;display:flex;align-items:center;gap:10px}
+.tr-delta{font-size:.74rem;font-weight:800;color:var(--indigo);background:#fff;border:1px solid #D9DCF5;border-radius:99px;padding:2px 10px}
+.tr-svg{width:100%;height:auto;display:block}
+.tr-x{display:flex;justify-content:space-between;font-size:.62rem;color:#6B7290;margin-top:4px}
+.skm{display:flex;flex-direction:column;gap:5px}
+.skm-row{display:flex;gap:5px;align-items:stretch}
+.skm-head{font-size:.66rem;font-weight:800;color:#6B7290}
+.skm-code{width:52px;font-weight:800;font-size:.78rem;color:var(--ink);display:flex;align-items:center}
+.skm-col{flex:1;text-align:center}
+.skm-cell{flex:1;text-align:center;font-weight:800;font-size:.78rem;border-radius:8px;padding:7px 2px}
+.skm-cell.good{background:#DFF5EA;color:#0E9F6E}
+.skm-cell.mid{background:#FDEFD8;color:#B45309}
+.skm-cell.low{background:#FDE3E3;color:#DC2626}
+.skm-cell.na{background:#F1F2FA;color:#9AA1B9}
 .insights{background:linear-gradient(160deg,#EEF0FB,#F6F3FF);border:1px solid #D9DCF5;border-radius:14px;padding:14px 15px;margin-bottom:16px}
 .ins-hl{font-family:var(--disp);font-weight:700;font-size:1.02rem;color:var(--indigo);line-height:1.35;margin-bottom:10px}
 .ins-item{display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-top:1px solid rgba(55,48,163,.1)}

@@ -9,6 +9,7 @@ import '../../styles/game-shell.css';
 // 24-game 公式区需要严格等宽对齐（formula / race-row / db-clock 等），保留 JetBrains Mono
 import '@tri-sites/design-system/styles/mono';
 import '../24-game/styles.css';
+import { markDailyDone, markGamePlayed } from '../cross-game';
 import './arena.css';
 import './social.css';
 import { initI18n, mountHeader, toast } from '@tri-sites/design-system';
@@ -757,6 +758,8 @@ function finishDaily(): void {
 
   if (!dailyCompletedToday()) {
     dailyComplete();
+    markDailyDone('24-game');   // 跨游戏进度（/daily/ 中心 streak 数据源，此前从未接线）
+    markGamePlayed('24-game', 'daily');
     combo++;
     saveCombo();
     refreshTop();

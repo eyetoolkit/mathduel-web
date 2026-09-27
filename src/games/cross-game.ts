@@ -278,3 +278,98 @@ export function formatShareText(gameId: GameId, summary: { mode: string; duratio
   const extra = summary.extra ? ` — ${summary.extra}` : '';
   return `I just ${summary.mode} ${gameName}${dur}${extra} on MathDuel · mathduel.games`;
 }
+
+/* ═══ F1.3 挑战卡 + F1.2 修复：统一每日完赛记录 ═══
+   背景：markDailyDone 在此之前没有任何游戏调用（各游戏只写自己的键），
+   /daily/ 中心的 streak 与进度环永远不动 —— 本节把「完赛时刻」收口到
+   一个入口：recordDaily() = 记进度 + 弹挑战卡（每天每游戏只弹一次）。
+   挑战卡是纯前端传播入口：每日题全球同种子，朋友点链接做的是同一套题。 */
+
+const CARD_CSS_ID = 'mdChallengeCss';
+
+function ensureCardStyles(): void {
+  if (document.getElementById(CARD_CSS_ID)) return;
+  const st = document.createElement('style');
+  st.id = CARD_CSS_ID;
+  st.textContent = `
+  .mdcc-wrap{position:fixed;inset:0;z-index:9998;display:flex;align-items:center;justify-content:center;background:rgba(16,20,42,.55);backdrop-filter:blur(3px);font-family:system-ui,-apple-system,'Segoe UI',sans-serif;padding:18px}
+  .mdcc-box{background:#fff;border-radius:20px;padding:26px 24px;width:min(400px,94vw);box-shadow:0 24px 70px rgba(16,20,42,.35);text-align:center;animation:mdccIn .25s ease}
+  @keyframes mdccIn{from{transform:translateY(14px) scale(.97);opacity:0}to{transform:none;opacity:1}}
+  .mdcc-emoji{font-size:2.6rem;line-height:1}
+  .mdcc-t{margin:10px 0 2px;font-size:1.25rem;font-weight:800;color:#10142A}
+  .mdcc-s{margin:0 0 14px;font-size:.8rem;color:#6B7290}
+  .mdcc-card{background:linear-gradient(160deg,#EEF0FB,#F6F3FF);border:1.5px solid #D9DCF5;border-radius:14px;padding:14px 15px;font-size:.92rem;font-weight:700;color:#3730A3;line-height:1.55;word-break:break-word;text-align:left}
+  .mdcc-acts{display:flex;gap:9px;margin-top:16px}
+  .mdcc-btn{flex:1;border:0;border-radius:12px;padding:12px;font-weight:800;font-size:.9rem;cursor:pointer;background:#3730A3;color:#fff}
+  .mdcc-btn:disabled{opacity:.55}
+  .mdcc-ghost{flex:0 0 auto;background:transparent;color:#6B7290;border:1.5px solid #E3E7F0}
+  .mdcc-ghost:hover{border-color:#3730A3;color:#3730A3}
+  .mdcc-note{margin-top:10px;font-size:.72rem;color:#9AA1B9}
+  `;
+  document.head.appendChild(st);
+}
+
+/** 每日挑战的分享深链（同一种子 = 同一套题） */
+export function challengeLink(gameId: GameId): string {
+  return `https://mathduel.games/games/${gameId}/?mode=daily`;
+}
+
+export interface DailyResult {
+  durationSec?: number;
+  solved?: number;
+  total?: number;
+}
+
+export function challengeText(gameId: GameId, result: DailyResult = {}): string {
+  const labels: Record<GameId, string> = {
+    '24-game': '24 Game',
+    'sudoku-4x4': 'Sudoku 4×4',
+    'sudoku': 'Sudoku 9×9',
+    'sudoku-6x6': 'Sudoku 6×6',
+    'equation-pyramid': 'Equation Pyramid',
+  };
+  const name = labels[gameId] || gameId;
+  const dur = result.durationSec ? ` in ${result.durationSec.toFixed(1)}s` : '';
+  const score = result.total ? ` (${result.solved ?? result.total}/${result.total})` : '';
+  return `⚔️ I solved today's ${name} Daily${dur}${score} on MathDuel — can you beat me? ${challengeLink(gameId)}`;
+}
+
+/** 记录每日完赛（幂等）：更新 streak/进度数据；当天首次完成时弹挑战卡 */
+export function recordDaily(gameId: GameId, result: DailyResult = {}): void {
+  const first = !getTodaysDones().includes(gameId);
+  markDailyDone(gameId);
+  markGamePlayed(gameId, 'daily');
+  if (first) showChallengeCard(gameId, result);
+}
+
+/** 挑战卡浮层：分享文案 + 一键复制（复制内容含每日深链） */
+export function showChallengeCard(gameId: GameId, result: DailyResult = {}): void {
+  ensureCardStyles();
+  const text = challengeText(gameId, result);
+  const wrap = document.createElement('div');
+  wrap.className = 'mdcc-wrap';
+  wrap.innerHTML = `
+    <div class="mdcc-box">
+      <div class="mdcc-emoji">⚔️</div>
+      <div class="mdcc-t">Challenge card</div>
+      <div class="mdcc-s">Today's puzzle is the same for everyone — send it to a friend.</div>
+      <div class="mdcc-card">${text.replace(/&/g, '&amp;').replace(/</g, '&lt;')}</div>
+      <div class="mdcc-acts">
+        <button class="mdcc-btn" id="mdccCopy">📋 Copy challenge</button>
+        <button class="mdcc-btn mdcc-ghost" id="mdccClose">✕</button>
+      </div>
+      <div class="mdcc-note">No account needed — challenge links are just puzzle seeds.</div>
+    </div>`;
+  document.body.appendChild(wrap);
+  const close = () => wrap.remove();
+  wrap.querySelector('#mdccClose')?.addEventListener('click', close);
+  wrap.addEventListener('click', (e) => { if (e.target === wrap) close(); });
+  const btn = wrap.querySelector('#mdccCopy') as HTMLButtonElement | null;
+  btn?.addEventListener('click', async () => {
+    btn.disabled = true;
+    const okFlag = await copyResultToClipboard(text);
+    btn.textContent = okFlag ? '✅ Copied — paste it anywhere!' : 'Copy failed — long-press the card';
+    btn.disabled = false;
+    window.setTimeout(() => { btn.textContent = '📋 Copy challenge'; }, 2600);
+  });
+}

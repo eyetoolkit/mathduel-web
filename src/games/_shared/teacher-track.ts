@@ -66,6 +66,7 @@ export interface RoundPayload {
   duration_ms?: number;
   wrong?: number;
   ops?: string[];
+  skills?: string[];   // G2.5-M1：技能标签（服务端白名单过滤）
 }
 
 /* ─── 代号输入弹窗 ─── */
@@ -185,6 +186,27 @@ export function reportRound(room: string | null, payload: RoundPayload): void {
       keepalive: true,
     }).catch(() => { /* 静默：回写失败不打扰玩家 */ });
   } catch { /* ignore */ }
+}
+
+/**
+ * G2.5-M1：从算式推导技能标签（24 点专用，其余游戏返回空数组）。
+ *  div     用到了除法
+ *  mul     用到了乘法
+ *  mix     乘法与加减混用 —— 求值时乘法先于加减，正是「乘法优先」教学点
+ *  bracket 括号嵌套
+ * 标签随 track 上报，服务端白名单过滤后进入技能热力图。
+ */
+export function skillsFromExpression(expr: string): string[] {
+  const s = String(expr || '');
+  if (!s) return [];
+  const out: string[] = [];
+  if (/[\u002f\u00f7]/.test(s)) out.push('div');
+  if (/[\u00d7*\u00b7]/.test(s)) {
+    out.push('mul');
+    if (/[+\u2212-]/.test(s)) out.push('mix');
+  }
+  if (s.includes('(') || s.includes(')')) out.push('bracket');
+  return out;
 }
 
 /** 从表达式里抽取用到的运算符（24 点专用，其余游戏返回空数组） */

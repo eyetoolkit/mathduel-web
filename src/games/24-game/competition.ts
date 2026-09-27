@@ -12,7 +12,7 @@
  */
 
 import { generate24Puzzle, type Difficulty } from './engine';
-import { isClassroom, ensureStudentCode, reportRound, opsFromExpression } from '../_shared/teacher-track';
+import { isClassroom, ensureStudentCode, reportRound, opsFromExpression, skillsFromExpression } from '../_shared/teacher-track';
 
 export interface RaceEntry {
   name: string;
@@ -112,6 +112,7 @@ export class Competition {
   private mySubmitted = false;
   /** 本轮最后提交用到的运算符（老师端学情的 ops_used 来源，24 点专用） */
   private lastOps: string[] = [];
+  private lastSkills: string[] = [];
   private cb: CompCallbacks;
   private diff: Difficulty = 'standard';
   private raceMax = 99;
@@ -244,8 +245,10 @@ export class Competition {
       duration_ms: Number.isFinite(self && self.time) ? Math.round(self.time) : 0,
       wrong: ok ? 0 : 1,
       ops: ok ? this.lastOps : [],
+      skills: ok ? this.lastSkills : [],
     });
     this.lastOps = [];
+    this.lastSkills = [];
   }
 
   /** 服务器消息分发（完整移植原协议，含 round_resume 断线续局） */
@@ -349,6 +352,7 @@ export class Competition {
     if (!this.active || this.waiting || this.spectator) return;
     this.waiting = true;
     this.lastOps = correct ? opsFromExpression(formula) : [];
+    this.lastSkills = correct ? skillsFromExpression(formula) : [];
     if (this.demo) this.demoSubmit(correct, formula);
     else this.send({ type: 'submit_answer', result: correct, formula: correct ? formula : undefined });
   }

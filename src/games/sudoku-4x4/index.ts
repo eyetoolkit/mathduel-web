@@ -7,6 +7,7 @@
  */
 
 import '@tri-sites/design-system/styles';
+import { recordDaily } from '../cross-game';
 import '../../styles/game-shell.css';
 import '../24-game/styles.css';
 import '../24-game/arena.css';
@@ -422,6 +423,7 @@ function winSolo(): void {
     writeJSON(LS_BEST, b);
     extra = '<div class="s4-newbest">🥇 New personal best!</div>';
   }
+  if (st.mode === 'daily') recordDaily('sudoku-4x4', { durationSec: t });
   $('result')!.innerHTML = `✅ Solved in <b>${fmt(t)}</b>${extra}`;
   showModal(
     '<div class="s4-verdict">Grid complete 🎉</div>' +

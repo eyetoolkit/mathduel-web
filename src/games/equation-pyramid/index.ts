@@ -1,5 +1,6 @@
 /* === 通用竞赛外壳（1v1+多人+随机匹配） === */
 import { mountCompetition } from "../_shared/mp-client";
+import { recordDaily } from '../cross-game';
 import { createEqpyrAdapter } from "../_shared/mp-adapters/eqpyr";
 /**
  * 等式金字塔 · 牌桌逻辑
@@ -447,6 +448,7 @@ function winBoard(): void {
     if (!d[dk]) {
       d[dk] = Math.round(t * 10) / 10;
       writeJSON(LS_DAILY, d);
+      recordDaily('equation-pyramid', { durationSec: t });
       extra = '<div class="ep-extra">🌐 Daily hunt logged — see you tomorrow!</div>';
     } else {
       extra = '<div class="ep-extra">Already logged today — replay doesn’t overwrite.</div>';

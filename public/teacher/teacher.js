@@ -20,6 +20,7 @@ let classes = [];
 let current = null;
 let roster = [];
 let assignment = null;
+const trendCache = {};            // classId → /trend 响应（M2 跨作业趋势）
 let report = null;
 let games = [];
 let assignmentList = [];
@@ -215,6 +216,7 @@ async function loadClass(id) {
   } catch (e) { toast('⚠ ' + e.message); return; }
   // 默认打开最新一份作业；历史作业用 Overview 顶部的下拉切换
   await loadAssignment(assignmentList.length ? assignmentList[assignmentList.length - 1].id : null);
+  void loadTrend(id);   // M2：跨作业趋势（独立请求，失败静默降级）
 }
 
 /* 加载指定作业的报告（历史切换共用） */
@@ -287,6 +289,72 @@ function fmtMs(ms) {
   return s >= 60 ? Math.floor(s / 60) + 'm' + String(Math.round(s % 60)).padStart(2, '0') + 's' : s.toFixed(1) + 's';
 }
 
+/* ─── M2：跨作业趋势卡（sessions 聚合，最近 12 份作业）─── */
+async function loadTrend(cid) {
+  if (!cid) return;
+  try {
+    const d = await api('/teacher/classes/' + cid + '/trend');
+    trendCache[cid] = d;
+    if (cid === current) renderTrendView();
+  } catch (e) { /* 端点异常时不显示趋势卡，不阻塞报告 */ }
+}
+function renderTrendView() {
+  const host = $('trend');
+  if (!host) return;
+  const d = current ? trendCache[current] : null;
+  const pts = ((d && d.points) || []).filter((p) => p.accuracy != null);
+  host.style.display = '';
+  if (pts.length < 2) {
+    host.innerHTML = '<div class="tr-hl">📊 Progress trend</div><div class="mini">Finish at least two assignments to see the class trend line.</div>';
+    return;
+  }
+  const W = 560, H = 110, PAD = 10;
+  const xs = (i) => PAD + (i * (W - 2 * PAD)) / (pts.length - 1);
+  const ys = (v) => H - PAD - (v * (H - 2 * PAD)) / 100;
+  const poly = pts.map((p, i) => xs(i).toFixed(1) + ',' + ys(p.accuracy).toFixed(1)).join(' ');
+  const dots = pts.map((p, i) => {
+    const col = p.accuracy >= 85 ? '#0E9F6E' : p.accuracy >= 60 ? '#F59E0B' : '#DC2626';
+    return '<circle cx="' + xs(i).toFixed(1) + '" cy="' + ys(p.accuracy).toFixed(1) + '" r="4.5" fill="' + col + '">' +
+      '<title>' + esc(p.title || '') + ' · ' + p.accuracy + '% · ' + p.started + '/' + p.students + ' started</title></circle>';
+  }).join('');
+  const first = pts[0].accuracy, last = pts[pts.length - 1].accuracy;
+  const delta = last - first;
+  const arrow = delta > 2 ? '📈 +' + delta : delta < -2 ? '📉 ' + delta : '➖ ' + (delta > 0 ? '+' : '') + delta;
+  host.innerHTML = '<div class="tr-hl">📊 Progress trend · last ' + pts.length + ' assignments' +
+    '<span class="tr-delta">' + arrow + ' pts</span></div>' +
+    '<svg viewBox="0 0 ' + W + ' ' + H + '" class="tr-svg" role="img" aria-label="Class accuracy across assignments">' +
+    '<polyline points="' + poly + '" fill="none" stroke="#3730A3" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>' + dots + '</svg>' +
+    '<div class="tr-x">' + pts.map((p) => '<span>' + esc(String(p.title || '').slice(0, 16)) + '</span>').join('') + '</div>';
+}
+
+/* ─── M1：技能热力图（学生 × 技能正确率矩阵，数据来自 24 点自动标签）─── */
+const SKILL_LABEL = { div: '÷ division', mul: '× multiply', mix: '×± mixed', bracket: '( ) brackets', carry: 'carry', borrow: 'borrow' };
+function renderSkillMap(rep) {
+  const ttl = $('skmTtl');
+  const host = $('skillmap');
+  if (!ttl || !host) return;
+  const sk = (rep && rep.skills) || [];
+  const rows = (rep && rep.rows) || [];
+  const any = sk.length && rows.some((r) => r.skills && Object.keys(r.skills).length);
+  if (!any) { ttl.style.display = 'none'; host.style.display = 'none'; host.innerHTML = ''; return; }
+  ttl.style.display = ''; host.style.display = '';
+  let html = '<div class="skm"><div class="skm-row skm-head"><span class="skm-code"></span>' +
+    sk.map((s) => '<span class="skm-col">' + esc(SKILL_LABEL[s.tag] || s.tag) + '</span>').join('') + '</div>';
+  for (const r of rows) {
+    if (!r.skills || !Object.keys(r.skills).length) continue;
+    html += '<div class="skm-row"><span class="skm-code">' + esc(r.code) + '</span>' +
+      sk.map((s) => {
+        const cell = r.skills[s.tag];
+        if (!cell) return '<span class="skm-cell na">·</span>';
+        const cls = cell.acc >= 80 ? 'good' : cell.acc >= 40 ? 'mid' : 'low';
+        const label = SKILL_LABEL[s.tag] || s.tag;
+        return '<span class="skm-cell ' + cls + '" title="' + esc(r.code) + ' · ' + esc(label) + ': ' + cell.ok + '/' + cell.n + ' correct">' + cell.acc + '</span>';
+      }).join('') + '</div>';
+  }
+  html += '</div><div class="mini" style="margin-top:6px">Green ≥80% · amber 40–79 · red &lt;40 · "·" = not attempted yet. Every recommendation starts from evidence you can open and check.</div>';
+  host.innerHTML = html;
+}
+
 function renderOverview() {
   if (!report || !assignment) { emptyState(); return; }
   const rows = report.rows || [];
@@ -301,6 +369,8 @@ function renderOverview() {
 
   // A1：报告首屏先给结论（谁没掌握 / 最难的一批 / 还没开始的人）
   renderInsights(report);
+  renderSkillMap(report);   // M1：技能热力图（仅 24 点作业有数据）
+  renderTrendView();        // M2：趋势卡（缓存命中即渲染）
 
   // 班级运算薄弱点（服务端算好的百分比）
   $('weakTtl').textContent = 'Class weak spot · ' + (assignment.gameLabel || assignment.game);
@@ -434,6 +504,9 @@ function emptyState() {
   const dab = $('delAsgBtn'); if (dab) dab.style.display = 'none';
   const ib = $('insights');
   if (ib) { ib.style.display = 'none'; ib.innerHTML = ''; }
+  const tb = $('trend'); if (tb) { tb.style.display = 'none'; tb.innerHTML = ''; }
+  const sm = $('skmTtl'); if (sm) sm.style.display = 'none';
+  const skm = $('skillmap'); if (skm) { skm.style.display = 'none'; skm.innerHTML = ''; }
 }
 
 /* ─── tabs ─── */

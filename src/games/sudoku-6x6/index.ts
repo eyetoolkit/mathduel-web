@@ -1,5 +1,6 @@
 /* === 通用竞赛外壳（1v1+多人+随机匹配） === */
 import { mountCompetition } from "../_shared/mp-client";
+import { recordDaily } from '../cross-game';
 import { createSudokuAdapter } from "../_shared/mp-adapters/sudoku";
 /**
  * 6×6 数独 · UI 编排（beta 版：全部本地，无 API 依赖）
@@ -496,6 +497,7 @@ function winSoloDaily(): void {
     if (!d[dk]) {
       d[dk] = Math.round(t * 10) / 10;
       writeJSON(LS_DAILY, d);
+      recordDaily('sudoku-6x6', { durationSec: t });
       extra = '<div class="s6-newbest">🌐 Daily grid logged — see you tomorrow!</div>';
     } else {
       extra = '<div class="s6-newbest">Already logged today — replay doesn\u2019t overwrite.</div>';
