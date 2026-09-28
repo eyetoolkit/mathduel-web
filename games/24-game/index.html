@@ -138,7 +138,7 @@
     <svg viewBox="0 0 24 24" fill="none"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
   </button>
   <a class="logo" href="/">Math<b>Duel</b></a>
-  <a class="btn-play-top" href="/games/24-game/?mode=daily">Play now</a>
+  <a class="btn-play-top" href="/games/24-game/?mode=daily" data-i18n="common.play_now">Play now</a>
 </div>
 <div class="pg-overlay" id="pgOverlay"></div>
 
@@ -146,18 +146,18 @@
 <aside class="pg-sidebar" id="pgSidebar">
   <div class="sb-top">
     <a class="logo" href="/">Math<b>Duel</b></a>
-    <button class="sb-collapse" id="pgCollapse" title="Collapse sidebar" aria-label="Collapse sidebar">«</button>
+    <button class="sb-collapse" id="pgCollapse" data-i18n-title="sidebar.collapse" data-i18n-aria-label="sidebar.collapse" title="Collapse sidebar" aria-label="Collapse sidebar">«</button>
   </div>
   <div class="sb-login">
-    <a class="btn-play" href="/games/24-game/?mode=daily"><span>Play now</span></a>
+    <a class="btn-play" href="/games/24-game/?mode=daily"><span data-i18n="common.play_now">Play now</span></a>
     <a class="sb-back" href="/" title="Home" aria-label="Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></a>
   </div>
   <nav class="sb-nav" aria-label="Site navigation">
-    <a class="nav-item" href="/"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg><label style="cursor:inherit">Home</label></a>
-    <span class="nav-item is-disabled" aria-disabled="true" style="opacity:.5;cursor:default" title="Coming soon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l2.5 2.5"/></svg><label style="cursor:inherit">Coin Shop 🪙</label></span>
-    <div class="nav-group">All games</div>
-    <a class="nav-item active" href="/games/24-game/lobby/"><svg class="mini" aria-hidden="true"><use href="#cv-24"/></svg><label style="cursor:inherit">24 Game</label></a><a class="nav-item" href="/games/sudoku-4x4/lobby/"><svg class="mini" aria-hidden="true"><use href="#cv-s4"/></svg><label style="cursor:inherit">Sudoku 4×4</label></a><a class="nav-item" href="/games/sudoku/lobby/"><svg class="mini" aria-hidden="true"><use href="#cv-sudoku"/></svg><label style="cursor:inherit">Sudoku 9×9</label></a><a class="nav-item" href="/games/sudoku-6x6/lobby/"><svg class="mini" aria-hidden="true"><use href="#cv-s6"/></svg><label style="cursor:inherit">Sudoku 6×6</label></a><a class="nav-item" href="/games/equation-pyramid/lobby/"><svg class="mini" aria-hidden="true"><use href="#cv-pyr"/></svg><label style="cursor:inherit">Equation Pyramid</label></a>    <div class="nav-group">Help</div>
-    <a class="nav-item" href="#"><svg viewBox="0 0 24 24"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19a2 2 0 0 1 2-2h13"/></svg><label style="cursor:inherit">How to play</label></a>
+    <a class="nav-item" href="/"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg><label style="cursor:inherit" data-i18n="nav.home">Home</label></a>
+    <span class="nav-item is-disabled" aria-disabled="true" style="opacity:.5;cursor:default" title="Coming soon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l2.5 2.5"/></svg><label style="cursor:inherit" data-i18n="sidebar.coin_shop">Coin Shop 🪙</label></span>
+    <div class="nav-group" data-i18n="home.all_games">All games</div>
+    <a class="nav-item active" href="/games/24-game/lobby/"><svg class="mini" aria-hidden="true"><use href="#cv-24"/></svg><label style="cursor:inherit">24 Game</label></a><a class="nav-item" href="/games/sudoku-4x4/lobby/"><svg class="mini" aria-hidden="true"><use href="#cv-s4"/></svg><label style="cursor:inherit">Sudoku 4×4</label></a><a class="nav-item" href="/games/sudoku/lobby/"><svg class="mini" aria-hidden="true"><use href="#cv-sudoku"/></svg><label style="cursor:inherit">Sudoku 9×9</label></a><a class="nav-item" href="/games/sudoku-6x6/lobby/"><svg class="mini" aria-hidden="true"><use href="#cv-s6"/></svg><label style="cursor:inherit">Sudoku 6×6</label></a><a class="nav-item" href="/games/equation-pyramid/lobby/"><svg class="mini" aria-hidden="true"><use href="#cv-pyr"/></svg><label style="cursor:inherit">Equation Pyramid</label></a>    <div class="nav-group" data-i18n="sidebar.help_group">Help</div>
+    <a class="nav-item" href="#"><svg viewBox="0 0 24 24"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19a2 2 0 0 1 2-2h13"/></svg><label style="cursor:inherit" data-i18n="nav.how_to_play">How to play</label></a>
   </nav>
   <div class="nav-foot">
     <span class="sb-copy">© 2026</span>
@@ -171,14 +171,14 @@
     <section class="board" id="board" aria-label="Game board">
       <div class="g24-bar">
         <nav class="tabs" id="tabs" aria-label="Game modes">
-          <button class="tab active" data-mode="practice">Practice</button>
-          <button class="tab" data-mode="daily">Daily Challenge</button>
-          <button class="tab" data-mode="timed">Timed Practice</button>
-          <button class="tab" data-mode="battle">Competition</button>
+          <button class="tab active" data-mode="practice" data-i18n="game24.tab_practice">Practice</button>
+          <button class="tab" data-mode="daily" data-i18n="game24.tab_daily">Daily Challenge</button>
+          <button class="tab" data-mode="timed" data-i18n="game24.tab_timed">Timed Practice</button>
+          <button class="tab" data-mode="battle" data-i18n="game24.tab_competition">Competition</button>
         </nav>
         <div class="top-stats">
-          <span class="chip">Solved <b id="stSolved">0</b></span>
-          <span class="chip">🔥 Streak <b id="stCombo">0</b></span>
+          <span class="chip"><span data-i18n="game.solved">Solved</span> <b id="stSolved">0</b></span>
+          <span class="chip">🔥 <span data-i18n="game.combo">Streak</span> <b id="stCombo">0</b></span>
           <span class="arb-coin hidden" data-coins></span>
           <span data-profile></span>
         </div>
@@ -191,7 +191,7 @@
         <div class="comp-room">
           <span class="lbl">Room</span>
           <span class="comp-code" id="compCode">·····</span>
-          <button class="icon-btn" id="copyCode" title="Copy room code">📋 Copy</button>
+          <button class="icon-btn" id="copyCode" title="Copy room code" data-i18n="common.copy">📋 Copy</button>
         </div>
         <div class="comp-mid">
           <!-- 速度环（设计稿 Screen 2）：剩余时间比例 → SVG dashoffset -->
@@ -204,17 +204,17 @@
             <div class="sr-txt" id="speedRingTxt">--</div>
           </div>
           <div class="comp-timer" id="compTimer"><i></i></div>
-          <div class="comp-status" id="compStatus">Live · Waiting for server</div>
+          <div class="comp-status" id="compStatus" data-i18n="mp.waiting_for_server">Live · Waiting for server</div>
         </div>
-        <button class="icon-btn" id="leaveBtn" title="Leave competition">🚪 Leave</button>
+        <button class="icon-btn" id="leaveBtn" title="Leave competition" data-i18n="mp.leave">🚪 Leave</button>
       </div>
 
       <div class="table-head">
-        <div class="target"><span class="lbl">Target</span><b>24</b></div>
+        <div class="target"><span class="lbl" data-i18n="game.target">Target</span><b>24</b></div>
         <div class="diff-pick" id="diffPick" role="group" aria-label="Difficulty">
-          <button data-d="easy">Easy</button>
-          <button data-d="standard" class="active">Standard</button>
-          <button data-d="hard">Hard</button>
+          <button data-d="easy" data-i18n="game.easy">Easy</button>
+          <button data-d="standard" class="active" data-i18n="game.standard">Standard</button>
+          <button data-d="hard" data-i18n="game.hard">Hard</button>
         </div>
         <!-- Practice 专属：本局用时（依赖 updatePracticeTimer 每秒更新） -->
         <div class="prac-timer" id="pracTimerWrap" hidden>
@@ -223,8 +223,8 @@
       </div>
 
       <div class="cards" id="cards"></div>
-      <div class="formula" id="formula" aria-live="polite"><span class="ph">Pick cards + operators to make 24</span></div>
-      <div class="result" id="result" role="status">Use each card once — make 24</div>
+      <div class="formula" id="formula" aria-live="polite"><span class="ph" data-i18n="game24.formula_placeholder">Pick cards + operators to make 24</span></div>
+      <div class="result" id="result" role="status" data-i18n="game24.result_placeholder">Use each card once — make 24</div>
 
       <div class="pad" id="pad">
         <button class="op-btn op" data-v="+">+</button>
@@ -234,14 +234,14 @@
         <button class="op-btn" data-v="(">(</button>
         <button class="op-btn" data-v=")">)</button>
         <button class="op-btn special" data-act="undo">⌫</button>
-        <button class="op-btn special" data-act="clear">Clear</button>
+        <button class="op-btn special" data-act="clear" data-i18n="common.clear">Clear</button>
       </div>
 
       <div class="actions" id="actions">
-        <button class="btn primary" id="newBtn">🂠 New Deal</button>
-        <button class="btn ghost" id="hintBtn">💡 Hint</button>
-        <button class="btn ghost" id="answerBtn">Show Answer</button>
-        <button class="btn primary hidden" id="enterBtn">🏆 Enter Competition</button>
+        <button class="btn primary" id="newBtn" data-i18n="game.new_deal">🂠 New Deal</button>
+        <button class="btn ghost" id="hintBtn" data-i18n="game.hint">💡 Hint</button>
+        <button class="btn ghost" id="answerBtn" data-i18n="game.show_answer">Show Answer</button>
+        <button class="btn primary hidden" id="enterBtn" data-i18n="game.enter_competition">🏆 Enter Competition</button>
       </div>
 
       <!-- 观战条（仅观战者可见） -->
@@ -256,25 +256,25 @@
   <!-- Lobby -->
   <div class="lobby" id="lobby" role="dialog" aria-modal="true" aria-labelledby="lobbyTitle">
     <div class="lobby-card">
-      <button class="lobby-close" id="lobbyClose" aria-label="Close lobby">✕</button>
-      <h2 id="lobbyTitle">🏆 Math Competition</h2>
-      <p class="ldesc" id="lobbyDesc">Create a room or enter a code to race players worldwide on the same cards. Up to 99 players per room.</p>
+      <button class="lobby-close" id="lobbyClose" aria-label="Close lobby" data-i18n-aria-label="common.close">✕</button>
+      <h2 id="lobbyTitle" data-i18n="mp.live_standings">🏆 Math Competition</h2>
+      <p class="ldesc" id="lobbyDesc" data-i18n="mp.sub">Create a room or enter a code to race players worldwide on the same cards. Up to 99 players per room.</p>
 
       <div id="lobbyForm">
         <div class="field">
-          <label for="nameInput">Name</label>
-          <input id="nameInput" type="text" maxlength="14" placeholder="Your name" autocomplete="off" />
+          <label for="nameInput" data-i18n="mp.name_label">Name</label>
+          <input id="nameInput" type="text" maxlength="14" data-i18n-placeholder="common.name_placeholder" placeholder="Your name" autocomplete="off" />
         </div>
         <div class="lobby-actions">
-          <button class="btn primary" id="createBtn">🚀 Create Competition</button>
-          <button class="btn ghost" id="joinToggle">Have a code? Join</button>
+          <button class="btn primary" id="createBtn" data-i18n="mp.create_room">🚀 Create Competition</button>
+          <button class="btn ghost" id="joinToggle" data-i18n="mp.join_code">Have a code? Join</button>
         </div>
         <div id="joinRow" class="field hidden">
-          <label for="joinInput">Room code (5 chars)</label>
+          <label for="joinInput" data-i18n="game.room_code">Room code (5 chars)</label>
           <input id="joinInput" type="text" maxlength="5" placeholder="e.g. A7K2M" class="upcase" />
-          <button class="btn primary btn-block mt-2" id="joinBtn">Join Room</button>
+          <button class="btn primary btn-block mt-2" id="joinBtn" data-i18n="mp.join">Join Room</button>
         </div>
-        <div class="lobby-divider">Competition Size</div>
+        <div class="lobby-divider" data-i18n="game.difficulty">Competition Size</div>
         <div class="size-row" id="sizeRow" role="group" aria-label="Competition size">
           <button class="size-chip" data-max="2">2</button>
           <button class="size-chip" data-max="10">10</button>
@@ -287,17 +287,17 @@
       <div id="roomView" class="room-view">
         <div id="lobbyMe" class="arb-account" style="margin-bottom:12px"></div>
         <div class="room-code-box">
-          <div class="rc-lbl">Room code · share with friends</div>
+          <div class="rc-lbl" data-i18n="mp.room_ready">Room code · share with friends</div>
           <div class="rc-code" id="roomCode">·····</div>
           <div class="rc-qr-wrap">
-            <img class="rc-qr" id="roomQr" width="140" height="140" alt="QR code to join this room" />
+            <img class="rc-qr" id="roomQr" width="140" height="140" alt="QR code to join this room" data-i18n-alt="game.room_code" />
             <div class="rc-qr-txt">📱 <b>Scan to join</b> — opens with the code filled in</div>
           </div>
-          <button class="btn ghost btn-block" id="shareBtn">🔗 Copy Invite Link</button>
+          <button class="btn ghost btn-block" id="shareBtn" data-i18n="mp.copy_invite">🔗 Copy Invite Link</button>
         </div>
         <div class="room-players" id="roomPlayers"></div>
-        <div class="room-hint" id="roomHint">⏳ Waiting for players…</div>
-        <button class="btn primary btn-block" id="startBtn" disabled>🚀 Start Competition (2+ players)</button>
+        <div class="room-hint" id="roomHint" data-i18n="mp.waiting_for_players">⏳ Waiting for players…</div>
+        <button class="btn primary btn-block" id="startBtn" disabled data-i18n="mp.start_competition_ready">🚀 Start Competition (2+ players)</button>
       </div>
 
       <div class="lobby-err" id="lobbyErr" role="alert"></div>
@@ -311,8 +311,8 @@
   <div class="share-overlay" id="shareOverlay" role="dialog" aria-modal="true" aria-labelledby="shareTitle">
     <div class="share-card">
       <div class="share-head">
-        <h3 id="shareTitle">🏆 My Score</h3>
-        <button class="share-close" id="shareClose" aria-label="Close">✕</button>
+        <h3 id="shareTitle" data-i18n="share.score_title">🏆 My Score</h3>
+        <button class="share-close" id="shareClose" aria-label="Close" data-i18n-aria-label="common.close">✕</button>
       </div>
       <div class="share-canvas-wrap"><canvas id="shareCanvas" width="600" height="760"></canvas></div>
       <div class="share-qr-row">
@@ -321,11 +321,11 @@
       </div>
       <div class="share-url-row">
         <input id="shareUrl" type="text" readonly aria-label="Share link" />
-        <button class="btn primary" id="shareCopy">📋 Copy</button>
+        <button class="btn primary" id="shareCopy" data-i18n="common.copy">📋 Copy</button>
       </div>
       <div class="share-actions">
-        <button class="btn ghost" id="shareDownload">⬇ Save Image</button>
-        <button class="btn ghost" id="shareWechat">💬 Share</button>
+        <button class="btn ghost" id="shareDownload" data-i18n="share.download_image">⬇ Save Image</button>
+        <button class="btn ghost" id="shareWechat" data-i18n="share.share_wechat">💬 Share</button>
       </div>
     </div>
   </div>
@@ -337,14 +337,14 @@
 <!-- ═══════════ 深靛页脚（与首页/ lobby 同源） ═══════════ -->
 <footer class="pg-footer">
   <div class="wrap">
-    <div class="sf-title">Explore the Duel family</div>
+    <div class="sf-title" data-i18n="home.explore_family">Explore the Duel family</div>
     <div class="sf-matrix">
       <a class="sf-item" href="https://boardduel.com"><span class="pip" style="background:#2FC4C9"></span>BoardDuel · Chess &amp; Card Games</a>
       <a class="sf-item" href="https://mathduel.games"><span class="pip" style="background:#F59E0B"></span>MathDuel · Math Puzzle Games</a>
       <a class="sf-item" href="https://memoryduel.com"><span class="pip" style="background:#4F46E5"></span>MemoryDuel · Knowledge Battles</a>
     </div>
     <div class="sf-links">
-      <a href="/about/">About</a><a href="/contact/">Contact</a><a href="/privacy/">Privacy</a><a href="/terms/">Terms</a>
+      <a href="/about/" data-i18n="nav.about">About</a><a href="/contact/" data-i18n="nav.contact">Contact</a><a href="/privacy/" data-i18n="nav.privacy">Privacy</a><a href="/terms/" data-i18n="nav.terms">Terms</a>
     </div>
     <div class="sf-copy">© 2026 MathDuel · Pure static · Privacy-first · Free to play</div>
   </div>

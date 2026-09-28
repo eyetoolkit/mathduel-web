@@ -139,7 +139,7 @@
     <svg viewBox="0 0 24 24" fill="none"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
   </button>
   <a class="logo" href="/">Math<b>Duel</b></a>
-  <a class="btn-play-top" href="/games/sudoku/?mode=daily">Play now</a>
+  <a class="btn-play-top" href="/games/sudoku/?mode=daily" data-i18n="common.play_now">Play now</a>
 </div>
 <div class="pg-overlay" id="pgOverlay"></div>
 
@@ -147,18 +147,18 @@
 <aside class="pg-sidebar" id="pgSidebar">
   <div class="sb-top">
     <a class="logo" href="/">Math<b>Duel</b></a>
-    <button class="sb-collapse" id="pgCollapse" title="Collapse sidebar" aria-label="Collapse sidebar">«</button>
+    <button class="sb-collapse" id="pgCollapse" data-i18n-title="sidebar.collapse" data-i18n-aria-label="sidebar.collapse" title="Collapse sidebar" aria-label="Collapse sidebar">«</button>
   </div>
   <div class="sb-login">
-    <a class="btn-play" href="/games/sudoku/?mode=daily"><span>Play now</span></a>
+    <a class="btn-play" href="/games/sudoku/?mode=daily"><span data-i18n="common.play_now">Play now</span></a>
     <a class="sb-back" href="/" title="Home" aria-label="Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></a>
   </div>
   <nav class="sb-nav" aria-label="Site navigation">
-    <a class="nav-item" href="/"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg><label style="cursor:inherit">Home</label></a>
-    <span class="nav-item is-disabled" aria-disabled="true" style="opacity:.5;cursor:default" title="Coming soon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l2.5 2.5"/></svg><label style="cursor:inherit">Coin Shop 🪙</label></span>
-    <div class="nav-group">All games</div>
-    <a class="nav-item" href="/games/24-game/lobby/"><svg class="mini" aria-hidden="true"><use href="#cv-24"/></svg><label style="cursor:inherit">24 Game</label></a><a class="nav-item" href="/games/sudoku-4x4/lobby/"><svg class="mini" aria-hidden="true"><use href="#cv-s4"/></svg><label style="cursor:inherit">Sudoku 4×4</label></a><a class="nav-item active" href="/games/sudoku/lobby/"><svg class="mini" aria-hidden="true"><use href="#cv-sudoku"/></svg><label style="cursor:inherit">Sudoku 9×9</label></a><a class="nav-item" href="/games/sudoku-6x6/lobby/"><svg class="mini" aria-hidden="true"><use href="#cv-s6"/></svg><label style="cursor:inherit">Sudoku 6×6</label></a><a class="nav-item" href="/games/equation-pyramid/lobby/"><svg class="mini" aria-hidden="true"><use href="#cv-pyr"/></svg><label style="cursor:inherit">Equation Pyramid</label></a>    <div class="nav-group">Help</div>
-    <a class="nav-item" href="#"><svg viewBox="0 0 24 24"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19a2 2 0 0 1 2-2h13"/></svg><label style="cursor:inherit">How to play</label></a>
+    <a class="nav-item" href="/"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg><label style="cursor:inherit" data-i18n="nav.home">Home</label></a>
+    <span class="nav-item is-disabled" aria-disabled="true" style="opacity:.5;cursor:default" title="Coming soon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l2.5 2.5"/></svg><label style="cursor:inherit" data-i18n="sidebar.coin_shop">Coin Shop 🪙</label></span>
+    <div class="nav-group" data-i18n="home.all_games">All games</div>
+    <a class="nav-item" href="/games/24-game/lobby/"><svg class="mini" aria-hidden="true"><use href="#cv-24"/></svg><label style="cursor:inherit">24 Game</label></a><a class="nav-item" href="/games/sudoku-4x4/lobby/"><svg class="mini" aria-hidden="true"><use href="#cv-s4"/></svg><label style="cursor:inherit">Sudoku 4×4</label></a><a class="nav-item active" href="/games/sudoku/lobby/"><svg class="mini" aria-hidden="true"><use href="#cv-sudoku"/></svg><label style="cursor:inherit">Sudoku 9×9</label></a><a class="nav-item" href="/games/sudoku-6x6/lobby/"><svg class="mini" aria-hidden="true"><use href="#cv-s6"/></svg><label style="cursor:inherit">Sudoku 6×6</label></a><a class="nav-item" href="/games/equation-pyramid/lobby/"><svg class="mini" aria-hidden="true"><use href="#cv-pyr"/></svg><label style="cursor:inherit">Equation Pyramid</label></a>    <div class="nav-group" data-i18n="sidebar.help_group">Help</div>
+    <a class="nav-item" href="#"><svg viewBox="0 0 24 24"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19a2 2 0 0 1 2-2h13"/></svg><label style="cursor:inherit" data-i18n="nav.how_to_play">How to play</label></a>
   </nav>
   <div class="nav-foot">
     <span class="sb-copy">© 2026</span>
@@ -173,14 +173,14 @@
     <section class="board" id="boardCol" aria-label="Sudoku board">
       <div class="g24-bar">
         <nav class="tabs" id="tabs" aria-label="Game modes">
-          <button class="tab" data-mode="solo">Solo</button>
-          <button class="tab" data-mode="daily">Daily Grid</button>
-          <button class="tab" data-mode="timed">Timed</button>
-          <button class="tab" data-mode="duel">Duel Bot</button>
+          <button class="tab" data-mode="solo" data-i18n="game.practice">Solo</button>
+          <button class="tab" data-mode="daily" data-i18n="sudoku.tab_daily">Daily Grid</button>
+          <button class="tab" data-mode="timed" data-i18n="game.timed">Timed</button>
+          <button class="tab" data-mode="duel" data-i18n="sudoku.tab_duel">Duel Bot</button>
         </nav>
         <div class="top-stats">
-          <span class="chip" id="stMain">Ready</span>
-          <button class="icon-btn" id="backLobby" title="Back to lobby">🏠 Lobby</button>
+          <span class="chip" id="stMain" data-i18n="common.loading">Ready</span>
+          <button class="icon-btn" id="backLobby" title="Back to lobby" data-i18n="nav.home">🏠 Lobby</button>
         </div>
       </div>
 
@@ -196,11 +196,11 @@
       <div id="modeBanner"></div>
 
       <div class="table-head">
-        <div class="target"><span class="lbl">Target</span><b>1–9</b></div>
+        <div class="target"><span class="lbl" data-i18n="game.target">Target</span><b>1–9</b></div>
         <div class="diff-pick" id="diffPick" role="group" aria-label="Difficulty">
-          <button data-d="easy">Easy</button>
-          <button data-d="standard" class="active">Medium</button>
-          <button data-d="hard">Hard</button>
+          <button data-d="easy" data-i18n="game.easy">Easy</button>
+          <button data-d="standard" class="active" data-i18n="game.standard">Medium</button>
+          <button data-d="hard" data-i18n="game.hard">Hard</button>
         </div>
         <div class="diff-pick-hint" aria-hidden="true">
           <span><b>Easy</b> · 38 givens</span>
@@ -222,25 +222,25 @@
           <button class="pk" data-v="8">8<small class="pk-left"></small></button>
           <button class="pk" data-v="9">9<small class="pk-left"></small></button>
           <div class="s9-padfoot">
-            <button class="pk erase" data-act="erase">⌫ Erase</button>
-            <button class="pk notes" data-act="notes" id="notesBtn">✏ Notes</button>
+            <button class="pk erase" data-act="erase" data-i18n="common.back">⌫ Erase</button>
+            <button class="pk notes" data-act="notes" id="notesBtn" data-i18n="common.edit">✏ Notes</button>
           </div>
         </div>
         <div class="s9-padtools hidden" id="padTools">
-          <button class="btn ghost" id="hintBtn">💡 Hint</button>
-          <button class="btn ghost" id="newBtn">↻ New Grid</button>
+          <button class="btn ghost" id="hintBtn" data-i18n="game.hint">💡 Hint</button>
+          <button class="btn ghost" id="newBtn" data-i18n="game.play">↻ New Grid</button>
         </div>
       </div>
 
-      <div class="result" id="result" role="status">Pick a cell, then a number</div>
+      <div class="result" id="result" role="status" data-i18n="sudoku.pick_cell">Pick a cell, then a number</div>
 
       <!-- 我方条（仅 Duel）：进度 HUD（替代速度环） -->
       <div id="youHead" class="s9-you-head hidden">
         <div class="s9-hud">
-          <div class="hud-row"><span>You</span><b class="num" id="youFilled">0/0</b></div>
+          <div class="hud-row"><span data-i18n="mp.you">You</span><b class="num" id="youFilled">0/0</b></div>
           <div class="hud-row"><span>GridBot</span><b class="num" id="oppFilled">0/0</b></div>
-          <div class="hud-row"><span>Mistakes</span><span class="lives" id="lives"><i></i><i></i><i></i></span></div>
-          <div class="hud-row"><span>Time</span><b class="num" id="duelTime">0:00</b></div>
+          <div class="hud-row"><span data-i18n="common.error">Mistakes</span><span class="lives" id="lives"><i></i><i></i><i></i></span></div>
+          <div class="hud-row"><span data-i18n="game.timed">Time</span><b class="num" id="duelTime">0:00</b></div>
         </div>
       </div>
 
@@ -262,14 +262,14 @@
 <!-- ═══════════ 深靛页脚（三站矩阵，与首页/ lobby 同源） ═══════════ -->
 <footer class="pg-footer">
   <div class="wrap">
-    <div class="sf-title">Explore the Duel family</div>
+    <div class="sf-title" data-i18n="home.explore_family">Explore the Duel family</div>
     <div class="sf-matrix">
       <a class="sf-item" href="https://boardduel.com"><span class="pip" style="background:#2FC4C9"></span>BoardDuel · Chess &amp; Card Games</a>
       <a class="sf-item" href="https://mathduel.games"><span class="pip" style="background:#F59E0B"></span>MathDuel · Math Puzzle Games</a>
       <a class="sf-item" href="https://memoryduel.com"><span class="pip" style="background:#4F46E5"></span>MemoryDuel · Knowledge Battles</a>
     </div>
     <div class="sf-links">
-      <a href="/about/">About</a><a href="/contact/">Contact</a><a href="/privacy/">Privacy</a><a href="/terms/">Terms</a>
+      <a href="/about/" data-i18n="nav.about">About</a><a href="/contact/" data-i18n="nav.contact">Contact</a><a href="/privacy/" data-i18n="nav.privacy">Privacy</a><a href="/terms/" data-i18n="nav.terms">Terms</a>
     </div>
     <div class="sf-copy">© 2026 MathDuel · Pure static · Privacy-first · Free to play</div>
   </div>

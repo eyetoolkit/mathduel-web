@@ -190,7 +190,7 @@
     <svg viewBox="0 0 24 24" fill="none"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
   </button>
   <a class="logo" href="/">Math<b>Duel</b></a>
-  <a class="btn-login" href="/games/24-game/?mode=daily" style="flex:none;padding:8px 18px">Play now</a>
+  <a class="btn-login" href="/games/24-game/?mode=daily" style="flex:none;padding:8px 18px" data-i18n="common.play_now">Play now</a>
 </div>
 <div class="overlay" id="overlay"></div>
 
@@ -198,20 +198,20 @@
 <aside class="sidebar" id="sidebar">
   <div class="sb-top">
     <a class="logo" href="/">Math<b>Duel</b></a>
-    <button class="sb-collapse" id="collapse" title="Collapse navigation" aria-label="Collapse navigation">«</button>
+    <button class="sb-collapse" id="collapse" data-i18n-title="nav.collapse" data-i18n-aria-label="nav.collapse" title="Collapse navigation" aria-label="Collapse navigation">«</button>
   </div>
   <div class="sb-login">
-    <a class="btn-login" href="/games/24-game/?mode=daily"><span>Play now</span></a>
-    <button class="sb-theme" title="Toggle theme" aria-label="Toggle theme">
+    <a class="btn-login" href="/games/24-game/?mode=daily"><span data-i18n="common.play_now">Play now</span></a>
+    <button class="sb-theme" title="Toggle theme" data-i18n-title="nav.toggle_theme" data-i18n-aria-label="nav.toggle_theme" title="Toggle theme" aria-label="Toggle theme">
       <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M20 13A8 8 0 1 1 11 4a6.5 6.5 0 0 0 9 9z"/></svg>
     </button>
   </div>
   <nav class="sb-nav" aria-label="Site navigation">
-    <a class="nav-item" href="/"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg><label style="cursor:inherit">Home</label></a>
-    <span class="nav-item is-disabled" aria-disabled="true" style="opacity:.5;cursor:default" title="Coming soon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l2.5 2.5"/></svg><label style="cursor:inherit">Coin Shop 🪙</label></span>
-    <div class="nav-group">All games</div>
-    <a class="nav-item active" href="/games/24-game/lobby/"><svg class="mini" aria-hidden="true"><use href="#cv-24"/></svg><label style="cursor:inherit">24 Game</label></a><a class="nav-item" href="/games/sudoku-4x4/lobby/"><svg class="mini" aria-hidden="true"><use href="#cv-s4"/></svg><label style="cursor:inherit">Sudoku 4×4</label></a><a class="nav-item" href="/games/sudoku/lobby/"><svg class="mini" aria-hidden="true"><use href="#cv-sudoku"/></svg><label style="cursor:inherit">Sudoku 9×9</label></a><a class="nav-item" href="/games/sudoku-6x6/lobby/"><svg class="mini" aria-hidden="true"><use href="#cv-s6"/></svg><label style="cursor:inherit">Sudoku 6×6</label></a><a class="nav-item" href="/games/equation-pyramid/lobby/"><svg class="mini" aria-hidden="true"><use href="#cv-pyr"/></svg><label style="cursor:inherit">Equation Pyramid</label></a>    <div class="nav-group">Help</div>
-    <a class="nav-item" href="#howTitle"><svg viewBox="0 0 24 24"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19a2 2 0 0 1 2-2h13"/></svg><label style="cursor:inherit">How to play</label></a>
+    <a class="nav-item" href="/"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg><label style="cursor:inherit" data-i18n="nav.home">Home</label></a>
+    <span class="nav-item is-disabled" aria-disabled="true" style="opacity:.5;cursor:default" title="Coming soon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l2.5 2.5"/></svg><label style="cursor:inherit" data-i18n="sidebar.coin_shop">Coin Shop 🪙</label></span>
+    <div class="nav-group" data-i18n="home.all_games">All games</div>
+    <a class="nav-item active" href="/games/24-game/lobby/"><svg class="mini" aria-hidden="true"><use href="#cv-24"/></svg><label style="cursor:inherit">24 Game</label></a><a class="nav-item" href="/games/sudoku-4x4/lobby/"><svg class="mini" aria-hidden="true"><use href="#cv-s4"/></svg><label style="cursor:inherit">Sudoku 4×4</label></a><a class="nav-item" href="/games/sudoku/lobby/"><svg class="mini" aria-hidden="true"><use href="#cv-sudoku"/></svg><label style="cursor:inherit">Sudoku 9×9</label></a><a class="nav-item" href="/games/sudoku-6x6/lobby/"><svg class="mini" aria-hidden="true"><use href="#cv-s6"/></svg><label style="cursor:inherit">Sudoku 6×6</label></a><a class="nav-item" href="/games/equation-pyramid/lobby/"><svg class="mini" aria-hidden="true"><use href="#cv-pyr"/></svg><label style="cursor:inherit">Equation Pyramid</label></a>    <div class="nav-group" data-i18n="sidebar.help_group">Help</div>
+    <a class="nav-item" href="#howTitle"><svg viewBox="0 0 24 24"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19a2 2 0 0 1 2-2h13"/></svg><label style="cursor:inherit" data-i18n="nav.how_to_play">How to play</label></a>
   </nav>
   <div class="nav-foot">
     <span class="sb-copy">© 2026</span>
@@ -238,32 +238,32 @@
   <!-- 模式选择 + 右栏信息 -->
   <div class="wrap lobby-grid">
     <section aria-labelledby="modesTitle">
-      <h2 class="sec-h" id="modesTitle">Choose your mode<small>Tap a card to jump straight in.</small></h2>
+      <h2 class="sec-h" id="modesTitle"><span data-i18n="home.section_games_title">Choose your mode</span><small>Tap a card to jump straight in.</small></h2>
       <div class="modes" id="modeGrid">
         <a class="mode daily" href="/games/24-game/?mode=daily" data-mode="daily">
           <div class="mi" aria-hidden="true"><svg class="mi-ico" viewBox="0 0 24 24"><use href="#mi-daily"/></svg></div>
-          <div class="mt">Daily Challenge <span class="tag-done" id="dailyTag" hidden>Done</span></div>
+          <div class="mt" data-i18n="game24.tab_daily">Daily Challenge <span class="tag-done" id="dailyTag" hidden data-i18n="daily.done_today">Done</span></div>
         </a>
         <a class="mode" href="/games/24-game/?mode=battle&amp;size=2" data-mode="friend">
           <div class="mi" aria-hidden="true"><svg class="mi-ico" viewBox="0 0 24 24"><use href="#mi-friend"/></svg></div>
-          <div class="mt">Friend 1v1</div>
+          <div class="mt" data-i18n="game.duel">Friend 1v1</div>
         </a>
         <a class="mode" href="/games/24-game/?mode=battle&amp;size=99" data-mode="race">
           <div class="mi" aria-hidden="true"><svg class="mi-ico" viewBox="0 0 24 24"><use href="#mi-race"/></svg></div>
-          <div class="mt">Race · 99</div>
+          <div class="mt" data-i18n="game.race">Race · 99</div>
         </a>
         <a class="mode" href="/games/24-game/?mode=practice" data-mode="solo">
           <div class="mi" aria-hidden="true"><svg class="mi-ico" viewBox="0 0 24 24"><use href="#mi-solo"/></svg></div>
-          <div class="mt">Solo Practice</div>
+          <div class="mt" data-i18n="game.practice">Solo Practice</div>
         </a>
         <a class="mode" href="/games/24-game/?mode=timed" data-mode="timed">
           <div class="mi" aria-hidden="true"><svg class="mi-ico" viewBox="0 0 24 24"><use href="#mi-timed"/></svg></div>
-          <div class="mt">Timed Practice</div>
+          <div class="mt" data-i18n="game.timed">Timed Practice</div>
         </a>
         <a class="mode" href="/games/24-game/?mode=random" data-mode="random">
           <div class="mi" aria-hidden="true"><svg class="mi-ico" viewBox="0 0 24 24"><use href="#mi-random"/></svg></div>
-          <div class="mt">Random Match</div>
-          <span class="soon-pill">SOON</span>
+          <div class="mt" data-i18n="mp.random">Random Match</div>
+          <span class="soon-pill" data-i18n="home.coming_soon">SOON</span>
           </a>
         </div>
     </section>
@@ -271,24 +271,24 @@
     <!-- 右栏 -->
     <aside class="side">
       <section class="panel" aria-labelledby="boardTitle">
-        <h3 id="boardTitle">Global Daily Board</h3>
+        <h3 id="boardTitle" data-i18n="home_daily.title">Global Daily Board</h3>
         <p class="pnote">Top solvers on today's 5-card challenge.</p>
         <div id="boardRows" aria-live="polite">
           <div class="arb-empty">Loading today's board…</div>
         </div>
-        <a class="btn btn-amber block" href="/games/24-game/?mode=daily" id="boardPlay" style="margin-top:12px">Play today's challenge</a>
+        <a class="btn btn-amber block" href="/games/24-game/?mode=daily" id="boardPlay" style="margin-top:12px" data-i18n="daily.play_now">Play today's challenge</a>
       </section>
 
       <section class="panel" aria-labelledby="roomTitle">
-        <h3 id="roomTitle">Start a friend room</h3>
+        <h3 id="roomTitle" data-i18n="game.duel">Start a friend room</h3>
         <p class="pnote">Private room, 4–6 character code. Your code and QR appear once the room is open.</p>
         <label class="field" for="roomInput">
-          <span>Have a code? Join it</span>
+          <span data-i18n="mp.join_code">Have a code? Join it</span>
           <input id="roomInput" type="text" maxlength="6" placeholder="K7Q2R" autocomplete="off" spellcheck="false">
         </label>
         <div class="btn-row">
-          <a class="btn btn-amber" href="/games/24-game/?mode=battle&amp;size=2" id="createRoom">Create a room</a>
-          <button class="btn btn-ghost" id="joinRoom" type="button">Join</button>
+          <a class="btn btn-amber" href="/games/24-game/?mode=battle&amp;size=2" id="createRoom" data-i18n="mp.create_room">Create a room</a>
+          <button class="btn btn-ghost" id="joinRoom" type="button" data-i18n="mp.join">Join</button>
         </div>
         <p class="err" id="roomErr" role="alert"></p>
       </section>
@@ -297,7 +297,7 @@
 
   <!-- How to play -->
   <section class="how wrap" aria-labelledby="howTitle">
-    <h2 class="sec-h" id="howTitle">How to play<small>Deal → combine → solve. That's the whole game.</small></h2>
+    <h2 class="sec-h" id="howTitle" data-i18n="nav.how_to_play">How to play<small>Deal → combine → solve. That's the whole game.</small></h2>
     <div class="how-grid">
       <div class="step"><span class="sn">1</span><b>Get four cards</b><span>Numbers 1–13, a fresh deal every round — online and for your opponent too.</span></div>
       <div class="step"><span class="sn">2</span><b>Combine to 24</b><span>Use + − × ÷ and every card exactly once. Parentheses are free.</span></div>
@@ -309,14 +309,14 @@
   <!-- 天梯 -->
   <section class="ladder wrap" aria-label="Rank ladder">
     <div class="ladder-panel">
-      <div class="ladder-title">24-point Elo ladder<small>Wins here feed the global ladder · weekly reset</small></div>
+      <div class="ladder-title" data-i18n="home_ladder.title">24-point Elo ladder<small>Wins here feed the global ladder · weekly reset</small></div>
       <div class="tiers">
-        <div class="tier"><i style="height:16px"></i><span>Bronze</span></div>
-        <div class="tier"><i style="height:22px"></i><span>Silver</span></div>
-        <div class="tier"><i style="height:28px"></i><span>Gold</span></div>
-        <div class="tier"><i style="height:34px"></i><span>Platinum</span></div>
-        <div class="tier"><i style="height:40px"></i><span>Diamond</span></div>
-        <div class="tier master"><i style="height:48px"></i><span>Master</span></div>
+        <div class="tier"><i style="height:16px"></i><span data-i18n="home_ladder.bronze">Bronze</span></div>
+        <div class="tier"><i style="height:22px"></i><span data-i18n="home_ladder.silver">Silver</span></div>
+        <div class="tier"><i style="height:28px"></i><span data-i18n="home_ladder.gold">Gold</span></div>
+        <div class="tier"><i style="height:34px"></i><span data-i18n="home_ladder.platinum">Platinum</span></div>
+        <div class="tier"><i style="height:40px"></i><span data-i18n="home_ladder.diamond">Diamond</span></div>
+        <div class="tier master"><i style="height:48px"></i><span data-i18n="home_ladder.master">Master</span></div>
       </div>
     </div>
   </section>
@@ -325,14 +325,14 @@
 <!-- ═══════════ 页脚（与首页同一套） ═══════════ -->
 <footer class="site-footer main">
   <div class="wrap">
-    <div class="sf-title">Explore the Duel family</div>
+    <div class="sf-title" data-i18n="home.explore_family">Explore the Duel family</div>
     <div class="sf-matrix">
       <a class="sf-item" href="https://boardduel.com"><span class="pip" style="background:#2FC4C9"></span>BoardDuel · Chess &amp; Card Games</a>
       <a class="sf-item" href="https://mathduel.games"><span class="pip" style="background:#F59E0B"></span>MathDuel · Math Puzzle Games</a>
       <a class="sf-item" href="https://memoryduel.com"><span class="pip" style="background:#4F46E5"></span>MemoryDuel · Knowledge Battles</a>
     </div>
     <div class="sf-links">
-      <a href="/about/">About</a><a href="/contact/">Contact</a><a href="/privacy/">Privacy</a><a href="/terms/">Terms</a><a href="/">All games</a>
+      <a href="/about/" data-i18n="nav.about">About</a><a href="/contact/" data-i18n="nav.contact">Contact</a><a href="/privacy/" data-i18n="nav.privacy">Privacy</a><a href="/terms/" data-i18n="nav.terms">Terms</a><a href="/" data-i18n="home.all_games">All games</a>
     </div>
     <div class="sf-copy">© 2026 MathDuel · Pure static · Privacy-first · Free to play</div>
   </div>
