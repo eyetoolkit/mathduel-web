@@ -16,6 +16,7 @@
  */
 
 import { isClassroom, ensureStudentCode, reportRound } from './teacher-track';
+import { t } from '../../i18n/runtime';
 
 const PROD_HOST = 'mathduel.games';
 
@@ -296,30 +297,30 @@ export class MpShell {
         <div class="mp-top">
           <span class="mp-logo">Math<b>Duel</b> · ${this.adapter.label}</span>
           <span class="mp-code" id="mpCode">—</span>
-          <button class="mp-leave" id="mpLeave">Leave</button>
+          <button class="mp-leave" id="mpLeave">${t('mp.leave')}</button>
         </div>
-        <div class="mp-specbar" id="mpSpec">👀 Spectating</div>
+        <div class="mp-specbar" id="mpSpec">${t('mp.spectating')}</div>
         <div class="mp-grid">
           <div class="mp-card">
             <div class="mp-head">
               <svg class="mp-ring" viewBox="0 0 48 48"><circle class="bg" cx="24" cy="24" r="20"></circle><circle class="fg" id="mpRing" cx="24" cy="24" r="20"></circle></svg>
               <div>
-                <div class="mp-banner" id="mpBanner"><b>Round 1</b> · get ready</div>
-                <div class="mp-status" id="mpStatus" data-live="0">Waiting to start…</div>
+                <div class="mp-banner" id="mpBanner"><b>${t('mp.round_title', { n: 1 })}</b> · ${t('mp.round_get_ready')}</div>
+                <div class="mp-status" id="mpStatus" data-live="0">${t('mp.waiting_to_start')}</div>
               </div>
             </div>
             <div class="mp-board" id="mpBoard"></div>
           </div>
           <div>
             <div class="mp-card">
-              <div class="mp-race-hd"><span>🏆 Live Standings</span><span class="mp-race-count"><b id="mpDone">0</b>/<b id="mpTotal">0</b> solved</span></div>
-              <div class="mp-list" id="mpList"><div class="mp-empty">No submissions yet — be first!</div></div>
+              <div class="mp-race-hd"><span>🏆 ${t('mp.live_standings')}</span><span class="mp-race-count"><b id="mpDone">0</b>/<b id="mpTotal">0</b> ${t('mp.solved')}</span></div>
+              <div class="mp-list" id="mpList"><div class="mp-empty">${t('mp.no_submissions')}</div></div>
             </div>
             <div class="mp-chat" id="mpChat">
-              <div class="hd"><b>💬 Room chat</b><span>only this room</span></div>
+              <div class="hd"><b>💬 ${t('mp.room_chat')}</b><span>${t('mp.watching_only')}</span></div>
               <div class="log" id="mpChatLog"></div>
               <div class="rail">${['😂','🔥','😡','👍','💡','🎯'].map((e)=>`<button type="button" data-emoji="${e}">${e}</button>`).join('')}</div>
-              <div class="inrow"><input type="text" maxlength="200" placeholder="Say something…" id="mpChatInput"/><button type="button" id="mpChatSend">Send</button></div>
+              <div class="inrow"><input type="text" maxlength="200" placeholder="${t('mp.say_something')}" id="mpChatInput"/><button type="button" id="mpChatSend">${t('mp.send')}</button></div>
             </div>
           </div>
         </div>
@@ -347,10 +348,10 @@ export class MpShell {
     el.className = 'mp-lobby';
     el.innerHTML = `
       <div class="box">
-        <button class="mp-x" id="mpLobbyClose" type="button" aria-label="Close">✕</button>
-        <h2>🏆 ${this.adapter.label} — Competition</h2>
-        <div class="hint">Create a room, share the code, race friends or the world.</div>
-        <div class="mp-field"><label>Your name</label><input class="mp-input" id="mpName" maxlength="18" placeholder="Player"/></div>
+        <button class="mp-x" id="mpLobbyClose" type="button" aria-label="${t('common.close')}">✕</button>
+        <h2>🏆 ${t('mp.title', { label: this.adapter.label })}</h2>
+        <div class="hint">${t('mp.sub')}</div>
+        <div class="mp-field"><label>${t('mp.name_label')}</label><input class="mp-input" id="mpName" maxlength="18" placeholder="${t('mp.name_placeholder')}"/></div>
         <div class="mp-sizes" id="mpSizes">
           <div class="mp-size" data-max="2">2</div>
           <div class="mp-size" data-max="10">10</div>
@@ -360,25 +361,25 @@ export class MpShell {
         <div class="mp-err" id="mpLobbyErr"></div>
         <div class="mp-form" id="mpForm">
           <div class="mp-actions">
-            <button class="mp-btn primary" id="mpCreate">🚀 Create Room</button>
-            <button class="mp-btn" id="mpJoinToggle">Join with code</button>
+            <button class="mp-btn primary" id="mpCreate">${t('mp.create_room')}</button>
+            <button class="mp-btn" id="mpJoinToggle">${t('mp.join_code')}</button>
           </div>
           <div class="mp-field" id="mpJoinRow" style="display:none;margin-top:12px">
-            <input class="mp-input" id="mpJoinCode" maxlength="6" placeholder="ROOM CODE"/>
-            <button class="mp-btn primary" id="mpJoin">Join</button>
+            <input class="mp-input" id="mpJoinCode" maxlength="6" placeholder="${t('mp.room_code')}"/>
+            <button class="mp-btn primary" id="mpJoin">${t('mp.join')}</button>
           </div>
-          <button class="mp-btn" id="mpRandom" style="width:100%;margin-top:12px">🎲 Find Random Opponent</button>
+          <button class="mp-btn" id="mpRandom" style="width:100%;margin-top:12px">${t('mp.random')}</button>
         </div>
         <div class="mp-room" id="mpRoom">
-          <div class="hint">Room ready — share this code:</div>
+          <div class="hint">${t('mp.room_ready')}</div>
           <div class="code-big" id="mpRoomCode">—</div>
           <canvas class="mp-qr" id="mpQr" width="130" height="130"></canvas>
           <div class="mp-pwrap">
-            <button class="mp-btn ghost" id="mpShare">🔗 Copy invite</button>
-            <button class="mp-btn ghost" id="mpCopy">⧉ Copy code</button>
+            <button class="mp-btn ghost" id="mpShare">${t('mp.copy_invite')}</button>
+            <button class="mp-btn ghost" id="mpCopy">${t('mp.copy_code')}</button>
           </div>
           <div class="mp-players" id="mpPlayers"></div>
-          <button class="mp-btn primary" id="mpStart" disabled>🚀 Start (2+ players)</button>
+          <button class="mp-btn primary" id="mpStart" disabled>${t('mp.start_competition')}</button>
         </div>
       </div>`;
     const sizes = el.querySelector('#mpSizes')!;
@@ -391,7 +392,7 @@ export class MpShell {
     });
     el.querySelector('#mpCreate')!.addEventListener('click', () => {
       const name = (el.querySelector('#mpName') as HTMLInputElement).value.trim();
-      if (!name) { this.lobbyErr('Enter a name'); return; }
+      if (!name) { this.lobbyErr(t('mp.enter_name')); return; }
       this.myName = name;
       this.lobbyErr('');
       this.createRoom(name);
@@ -403,8 +404,8 @@ export class MpShell {
     el.querySelector('#mpJoin')!.addEventListener('click', () => {
       const name = (el.querySelector('#mpName') as HTMLInputElement).value.trim();
       const code = (el.querySelector('#mpJoinCode') as HTMLInputElement).value.trim().toUpperCase();
-      if (!name) { this.lobbyErr('Enter a name'); return; }
-      if (!/^[A-Z0-9]{4,6}$/.test(code)) { this.lobbyErr('Invalid code (4–6 chars)'); return; }
+      if (!name) { this.lobbyErr(t('mp.enter_name')); return; }
+      if (!/^[A-Z0-9]{4,6}$/.test(code)) { this.lobbyErr(t('mp.room_code_invalid')); return; }
       this.myName = name;
       this.lobbyErr('');
       this.joinRoom(code, name);
@@ -479,14 +480,14 @@ export class MpShell {
   private matchPoll: number | null = null;
 
   async startRandomMatch(): Promise<void> {
-    if (this.demo) { this.lobbyErr('Random match needs the live site'); return; }
+    if (this.demo) { this.lobbyErr(t('mp.waiting_for_server')); return; }
     const name = (this.lobbyEl.querySelector('#mpName') as HTMLInputElement).value.trim();
-    if (!name) { this.lobbyErr('Enter a name'); return; }
+    if (!name) { this.lobbyErr(t('mp.enter_name')); return; }
     this.myName = name;
     localStorage.setItem('mp_name', name);
     this.lobbyErr('');
     const btn = this.lobbyEl.querySelector('#mpRandom') as HTMLButtonElement | null;
-    if (btn) { btn.disabled = true; btn.textContent = '🎲 Looking for an opponent…'; }
+    if (btn) { btn.disabled = true; btn.textContent = t('mp.random_looking'); }
     try {
       const r = await fetch('/api/match/join', {
         method: 'POST',
@@ -502,13 +503,13 @@ export class MpShell {
       }
       if (d && d.status === 'waiting' && d.matchId) {
         this.matchId = d.matchId;
-        this.lobbyErr('🎲 Searching — this stays open for 30s…');
+        this.lobbyErr(t('mp.searching_30s'));
         this.pollRandomMatch();
         return;
       }
-      this.lobbyErr('Match unavailable, try Create Room');
+      this.lobbyErr(t('mp.random_match_unavailable'));
     } catch {
-      this.lobbyErr('Connection failed, please retry');
+      this.lobbyErr(t('mp.connection_failed'));
     }
     this.resetRandomBtn();
   }
@@ -530,7 +531,7 @@ export class MpShell {
       } catch { /* 网络抖动继续轮询 */ }
       if (Date.now() - startedAt > 30000) {
         this.stopRandomMatch(true);
-        this.lobbyErr('No opponent right now — try Create Room');
+        this.lobbyErr(t('mp.random_match_unavailable'));
         this.resetRandomBtn();
       }
     }, 2500);
@@ -547,7 +548,7 @@ export class MpShell {
 
   private resetRandomBtn(): void {
     const btn = this.lobbyEl.querySelector('#mpRandom') as HTMLButtonElement | null;
-    if (btn) { btn.disabled = false; btn.textContent = '🎲 Find Random Opponent'; }
+    if (btn) { btn.disabled = false; btn.textContent = t('mp.random'); }
   }
 
   /* ===================== 建房 / 加入 ===================== */
@@ -568,15 +569,15 @@ export class MpShell {
       body: JSON.stringify(body),
     })
       .then((r) => {
-        if (!r.ok) { this.lobbyErr(`Room failed (HTTP ${r.status})`); throw new Error('http_' + r.status); }
+        if (!r.ok) { this.lobbyErr(t('mp.room_failed')); throw new Error('http_' + r.status); }
         return r.json();
       })
       .then((d) => {
-        if (!d || !d.code) { this.lobbyErr('Room failed (no code)'); return; }
+        if (!d || !d.code) { this.lobbyErr(t('mp.room_failed')); return; }
         this.isHost = true;
         this.connectWS(d.code);
       })
-      .catch((e) => { if (String(e?.message || '').indexOf('http_') !== 0) this.lobbyErr('Connection failed, please retry'); });
+      .catch((e) => { if (String(e?.message || '').indexOf('http_') !== 0) this.lobbyErr(t('mp.connection_failed')); });
   }
 
   joinRoom(code: string, name: string): void {
@@ -589,7 +590,7 @@ export class MpShell {
     if (code) this.room = code;
     const url = `wss://${PROD_HOST}/ws?code=${encodeURIComponent(this.room)}&name=${encodeURIComponent(this.myName)}`;
     try { this.ws = new WebSocket(url); }
-    catch { this.lobbyErr('Cannot reach server'); return; }
+    catch { this.lobbyErr(t('mp.connection_failed')); return; }
     this.ws.onopen = () => {
       this.onRoomReady(this.room);
       this.send({ type: 'get_info' });
@@ -703,7 +704,7 @@ export class MpShell {
         this.updateTimer(d.timeLeft);
         break;
       case 'error':
-        this.lobbyErr(d.msg || 'Error');
+        this.lobbyErr(d.msg || t('common.error'));
         break;
       default:
         // 回合/计分类消息交给 adapter
@@ -826,7 +827,7 @@ export class MpShell {
     const list = this.root.querySelector('#mpList'); if (!list) return;
     const rows = (this.cbRound ? [] : []);
     void rows;
-    if (!this.doneList.length) { list.innerHTML = '<div class="mp-empty">No submissions yet — be first!</div>'; return; }
+    if (!this.doneList.length) { list.innerHTML = `<div class="mp-empty">${t('mp.no_submissions')}</div>`; return; }
     list.innerHTML = this.doneList.slice(0, 10).map((r, i) => {
       const cls = (i === 0 ? 'r1' : '') + (r.name === this.myName ? ' me' : '');
       return `<div class="mp-row ${cls}"><span class="mp-rank">${i + 1}</span><span class="mp-av">🙂</span><span class="mp-name">${escapeHtml(r.name || '')}</span><span class="mp-time">${r.time != null ? fmtTime(r.time) : '✓'}</span></div>`;
@@ -843,14 +844,14 @@ export class MpShell {
       ring.setAttribute('stroke-dashoffset', String(C * (1 - frac)));
     }
     const st = this.root.querySelector('#mpStatus');
-    if (st) { st.textContent = this.spectator ? '👀 Spectating this round' : `Round timer ${secs}s`; st.setAttribute('data-live', '1'); }
+    if (st) { st.textContent = this.spectator ? t('mp.spec_round') : t('mp.round_timer', { s: secs }); st.setAttribute('data-live', '1'); }
   }
 
   renderSpecBar(): void {
     const el = this.root.querySelector('#mpSpec');
     if (!el) return;
     el.classList.toggle('show', this.spectator);
-    el.innerHTML = this.spectator ? `👀 <b>Spectating</b> — read-only view${this.spectatorCount > 1 ? ` · ${this.spectatorCount} watchers` : ''}` : '';
+    el.innerHTML = this.spectator ? `${t('mp.spectating_readonly')}${this.spectatorCount > 1 ? ` · ${t('mp.spectating_watchers', { n: this.spectatorCount })}` : ''}` : '';
   }
 
   /* ===================== 房间视图 ===================== */
@@ -870,12 +871,12 @@ export class MpShell {
     const names = Object.keys(this.players);
     list.innerHTML = names.map((name) => {
       const me = name === this.myName;
-      return `<div class="mp-rp${me ? ' me' : ''}"><span class="mp-av">🙂</span><span>${escapeHtml(name)}</span>${this.isHost && me ? '<span class="host">You · Host</span>' : ''}</div>`;
+      return `<div class="mp-rp${me ? ' me' : ''}"><span class="mp-av">🙂</span><span>${escapeHtml(name)}</span>${this.isHost && me ? `<span class="host">${t('mp.you')} · ${t('mp.host')}</span>` : ''}</div>`;
     }).join('');
     const sb = this.lobbyEl.querySelector('#mpStart') as HTMLButtonElement;
     const n = names.length;
     sb.disabled = !(this.isHost && n >= 2);
-    sb.textContent = n < 2 ? '🚀 Start (2+ players)' : '🚀 Start Competition';
+    sb.textContent = n < 2 ? t('mp.start_competition') : t('mp.start_competition_ready');
   }
 
   private renderQR(): void {
@@ -913,10 +914,10 @@ export class MpShell {
 
   private copyInvite(): void {
     const url = this.inviteUrl();
-    try { navigator.clipboard.writeText(url); this.toast('Invite link copied'); } catch { this.toast(url); }
+    try { navigator.clipboard.writeText(url); this.toast(t('mp.invite_copied')); } catch { this.toast(url); }
   }
   private copyCode(): void {
-    try { navigator.clipboard.writeText(this.room); this.toast('Room code copied: ' + this.room); } catch { this.toast(this.room); }
+    try { navigator.clipboard.writeText(this.room); this.toast(t('mp.room_code_copied', { code: this.room })); } catch { this.toast(this.room); }
   }
 
   toast(m: string): void { this.cb.onError?.('ℹ️ ' + m); }
@@ -935,10 +936,10 @@ export class MpShell {
   }
 
   sendChat(text: string): void {
-    const t = String(text || '').slice(0, 200).trim();
-    if (!t) return;
-    if (this.demo) { this.pushChat({ name: this.myName || 'You', text: t, ts: Date.now(), self: true }); return; }
-    this.send({ type: 'chat', text: t });
+    const msg = String(text || '').slice(0, 200).trim();
+    if (!msg) return;
+    if (this.demo) { this.pushChat({ name: this.myName || t('mp.you'), text: msg, ts: Date.now(), self: true }); return; }
+    this.send({ type: 'chat', text: msg });
   }
 
   get canChat(): boolean { return !!this.room; }
@@ -950,7 +951,7 @@ export class MpShell {
     if (log) {
       const b = document.createElement('div');
       b.className = 'mp-bub ' + (m.self ? 'me' : 'opp');
-      b.innerHTML = `<span class="who">${escapeHtml(m.self ? 'You' : m.name)}</span>${escapeHtml(m.text)}`;
+      b.innerHTML = `<span class="who">${escapeHtml(m.self ? t('mp.you') : m.name)}</span>${escapeHtml(m.text)}`;
       log.appendChild(b);
       log.scrollTop = log.scrollHeight;
     }
@@ -1070,13 +1071,13 @@ export class MpShell {
   /* ===================== 结算弹窗 ===================== */
   private showRoundResult(d: any): void {
     const rk: RaceEntry[] = d.ranking || [];
-    let html = `<h2 style="font-size:20px">🏁 Round ${d.round || this.round} Result</h2>`;
+    let html = `<h2 style="font-size:20px">${t('mp.round_result_title', { n: d.round || this.round })}</h2>`;
     html += '<div class="mp-list" style="max-height:34vh">';
     for (let i = 0; i < rk.length && i < 8; i++) {
       const r = rk[i] || {};
       html += `<div class="mp-row${(i === 0 ? ' r1' : '') + (r.name === this.myName ? ' me' : '')}"><span class="mp-rank">${i + 1}</span><span class="mp-av">🙂</span><span class="mp-name">${escapeHtml(r.name || '')}</span><span class="mp-time">${r.ok ? fmtTime(r.time || 0) : '—'}</span></div>`;
     }
-    html += '</div><p class="sub">Next round starting…</p>';
+    html += `</div><p class="sub">${t('mp.next_round')}</p>`;
     const box = this.modalEl.querySelector('#mpModalBox') as HTMLElement;
     box.innerHTML = html;
     this.modalEl.classList.add('show');
@@ -1088,18 +1089,18 @@ export class MpShell {
     const rk: RaceEntry[] = d.ranking || [];
     let me: RaceEntry | null = null;
     for (const r of rk) if (r.name === this.myName) me = r;
-    const heading = me ? (me.rank === 1 ? '🏆 You won!' : `🏁 You ranked #${me.rank}`) : '🏁 Competition Over';
+    const heading = me ? (me.rank === 1 ? t('mp.you_won') : t('mp.you_ranked', { rank: me.rank })) : t('mp.competition_over');
     let html = `<h2 class="${me && me.rank === 1 ? '' : me ? 'draw-c' : 'lose-c'}">${heading}</h2>`;
-    html += `<p class="sub">${rk.length} players · cap ${this.displayCap}</p>`;
+    html += `<p class="sub">${t('mp.players_count', { n: rk.length, cap: this.displayCap })}</p>`;
     if (Array.isArray(d.elo) && d.elo.length) html += this.eloBlockHtml(d.elo);
     html += '<div class="mp-list">';
     for (let i = 0; i < rk.length; i++) {
       const r = rk[i] || {};
       const rank = r.rank || i + 1;
-      html += `<div class="mp-row${(i === 0 ? ' r1' : '') + (r.name === this.myName ? ' me' : '')}"><span class="mp-rank">#${rank}</span><span class="mp-av">🙂</span><span class="mp-name">${escapeHtml(r.name || '')}</span><span class="mp-time">${r.solved != null ? r.solved + ' solved' : ''}</span></div>`;
+      html += `<div class="mp-row${(i === 0 ? ' r1' : '') + (r.name === this.myName ? ' me' : '')}"><span class="mp-rank">#${rank}</span><span class="mp-av">🙂</span><span class="mp-name">${escapeHtml(r.name || '')}</span><span class="mp-time">${r.solved != null ? r.solved + ' ' + t('mp.solved') : ''}</span></div>`;
     }
     html += '</div>';
-    html += '<div class="row"><button class="mp-btn primary" id="mpAgain">🔁 Play Again</button><button class="mp-btn ghost" id="mpHome">Back</button></div>';
+    html += '<div class="row"><button class="mp-btn primary" id="mpAgain">' + t('mp.play_again') + '</button><button class="mp-btn ghost" id="mpHome">' + t('common.back') + '</button></div>';
     const box = this.modalEl.querySelector('#mpModalBox') as HTMLElement;
     box.innerHTML = html;
     this.modalEl.classList.add('show');
@@ -1119,7 +1120,7 @@ export class MpShell {
       const eloTxt = avg != null ? `<span class="v">${avg} → ${e.elo}</span>` : `<span class="v">${e.elo}</span>`;
       return `<div class="mp-elo-row${e.name === this.myName ? ' me' : ''}"><span class="mp-av">🙂</span><span>${escapeHtml(e.nickname || e.name)}</span>${eloTxt}<span class="d ${cls}">${dtxt}</span></div>`;
     }).join('');
-    return `<p class="sub" style="margin:12px 0 6px">⚔️ Elo — rated match</p><div class="mp-elo-grid">${rows}</div>`;
+    return `<p class="sub" style="margin:12px 0 6px">${t('mp.elo_rated')}</p><div class="mp-elo-grid">${rows}</div>`;
   }
 }
 
