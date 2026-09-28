@@ -12,7 +12,8 @@ import '../../styles/game-shell.css';
 import '../24-game/styles.css';
 import '../24-game/arena.css';
 import './s4.css';
-import { initI18n, mountHeader, toast } from '@tri-sites/design-system';
+import { mountHeader, toast } from '@tri-sites/design-system';
+import { initI18n } from '../../i18n/runtime';
 import {
   colOf,
   findConflicts,

@@ -12,7 +12,8 @@ import '../24-game/styles.css';
 import { markDailyDone, markGamePlayed } from '../cross-game';
 import './arena.css';
 import './social.css';
-import { initI18n, mountHeader, toast } from '@tri-sites/design-system';
+import { mountHeader, toast } from '@tri-sites/design-system';
+import { initI18n } from '../../i18n/runtime';
 import {
   countSolutions,
   dailyKeyStr,
