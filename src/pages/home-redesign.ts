@@ -13,6 +13,7 @@
 import type { GameDef } from './home';
 import { wireLobbyChrome } from './lobby-chrome';
 import { getTodaysDones, getDailyStreak, getBadges } from '../games/cross-game';
+import { t } from '../i18n/runtime';
 
 const SHOW_BETA = (import.meta.env.VITE_SHOW_BETA ?? '') === '1';
 
@@ -183,11 +184,11 @@ function sidebarHtml(): string {
   // 当前激活：Home（首页）
   const home = navItem(true, '/',
     '<svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg>',
-    'Home');
+    t('nav.home'));
   
   
   const gamesGroup = `
-    <div class="nav-group">All games · 5</div>
+    <div class="nav-group">${t('sidebar.all_games_group', { n: HOME_CARDS.length })}</div>
     ${miniNavItem(false, '/games/24-game/lobby/',        'cv-24',     '24 Game')}
     ${miniNavItem(false, '/games/sudoku-4x4/lobby/',     'cv-s4',     'Sudoku 4×4')}
     ${miniNavItem(false, '/games/sudoku/lobby/',         'cv-sudoku', 'Sudoku 9×9')}
@@ -198,22 +199,22 @@ function sidebarHtml(): string {
   // 与各游戏页/lobby 页的静态壳保持同一份导航：
   // Home → Coin Shop（未上线灰态）→ All games · 5 → Help
   const coinShop = `
-    <span class="nav-item is-disabled" aria-disabled="true" style="opacity:.5;cursor:default" title="Coming soon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M12 7v5l3 2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg><label style="cursor:inherit">Coin Shop<span class="pill-soon">soon</span></label></span>
+    <span class="nav-item is-disabled" aria-disabled="true" style="opacity:.5;cursor:default" title="${t('sidebar.coin_shop_coming_soon')}"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M12 7v5l3 2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg><label style="cursor:inherit">${t('sidebar.coin_shop')}<span class="pill-soon">${t('sidebar.coin_shop_soon')}</span></label></span>
   `;
 
   const helpGroup = `
-    <div class="nav-group">Help</div>
+    <div class="nav-group">${t('sidebar.help_group')}</div>
     ${navItem(false, '#how-to-play',
       '<svg viewBox="0 0 24 24"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19a2 2 0 0 1 2-2h13"/></svg>',
-      'How to play')}
+      t('nav.how_to_play'))}
   `;
 
   // 老师端入口：独立分组 + 常驻琥珀高亮，让它在靛蓝导航里自然跳出来
   const teacherGroup = `
-    <div class="nav-group">For teachers</div>
+    <div class="nav-group">${t('sidebar.teacher_group')}</div>
     <a class="nav-item teacher" href="/teacher/">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 9L12 5 2 9l10 4 10-4z"/><path d="M6 11v5c0 1 2.7 2.5 6 2.5S18 17 18 16v-5"/></svg>
-      <label style="cursor:inherit">Teacher dashboard</label>
+      <label style="cursor:inherit">${t('sidebar.teacher_dashboard')}</label>
     </a>
   `;
 
@@ -221,11 +222,11 @@ function sidebarHtml(): string {
   return `
     <div class="sb-top">
       <a class="logo" href="/">Math<b>Duel</b></a>
-      <button class="sb-collapse" id="sbCollapse" title="Collapse sidebar" aria-label="Collapse sidebar">«</button>
+      <button class="sb-collapse" id="sbCollapse" title="${t('sidebar.collapse')}" aria-label="${t('sidebar.collapse')}">«</button>
     </div>
     <div class="sb-login">
-      <span class="btn-login" style="opacity:.55;cursor:default" title="Accounts are not enabled yet"><span>EN</span></span>
-      <button class="sb-theme" title="Toggle theme" aria-label="Toggle theme">
+      <span class="btn-login" style="opacity:.55;cursor:default" title="${t('sidebar.accounts_not_enabled')}"><span>EN</span></span>
+      <button class="sb-theme" title="${t('sidebar.toggle_theme')}" aria-label="${t('sidebar.toggle_theme')}">
         <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M20 13A8 8 0 1 1 11 4a6.5 6.5 0 0 0 9 9z"/></svg>
       </button>
     </div>
@@ -233,7 +234,7 @@ function sidebarHtml(): string {
       ${home}
       <a class="nav-item daily" href="/daily/">
         <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c1 3-2 4-2 7a4 4 0 0 0 8 0c0-1.5-.6-2.6-1.4-3.6C16 8.6 15 9.6 15 9.6 15.4 6.5 13.6 4.3 12 3z"/><path d="M8.5 13.5A4.5 4.5 0 0 0 12 21a4.5 4.5 0 0 0 3.5-7.5"/></svg>
-        <label style="cursor:inherit">Daily challenge</label>
+        <label style="cursor:inherit">${t('sidebar.daily_challenge')}</label>
       </a>
       ${coinShop}
       ${gamesGroup}
@@ -241,7 +242,7 @@ function sidebarHtml(): string {
       ${teacherGroup}
     </nav>
     <div class="nav-foot">
-      <span class="lang-pill" title="More languages coming soon"><b>EN</b></span>
+      <span class="lang-pill" title="${t('sidebar.lang_coming_soon')}"><b>EN</b></span>
       <span class="sb-copy">© 2026</span>
     </div>
   `;
@@ -277,38 +278,38 @@ function duoHtml(): string {
   }).join('');
   const dailyMsg =
     doneCount === 0
-      ? 'Try today\'s Daily — <b>same puzzle worldwide</b>. Unlock rank stars by completing 5 in a row.'
+      ? t('home_daily.msg_zero')
       : doneCount < totalShown
-        ? '<b>' + doneCount + '</b> of ' + totalShown + ' done today — ' + (totalShown - doneCount) + ' left for rank stars.'
-        : '<b>All ' + totalShown + '</b> done today — streak extended to <b>' + streak + ' day' + (streak === 1 ? '' : 's') + '</b>!';
+        ? t('home_daily.msg_partial', { done: doneCount, total: totalShown, left: totalShown - doneCount })
+        : t('home_daily.msg_all', { total: totalShown, streak, s: streak === 1 ? '' : 's' });
   return `
     <div class="panel panel-daily">
       <div class="panel-head">
-        <span class="panel-title"><span class="cal">◷</span> Daily Challenge</span>
+        <span class="panel-title"><span class="cal">◷</span> ${t('home_daily.title')}</span>
         <span class="panel-meta">
           <span class="star">⭐ <b id="dDone">${doneCount}</b>/${totalShown}</span>
-          <span>🔥 ${streak}-day streak</span>
+          <span>🔥 ${t('home_daily.streak', { n: streak })}</span>
           ${badgeSummary ? '<span class="badges-mini">' + badgeSummary + '</span>' : ''}
         </span>
       </div>
       <div class="daily-tiles">${tiles}</div>
       <div class="progress"><i id="pbar" style="width:${pct}%"></i></div>
-      <p class="daily-msg">${dailyMsg} · <span class="cd" id="cd">--:--:--</span> until the global reset</p>
+      <p class="daily-msg">${dailyMsg} · <span class="cd" id="cd">--:--:--</span> ${t('home_daily.until_reset')}</p>
     </div>
 
     <div class="panel">
       <div class="panel-head">
-        <span class="panel-title">🏆 Weekly Tournament <small style="font-size:.78rem;color:var(--mute);font-weight:600">W38</small></span>
-        <span class="panel-meta"><span style="background:#EEF0FB;color:var(--indigo);border-radius:99px;padding:2px 10px;font-weight:700;font-size:.74rem">Live</span></span>
+        <span class="panel-title">🏆 ${t('home_weekly.title')} <small style="font-size:.78rem;color:var(--mute);font-weight:600">W38</small></span>
+        <span class="panel-meta"><span style="background:#EEF0FB;color:var(--indigo);border-radius:99px;padding:2px 10px;font-weight:700;font-size:.74rem">${t('home_weekly.live')}</span></span>
       </div>
-      <p class="daily-msg" style="margin:-6px 0 10px">Sep 21 → Sep 27 · 128 players · prizes 🥇50🪙 🥈25🪙 🥉10🪙</p>
+      <p class="daily-msg" style="margin:-6px 0 10px">${t('home_weekly.row', { start: 'Sep 21', end: 'Sep 27', players: 128 })}</p>
       <div class="weekly-rows">
         <div class="wrow"><span class="rk">1</span><span class="nm">Mira</span><span class="pt num">3120</span></div>
         <div class="wrow"><span class="rk">2</span><span class="nm">Ken</span><span class="pt num">2840</span></div>
         <div class="wrow"><span class="rk">3</span><span class="nm">Ade</span><span class="pt num">2610</span></div>
-        <div class="wrow me"><span class="rk">57</span><span class="nm">You</span><span class="pt num">890</span></div>
+        <div class="wrow me"><span class="rk">57</span><span class="nm">${t('home_weekly.row_you')}</span><span class="pt num">890</span></div>
       </div>
-      <button class="btn-exchange" type="button">🪙 Exchange coins for ad-free</button>
+      <button class="btn-exchange" type="button">${t('home_weekly.exchange')}</button>
     </div>
   `;
 }
@@ -317,14 +318,14 @@ function duoHtml(): string {
 function ladderHtml(): string {
   return `
     <div class="ladder-panel">
-      <div class="ladder-title">Six-tier ladder<small>One Elo across all three duel sites · weekly reset</small></div>
+      <div class="ladder-title">${t('home_ladder.title')}<small>${t('home_ladder.sub')}</small></div>
       <div class="tiers">
-        <div class="tier"><i style="height:16px"></i><span>Bronze</span></div>
-        <div class="tier"><i style="height:22px"></i><span>Silver</span></div>
-        <div class="tier"><i style="height:28px"></i><span>Gold</span></div>
-        <div class="tier"><i style="height:34px"></i><span>Platinum</span></div>
-        <div class="tier"><i style="height:40px"></i><span>Diamond</span></div>
-        <div class="tier master"><i style="height:48px"></i><span>Master</span></div>
+        <div class="tier"><i style="height:16px"></i><span>${t('home_ladder.bronze')}</span></div>
+        <div class="tier"><i style="height:22px"></i><span>${t('home_ladder.silver')}</span></div>
+        <div class="tier"><i style="height:28px"></i><span>${t('home_ladder.gold')}</span></div>
+        <div class="tier"><i style="height:34px"></i><span>${t('home_ladder.platinum')}</span></div>
+        <div class="tier"><i style="height:40px"></i><span>${t('home_ladder.diamond')}</span></div>
+        <div class="tier master"><i style="height:48px"></i><span>${t('home_ladder.master')}</span></div>
       </div>
     </div>
   `;
@@ -339,10 +340,10 @@ function featsHtml(): string {
     </div>`;
   return `
     <div class="feats-grid">
-      ${F('<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>', 'Daily hunt', 'One puzzle worldwide, timed reset — race the globe.')}
-      ${F('<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1.6 1.6"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1.6-1.6"/>', 'Friend duel', 'Copy an invite link — one click and you\'re in the room.')}
-      ${F('<path d="M13 2L5 13h6l-1 9 8-11h-6z"/>', 'Race · 99', 'Live standings, your row pinned on the page.')}
-      ${F('<circle cx="12" cy="12" r="8.5"/><path d="M14.5 9.3c-.5-.8-1.4-1.3-2.5-1.3-1.7 0-3 1-3 2.2 0 2.8 6 1.4 6 4.2 0 1.2-1.3 2.2-3 2.2-1.1 0-2-.5-2.5-1.3M12 6.5V8m0 8v1.5"/>', 'Smart hint', 'Stuck? Ask for a hint — it shows the next step, not the answer.')}
+      ${F('<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>', t('home_feats.daily_title'), t('home_feats.daily_desc'))}
+      ${F('<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1.6 1.6"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1.6-1.6"/>', t('home_feats.friend_title'), t('home_feats.friend_desc'))}
+      ${F('<path d="M13 2L5 13h6l-1 9 8-11h-6z"/>', t('home_feats.race_title'), t('home_feats.race_desc'))}
+      ${F('<circle cx="12" cy="12" r="8.5"/><path d="M14.5 9.3c-.5-.8-1.4-1.3-2.5-1.3-1.7 0-3 1-3 2.2 0 2.8 6 1.4 6 4.2 0 1.2-1.3 2.2-3 2.2-1.1 0-2-.5-2.5-1.3M12 6.5V8m0 8v1.5"/>', t('home_feats.hint_title'), t('home_feats.hint_desc'))}
     </div>
   `;
 }
@@ -351,16 +352,16 @@ function featsHtml(): string {
 function footerHtml(): string {
   return `
     <div class="wrap">
-      <div class="sf-title">Explore the Duel family</div>
+      <div class="sf-title">${t('home_footer.title')}</div>
       <div class="sf-matrix">
-        <a class="sf-item" href="https://boardduel.com"><span class="pip" style="background:#2FC4C9"></span>BoardDuel — Chess &amp; Card Games</a>
-        <a class="sf-item" href="https://mathduel.games"><span class="pip" style="background:#F59E0B"></span>MathDuel — Math Puzzle Games</a>
-        <a class="sf-item" href="https://memoryduel.com"><span class="pip" style="background:#4F46E5"></span>MemoryDuel — Knowledge Battles</a>
+        <a class="sf-item" href="https://boardduel.com"><span class="pip" style="background:#2FC4C9"></span>${t('home_footer.bd_title')}</a>
+        <a class="sf-item" href="https://mathduel.games"><span class="pip" style="background:#F59E0B"></span>${t('home_footer.md_title')}</a>
+        <a class="sf-item" href="https://memoryduel.com"><span class="pip" style="background:#4F46E5"></span>${t('home_footer.mem_title')}</a>
       </div>
       <div class="sf-links">
-        <a href="/daily/">Daily &amp; Ranks</a><a href="/me/">My Journey</a><a href="/worksheets/">Worksheets</a><a href="/teacher/">For teachers</a><a href="/about/">About</a><a href="/contact/">Contact</a><a href="/privacy/">Privacy</a><a href="/terms/">Terms</a><a href="/">All games</a>
+        <a href="/daily/">${t('home_footer.daily_ranks')}</a><a href="/me/">${t('home_footer.my_journey')}</a><a href="/worksheets/">${t('home_footer.worksheets')}</a><a href="/teacher/">${t('home_footer.for_teachers')}</a><a href="/about/">About</a><a href="/contact/">Contact</a><a href="/privacy/">Privacy</a><a href="/terms/">Terms</a><a href="/">All games</a>
       </div>
-      <div class="sf-copy">© 2026 MathDuel · Pure static · Privacy-first · Free to play</div>
+      <div class="sf-copy">${t('home_footer.tagline')}</div>
     </div>
   `;
 }
@@ -370,7 +371,7 @@ function topbarHtml(): string {
   // 顶栏不放 Log in 按钮：站点明确"No login, no identity"（见 Privacy / Contact 页），
   // 上线推广时该按钮是死链只会引诱访客点击成为噪音，故移除。
   return `
-    <button class="burger" id="burger" aria-label="Open navigation" aria-expanded="false">
+    <button class="burger" id="burger" aria-label="${t('sidebar.toggle_nav')}" aria-expanded="false">
       <svg viewBox="0 0 24 24" fill="none"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
     </button>
     <a class="logo" href="/">Math<b>Duel</b></a>
@@ -412,17 +413,17 @@ export function renderHomeV2(): void {
       <!-- Hero -->
       <section class="hero">
         <div class="wrap">
-          <h1>Make your <em>brain</em> smarter, 5 minutes a day</h1>
-          <p class="sub">Sudoku reasoning · 24-point speed math · equation climbs · code-breaking — six hand-picked math games,<br>same puzzle worldwide. Just tap and play.</p>
+          <h1>${t('home_hero.title')}</h1>
+          <p class="sub">${t('home_hero.subtitle')}</p>
           <div class="cta-row">
-            <a class="btn btn-amber" href="/games/24-game/?mode=daily">Start today's challenge</a>
-            <a class="btn btn-ghost" href="/games/24-game/lobby/">Challenge a friend</a>
+            <a class="btn btn-amber" href="/games/24-game/?mode=daily">${t('home_hero.cta_daily')}</a>
+            <a class="btn btn-ghost" href="/games/24-game/lobby/">${t('home_hero.cta_friend')}</a>
           </div>
           <div class="chips">
-            <span class="chip"><span class="dot"></span>No login</span>
-            <span class="chip"><span class="dot"></span>Free · no ads</span>
-            <span class="chip"><span class="dot"></span>Privacy-first</span>
-            <span class="chip"><span class="dot"></span>Same puzzle daily</span>
+            <span class="chip"><span class="dot"></span>${t('home_hero.chip_no_login')}</span>
+            <span class="chip"><span class="dot"></span>${t('home_hero.chip_no_ads')}</span>
+            <span class="chip"><span class="dot"></span>${t('home_hero.chip_privacy')}</span>
+            <span class="chip"><span class="dot"></span>${t('home_hero.chip_same_daily')}</span>
           </div>
         </div>
       </section>
@@ -436,18 +437,14 @@ export function renderHomeV2(): void {
       <!-- F-206 (c): Why MathDuel? brand story -->
       <section class="why wrap" aria-label="Why MathDuel">
         <div class="why-card">
-          <div class="why-eyebrow">WHY MATHDUEL</div>
-          <h2 class="why-title">Math is more fun when you can prove it.</h2>
-          <p class="why-lead">
-            Every game on this site ships with a <b>Daily Challenge</b> — the same puzzle for everyone, everywhere,
-            at the same Shanghai date. No login, no ads, no data mining.
-            Just open the page and you can play.
-          </p>
+          <div class="why-eyebrow">${t('home_why.eyebrow')}</div>
+          <h2 class="why-title">${t('home_why.title')}</h2>
+          <p class="why-lead">${t('home_why.lead')}</p>
           <div class="why-grid">
-            <div><b>🔒 Privacy-first</b><span>Anonymous UUID stored only in your browser. Clear cookies to reset.</span></div>
-            <div><b>🌏 Same puzzle worldwide</b><span>Shanghai-date seeded generation. Compare with anyone on Earth.</span></div>
-            <div><b>🪙 No streak rewards</b><span>The only prize is breaking your own yesterday. No notifications, no upsell.</span></div>
-            <div><b>⚡ Free forever</b><span>Static pages on Cloudflare, ~0 cost per visitor. No paywall, ever.</span></div>
+            <div><b>${t('home_why.privacy_title')}</b><span>${t('home_why.privacy_desc')}</span></div>
+            <div><b>${t('home_why.same_title')}</b><span>${t('home_why.same_desc')}</span></div>
+            <div><b>${t('home_why.no_streak_title')}</b><span>${t('home_why.no_streak_desc')}</span></div>
+            <div><b>${t('home_why.free_title')}</b><span>${t('home_why.free_desc')}</span></div>
           </div>
         </div>
       </section>

@@ -29,12 +29,10 @@
     "copied": "Kopiert",
     "not_applicable": "—"
   },
-
   "lang": {
     "switch": "Sprache",
     "coming_soon": "Weitere Sprachen folgen bald"
   },
-
   "nav": {
     "home": "Start",
     "games": "Spiele",
@@ -51,13 +49,11 @@
     "toggle_theme": "Theme umschalten",
     "toggle_nav": "Navigation öffnen"
   },
-
   "site": {
     "name": "MathDuel",
     "sub": "Vollständig statisch · Datenschutz zuerst · Kostenlos spielbar",
     "tagline": "Renne mit der Welt um mathematische Rätsel zu lösen"
   },
-
   "hero": {
     "eyebrow": "Globales Multiplayer-Mathematikspiel",
     "title": "Renne mit der Welt, um 24 zu bilden.",
@@ -68,7 +64,6 @@
     "stat_players": "Spieler online",
     "stat_room": "Pro Raum"
   },
-
   "home": {
     "section_games_title": "Wähle dein Spiel",
     "section_games_lead": "Fünf Denkspiele — Solo-Training, tägliche Herausforderung oder Live-Wettkampf.",
@@ -89,7 +84,6 @@
     "all_games": "Alle Spiele",
     "explore_family": "Entdecke die Duel-Familie"
   },
-
   "daily": {
     "badge": "Daily Challenge",
     "count": "Rätsel",
@@ -100,7 +94,6 @@
     "hunt_title": "Tägliche Jagd",
     "same_worldwide": "gleiches Rätsel weltweit"
   },
-
   "game": {
     "play": "Spielen",
     "practice": "Übung",
@@ -131,7 +124,6 @@
     "solved": "Gelöst",
     "combo": "Serie"
   },
-
   "game24": {
     "tab_practice": "Übung",
     "tab_daily": "Daily Challenge",
@@ -146,7 +138,6 @@
     "bronze_title": "Speedrun Bronze · ≤120s",
     "best_today": "Beste Einzelrunde des Tages"
   },
-
   "sudoku": {
     "tab_practice": "Übung",
     "tab_daily": "Daily Challenge",
@@ -173,7 +164,6 @@
     "fast_for_human": "Du bist schnell für einen Menschen…",
     "recalibrating": "Neukalibrierung…"
   },
-
   "pyr": {
     "tab_practice": "Übung",
     "tab_daily": "Daily Challenge",
@@ -184,7 +174,6 @@
     "win": "Du gewinnst 🏆",
     "lose": "Bot gewinnt 🤖"
   },
-
   "mp": {
     "title": "{label} — Wettkampf",
     "sub": "Erstelle einen Raum, teile den Code, renne mit Freunden oder der Welt.",
@@ -232,7 +221,6 @@
     "connection_failed": "Verbindung fehlgeschlagen, bitte erneut versuchen",
     "live": "Live"
   },
-
   "badge": {
     "first_daily": "First Daily",
     "first_daily_hint": "Absolviere deine erste Daily Challenge.",
@@ -245,7 +233,6 @@
     "site_explorer": "Site Explorer",
     "site_explorer_hint": "Probiere alle Spiele mindestens einmal aus."
   },
-
   "error": {
     "invalid_room_code": "Ungültiger Raumcode",
     "room_not_found": "Raum nicht gefunden",
@@ -273,7 +260,6 @@
     "cell_duplicate": "Duplikat in Zeile/Spalte/Block",
     "equation_invalid": "Gleichung ist ungültig"
   },
-
   "share": {
     "score_title": "🏆 Mein Punktestand",
     "copy_challenge": "📋 Herausforderung kopieren",
@@ -283,12 +269,96 @@
     "download_image": "⬇ Bild speichern",
     "share_wechat": "💬 Teilen"
   },
-
   "challenge": {
     "title": "Herausforderungskarte",
     "sub": "Das heutige Rätsel ist für alle gleich — schick es an einen Freund.",
     "same_puzzle": "Gleiches Rätsel weltweit — fordere einen Freund heraus",
     "footer_note": "Kein Konto erforderlich — Herausforderungslinks sind nur Rätsel-Seeds.",
     "i_solved_today": "Ich habe das heutige {name} Daily{dur}{score} auf MathDuel gelöst — kannst du mich schlagen?"
+  },
+  "sidebar": {
+    "logo": "MathDuel",
+    "collapse": "Seitenleiste zuklappen",
+    "toggle_theme": "Theme umschalten",
+    "toggle_nav": "Navigation öffnen",
+    "accounts_not_enabled": "Konten sind noch nicht aktiviert",
+    "all_games_group": "Alle Spiele · {n}",
+    "coin_shop": "Münzshop",
+    "coin_shop_soon": "bald",
+    "coin_shop_coming_soon": "Demnächst verfügbar",
+    "help_group": "Hilfe",
+    "teacher_group": "Für Lehrer",
+    "teacher_dashboard": "Lehrer-Dashboard",
+    "daily_challenge": "Tägliche Herausforderung",
+    "lang_coming_soon": "Weitere Sprachen folgen bald"
+  },
+  "home_hero": {
+    "title": "Mach dein <em>Gehirn</em> intelligenter, 5 Minuten am Tag",
+    "subtitle": "Sudoku-Logik · 24-Punkte-Schnellrechnen · Gleichungsklettern · Code-Knacken — sechs handverlesene Mathematikspiele.<br>Gleiches Rätsel weltweit. Einfach tippen und spielen.",
+    "cta_daily": "Die heutige Herausforderung starten",
+    "cta_friend": "Einen Freund herausfordern",
+    "chip_no_login": "Keine Anmeldung",
+    "chip_no_ads": "Kostenlos · keine Werbung",
+    "chip_privacy": "Datenschutz zuerst",
+    "chip_same_daily": "Gleiches Rätsel täglich"
+  },
+  "home_daily": {
+    "title": "Daily Challenge",
+    "streak": "{n} Tage Serie",
+    "msg_zero": "Probiere das heutige Daily — <b>gleiches Rätsel weltweit</b>. Schließe 5 hintereinander ab, um Rangsterne freizuschalten.",
+    "msg_partial": "<b>{done}</b> von {total} heute erledigt — {left} übrig für Rangsterne.",
+    "msg_all": "<b>Alle {total}</b> heute erledigt — Serie auf <b>{streak} day{s}</b> verlängert!",
+    "until_reset": "bis zum globalen Reset"
+  },
+  "home_weekly": {
+    "title": "Weekly Tournament",
+    "live": "Live",
+    "row": "{start} → {end} · {players} Spieler · Preise 🥇50🪙 🥈25🪙 🥉10🪙",
+    "row_you": "Du",
+    "exchange": "🪙 Münzen für werbefrei tauschen"
+  },
+  "home_ladder": {
+    "title": "Sechsstufige Leiter",
+    "sub": "Ein Elo über alle drei Duel-Seiten · wöchentlicher Reset",
+    "bronze": "Bronze",
+    "silver": "Silber",
+    "gold": "Gold",
+    "platinum": "Platin",
+    "diamond": "Diamant",
+    "master": "Meister"
+  },
+  "home_feats": {
+    "daily_title": "Tägliche Jagd",
+    "daily_desc": "Ein Rätsel weltweit, zeitgesteuerter Reset — renne mit dem Globus.",
+    "friend_title": "Freundesduell",
+    "friend_desc": "Einen Einladungslink kopieren — ein Klick und du bist im Raum.",
+    "race_title": "Race · 99",
+    "race_desc": "Live-Tabelle, deine Zeile bleibt auf der Seite angepinnt.",
+    "hint_title": "Smart-Hinweis",
+    "hint_desc": "Steckengeblieben? Frag nach einem Hinweis — er zeigt den nächsten Schritt, nicht die Antwort."
+  },
+  "home_why": {
+    "eyebrow": "WARUM MATHDUEL",
+    "title": "Mathematik macht mehr Spaß, wenn du es beweisen kannst.",
+    "lead": "Jedes Spiel auf dieser Seite kommt mit einer <b>Daily Challenge</b> — gleiches Rätsel für alle, überall, mit gleichem Shangai-Datum. Keine Anmeldung, keine Werbung, keine Datenauswertung. Seite öffnen und schon kannst du spielen.",
+    "privacy_title": "🔒 Datenschutz zuerst",
+    "privacy_desc": "Anonyme UUID nur in deinem Browser gespeichert. Cookies löschen zum Zurücksetzen.",
+    "same_title": "🌏 Gleiches Rätsel weltweit",
+    "same_desc": "Shangai-Datum-Seed-Generierung. Vergleiche mit jedem Menschen auf der Erde.",
+    "no_streak_title": "🪙 Keine Serienbelohnungen",
+    "no_streak_desc": "Der einzige Preis ist, dein gestern zu schlagen. Keine Benachrichtigungen, kein Upsell.",
+    "free_title": "⚡ Für immer kostenlos",
+    "free_desc": "Statische Seiten auf Cloudflare, ~0 Kosten pro Besucher. Kein Paywall, nie."
+  },
+  "home_footer": {
+    "title": "Entdecke die Duel-Familie",
+    "bd_title": "BoardDuel — Schach & Kartenspiele",
+    "md_title": "MathDuel — Mathematik-Rätselspiele",
+    "mem_title": "MemoryDuel — Wissensduelle",
+    "daily_ranks": "Täglich & Ränge",
+    "my_journey": "Mein Weg",
+    "worksheets": "Arbeitsblätter",
+    "for_teachers": "Für Lehrer",
+    "tagline": "MathDuel · Vollständig statisch · Datenschutz zuerst · Kostenlos spielbar"
   }
 }

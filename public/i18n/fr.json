@@ -29,12 +29,10 @@
     "copied": "Copié",
     "not_applicable": "—"
   },
-
   "lang": {
     "switch": "Langue",
     "coming_soon": "D'autres langues arrivent bientôt"
   },
-
   "nav": {
     "home": "Accueil",
     "games": "Jeux",
@@ -51,13 +49,11 @@
     "toggle_theme": "Changer de thème",
     "toggle_nav": "Ouvrir la navigation"
   },
-
   "site": {
     "name": "MathDuel",
     "sub": "Entièrement statique · Confidentialité d'abord · Gratuit",
     "tagline": "Course contre le monde pour résoudre des énigmes mathématiques"
   },
-
   "hero": {
     "eyebrow": "Mathématiques multijoueur global",
     "title": "Course contre le monde pour faire 24.",
@@ -68,7 +64,6 @@
     "stat_players": "Joueurs en ligne",
     "stat_room": "Par salle"
   },
-
   "home": {
     "section_games_title": "Choisissez votre jeu",
     "section_games_lead": "Cinq jeux de réflexion — pratique solo, défi quotidien ou compétition en direct.",
@@ -89,7 +84,6 @@
     "all_games": "Tous les jeux",
     "explore_family": "Explorez la famille Duel"
   },
-
   "daily": {
     "badge": "Daily Challenge",
     "count": "Énigmes",
@@ -100,7 +94,6 @@
     "hunt_title": "Chasse quotidienne",
     "same_worldwide": "même énigme dans le monde entier"
   },
-
   "game": {
     "play": "Jouer",
     "practice": "Pratique",
@@ -131,7 +124,6 @@
     "solved": "Résolu",
     "combo": "Série"
   },
-
   "game24": {
     "tab_practice": "Pratique",
     "tab_daily": "Daily Challenge",
@@ -146,7 +138,6 @@
     "bronze_title": "Speedrun Bronze · ≤120s",
     "best_today": "Meilleure manche unique du jour"
   },
-
   "sudoku": {
     "tab_practice": "Pratique",
     "tab_daily": "Daily Challenge",
@@ -173,7 +164,6 @@
     "fast_for_human": "Tu es rapide pour un humain…",
     "recalibrating": "Recalibrage…"
   },
-
   "pyr": {
     "tab_practice": "Pratique",
     "tab_daily": "Daily Challenge",
@@ -184,7 +174,6 @@
     "win": "Vous gagnez 🏆",
     "lose": "Bot gagne 🤖"
   },
-
   "mp": {
     "title": "{label} — Compétition",
     "sub": "Créez une salle, partagez le code, courez contre vos amis ou le monde.",
@@ -232,7 +221,6 @@
     "connection_failed": "Échec de la connexion, veuillez réessayer",
     "live": "En direct"
   },
-
   "badge": {
     "first_daily": "First Daily",
     "first_daily_hint": "Complétez votre premier Daily Challenge.",
@@ -245,7 +233,6 @@
     "site_explorer": "Site Explorer",
     "site_explorer_hint": "Essayez tous les jeux au moins une fois."
   },
-
   "error": {
     "invalid_room_code": "Code de salle invalide",
     "room_not_found": "Salle introuvable",
@@ -273,7 +260,6 @@
     "cell_duplicate": "Doublon dans ligne/colonne/boîte",
     "equation_invalid": "Équation invalide"
   },
-
   "share": {
     "score_title": "🏆 Mon score",
     "copy_challenge": "📋 Copier le défi",
@@ -283,12 +269,96 @@
     "download_image": "⬇ Enregistrer l'image",
     "share_wechat": "💬 Partager"
   },
-
   "challenge": {
     "title": "Carte de défi",
     "sub": "L'énigme d'aujourd'hui est la même pour tout le monde — envoyez-la à un ami.",
     "same_puzzle": "Même énigme dans le monde entier — défiez un ami",
     "footer_note": "Aucun compte requis — les liens de défi ne sont que des graines d'énigme.",
     "i_solved_today": "J'ai résolu le {name} Daily{dur}{score} d'aujourd'hui sur MathDuel — peux-tu me battre ?"
+  },
+  "sidebar": {
+    "logo": "MathDuel",
+    "collapse": "Réduire la barre latérale",
+    "toggle_theme": "Changer de thème",
+    "toggle_nav": "Ouvrir la navigation",
+    "accounts_not_enabled": "Les comptes ne sont pas encore activés",
+    "all_games_group": "Tous les jeux · {n}",
+    "coin_shop": "Boutique de pièces",
+    "coin_shop_soon": "bientôt",
+    "coin_shop_coming_soon": "Bientôt disponible",
+    "help_group": "Aide",
+    "teacher_group": "Pour les enseignants",
+    "teacher_dashboard": "Tableau de bord enseignant",
+    "daily_challenge": "Défi quotidien",
+    "lang_coming_soon": "D'autres langues arrivent bientôt"
+  },
+  "home_hero": {
+    "title": "Rendez votre <em>cerveau</em> plus intelligent, 5 minutes par jour",
+    "subtitle": "Raisonnement Sudoku · calcul rapide du 24 · escalade d'équations · décodage — six jeux mathématiques sélectionnés.<br>Même énigme dans le monde entier. Touchez et jouez.",
+    "cta_daily": "Commencez le défi du jour",
+    "cta_friend": "Défiez un ami",
+    "chip_no_login": "Sans inscription",
+    "chip_no_ads": "Gratuit · sans publicité",
+    "chip_privacy": "Confidentialité d'abord",
+    "chip_same_daily": "Même énigme chaque jour"
+  },
+  "home_daily": {
+    "title": "Daily Challenge",
+    "streak": "{n} jours d'affilée",
+    "msg_zero": "Essayez le Daily d'aujourd'hui — <b>même énigme dans le monde entier</b>. Complétez 5 d'affilée pour débloquer des étoiles de rang.",
+    "msg_partial": "<b>{done}</b> sur {total} fait aujourd'hui — {left} restants pour les étoiles de rang.",
+    "msg_all": "<b>Tous les {total}</b> faits aujourd'hui — série étendue à <b>{streak} day{s}</b> !",
+    "until_reset": "jusqu'au réinitialisation globale"
+  },
+  "home_weekly": {
+    "title": "Weekly Tournament",
+    "live": "En direct",
+    "row": "{start} → {end} · {players} joueurs · prix 🥇50🪙 🥈25🪙 🥉10🪙",
+    "row_you": "Vous",
+    "exchange": "🪙 Échangez des pièces contre sans publicité"
+  },
+  "home_ladder": {
+    "title": "Échelle à six niveaux",
+    "sub": "Un Elo pour les trois sites de duel · réinitialisation hebdomadaire",
+    "bronze": "Bronze",
+    "silver": "Argent",
+    "gold": "Or",
+    "platinum": "Platine",
+    "diamond": "Diamant",
+    "master": "Maître"
+  },
+  "home_feats": {
+    "daily_title": "Chasse quotidienne",
+    "daily_desc": "Une énigme dans le monde entier, réinitialisation minutée — courez contre la planète.",
+    "friend_title": "Duel entre amis",
+    "friend_desc": "Copiez un lien d'invitation — un clic et vous êtes dans la salle.",
+    "race_title": "Course · 99",
+    "race_desc": "Classement en direct, votre ligne épinglée sur la page.",
+    "hint_title": "Indice intelligent",
+    "hint_desc": "Bloqué ? Demandez un indice — il montre l'étape suivante, pas la réponse."
+  },
+  "home_why": {
+    "eyebrow": "POURQUOI MATHDUEL",
+    "title": "Les mathématiques sont plus amusantes quand vous pouvez le prouver.",
+    "lead": "Chaque jeu sur ce site est livré avec un <b>Daily Challenge</b> — la même énigme pour tout le monde, partout, à la même date de Shanghai. Sans inscription, sans publicité, sans collecte de données. Ouvrez la page et vous pouvez jouer.",
+    "privacy_title": "🔒 Confidentialité d'abord",
+    "privacy_desc": "UUID anonyme stocké uniquement dans votre navigateur. Effacez les cookies pour réinitialiser.",
+    "same_title": "🌏 Même énigme dans le monde entier",
+    "same_desc": "Génération de graines à la date de Shanghai. Comparez avec n'importe qui sur Terre.",
+    "no_streak_title": "🪙 Pas de récompenses de série",
+    "no_streak_desc": "Le seul prix est de battre votre hier. Pas de notifications, pas de vente incitative.",
+    "free_title": "⚡ Gratuit pour toujours",
+    "free_desc": "Pages statiques sur Cloudflare, ~0 coût par visiteur. Pas de paywall, jamais."
+  },
+  "home_footer": {
+    "title": "Explorez la famille Duel",
+    "bd_title": "BoardDuel — Échecs et Jeux de Cartes",
+    "md_title": "MathDuel — Jeux d'Énigmes Mathématiques",
+    "mem_title": "MemoryDuel — Batailles de Connaissances",
+    "daily_ranks": "Quotidien & Rangs",
+    "my_journey": "Mon Parcours",
+    "worksheets": "Feuilles d'exercices",
+    "for_teachers": "Pour les enseignants",
+    "tagline": "MathDuel · Entièrement statique · Confidentialité d'abord · Gratuit"
   }
 }

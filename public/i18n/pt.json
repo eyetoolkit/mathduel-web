@@ -29,12 +29,10 @@
     "copied": "Copiado",
     "not_applicable": "—"
   },
-
   "lang": {
     "switch": "Idioma",
     "coming_soon": "Mais idiomas em breve"
   },
-
   "nav": {
     "home": "Início",
     "games": "Jogos",
@@ -51,13 +49,11 @@
     "toggle_theme": "Alternar tema",
     "toggle_nav": "Abrir navegação"
   },
-
   "site": {
     "name": "MathDuel",
     "sub": "Totalmente estático · Privacidade em primeiro lugar · Grátis para jogar",
     "tagline": "Corra contra o mundo para resolver quebra-cabeças matemáticos"
   },
-
   "hero": {
     "eyebrow": "Matemática multijogador global",
     "title": "Corra contra o mundo para fazer 24.",
@@ -68,7 +64,6 @@
     "stat_players": "Jogadores online",
     "stat_room": "Por sala"
   },
-
   "home": {
     "section_games_title": "Escolha seu jogo",
     "section_games_lead": "Cinco jogos de raciocínio — prática solo, desafio diário ou competição ao vivo.",
@@ -89,7 +84,6 @@
     "all_games": "Todos os jogos",
     "explore_family": "Explore a família Duel"
   },
-
   "daily": {
     "badge": "Daily Challenge",
     "count": "Quebra-cabeças",
@@ -100,7 +94,6 @@
     "hunt_title": "Caça diária",
     "same_worldwide": "mesmo quebra-cabeça no mundo todo"
   },
-
   "game": {
     "play": "Jogar",
     "practice": "Prática",
@@ -131,7 +124,6 @@
     "solved": "Resolvido",
     "combo": "Sequência"
   },
-
   "game24": {
     "tab_practice": "Prática",
     "tab_daily": "Daily Challenge",
@@ -146,7 +138,6 @@
     "bronze_title": "Speedrun Bronze · ≤120s",
     "best_today": "Melhor rodada individual do dia"
   },
-
   "sudoku": {
     "tab_practice": "Prática",
     "tab_daily": "Daily Challenge",
@@ -173,7 +164,6 @@
     "fast_for_human": "Você é rápido para um humano…",
     "recalibrating": "Recalibrando…"
   },
-
   "pyr": {
     "tab_practice": "Prática",
     "tab_daily": "Daily Challenge",
@@ -184,7 +174,6 @@
     "win": "Você venceu 🏆",
     "lose": "Bot venceu 🤖"
   },
-
   "mp": {
     "title": "{label} — Competição",
     "sub": "Crie uma sala, compartilhe o código, corra contra amigos ou contra o mundo.",
@@ -232,7 +221,6 @@
     "connection_failed": "Falha na conexão, tente novamente",
     "live": "Ao vivo"
   },
-
   "badge": {
     "first_daily": "First Daily",
     "first_daily_hint": "Complete seu primeiro Daily Challenge.",
@@ -245,7 +233,6 @@
     "site_explorer": "Site Explorer",
     "site_explorer_hint": "Experimente todos os jogos pelo menos uma vez."
   },
-
   "error": {
     "invalid_room_code": "Código de sala inválido",
     "room_not_found": "Sala não encontrada",
@@ -273,7 +260,6 @@
     "cell_duplicate": "Duplicado em linha/coluna/caixa",
     "equation_invalid": "Equação inválida"
   },
-
   "share": {
     "score_title": "🏆 Minha pontuação",
     "copy_challenge": "📋 Copiar desafio",
@@ -283,12 +269,96 @@
     "download_image": "⬇ Salvar imagem",
     "share_wechat": "💬 Compartilhar"
   },
-
   "challenge": {
     "title": "Card de desafio",
     "sub": "O quebra-cabeça de hoje é o mesmo para todos — envie para um amigo.",
     "same_puzzle": "Mesmo quebra-cabeça no mundo todo — desafie um amigo",
     "footer_note": "Não precisa de conta — links de desafio são apenas sementes de quebra-cabeça.",
     "i_solved_today": "Eu resolvi o {name} Daily{dur}{score} de hoje no MathDuel — você consegue me vencer?"
+  },
+  "sidebar": {
+    "logo": "MathDuel",
+    "collapse": "Recolher barra lateral",
+    "toggle_theme": "Alternar tema",
+    "toggle_nav": "Abrir navegação",
+    "accounts_not_enabled": "As contas ainda não estão habilitadas",
+    "all_games_group": "Todos os jogos · {n}",
+    "coin_shop": "Loja de moedas",
+    "coin_shop_soon": "em breve",
+    "coin_shop_coming_soon": "Em breve",
+    "help_group": "Ajuda",
+    "teacher_group": "Para professores",
+    "teacher_dashboard": "Painel do professor",
+    "daily_challenge": "Desafio diário",
+    "lang_coming_soon": "Mais idiomas em breve"
+  },
+  "home_hero": {
+    "title": "Faça seu <em>cérebro</em> mais inteligente, 5 minutos por dia",
+    "subtitle": "Raciocínio Sudoku · aritmética rápida do 24 · escalada de equações · decifração — seis jogos de matemática selecionados.<br>Mesmo quebra-cabeça no mundo todo. Toque e jogue.",
+    "cta_daily": "Comece o desafio de hoje",
+    "cta_friend": "Desafie um amigo",
+    "chip_no_login": "Sem cadastro",
+    "chip_no_ads": "Grátis · sem anúncios",
+    "chip_privacy": "Privacidade em primeiro lugar",
+    "chip_same_daily": "Mesmo quebra-cabeça diário"
+  },
+  "home_daily": {
+    "title": "Daily Challenge",
+    "streak": "{n} dias seguidos",
+    "msg_zero": "Experimente o Daily de hoje — <b>mesmo quebra-cabeça no mundo todo</b>. Complete 5 seguidos para desbloquear estrelas de rank.",
+    "msg_partial": "<b>{done}</b> de {total} feitos hoje — faltam {left} para as estrelas de rank.",
+    "msg_all": "<b>Todos os {total}</b> feitos hoje — sequência estendida para <b>{streak} day{s}</b>!",
+    "until_reset": "até o reinício global"
+  },
+  "home_weekly": {
+    "title": "Weekly Tournament",
+    "live": "Ao vivo",
+    "row": "{start} → {end} · {players} jogadores · prêmios 🥇50🪙 🥈25🪙 🥉10🪙",
+    "row_you": "Você",
+    "exchange": "🪙 Troque moedas por sem anúncios"
+  },
+  "home_ladder": {
+    "title": "Escada de seis níveis",
+    "sub": "Um Elo para todos os três sites de duelo · reinício semanal",
+    "bronze": "Bronze",
+    "silver": "Prata",
+    "gold": "Ouro",
+    "platinum": "Platina",
+    "diamond": "Diamante",
+    "master": "Mestre"
+  },
+  "home_feats": {
+    "daily_title": "Caça diária",
+    "daily_desc": "Um quebra-cabeça no mundo todo, reinício cronometrado — corra contra o planeta.",
+    "friend_title": "Duelo entre amigos",
+    "friend_desc": "Copie um link de convite — um clique e você está na sala.",
+    "race_title": "Corrida · 99",
+    "race_desc": "Placar ao vivo, sua linha fixada na página.",
+    "hint_title": "Dica inteligente",
+    "hint_desc": "Travado? Peça uma dica — ela mostra o próximo passo, não a resposta."
+  },
+  "home_why": {
+    "eyebrow": "POR QUE MATHDUEL",
+    "title": "A matemática é mais divertida quando você pode provar.",
+    "lead": "Cada jogo neste site vem com um <b>Daily Challenge</b> — o mesmo quebra-cabeça para todos, em todo o mundo, na mesma data de Xangai. Sem cadastro, sem anúncios, sem coleta de dados. Abra a página e pode jogar.",
+    "privacy_title": "🔒 Privacidade em primeiro lugar",
+    "privacy_desc": "UUID anônimo armazenado apenas no seu navegador. Limpe os cookies para reiniciar.",
+    "same_title": "🌏 Mesmo quebra-cabeça no mundo todo",
+    "same_desc": "Geração com data de Xangai. Compare com qualquer pessoa na Terra.",
+    "no_streak_title": "🪙 Sem recompensas de sequência",
+    "no_streak_desc": "O único prêmio é superar o seu ontem. Sem notificações, sem upsell.",
+    "free_title": "⚡ Grátis para sempre",
+    "free_desc": "Páginas estáticas no Cloudflare, ~0 custo por visitante. Sem paywall, nunca."
+  },
+  "home_footer": {
+    "title": "Explore a família Duel",
+    "bd_title": "BoardDuel — Xadrez e Jogos de Cartas",
+    "md_title": "MathDuel — Jogos de Quebra-cabeças Matemáticos",
+    "mem_title": "MemoryDuel — Batalhas de Conhecimento",
+    "daily_ranks": "Diário & Ranks",
+    "my_journey": "Minha Jornada",
+    "worksheets": "Folhas de exercícios",
+    "for_teachers": "Para professores",
+    "tagline": "MathDuel · Totalmente estático · Privacidade em primeiro lugar · Grátis para jogar"
   }
 }

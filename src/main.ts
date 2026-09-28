@@ -9,9 +9,19 @@ import '@tri-sites/design-system/styles';
 import './styles/home-redesign.css';
 import { renderHomeV2 } from './pages/home-redesign';
 import { registerSW } from './pwa';
+import { initI18n } from './i18n/runtime';
 
-// 主页装配
+// 多语言（首访英文，URL ?lang= 或 localStorage 可切）
+initI18n().finally(() => {
+  // 等 async 字典加载完再重绘，把 t() 调用的英文替换成目标语言
+  renderHomeV2();
+});
+
+// 主页装配（同步先绘一次，EN_FALLBACK 保证英文立即可见）
 renderHomeV2();
+
+// 语言切换时重绘（模板里用了 t() 调用，需要重新生成 DOM）
+window.addEventListener('tri:lang', () => renderHomeV2());
 
 // PWA（静默失败，不影响站点功能）
 registerSW();

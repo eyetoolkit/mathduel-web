@@ -249,5 +249,90 @@
     "same_puzzle": "全球同题——挑戰朋友",
     "footer_note": "无需账号——挑戰链接就是题目种子。",
     "i_solved_today": "我今天在 MathDuel 解开了 {name} 每日挑戰{dur}{score}——你能超过我吗？"
+  },
+  "sidebar": {
+    "logo": "MathDuel",
+    "collapse": "收起側欄",
+    "toggle_theme": "切換主題",
+    "toggle_nav": "打開導航",
+    "accounts_not_enabled": "帳號功能尚未啟用",
+    "all_games_group": "全部遊戲 · {n}",
+    "coin_shop": "金幣商店",
+    "coin_shop_soon": "即將推出",
+    "coin_shop_coming_soon": "敬請期待",
+    "help_group": "說明",
+    "teacher_group": "給老師",
+    "teacher_dashboard": "教師儀表板",
+    "daily_challenge": "每日挑戰",
+    "lang_coming_soon": "更多語言即將推出"
+  },
+  "home_hero": {
+    "title": "每天 5 分鐘，讓你的 <em>大腦</em> 更聰明",
+    "subtitle": "數獨推理 · 24 點速算 · 算式攀登 · 密碼破譯——六款精選數學遊戲，<br>全球同題即開即玩。",
+    "cta_daily": "開始今日挑戰",
+    "cta_friend": "挑戰朋友",
+    "chip_no_login": "無需登入",
+    "chip_no_ads": "免費 · 無廣告",
+    "chip_privacy": "隱私優先",
+    "chip_same_daily": "每日同題"
+  },
+  "home_daily": {
+    "title": "Daily Challenge",
+    "streak": "連續 {n} 天",
+    "msg_zero": "試試今天的 Daily——<b>全球同題</b>。連續完成 5 天解鎖等級星標。",
+    "msg_partial": "今日已完成 <b>{done}</b> / {total}——還差 {left} 個解鎖等級星標。",
+    "msg_all": "<b>全部 {total}</b> 已完成！連續紀錄已延長到 <b>{streak} day{s}</b>！",
+    "until_reset": "距全球重置"
+  },
+  "home_weekly": {
+    "title": "Weekly Tournament",
+    "live": "直播中",
+    "row": "{start} → {end} · {players} 名玩家 · 獎勵 🥇50🪙 🥈25🪙 🥉10🪙",
+    "row_you": "我",
+    "exchange": "🪙 兌換金幣免廣告"
+  },
+  "home_ladder": {
+    "title": "六段天梯",
+    "sub": "三大對戰站點共享 Elo · 每週重置",
+    "bronze": "青銅",
+    "silver": "白銀",
+    "gold": "黃金",
+    "platinum": "鉑金",
+    "diamond": "鑽石",
+    "master": "大師"
+  },
+  "home_feats": {
+    "daily_title": "每日狩獵",
+    "daily_desc": "全球同題，定時重置——競速全世界。",
+    "friend_title": "好友對決",
+    "friend_desc": "複製邀請連結——一鍵加入房間。",
+    "race_title": "99 人競速",
+    "race_desc": "即時積分榜，你的名次固定在頁面上。",
+    "hint_title": "智慧提示",
+    "hint_desc": "卡住了？要個提示——顯示下一步，不是答案。"
+  },
+  "home_why": {
+    "eyebrow": "為什麼選 MathDuel",
+    "title": "數學更有趣，當你可以證明自己。",
+    "lead": "本站每款遊戲都帶 <b>Daily Challenge</b>——上海時間同一天，全球同題。無需登入，沒有廣告，不採集資料。打開頁面就能玩。",
+    "privacy_title": "🔒 隱私優先",
+    "privacy_desc": "匿名 UUID 僅存於你的瀏覽器。清 cookie 即重置。",
+    "same_title": "🌏 全球同題",
+    "same_desc": "按上海日期生成種子。和地球任何一個人對比。",
+    "no_streak_title": "🪙 沒有連勝獎勵",
+    "no_streak_desc": "唯一的獎品是超越昨天的自己。無通知，無推銷。",
+    "free_title": "⚡ 永久免費",
+    "free_desc": "Cloudflare 靜態頁面，單訪客成本 ~0。永不加收費牆。"
+  },
+  "home_footer": {
+    "title": "探索 Duel 家族",
+    "bd_title": "BoardDuel — 棋類與紙牌遊戲",
+    "md_title": "MathDuel — 數學解谜遊戲",
+    "mem_title": "MemoryDuel — 知識對戰",
+    "daily_ranks": "每日與等級",
+    "my_journey": "我的旅程",
+    "worksheets": "練習題",
+    "for_teachers": "給老師",
+    "tagline": "MathDuel · 純靜態 · 隱私優先 · 免費遊戲"
   }
 }

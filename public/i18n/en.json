@@ -29,12 +29,10 @@
     "copied": "Copied",
     "not_applicable": "—"
   },
-
   "lang": {
     "switch": "Language",
     "coming_soon": "More languages coming soon"
   },
-
   "nav": {
     "home": "Home",
     "games": "Games",
@@ -51,13 +49,11 @@
     "toggle_theme": "Toggle theme",
     "toggle_nav": "Open navigation"
   },
-
   "site": {
     "name": "MathDuel",
     "sub": "Pure static · Privacy-first · Free to play",
     "tagline": "Race the world to solve math puzzles"
   },
-
   "hero": {
     "eyebrow": "Global multiplayer math",
     "title": "Race the world to make 24.",
@@ -68,7 +64,6 @@
     "stat_players": "Players online",
     "stat_room": "Per room"
   },
-
   "home": {
     "section_games_title": "Pick your game",
     "section_games_lead": "Five brain games — solo practice, daily challenge, or live competition.",
@@ -89,7 +84,6 @@
     "all_games": "All games",
     "explore_family": "Explore the Duel family"
   },
-
   "daily": {
     "badge": "Daily Challenge",
     "count": "Puzzles",
@@ -100,7 +94,6 @@
     "hunt_title": "Daily hunt",
     "same_worldwide": "same puzzle worldwide"
   },
-
   "game": {
     "play": "Play",
     "practice": "Practice",
@@ -131,7 +124,6 @@
     "solved": "Solved",
     "combo": "Streak"
   },
-
   "game24": {
     "tab_practice": "Practice",
     "tab_daily": "Daily Challenge",
@@ -146,7 +138,6 @@
     "bronze_title": "Speedrun Bronze · ≤120s",
     "best_today": "Best-of-day single round"
   },
-
   "sudoku": {
     "tab_practice": "Practice",
     "tab_daily": "Daily Challenge",
@@ -173,7 +164,6 @@
     "fast_for_human": "You're fast for a human…",
     "recalibrating": "Recalibrating…"
   },
-
   "pyr": {
     "tab_practice": "Practice",
     "tab_daily": "Daily Challenge",
@@ -184,7 +174,6 @@
     "win": "You win 🏆",
     "lose": "Bot wins 🤖"
   },
-
   "mp": {
     "title": "{label} — Competition",
     "sub": "Create a room, share the code, race friends or the world.",
@@ -232,7 +221,6 @@
     "connection_failed": "Connection failed, please retry",
     "live": "Live"
   },
-
   "badge": {
     "first_daily": "First Daily",
     "first_daily_hint": "Complete your first Daily Challenge.",
@@ -245,7 +233,6 @@
     "site_explorer": "Site Explorer",
     "site_explorer_hint": "Try all games at least once."
   },
-
   "error": {
     "invalid_room_code": "Invalid room code",
     "room_not_found": "Room not found",
@@ -273,7 +260,6 @@
     "cell_duplicate": "Duplicate in row/column/box",
     "equation_invalid": "Equation is invalid"
   },
-
   "share": {
     "score_title": "🏆 My Score",
     "copy_challenge": "📋 Copy challenge",
@@ -283,12 +269,96 @@
     "download_image": "⬇ Save Image",
     "share_wechat": "💬 Share"
   },
-
   "challenge": {
     "title": "Challenge card",
     "sub": "Today's puzzle is the same for everyone — send it to a friend.",
     "same_puzzle": "Same puzzle worldwide — challenge a friend",
     "footer_note": "No account needed — challenge links are just puzzle seeds.",
     "i_solved_today": "I solved today's {name} Daily{dur}{score} on MathDuel — can you beat me?"
+  },
+  "sidebar": {
+    "logo": "MathDuel",
+    "collapse": "Collapse sidebar",
+    "toggle_theme": "Toggle theme",
+    "toggle_nav": "Open navigation",
+    "accounts_not_enabled": "Accounts are not enabled yet",
+    "all_games_group": "All games · {n}",
+    "coin_shop": "Coin Shop",
+    "coin_shop_soon": "soon",
+    "coin_shop_coming_soon": "Coming soon",
+    "help_group": "Help",
+    "teacher_group": "For teachers",
+    "teacher_dashboard": "Teacher dashboard",
+    "daily_challenge": "Daily challenge",
+    "lang_coming_soon": "More languages coming soon"
+  },
+  "home_hero": {
+    "title": "Make your <em>brain</em> smarter, 5 minutes a day",
+    "subtitle": "Sudoku reasoning · 24-point speed math · equation climbs · code-breaking — six hand-picked math games,<br>same puzzle worldwide. Just tap and play.",
+    "cta_daily": "Start today's challenge",
+    "cta_friend": "Challenge a friend",
+    "chip_no_login": "No login",
+    "chip_no_ads": "Free · no ads",
+    "chip_privacy": "Privacy-first",
+    "chip_same_daily": "Same puzzle daily"
+  },
+  "home_daily": {
+    "title": "Daily Challenge",
+    "streak": "{n}-day streak",
+    "msg_zero": "Try today's Daily — <b>same puzzle worldwide</b>. Unlock rank stars by completing 5 in a row.",
+    "msg_partial": "<b>{done}</b> of {total} done today — {left} left for rank stars.",
+    "msg_all": "<b>All {total}</b> done today — streak extended to <b>{streak} day{s}</b>!",
+    "until_reset": "until the global reset"
+  },
+  "home_weekly": {
+    "title": "Weekly Tournament",
+    "live": "Live",
+    "row": "{start} → {end} · {players} players · prizes 🥇50🪙 🥈25🪙 🥉10🪙",
+    "row_you": "You",
+    "exchange": "🪙 Exchange coins for ad-free"
+  },
+  "home_ladder": {
+    "title": "Six-tier ladder",
+    "sub": "One Elo across all three duel sites · weekly reset",
+    "bronze": "Bronze",
+    "silver": "Silver",
+    "gold": "Gold",
+    "platinum": "Platinum",
+    "diamond": "Diamond",
+    "master": "Master"
+  },
+  "home_feats": {
+    "daily_title": "Daily hunt",
+    "daily_desc": "One puzzle worldwide, timed reset — race the globe.",
+    "friend_title": "Friend duel",
+    "friend_desc": "Copy an invite link — one click and you're in the room.",
+    "race_title": "Race · 99",
+    "race_desc": "Live standings, your row pinned on the page.",
+    "hint_title": "Smart hint",
+    "hint_desc": "Stuck? Ask for a hint — it shows the next step, not the answer."
+  },
+  "home_why": {
+    "eyebrow": "WHY MATHDUEL",
+    "title": "Math is more fun when you can prove it.",
+    "lead": "Every game on this site ships with a <b>Daily Challenge</b> — the same puzzle for everyone, everywhere, at the same Shanghai date. No login, no ads, no data mining. Just open the page and you can play.",
+    "privacy_title": "🔒 Privacy-first",
+    "privacy_desc": "Anonymous UUID stored only in your browser. Clear cookies to reset.",
+    "same_title": "🌏 Same puzzle worldwide",
+    "same_desc": "Shanghai-date seeded generation. Compare with anyone on Earth.",
+    "no_streak_title": "🪙 No streak rewards",
+    "no_streak_desc": "The only prize is breaking your own yesterday. No notifications, no upsell.",
+    "free_title": "⚡ Free forever",
+    "free_desc": "Static pages on Cloudflare, ~0 cost per visitor. No paywall, ever."
+  },
+  "home_footer": {
+    "title": "Explore the Duel family",
+    "bd_title": "BoardDuel — Chess & Card Games",
+    "md_title": "MathDuel — Math Puzzle Games",
+    "mem_title": "MemoryDuel — Knowledge Battles",
+    "daily_ranks": "Daily & Ranks",
+    "my_journey": "My Journey",
+    "worksheets": "Worksheets",
+    "for_teachers": "For teachers",
+    "tagline": "MathDuel · Pure static · Privacy-first · Free to play"
   }
 }

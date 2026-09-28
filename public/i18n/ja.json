@@ -29,12 +29,10 @@
     "copied": "コピーしました",
     "not_applicable": "—"
   },
-
   "lang": {
     "switch": "言語",
     "coming_soon": "他の言語はまもなく登場"
   },
-
   "nav": {
     "home": "ホーム",
     "games": "ゲーム",
@@ -51,13 +49,11 @@
     "toggle_theme": "テーマを切り替え",
     "toggle_nav": "ナビゲーションを開く"
   },
-
   "site": {
     "name": "MathDuel",
     "sub": "完全静的 · プライバシー優先 · 無料プレイ",
     "tagline": "世界と競い合い、数学パズルを解こう"
   },
-
   "hero": {
     "eyebrow": "グローバルマルチプレイヤー数学ゲーム",
     "title": "世界と競い合い、24を作ろう。",
@@ -68,7 +64,6 @@
     "stat_players": "オンラインプレイヤー",
     "stat_room": "1ルームあたり"
   },
-
   "home": {
     "section_games_title": "ゲームを選ぶ",
     "section_games_lead": "5つの頭脳ゲーム — ソロ練習、デイリーチャレンジ、そしてライブ対戦。",
@@ -89,7 +84,6 @@
     "all_games": "すべてのゲーム",
     "explore_family": "Duelファミリーを探索"
   },
-
   "daily": {
     "badge": "Daily Challenge",
     "count": "パズル数",
@@ -100,7 +94,6 @@
     "hunt_title": "デイリーハント",
     "same_worldwide": "世界中で同じパズル"
   },
-
   "game": {
     "play": "プレイ",
     "practice": "練習",
@@ -131,7 +124,6 @@
     "solved": "解けた",
     "combo": "連続"
   },
-
   "game24": {
     "tab_practice": "練習",
     "tab_daily": "Daily Challenge",
@@ -146,7 +138,6 @@
     "bronze_title": "Speedrun Bronze · ≤120秒",
     "best_today": "今日のベストラウンド"
   },
-
   "sudoku": {
     "tab_practice": "練習",
     "tab_daily": "Daily Challenge",
@@ -173,7 +164,6 @@
     "fast_for_human": "人間にしては速いな…",
     "recalibrating": "再調整中…"
   },
-
   "pyr": {
     "tab_practice": "練習",
     "tab_daily": "Daily Challenge",
@@ -184,7 +174,6 @@
     "win": "あなたの勝ち 🏆",
     "lose": "Botの勝ち 🤖"
   },
-
   "mp": {
     "title": "{label} — 対戦",
     "sub": "ルームを作成してコードを共有、友達や世界中と競い合おう。",
@@ -232,7 +221,6 @@
     "connection_failed": "接続に失敗しました、再試行してください",
     "live": "ライブ"
   },
-
   "badge": {
     "first_daily": "First Daily",
     "first_daily_hint": "初めてのDaily Challengeをクリアする。",
@@ -245,7 +233,6 @@
     "site_explorer": "Site Explorer",
     "site_explorer_hint": "すべてのゲームを少なくとも1回はプレイする。"
   },
-
   "error": {
     "invalid_room_code": "無効なルームコードです",
     "room_not_found": "ルームが見つかりません",
@@ -273,7 +260,6 @@
     "cell_duplicate": "行/列/ボックス内で重複しています",
     "equation_invalid": "数式が無効です"
   },
-
   "share": {
     "score_title": "🏆 私のスコア",
     "copy_challenge": "📋 チャレンジをコピー",
@@ -283,12 +269,96 @@
     "download_image": "⬇ 画像を保存",
     "share_wechat": "💬 共有"
   },
-
   "challenge": {
     "title": "チャレンジカード",
     "sub": "今日のパズルは誰にとっても同じ — 友達に送ろう。",
     "same_puzzle": "世界中で同じパズル — 友達に挑戦状を送ろう",
     "footer_note": "アカウント不要 — チャレンジリンクはただのパズルシードです。",
     "i_solved_today": "MathDuelで今日の{name} Daily{dur}{score}を解きました — あなたも勝てるかな？"
+  },
+  "sidebar": {
+    "logo": "MathDuel",
+    "collapse": "サイドバーを折りたたむ",
+    "toggle_theme": "テーマを切り替え",
+    "toggle_nav": "ナビゲーションを開く",
+    "accounts_not_enabled": "アカウント機能はまだ有効ではありません",
+    "all_games_group": "すべてのゲーム · {n}",
+    "coin_shop": "コインショップ",
+    "coin_shop_soon": "まもなく",
+    "coin_shop_coming_soon": "近日公開",
+    "help_group": "ヘルプ",
+    "teacher_group": "先生向け",
+    "teacher_dashboard": "教師ダッシュボード",
+    "daily_challenge": "デイリーチャレンジ",
+    "lang_coming_soon": "他の言語はまもなく登場"
+  },
+  "home_hero": {
+    "title": "1日5分、<em>脳</em>をもっと賢く",
+    "subtitle": "数独の推理 · 24点のスピード計算 · 方程式の登山 · 暗号解読——厳選された6つの数学ゲーム。<br>世界中で同じパズル。タップしてすぐ遊べる。",
+    "cta_daily": "今日のチャレンジを始める",
+    "cta_friend": "友達に挑む",
+    "chip_no_login": "ログイン不要",
+    "chip_no_ads": "無料 · 広告なし",
+    "chip_privacy": "プライバシー優先",
+    "chip_same_daily": "毎日同じパズル"
+  },
+  "home_daily": {
+    "title": "Daily Challenge",
+    "streak": "{n}日連続",
+    "msg_zero": "今日のDailyを試してみてください——<b>世界中で同じパズル</b>。5日連続でクリアするとランクスターがアンロックされます。",
+    "msg_partial": "今日は <b>{done}</b> / {total} を完了——ランクスターまであと {left} です。",
+    "msg_all": "<b>{total}個すべて</b>完了！連続記録が <b>{streak} day{s}</b> に伸びました！",
+    "until_reset": "世界リセットまで"
+  },
+  "home_weekly": {
+    "title": "Weekly Tournament",
+    "live": "ライブ",
+    "row": "{start} → {end} · {players}人のプレイヤー · 賞品 🥇50🪙 🥈25🪙 🥉10🪙",
+    "row_you": "あなた",
+    "exchange": "🪙 コインを広告なしに交換"
+  },
+  "home_ladder": {
+    "title": "6段階ラダー",
+    "sub": "3つのデュエルサイトで共通のElo · 毎週リセット",
+    "bronze": "Bronze",
+    "silver": "Silver",
+    "gold": "Gold",
+    "platinum": "Platinum",
+    "diamond": "Diamond",
+    "master": "Master"
+  },
+  "home_feats": {
+    "daily_title": "デイリーハント",
+    "daily_desc": "世界で1つのパズル、時間でリセット — 地球全体と競い合え。",
+    "friend_title": "フレンドデュエル",
+    "friend_desc": "招待リンクをコピー — ワンクリックでルームに参加。",
+    "race_title": "Race · 99",
+    "race_desc": "ライブ順位表示、自分の行はページに固定されます。",
+    "hint_title": "スマートヒント",
+    "hint_desc": "詰まったらヒントを — 答えではなく次の手を教えてくれます。"
+  },
+  "home_why": {
+    "eyebrow": "なぜ MathDuel",
+    "title": "証明できると数学はもっと楽しい。",
+    "lead": "このサイトのすべてのゲームには <b>Daily Challenge</b> が付いています——上海日付で同じ日、世界中の誰もが同じパズル。ログイン不要、広告なし、データ収集なし。ページを開けばすぐ遊べます。",
+    "privacy_title": "🔒 プライバシー優先",
+    "privacy_desc": "匿名UUIDはブラウザにのみ保存。Cookieを削除すればリセット。",
+    "same_title": "🌏 世界中で同じパズル",
+    "same_desc": "上海日付でシード生成。地球上の誰とでも比較できます。",
+    "no_streak_title": "🪙 ストリーク報酬なし",
+    "no_streak_desc": "唯一の賞品は昨日の自分を超えること。通知もアップセルもありません。",
+    "free_title": "⚡ 永遠に無料",
+    "free_desc": "Cloudflare上の静的ページ、訪問者ごとのコストは約0。決してペイウォールを導入しません。"
+  },
+  "home_footer": {
+    "title": "Duelファミリーを探索",
+    "bd_title": "BoardDuel — チェス & カードゲーム",
+    "md_title": "MathDuel — 数学パズルゲーム",
+    "mem_title": "MemoryDuel — 知識バトル",
+    "daily_ranks": "デイリー & ランク",
+    "my_journey": "私の記録",
+    "worksheets": "ワークシート",
+    "for_teachers": "先生向け",
+    "tagline": "MathDuel · 完全静的 · プライバシー優先 · 無料プレイ"
   }
 }
