@@ -80,6 +80,15 @@ function showAuth(msg) {
 }
 function hideAuth() { $('auth').classList.remove('on'); $('authErr').textContent = ''; }
 
+/* 免登陆共享模式：后端用固定共享身份返回 anonymous=true。
+   此时隐藏登录/登出 UI，避免误触弹窗、也不会有可退出的会话。 */
+function enterAnonMode() {
+  try { $('auth').style.display = 'none'; } catch (e) {}
+  try { $('logoutBtn').style.display = 'none'; } catch (e) {}
+  const who = $('who');
+  if (who) who.textContent = '👋 Demo · 免登陆';
+}
+
 /* ─── login / signup 双模式 ─── */
 let authMode = 'login';
 const HINTS = {
