@@ -13,7 +13,7 @@ import '../24-game/styles.css';
 import '../24-game/arena.css';
 import './s4.css';
 import { mountHeader, toast } from '@tri-sites/design-system';
-import { initI18n } from '../../i18n/runtime';
+import { initI18n, t } from '../../i18n/runtime';
 import {
   colOf,
   findConflicts,
@@ -669,7 +669,7 @@ if (modeFromUrl === 'battle' || modeFromUrl === 'random' || (new URLSearchParams
   mountCompetition({
     adapter: createSudokuAdapter({ gameType: 'sudoku-4x4', label: 'Sudoku 4×4', size: 4, rounds: 3, timeLimit: 240 }),
     tabsEl: document.querySelector('#tabs') as HTMLElement | null,
-    tabLabel: 'Competition',
+    tabLabel: t('game.competition'),
     hideOnOpen: ['#playView'],
   });
 } else if (isMode(modeFromUrl)) {

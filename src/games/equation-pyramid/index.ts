@@ -18,7 +18,7 @@ import '../24-game/arena.css';
 import './eqpy.css';
 
 import { mountHeader, toast } from '@tri-sites/design-system';
-import { initI18n } from '../../i18n/runtime';
+import { initI18n, t } from '../../i18n/runtime';
 import { shanghaiDateKey } from '../sudoku/engine';
 import {
   generateBoard,
@@ -639,7 +639,7 @@ if (modeFromUrl === "battle" || modeFromUrl === "random" || (new URLSearchParams
   mountCompetition({
     adapter: createEqpyrAdapter({ label: 'Equation Pyramid', tier: st.tier, rounds: 3, timeLimit: 60 }),
     tabsEl: document.querySelector("#tabs") as HTMLElement | null,
-    tabLabel: "Competition",
+    tabLabel: t('game.competition'),
     hideOnOpen: [],
   });
 } else if (isMode(modeFromUrl)) {

@@ -15,7 +15,7 @@ import '../24-game/styles.css';
 import '../24-game/arena.css';
 import './sudoku.css';
 import { mountHeader, toast } from '@tri-sites/design-system';
-import { initI18n } from '../../i18n/runtime';
+import { initI18n, t } from '../../i18n/runtime';
 import {
   colOf,
   dailyPuzzle,
@@ -929,7 +929,7 @@ if (modeFromUrl === "battle" || modeFromUrl === "random" || (new URLSearchParams
   mountCompetition({
     adapter: createSudokuAdapter({ gameType: 'sudoku', label: 'Sudoku', size: 9, difficulty: st.diff, rounds: 3, timeLimit: 240 }),
     tabsEl: document.querySelector("#tabs") as HTMLElement | null,
-    tabLabel: "Competition",
+    tabLabel: t('game.competition'),
     hideOnOpen: ['#playView'],
   });
 } else if (isMode(modeFromUrl)) {

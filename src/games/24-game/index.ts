@@ -13,7 +13,7 @@ import { markDailyDone, markGamePlayed } from '../cross-game';
 import './arena.css';
 import './social.css';
 import { mountHeader, toast } from '@tri-sites/design-system';
-import { initI18n } from '../../i18n/runtime';
+import { initI18n, t } from '../../i18n/runtime';
 import {
   countSolutions,
   dailyKeyStr,
@@ -1138,8 +1138,8 @@ function chatDockHtml(scope: string): string {
     '<div class="chat-log" data-chat-log></div>' +
     `<div class="chat-rail">${CHAT_EMOJI.map((e) => `<button type="button" data-chat-emoji="${e}" aria-label="Send ${e}">${e}</button>`).join('')}</div>` +
     '<div class="chat-input-row">' +
-    '<input type="text" maxlength="200" placeholder="Say something…" data-chat-input aria-label="Chat message" />' +
-    '<button type="button" class="send" data-chat-send>Send</button>' +
+    '<input type="text" maxlength="200" placeholder="' + t('mp.say_something') + '" data-chat-input aria-label="Chat message" />' +
+    '<button type="button" class="send" data-chat-send>' + t('mp.send') + '</button>' +
     '</div></div>'
   );
 }
