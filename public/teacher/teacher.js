@@ -26,12 +26,25 @@ let games = [];
 let assignmentList = [];
 let liveTimer = null;
 
+/* ─── 浏览器本地教师身份（免登陆模式下每个浏览器一个独立课堂空间） ─── */
+function anonId() {
+  try {
+    let v = localStorage.getItem('md_teacher_anon');
+    if (!v) {
+      v = (crypto && crypto.randomUUID) ? crypto.randomUUID() : ('a-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10));
+      if (!v.startsWith('a-')) v = 'a-' + v;
+      localStorage.setItem('md_teacher_anon', v);
+    }
+    return v;
+  } catch (e) { return ''; }
+}
+
 /* ─── API ─── */
 async function api(path, opts = {}) {
   const res = await fetch(API + path, {
     credentials: 'same-origin',
-    headers: { 'Content-Type': 'application/json' },
     ...opts,
+    headers: { 'Content-Type': 'application/json', 'X-Anon-Teacher': anonId(), ...(opts.headers || {}) },
   });
   if (res.status === 401) { showAuth(); throw new Error('auth_required'); }
   let data = null;
