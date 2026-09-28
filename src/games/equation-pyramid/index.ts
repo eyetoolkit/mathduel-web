@@ -18,7 +18,7 @@ import '../24-game/arena.css';
 import './eqpy.css';
 
 import { mountHeader, toast } from '@tri-sites/design-system';
-import { initI18n, t } from '../../i18n/runtime';
+import { initI18n, t, mountLangSwitcher } from '../../i18n/runtime';
 import { shanghaiDateKey } from '../sudoku/engine';
 import {
   generateBoard,
@@ -41,6 +41,10 @@ mountHeader(($('header') as HTMLElement | null) ?? document.createElement('div')
     { labelKey: 'nav.games', href: '/#games' },
     ],
 });
+
+// 覆盖设计系统的 3 语 mountLangSwitcher 为 runtime.ts 的 10 语版本
+const _langHost = document.querySelector<HTMLElement>('#langHost');
+if (_langHost) mountLangSwitcher(_langHost);
 
 type Mode = 'solo' | 'daily' | 'timed' | 'duel';
 const TIMED_LIMIT = 60;

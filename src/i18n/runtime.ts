@@ -10,13 +10,13 @@
  *   // HTML 声明式（推荐，自动覆盖）
  *   <button data-i18n="common.ok"></button>
  *   <input data-i18n-placeholder="battle.enter_name">
- *   <span data-i18n-vars='{"round":1,"total":10}' data-i18n="battle.round"></span>
+ *   <span data-i18n-vars='{"round":1,"total":10}' data-i18n="mp.round_get_ready"></span>
  *   <title data-i18n="site.title">
  *   <meta property="og:title" data-i18n="meta.og_title">
  *
  *   // JS 命令式
  *   import { t, initI18n, setLang } from '../i18n/runtime';
- *   t('battle.round', { round: 1, total: 10 });
+ *   t('game.round', { n: 1 });
  *   setLang('zh-CN');
  */
 
@@ -65,81 +65,173 @@ const EN_FALLBACK: Record<string, unknown> = {
   home: { section_games_title: 'Pick your game', coming_soon: 'Coming soon', all_games: 'All games', explore_family: 'Explore the Duel family' },
   daily: { badge: 'Daily Challenge', count: 'Puzzles', time: 'Per puzzle', start: 'Start daily', play_now: 'Play now', done_today: '✓ Done today' },
   game: { play: 'Play', practice: 'Practice', competition: 'Competition', daily: 'Daily', timed: 'Timed Practice', duel: 'Duel', race: 'Race', new_deal: '🂠 New Deal', hint: '💡 Hint', show_answer: 'Show Answer', your_name: 'Your name', room_code: 'Room code', create: 'Create', join: 'Join', start: 'Start', leave: 'Leave', waiting_to_start: 'Waiting to start…', round: 'Round {n}', target: 'Target', difficulty: 'Difficulty', easy: 'Easy', standard: 'Standard', hard: 'Hard', warmup: 'Warm-up', tricky: 'Tricky', solved: 'Solved', combo: 'Streak' },
-  mp: {
-      competition_over: "\ud83c\udfc1 Competition Over",
-      connection_failed: "Connection failed, please retry",
-      copy_code: "\u29c9 Copy code",
-      copy_invite: "\ud83d\udd17 Copy invite",
-      create_room: "\ud83d\ude80 Create Room",
-      elo_rated: "\u2694\ufe0f Elo \u2014 rated match",
-      enter_name: "Enter a name",
-      host: "Host",
-      invite_copied: "Invite link copied",
-      join: "Join",
-      join_code: "Join with code",
-      leave: "Leave",
-      live: "Live",
-      live_standings: "\ud83c\udfc6 Live Standings",
-      looking_for_opponent: "\ud83c\udfb2 Looking for an opponent\u2026",
-      name_label: "Your name",
-      name_placeholder: "Player",
-      next_round: "Next round starting\u2026",
-      no_opponent: "No opponent right now \u2014 try Create Room",
-      no_submissions: "No submissions yet \u2014 be first!",
-      play_again: "\ud83d\udd01 Play Again",
-      players_count: "{n} players \u00b7 cap {cap}",
-      random: "\ud83c\udfb2 Find Random Opponent",
-      random_looking: "\ud83c\udfb2 Looking for an opponent\u2026",
-      random_match_unavailable: "No opponent right now \u2014 try Create Room",
-      room_chat: "\ud83d\udcac Room chat",
-      room_code: "ROOM CODE",
-      room_code_copied: "Room code copied: {code}",
-      room_code_invalid: "Invalid code (4\u20136 chars)",
-      room_failed: "Room failed",
-      room_ready: "Room ready \u2014 share this code:",
-      round_get_ready: "get ready",
-      round_result_title: "\ud83c\udfc1 Round {n} Result",
-      round_timer: "Round timer {s}s",
-      round_timer_label: "Round timer {s}s",
-      round_title: "Round {n}",
-      say_something: "Say something\u2026",
-      searching_30s: "\ud83c\udfb2 Searching \u2014 this stays open for 30s\u2026",
-      send: "Send",
-      solved: "solved",
-      spec_round: "\ud83d\udc40 Spectating this round",
-      spectating: "\ud83d\udc40 Spectating",
-      spectating_desc: "read-only view",
-      spectating_readonly: "\ud83d\udc40 <b>Spectating</b> \u2014 read-only view",
-      spectating_watchers: "{n} watchers",
-      speed_ring_speedrun: "Speedrun",
-      speedrun_bronze: "Bronze",
-      speedrun_gold: "Gold",
-      speedrun_silver: "Silver",
-      start_competition: "\ud83d\ude80 Start",
-      start_competition_ready: "\ud83d\ude80 Start Competition",
-      start_requirement: "Start Competition (2+ players)",
-      sub: "Create a room, share the code, race friends or the world.",
-      title: "{label} \u2014 Competition",
-      waiting_for_players: "\u23f3 Waiting for players\u2026",
-      waiting_for_server: "Live \u00b7 Waiting for server",
-      waiting_to_start: "Waiting to start\u2026",
-      watching_only: "only this room",
-      you: "You",
-      you_ranked: "\ud83c\udfc1 You ranked #{rank}",
-      you_won: "\ud83c\udfc6 You won!",
-      your_row_pinned: "Your row is pinned."
-  },
+  mp: { title: '{label} — Competition', sub: 'Create a room, share the code, race friends or the world.', name_label: 'Your name', name_placeholder: 'Player', create_room: '🚀 Create Room', join_code: 'Join with code', random: '🎲 Find Random Opponent', room_code: 'ROOM CODE', room_ready: 'Room ready — share this code:', copy_invite: '🔗 Copy invite', copy_code: '⧉ Copy code', start_competition: '🚀 Start Competition', spectating: '👀 Spectating', no_submissions: 'No submissions yet — be first!', live_standings: '🏆 Live Standings', room_chat: '💬 Room chat', say_something: 'Say something…', send: 'Send', waiting_to_start: 'Waiting to start…', round_result_title: '🏁 Round {n} Result', you_won: '🏆 You won!', you_ranked: '🏁 You ranked #{rank}', competition_over: '🏁 Competition Over', connection_failed: 'Connection failed, please retry' },
   error: { invalid_room_code: 'Invalid room code', room_not_found: 'Room not found', room_full: 'Room is full', connection_lost: 'Connection lost', session_expired: 'Session expired — refresh', server_error: 'Server error — please retry' },
-  sidebar: { logo: 'MathDuel', collapse: 'Collapse sidebar', toggle_theme: 'Toggle theme', toggle_nav: 'Open navigation', accounts_not_enabled: 'Accounts are not enabled yet', all_games_group: 'All games · {n}', coin_shop: 'Coin Shop', coin_shop_soon: 'soon', coin_shop_coming_soon: 'Coming soon', help_group: 'Help', teacher_group: 'For teachers', teacher_dashboard: 'Teacher dashboard', daily_challenge: 'Daily challenge', lang_coming_soon: 'More languages coming soon' },
-  home_hero: { title: 'Make your <em>brain</em> smarter, 5 minutes a day', subtitle: 'Sudoku reasoning · 24-point speed math · equation climbs · code-breaking — six hand-picked math games,<br>same puzzle worldwide. Just tap and play.', cta_daily: "Start today's challenge", cta_friend: 'Challenge a friend', chip_no_login: 'No login', chip_no_ads: 'Free · no ads', chip_privacy: 'Privacy-first', chip_same_daily: 'Same puzzle daily' },
-  home_daily: { title: 'Daily Challenge', streak: '{n}-day streak', msg_zero: "Try today's Daily — <b>same puzzle worldwide</b>. Unlock rank stars by completing 5 in a row.", msg_partial: '<b>{done}</b> of {total} done today — {left} left for rank stars.', msg_all: '<b>All {total}</b> done today — streak extended to <b>{streak} day{s}</b>!', until_reset: 'until the global reset' },
-  home_weekly: { title: 'Weekly Tournament', live: 'Live', row: '{start} → {end} · {players} players · prizes 🥇50🪙 🥈25🪙 🥉10🪙', row_you: 'You', exchange: '🪙 Exchange coins for ad-free' },
-  home_ladder: { title: 'Six-tier ladder', sub: 'One Elo across all three duel sites · weekly reset', bronze: 'Bronze', silver: 'Silver', gold: 'Gold', platinum: 'Platinum', diamond: 'Diamond', master: 'Master' },
-  home_feats: { daily_title: 'Daily hunt', daily_desc: 'One puzzle worldwide, timed reset — race the globe.', friend_title: 'Friend duel', friend_desc: "Copy an invite link — one click and you're in the room.", race_title: 'Race · 99', race_desc: 'Live standings, your row pinned on the page.', hint_title: 'Smart hint', hint_desc: "Stuck? Ask for a hint — it shows the next step, not the answer." },
-  home_why: { eyebrow: 'WHY MATHDUEL', title: 'Math is more fun when you can prove it.', lead: 'Every game on this site ships with a <b>Daily Challenge</b> — the same puzzle for everyone, everywhere, at the same Shanghai date. No login, no ads, no data mining. Just open the page and you can play.', privacy_title: '🔒 Privacy-first', privacy_desc: 'Anonymous UUID stored only in your browser. Clear cookies to reset.', same_title: '🌏 Same puzzle worldwide', same_desc: 'Shanghai-date seeded generation. Compare with anyone on Earth.', no_streak_title: '🪙 No streak rewards', no_streak_desc: 'The only prize is breaking your own yesterday. No notifications, no upsell.', free_title: '⚡ Free forever', free_desc: 'Static pages on Cloudflare, ~0 cost per visitor. No paywall, ever.' },
-  home_footer: { title: 'Explore the Duel family', bd_title: 'BoardDuel — Chess & Card Games', md_title: 'MathDuel — Math Puzzle Games', mem_title: 'MemoryDuel — Knowledge Battles', daily_ranks: 'Daily & Ranks', my_journey: 'My Journey', worksheets: 'Worksheets', for_teachers: 'For teachers', tagline: 'MathDuel · Pure static · Privacy-first · Free to play' },
-};
 
+  game24: {
+      tab_practice: "Practice",
+      tab_daily: "Daily Challenge",
+      tab_timed: "Timed Practice",
+      tab_competition: "Competition",
+      card_phrase: "Pick cards + operators to make 24",
+      result_placeholder: "Use each card once \u2014 make 24",
+      formula_placeholder: "Pick cards + operators to make 24",
+      say_something: "Say something\u2026",
+      gold_title: "Speedrun Gold \u00b7 \u226430s",
+      silver_title: "Speedrun Silver \u00b7 \u226460s",
+      bronze_title: "Speedrun Bronze \u00b7 \u2264120s",
+      best_today: "Best-of-day single round"
+  },
+  sudoku: {
+      tab_practice: "Practice",
+      tab_daily: "Daily Challenge",
+      tab_duel: "Duel vs GridBot",
+      tab_competition: "Competition",
+      pick_cell: "Pick a cell, then a number",
+      claim_yourself: "Claim your cells before GridBot",
+      claim_bot: "GridBot is placing cells\u2026",
+      win: "You win \ud83c\udfc6",
+      lose: "GridBot wins \ud83e\udd16",
+      win_cells: "You claimed the winning cell",
+      bot_win_cells: "GridBot claimed the winning cell",
+      daily_grid: "Daily grid",
+      good_luck: "Good luck \u2014 you'll need it.",
+      grid_goes_brrr: "Grid goes brrr.",
+      compiled_to_win: "I was compiled to win this.",
+      nice_one: "Nice one.",
+      mine_ish: "Hey, that was mine-ish.",
+      warmup_over: "Okay, warm-up over.",
+      bot_claimed: "Claimed.",
+      bot_mine: "Mine.",
+      bot_tick_tock: "Tick tock.",
+      beep: "Beep.",
+      fast_for_human: "You're fast for a human\u2026",
+      recalibrating: "Recalibrating\u2026"
+  },
+  pyr: {
+      tab_practice: "Practice",
+      tab_daily: "Daily Challenge",
+      tab_duel: "Duel vs Bot",
+      tab_competition: "Competition",
+      click_order: "Click three cells \u00b7 the click order is the formula",
+      find_equations: "Find equations before Bot does",
+      win: "You win \ud83c\udfc6",
+      lose: "Bot wins \ud83e\udd16"
+  },
+  badge: {
+      first_daily: "First Daily",
+      first_daily_hint: "Complete your first Daily Challenge.",
+      math_veteran: "Math Veteran",
+      math_veteran_hint: "Try 3 different games.",
+      streak_5: "5-Day Streak",
+      streak_5_hint: "Complete any Daily for 5 days in a row.",
+      math_duelist: "Math Duelist",
+      math_duelist_hint: "Complete 5 Daily Challenges in total.",
+      site_explorer: "Site Explorer",
+      site_explorer_hint: "Try all games at least once."
+  },
+  share: {
+      score_title: "\ud83c\udfc6 My Score",
+      copy_challenge: "\ud83d\udccb Copy challenge",
+      copied_challenge: "\u2705 Copied \u2014 paste it anywhere!",
+      copy_failed: "Copy failed \u2014 long-press the card",
+      close: "\u2715",
+      download_image: "\u2b07 Save Image",
+      share_wechat: "\ud83d\udcac Share"
+  },
+  challenge: {
+      title: "Challenge card",
+      sub: "Today's puzzle is the same for everyone \u2014 send it to a friend.",
+      same_puzzle: "Same puzzle worldwide \u2014 challenge a friend",
+      footer_note: "No account needed \u2014 challenge links are just puzzle seeds.",
+      i_solved_today: "I solved today's {name} Daily{dur}{score} on MathDuel \u2014 can you beat me?"
+  },
+  sidebar: {
+      logo: "MathDuel",
+      collapse: "Collapse sidebar",
+      toggle_theme: "Toggle theme",
+      toggle_nav: "Open navigation",
+      accounts_not_enabled: "Accounts are not enabled yet",
+      all_games_group: "All games \u00b7 {n}",
+      coin_shop: "Coin Shop",
+      coin_shop_soon: "soon",
+      coin_shop_coming_soon: "Coming soon",
+      help_group: "Help",
+      teacher_group: "For teachers",
+      teacher_dashboard: "Teacher dashboard",
+      daily_challenge: "Daily challenge",
+      lang_coming_soon: "More languages coming soon"
+  },
+  home_hero: {
+      title: "Make your <em>brain</em> smarter, 5 minutes a day",
+      subtitle: "Sudoku reasoning \u00b7 24-point speed math \u00b7 equation climbs \u00b7 code-breaking \u2014 six hand-picked math games,<br>same puzzle worldwide. Just tap and play.",
+      cta_daily: "Start today's challenge",
+      cta_friend: "Challenge a friend",
+      chip_no_login: "No login",
+      chip_no_ads: "Free \u00b7 no ads",
+      chip_privacy: "Privacy-first",
+      chip_same_daily: "Same puzzle daily"
+  },
+  home_daily: {
+      title: "Daily Challenge",
+      streak: "{n}-day streak",
+      msg_zero: "Try today's Daily \u2014 <b>same puzzle worldwide</b>. Unlock rank stars by completing 5 in a row.",
+      msg_partial: "<b>{done}</b> of {total} done today \u2014 {left} left for rank stars.",
+      msg_all: "<b>All {total}</b> done today \u2014 streak extended to <b>{streak} day{s}</b>!",
+      until_reset: "until the global reset"
+  },
+  home_weekly: {
+      title: "Weekly Tournament",
+      live: "Live",
+      row: "{start} \u2192 {end} \u00b7 {players} players \u00b7 prizes \ud83e\udd4750\ud83e\ude99 \ud83e\udd4825\ud83e\ude99 \ud83e\udd4910\ud83e\ude99",
+      row_you: "You",
+      exchange: "\ud83e\ude99 Exchange coins for ad-free"
+  },
+  home_ladder: {
+      title: "Six-tier ladder",
+      sub: "One Elo across all three duel sites \u00b7 weekly reset",
+      bronze: "Bronze",
+      silver: "Silver",
+      gold: "Gold",
+      platinum: "Platinum",
+      diamond: "Diamond",
+      master: "Master"
+  },
+  home_feats: {
+      daily_title: "Daily hunt",
+      daily_desc: "One puzzle worldwide, timed reset \u2014 race the globe.",
+      friend_title: "Friend duel",
+      friend_desc: "Copy an invite link \u2014 one click and you're in the room.",
+      race_title: "Race \u00b7 99",
+      race_desc: "Live standings, your row pinned on the page.",
+      hint_title: "Smart hint",
+      hint_desc: "Stuck? Ask for a hint \u2014 it shows the next step, not the answer."
+  },
+  home_why: {
+      eyebrow: "WHY MATHDUEL",
+      title: "Math is more fun when you can prove it.",
+      lead: "Every game on this site ships with a <b>Daily Challenge</b> \u2014 the same puzzle for everyone, everywhere, at the same Shanghai date. No login, no ads, no data mining. Just open the page and you can play.",
+      privacy_title: "\ud83d\udd12 Privacy-first",
+      privacy_desc: "Anonymous UUID stored only in your browser. Clear cookies to reset.",
+      same_title: "\ud83c\udf0f Same puzzle worldwide",
+      same_desc: "Shanghai-date seeded generation. Compare with anyone on Earth.",
+      no_streak_title: "\ud83e\ude99 No streak rewards",
+      no_streak_desc: "The only prize is breaking your own yesterday. No notifications, no upsell.",
+      free_title: "\u26a1 Free forever",
+      free_desc: "Static pages on Cloudflare, ~0 cost per visitor. No paywall, ever."
+  },
+  home_footer: {
+      title: "Explore the Duel family",
+      bd_title: "BoardDuel \u2014 Chess & Card Games",
+      md_title: "MathDuel \u2014 Math Puzzle Games",
+      mem_title: "MemoryDuel \u2014 Knowledge Battles",
+      daily_ranks: "Daily & Ranks",
+      my_journey: "My Journey",
+      worksheets: "Worksheets",
+      for_teachers: "For teachers",
+      tagline: "MathDuel \u00b7 Pure static \u00b7 Privacy-first \u00b7 Free to play"
+  },
+};
 const dicts: Partial<Record<LangCode, Record<string, unknown>>> = {
   en: EN_FALLBACK, // 模块加载即同步可用，async loadDict('en') 会覆盖为完整版本
 };

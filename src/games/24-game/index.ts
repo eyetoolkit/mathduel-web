@@ -13,7 +13,7 @@ import { markDailyDone, markGamePlayed } from '../cross-game';
 import './arena.css';
 import './social.css';
 import { mountHeader, toast } from '@tri-sites/design-system';
-import { initI18n, t } from '../../i18n/runtime';
+import { initI18n, t, mountLangSwitcher } from '../../i18n/runtime';
 import {
   countSolutions,
   dailyKeyStr,
@@ -41,6 +41,10 @@ mountHeader(($('header') as HTMLElement | null) ?? document.createElement('div')
     { labelKey: 'nav.games', href: '/games/24-game/' },
     ],
 });
+
+// 覆盖设计系统的 3 语 mountLangSwitcher 为 runtime.ts 的 10 语版本
+const _langHost = document.querySelector<HTMLElement>('#langHost');
+if (_langHost) mountLangSwitcher(_langHost);
 
 /* ===================== 状态 ===================== */
 const SUITS = ['♠', '♥', '♦', '♣'];

@@ -134,7 +134,9 @@
     "say_something": "说点什么…",
     "gold_title": "极速金牌 · ≤30 秒",
     "silver_title": "极速银牌 · ≤60 秒",
-    "bronze_title": "极速铜牌 · ≤120 秒"
+    "bronze_title": "极速铜牌 · ≤120 秒",
+    "formula_placeholder": "Pick cards + operators to make 24",
+    "best_today": "Best-of-day single round"
   },
   "sudoku": {
     "tab_practice": "练习",
@@ -150,7 +152,17 @@
     "grid_goes_brrr": "数独机启动中。",
     "compiled_to_win": "我被编译出来就是为了赢你的。",
     "nice_one": "不错。",
-    "warmup_over": "好，热身结束。"
+    "warmup_over": "好，热身结束。",
+    "claim_bot": "GridBot is placing cells…",
+    "win_cells": "You claimed the winning cell",
+    "bot_win_cells": "GridBot claimed the winning cell",
+    "mine_ish": "Hey, that was mine-ish.",
+    "bot_claimed": "Claimed.",
+    "bot_mine": "Mine.",
+    "bot_tick_tock": "Tick tock.",
+    "beep": "Beep.",
+    "fast_for_human": "You're fast for a human…",
+    "recalibrating": "Recalibrating…"
   },
   "pyr": {
     "tab_practice": "练习",
@@ -259,14 +271,20 @@
     "server_error": "服务器错误——请重试",
     "cell_already_filled": "该格已被占用",
     "cell_duplicate": "行列宫格有重复",
-    "equation_invalid": "等式无效"
+    "equation_invalid": "等式无效",
+    "killer_sudoku_generation_failed": "Could not generate a valid Killer Sudoku",
+    "pyramid_generation_failed": "Could not generate a valid Equation Pyramid",
+    "invalid_value": "Invalid value",
+    "invalid_index": "Invalid index"
   },
   "share": {
     "score_title": "🏆 我的成绩",
     "copy_challenge": "📋 复制挑战卡",
     "copied_challenge": "✅ 已复制——粘贴到任意地方！",
     "copy_failed": "复制失败——长按卡片",
-    "download_image": "⬇ 保存图片"
+    "download_image": "⬇ 保存图片",
+    "close": "✕",
+    "share_wechat": "💬 Share"
   },
   "challenge": {
     "title": "挑战卡",
