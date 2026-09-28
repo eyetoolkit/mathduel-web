@@ -190,6 +190,7 @@ async function boot() {
   try {
     const me = await api('/teacher/me');
     if (me && me.teacher && me.teacher.name) $('who').textContent = '👋 ' + me.teacher.name;
+    if (me && me.anonymous) enterAnonMode();
     games = (await api('/teacher/games')).games || [];
     fillGames();
     classes = (await api('/teacher/classes')).classes || [];
