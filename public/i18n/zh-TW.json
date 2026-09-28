@@ -27,7 +27,8 @@
     "error": "錯誤",
     "network": "連接失敗，请检查網絡后重试。",
     "copied": "已複製",
-    "not_applicable": "—"
+    "not_applicable": "—",
+    "clear": "Clear"
   },
   "lang": {
     "switch": "語言",
@@ -52,7 +53,8 @@
   "site": {
     "name": "MathDuel",
     "sub": "纯静态 · 隐私优先 · 免费遊戲",
-    "tagline": "与全球競速解谜"
+    "tagline": "与全球競速解谜",
+    "title": "{site.name}"
   },
   "hero": {
     "eyebrow": "全球多人数学對戰",
@@ -377,5 +379,12 @@
     "worksheets": "練習題",
     "for_teachers": "給老師",
     "tagline": "MathDuel · 純靜態 · 隱私優先 · 免費遊戲"
+  },
+  "meta": {
+    "og_title": "{site.name} — {site.tagline}",
+    "og_desc": "Race the world to solve math puzzles — 24 Game, Sudoku, Equation Pyramid and more.",
+    "title_24": "24 Game — Race the world to make 24",
+    "title_sudoku": "Sudoku — Daily Challenge & Live Duel",
+    "title_pyr": "Equation Pyramid — Build the Formula"
   }
 }

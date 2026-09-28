@@ -27,7 +27,8 @@
     "error": "Erro",
     "network": "Falha na conexão. Verifique sua rede e tente novamente.",
     "copied": "Copiado",
-    "not_applicable": "—"
+    "not_applicable": "—",
+    "clear": "Clear"
   },
   "lang": {
     "switch": "Idioma",
@@ -52,7 +53,8 @@
   "site": {
     "name": "MathDuel",
     "sub": "Totalmente estático · Privacidade em primeiro lugar · Grátis para jogar",
-    "tagline": "Corra contra o mundo para resolver quebra-cabeças matemáticos"
+    "tagline": "Corra contra o mundo para resolver quebra-cabeças matemáticos",
+    "title": "{site.name}"
   },
   "hero": {
     "eyebrow": "Matemática multijogador global",
@@ -377,5 +379,12 @@
     "worksheets": "Folhas de exercícios",
     "for_teachers": "Para professores",
     "tagline": "MathDuel · Totalmente estático · Privacidade em primeiro lugar · Grátis para jogar"
+  },
+  "meta": {
+    "og_title": "{site.name} — {site.tagline}",
+    "og_desc": "Race the world to solve math puzzles — 24 Game, Sudoku, Equation Pyramid and more.",
+    "title_24": "24 Game — Race the world to make 24",
+    "title_sudoku": "Sudoku — Daily Challenge & Live Duel",
+    "title_pyr": "Equation Pyramid — Build the Formula"
   }
 }

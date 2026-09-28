@@ -27,7 +27,8 @@
     "error": "Error",
     "network": "Connection failed. Check your network and try again.",
     "copied": "Copied",
-    "not_applicable": "—"
+    "not_applicable": "—",
+    "clear": "Clear"
   },
   "lang": {
     "switch": "Language",
@@ -52,7 +53,8 @@
   "site": {
     "name": "MathDuel",
     "sub": "Pure static · Privacy-first · Free to play",
-    "tagline": "Race the world to solve math puzzles"
+    "tagline": "Race the world to solve math puzzles",
+    "title": "{site.name}"
   },
   "hero": {
     "eyebrow": "Global multiplayer math",
@@ -377,5 +379,12 @@
     "worksheets": "Worksheets",
     "for_teachers": "For teachers",
     "tagline": "MathDuel · Pure static · Privacy-first · Free to play"
+  },
+  "meta": {
+    "og_title": "{site.name} — {site.tagline}",
+    "og_desc": "Race the world to solve math puzzles — 24 Game, Sudoku, Equation Pyramid and more.",
+    "title_24": "24 Game — Race the world to make 24",
+    "title_sudoku": "Sudoku — Daily Challenge & Live Duel",
+    "title_pyr": "Equation Pyramid — Build the Formula"
   }
 }

@@ -27,7 +27,8 @@
     "error": "エラー",
     "network": "接続に失敗しました。ネットワークを確認して再試行してください。",
     "copied": "コピーしました",
-    "not_applicable": "—"
+    "not_applicable": "—",
+    "clear": "Clear"
   },
   "lang": {
     "switch": "言語",
@@ -52,7 +53,8 @@
   "site": {
     "name": "MathDuel",
     "sub": "完全静的 · プライバシー優先 · 無料プレイ",
-    "tagline": "世界と競い合い、数学パズルを解こう"
+    "tagline": "世界と競い合い、数学パズルを解こう",
+    "title": "{site.name}"
   },
   "hero": {
     "eyebrow": "グローバルマルチプレイヤー数学ゲーム",
@@ -377,5 +379,12 @@
     "worksheets": "ワークシート",
     "for_teachers": "先生向け",
     "tagline": "MathDuel · 完全静的 · プライバシー優先 · 無料プレイ"
+  },
+  "meta": {
+    "og_title": "{site.name} — {site.tagline}",
+    "og_desc": "Race the world to solve math puzzles — 24 Game, Sudoku, Equation Pyramid and more.",
+    "title_24": "24 Game — Race the world to make 24",
+    "title_sudoku": "Sudoku — Daily Challenge & Live Duel",
+    "title_pyr": "Equation Pyramid — Build the Formula"
   }
 }

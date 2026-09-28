@@ -27,7 +27,8 @@
     "error": "오류",
     "network": "연결에 실패했습니다. 네트워크를 확인한 후 다시 시도해 주세요.",
     "copied": "복사됨",
-    "not_applicable": "—"
+    "not_applicable": "—",
+    "clear": "Clear"
   },
   "lang": {
     "switch": "언어",
@@ -52,7 +53,8 @@
   "site": {
     "name": "MathDuel",
     "sub": "완전 정적 · 프라이버시 우선 · 무료 플레이",
-    "tagline": "전 세계와 경쟁하며 수학 퍼즐을 풀어보세요"
+    "tagline": "전 세계와 경쟁하며 수학 퍼즐을 풀어보세요",
+    "title": "{site.name}"
   },
   "hero": {
     "eyebrow": "글로벌 멀티플레이어 수학 게임",
@@ -377,5 +379,12 @@
     "worksheets": "워크시트",
     "for_teachers": "선생님용",
     "tagline": "MathDuel · 완전 정적 · 프라이버시 우선 · 무료 플레이"
+  },
+  "meta": {
+    "og_title": "{site.name} — {site.tagline}",
+    "og_desc": "Race the world to solve math puzzles — 24 Game, Sudoku, Equation Pyramid and more.",
+    "title_24": "24 Game — Race the world to make 24",
+    "title_sudoku": "Sudoku — Daily Challenge & Live Duel",
+    "title_pyr": "Equation Pyramid — Build the Formula"
   }
 }
