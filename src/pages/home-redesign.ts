@@ -13,7 +13,7 @@
 import type { GameDef } from './home';
 import { wireLobbyChrome } from './lobby-chrome';
 import { getTodaysDones, getDailyStreak, getBadges } from '../games/cross-game';
-import { t } from '../i18n/runtime';
+import { t, mountLangSwitcher } from '../i18n/runtime';
 
 const SHOW_BETA = (import.meta.env.VITE_SHOW_BETA ?? '') === '1';
 
@@ -242,7 +242,7 @@ function sidebarHtml(): string {
       ${teacherGroup}
     </nav>
     <div class="nav-foot">
-      <span class="lang-pill" title="${t('sidebar.lang_coming_soon')}"><b>EN</b></span>
+      <span id="langHost"></span>
       <span class="sb-copy">© 2026</span>
     </div>
   `;
@@ -461,6 +461,10 @@ export function renderHomeV2(): void {
   initCountdown();
   // 抽屉 / 遮罩 / 侧栏收窄统一走 pages/lobby-chrome（首页壳的收窄按钮 id 是 sbCollapse，
   // 该模块两个 id 都认）。此前这里另有一份同名实现，与 lobby 页那份容易漂移。
+  // 语言切换下拉（10 语）
+  const langHost = document.querySelector<HTMLElement>('#langHost');
+  if (langHost) mountLangSwitcher(langHost);
+
   wireLobbyChrome();
 }
 

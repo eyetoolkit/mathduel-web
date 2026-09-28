@@ -9,7 +9,7 @@
  * 用法：
  *   // HTML 声明式（推荐，自动覆盖）
  *   <button data-i18n="common.ok"></button>
- *   <input data-i18n-placeholder="battle.enter_name">
+ *   <input data-i18n-placeholder="mp.name_placeholder">
  *   <span data-i18n-vars='{"round":1,"total":10}' data-i18n="mp.round_get_ready"></span>
  *   <title data-i18n="site.title">
  *   <meta property="og:title" data-i18n="meta.og_title">

@@ -385,6 +385,24 @@
     "og_desc": "Race the world to solve math puzzles — 24 Game, Sudoku, Equation Pyramid and more.",
     "title_24": "24 Game — Race the world to make 24",
     "title_sudoku": "Sudoku — Daily Challenge & Live Duel",
-    "title_pyr": "Equation Pyramid — Build the Formula"
+    "title_pyr": "Equation Pyramid — Build the Formula",
+    "title_home": "{site.name} · 5 Premium Math Games — Play Free",
+    "og_title_home": "{site.name} — Race the world to solve math puzzles",
+    "og_desc_home": "Sudoku reasoning, 24-point speed math, equation climbs — six hand-picked math games. Same puzzle worldwide, no login, no ads.",
+    "title_24_lobby": "24 Game — Choose Your Mode · {site.name}",
+    "og_title_24_lobby": "24 Game — Choose Your Mode · {site.name}",
+    "og_desc_24": "Daily challenge, friend 1v1, 99-player race, solo & timed practice — same cards, the pressure changes.",
+    "title_s4": "Sudoku 4×4 — Choose Your Mode · {site.name}",
+    "og_title_s4": "Sudoku 4×4 — Choose Your Mode · {site.name}",
+    "og_desc_s4": "Solo, daily, timed, friend battles and random matches on a gentle 4×4 grid.",
+    "title_s6": "Sudoku 6×6 — Choose Your Mode · {site.name}",
+    "og_title_s6": "Sudoku 6×6 — Choose Your Mode · {site.name}",
+    "og_desc_s6": "Six numbers, no repeats. Daily, duel bot, timed runs — the small grid with the full sudoku language.",
+    "title_s9": "Sudoku 9×9 — Choose Your Mode · {site.name}",
+    "og_title_s9": "Sudoku 9×9 — Choose Your Mode · {site.name}",
+    "og_desc_s9": "Daily grid, duel bot, timed runs and solo practice — pick a difficulty and fill the grid.",
+    "title_pyr_lobby": "Equation Pyramid — Choose Your Mode · {site.name}",
+    "og_title_pyr_lobby": "Equation Pyramid — Choose Your Mode · {site.name}",
+    "og_desc_pyr": "Pick three cells in click order — the click order is the formula. Daily, duel bot, timed runs and solo."
   }
 }

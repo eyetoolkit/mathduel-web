@@ -28,7 +28,7 @@
     "network": "連接失敗，请检查網絡后重试。",
     "copied": "已複製",
     "not_applicable": "—",
-    "clear": "Clear"
+    "clear": "清除"
   },
   "lang": {
     "switch": "語言",
@@ -137,8 +137,8 @@
     "gold_title": "极速金牌 · ≤30 秒",
     "silver_title": "极速银牌 · ≤60 秒",
     "bronze_title": "极速铜牌 · ≤120 秒",
-    "formula_placeholder": "Pick cards + operators to make 24",
-    "best_today": "Best-of-day single round"
+    "formula_placeholder": "選擇卡片和運算符，算出 24",
+    "best_today": "今日最佳單局"
   },
   "sudoku": {
     "tab_practice": "練習",
@@ -155,16 +155,16 @@
     "compiled_to_win": "我被编译出来就是为了赢你的。",
     "nice_one": "不错。",
     "warmup_over": "好，熱身結束。",
-    "claim_bot": "GridBot is placing cells…",
-    "win_cells": "You claimed the winning cell",
-    "bot_win_cells": "GridBot claimed the winning cell",
-    "mine_ish": "Hey, that was mine-ish.",
-    "bot_claimed": "Claimed.",
-    "bot_mine": "Mine.",
-    "bot_tick_tock": "Tick tock.",
-    "beep": "Beep.",
-    "fast_for_human": "You're fast for a human…",
-    "recalibrating": "Recalibrating…"
+    "claim_bot": "GridBot 正在落子……",
+    "win_cells": "你搶到了制胜格子",
+    "bot_win_cells": "GridBot 搶到了制胜格子",
+    "mine_ish": "嘿，那格本來像是我的……",
+    "bot_claimed": "搶到了。",
+    "bot_mine": "我的。",
+    "bot_tick_tock": "嘀嗒嘀嗒。。",
+    "beep": "滴。",
+    "fast_for_human": "人類里算快的了…",
+    "recalibrating": "重新校準中…"
   },
   "pyr": {
     "tab_practice": "練習",
@@ -274,10 +274,10 @@
     "cell_already_filled": "该格已被占用",
     "cell_duplicate": "行列宫格有重复",
     "equation_invalid": "等式无效",
-    "killer_sudoku_generation_failed": "Could not generate a valid Killer Sudoku",
-    "pyramid_generation_failed": "Could not generate a valid Equation Pyramid",
-    "invalid_value": "Invalid value",
-    "invalid_index": "Invalid index"
+    "killer_sudoku_generation_failed": "無法生成有效的殺手數獨",
+    "pyramid_generation_failed": "無法生成有效的等式金字塔",
+    "invalid_value": "值無效",
+    "invalid_index": "索引無效"
   },
   "share": {
     "score_title": "🏆 我的成绩",
@@ -286,7 +286,7 @@
     "copy_failed": "複製失敗——长按卡片",
     "download_image": "⬇ 儲存图片",
     "close": "✕",
-    "share_wechat": "💬 Share"
+    "share_wechat": "💬 分享"
   },
   "challenge": {
     "title": "挑戰卡",
@@ -322,7 +322,7 @@
     "chip_same_daily": "每日同題"
   },
   "home_daily": {
-    "title": "Daily Challenge",
+    "title": "每日挑戰",
     "streak": "連續 {n} 天",
     "msg_zero": "試試今天的 Daily——<b>全球同題</b>。連續完成 5 天解鎖等級星標。",
     "msg_partial": "今日已完成 <b>{done}</b> / {total}——還差 {left} 個解鎖等級星標。",
@@ -330,7 +330,7 @@
     "until_reset": "距全球重置"
   },
   "home_weekly": {
-    "title": "Weekly Tournament",
+    "title": "每週錦標賽",
     "live": "直播中",
     "row": "{start} → {end} · {players} 名玩家 · 獎勵 🥇50🪙 🥈25🪙 🥉10🪙",
     "row_you": "我",
@@ -382,9 +382,27 @@
   },
   "meta": {
     "og_title": "{site.name} — {site.tagline}",
-    "og_desc": "Race the world to solve math puzzles — 24 Game, Sudoku, Equation Pyramid and more.",
-    "title_24": "24 Game — Race the world to make 24",
-    "title_sudoku": "Sudoku — Daily Challenge & Live Duel",
-    "title_pyr": "Equation Pyramid — Build the Formula"
+    "og_desc": "与世界競速解谜——24 Game、數獨、等式金字塔，纯靜態、无广告、免費玩。",
+    "title_24": "24 Game — 与世界競速做出 24",
+    "title_sudoku": "數獨 — 每日挑戰 & 实时对战",
+    "title_pyr": "等式金字塔 — 搭建你的公式",
+    "title_home": "{site.name} · 5 Premium Math Games — Play Free",
+    "og_title_home": "{site.name} — Race the world to solve math puzzles",
+    "og_desc_home": "Sudoku reasoning, 24-point speed math, equation climbs — six hand-picked math games. Same puzzle worldwide, no login, no ads.",
+    "title_24_lobby": "24 Game — Choose Your Mode · {site.name}",
+    "og_title_24_lobby": "24 Game — Choose Your Mode · {site.name}",
+    "og_desc_24": "Daily challenge, friend 1v1, 99-player race, solo & timed practice — same cards, the pressure changes.",
+    "title_s4": "Sudoku 4×4 — Choose Your Mode · {site.name}",
+    "og_title_s4": "Sudoku 4×4 — Choose Your Mode · {site.name}",
+    "og_desc_s4": "Solo, daily, timed, friend battles and random matches on a gentle 4×4 grid.",
+    "title_s6": "Sudoku 6×6 — Choose Your Mode · {site.name}",
+    "og_title_s6": "Sudoku 6×6 — Choose Your Mode · {site.name}",
+    "og_desc_s6": "Six numbers, no repeats. Daily, duel bot, timed runs — the small grid with the full sudoku language.",
+    "title_s9": "Sudoku 9×9 — Choose Your Mode · {site.name}",
+    "og_title_s9": "Sudoku 9×9 — Choose Your Mode · {site.name}",
+    "og_desc_s9": "Daily grid, duel bot, timed runs and solo practice — pick a difficulty and fill the grid.",
+    "title_pyr_lobby": "Equation Pyramid — Choose Your Mode · {site.name}",
+    "og_title_pyr_lobby": "Equation Pyramid — Choose Your Mode · {site.name}",
+    "og_desc_pyr": "Pick three cells in click order — the click order is the formula. Daily, duel bot, timed runs and solo."
   }
 }
