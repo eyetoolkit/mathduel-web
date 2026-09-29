@@ -401,6 +401,8 @@ body.rail .main { margin-left: var(--sb-rail); }
   body.home-v2 .burger svg { width: 18px; height: 18px; stroke: var(--ink); stroke-width: 2; stroke-linecap: round; }
   body.home-v2 .topbar .logo { font-size: 1.15rem; }
   body.home-v2 .topbar .btn-login { margin-left: auto; flex: none; padding: 8px 16px; }
+  /* 移动端顶栏的语言切换器挂点：推到右缘，与汉堡/Logo 同一行 */
+  body.home-v2 .topbar .tb-lang { margin-left: auto; display: inline-flex; align-items: center; }
 }
 @media (max-width: 979px) {
   body.home-v2 .wall-grid { grid-template-columns: repeat(3, 1fr); gap: 18px; }
