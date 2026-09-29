@@ -373,5 +373,27 @@
     "seo_desc": "数独の論理、24点計算、方程式のぼり、暗号解読 —— 厳選された数学ゲーム。世界中で同じ問題、ログイン不要、広告なし、ずっと無料。",
     "seo_og_title": "MathDuel · 厳選5つの数学ゲーム —— 無料で遊ぶ",
     "seo_og_desc": "数独の論理、24点計算、方程式のぼり、暗号解読 —— 厳選された数学ゲーム。世界中で同じ問題。"
+  },
+  "mp": {
+    "play_now": "今すぐプレイ",
+    "open_nav": "ナビを開く",
+    "collapse_nav": "ナビを折りたたむ",
+    "collapse_sidebar": "サイドバーを折りたたむ",
+    "toggle_theme": "テーマ切替",
+    "site_nav": "サイトナビ",
+    "coin_shop": "コインショップ 🪙",
+    "coming_soon": "近日公開",
+    "all_games": "すべてのゲーム",
+    "help": "ヘルプ",
+    "how_to_play": "遊び方",
+    "explore_family": "Duel ファミリーを見る",
+    "fam_board": "BoardDuel · チェス＆カード",
+    "fam_math": "MathDuel · 数学パズル",
+    "fam_memory": "MemoryDuel · 知識バトル",
+    "copy_line": "© 2026 MathDuel · 完全静的 · プライバシー第一 · 無料",
+    "game_sudoku4": "数独 4×4",
+    "game_sudoku9": "数独 9×9",
+    "game_sudoku6": "数独 6×6",
+    "game_pyramid": "等式ピラミッド"
   }
 }

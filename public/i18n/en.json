@@ -373,5 +373,27 @@
     "seo_desc": "Sudoku reasoning, 24-point speed math, equation climbs, and code-breaking — hand-picked math games. Same puzzle worldwide. No login, no ads, free forever.",
     "seo_og_title": "MathDuel · 5 Premium Math Games — Play Free",
     "seo_og_desc": "Sudoku reasoning, 24-point speed math, equation climbs, code-breaking — seven hand-picked math games. Same puzzle worldwide."
+  },
+  "mp": {
+    "play_now": "Play now",
+    "open_nav": "Open navigation",
+    "collapse_nav": "Collapse navigation",
+    "collapse_sidebar": "Collapse sidebar",
+    "toggle_theme": "Toggle theme",
+    "site_nav": "Site navigation",
+    "coin_shop": "Coin Shop 🪙",
+    "coming_soon": "Coming soon",
+    "all_games": "All games",
+    "help": "Help",
+    "how_to_play": "How to play",
+    "explore_family": "Explore the Duel family",
+    "fam_board": "BoardDuel · Chess & Card Games",
+    "fam_math": "MathDuel · Math Puzzle Games",
+    "fam_memory": "MemoryDuel · Knowledge Battles",
+    "copy_line": "© 2026 MathDuel · Pure static · Privacy-first · Free to play",
+    "game_sudoku4": "Sudoku 4×4",
+    "game_sudoku9": "Sudoku 9×9",
+    "game_sudoku6": "Sudoku 6×6",
+    "game_pyramid": "Equation Pyramid"
   }
 }

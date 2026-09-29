@@ -373,5 +373,27 @@
     "seo_desc": "Logique de sudoku, calcul rapide du 24, ascensions d’équations et décryptage : des jeux de maths sélectionnés. La même énigme dans le monde entier. Sans connexion, sans pub, gratuit pour toujours.",
     "seo_og_title": "MathDuel · 5 jeux de maths premium — jouez gratuitement",
     "seo_og_desc": "Logique de sudoku, calcul rapide du 24, ascensions d’équations et décryptage : des jeux de maths sélectionnés. La même énigme dans le monde entier."
+  },
+  "mp": {
+    "play_now": "Jouer maintenant",
+    "open_nav": "Ouvrir la navigation",
+    "collapse_nav": "Réduire la navigation",
+    "collapse_sidebar": "Réduire la barre latérale",
+    "toggle_theme": "Changer de thème",
+    "site_nav": "Navigation du site",
+    "coin_shop": "Boutique de pièces 🪙",
+    "coming_soon": "Bientôt disponible",
+    "all_games": "Tous les jeux",
+    "help": "Aide",
+    "how_to_play": "Comment jouer",
+    "explore_family": "Découvrez la famille Duel",
+    "fam_board": "BoardDuel · Échecs et cartes",
+    "fam_math": "MathDuel · Jeux de maths",
+    "fam_memory": "MemoryDuel · Batailles de connaissances",
+    "copy_line": "© 2026 MathDuel · 100 % statique · Respect de la vie privée · Gratuit",
+    "game_sudoku4": "Sudoku 4×4",
+    "game_sudoku9": "Sudoku 9×9",
+    "game_sudoku6": "Sudoku 6×6",
+    "game_pyramid": "Pyramide d’équations"
   }
 }
