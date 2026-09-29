@@ -376,5 +376,27 @@
     "seo_desc": "数独推理、24 点速算、等式攀登、密码破译 —— 精选数学游戏。全球同题，无需登录，无广告，永久免费。",
     "seo_og_title": "MathDuel · 5 款精品数学游戏 —— 免费畅玩",
     "seo_og_desc": "数独推理、24 点速算、等式攀登、密码破译 —— 精选数学游戏，全球同题。"
+  },
+  "mp": {
+    "play_now": "立即开始",
+    "open_nav": "打开导航",
+    "collapse_nav": "收起导航",
+    "collapse_sidebar": "收起侧栏",
+    "toggle_theme": "切换主题",
+    "site_nav": "站点导航",
+    "coin_shop": "金币商店 🪙",
+    "coming_soon": "敬请期待",
+    "all_games": "全部游戏",
+    "help": "帮助",
+    "how_to_play": "玩法说明",
+    "explore_family": "探索 Duel 家族",
+    "fam_board": "BoardDuel · 棋牌桌游",
+    "fam_math": "MathDuel · 数学益智",
+    "fam_memory": "MemoryDuel · 知识对战",
+    "copy_line": "© 2026 MathDuel · 纯静态 · 隐私优先 · 免费畅玩",
+    "game_sudoku4": "数独 4×4",
+    "game_sudoku9": "数独 9×9",
+    "game_sudoku6": "数独 6×6",
+    "game_pyramid": "等式金字塔"
   }
 }

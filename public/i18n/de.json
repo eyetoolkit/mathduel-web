@@ -373,5 +373,27 @@
     "seo_desc": "Sudoku-Logik, 24-Punkt-Kopfrechnen, Gleichungsaufstiege und Code-Knacken — handverlesene Mathe-Spiele. Weltweit dasselbe Rätsel. Kein Login, keine Werbung, für immer kostenlos.",
     "seo_og_title": "MathDuel · 5 Premium-Mathe-Spiele — kostenlos spielen",
     "seo_og_desc": "Sudoku-Logik, 24-Punkt-Kopfrechnen, Gleichungsaufstiege und Code-Knacken — handverlesene Mathe-Spiele. Weltweit dasselbe Rätsel."
+  },
+  "mp": {
+    "play_now": "Jetzt spielen",
+    "open_nav": "Navigation öffnen",
+    "collapse_nav": "Navigation einklappen",
+    "collapse_sidebar": "Seitenleiste einklappen",
+    "toggle_theme": "Design wechseln",
+    "site_nav": "Website-Navigation",
+    "coin_shop": "Münz-Shop 🪙",
+    "coming_soon": "Demnächst verfügbar",
+    "all_games": "Alle Spiele",
+    "help": "Hilfe",
+    "how_to_play": "Spielanleitung",
+    "explore_family": "Duel-Familie entdecken",
+    "fam_board": "BoardDuel · Brett- & Kartenspiele",
+    "fam_math": "MathDuel · Mathe-Rätsel",
+    "fam_memory": "MemoryDuel · Wissens-Duelle",
+    "copy_line": "© 2026 MathDuel · Rein statisch · Datenschutz zuerst · Kostenlos",
+    "game_sudoku4": "Sudoku 4×4",
+    "game_sudoku9": "Sudoku 9×9",
+    "game_sudoku6": "Sudoku 6×6",
+    "game_pyramid": "Gleichungs-Pyramide"
   }
 }
