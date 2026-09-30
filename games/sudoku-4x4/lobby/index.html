@@ -7,8 +7,8 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#F4F5F9" />
-  <title>Sudoku 4×4 — Choose Your Mode · MathDuel</title>
-  <meta name="description" content="Five gentle ways to play: solo practice, a daily seeded grid, a 45-second timed sprint, friend battles and random matches. Big tiles, friendly hints — perfect first sudoku for young solvers." />
+  <title data-i18n="ml.s4_seo_title">Sudoku 4×4 — Choose Your Mode · MathDuel</title>
+  <meta name="description" content="Five gentle ways to play: solo practice, a daily seeded grid, a 45-second timed sprint, friend battles and random matches. Big tiles, friendly hints — perfect first sudoku for young solvers." data-i18n-content="ml.s4_seo_desc" />
   <link rel="canonical" href="https://mathduel.games/games/sudoku-4x4/lobby/" />
   <!-- PWA + favicons -->
   <link rel="icon" href="/favicon.ico" sizes="any" />
@@ -22,14 +22,14 @@
   <meta property="og:image" content="https://mathduel.games/og-image.svg" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
-  <meta property="og:image:alt" content="Sudoku 4×4 — First grid for little solvers on MathDuel" />
+  <meta property="og:image:alt" content="Sudoku 4×4 — First grid for little solvers on MathDuel" data-i18n-content="ml.s4_seo_og_alt" />
   <meta property="og:title" content="Sudoku 4×4 — Choose Your Mode · MathDuel" />
-  <meta property="og:description" content="Solo, daily, timed, friend battles and random matches on a gentle 4×4 grid — fill 1–4." />
+  <meta property="og:description" content="Solo, daily, timed, friend battles and random matches on a gentle 4×4 grid — fill 1–4." data-i18n-content="ml.s4_seo_og_desc" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:site" content="@mathduel" />
   <meta name="twitter:creator" content="@mathduel" />
   <meta name="twitter:title" content="Sudoku 4×4 — Choose Your Mode · MathDuel" />
-  <meta name="twitter:description" content="Solo, daily, timed, friend battles and random matches on a gentle 4×4 grid — fill 1–4." />
+  <meta name="twitter:description" content="Solo, daily, timed, friend battles and random matches on a gentle 4×4 grid — fill 1–4." data-i18n-content="ml.s4_seo_tw_desc" />
   <meta name="twitter:image" content="https://mathduel.games/og-image.svg" />
   <link rel="alternate" hreflang="en" href="https://mathduel.games/games/sudoku-4x4/lobby/" />
   <link rel="alternate" hreflang="x-default" href="https://mathduel.games/games/sudoku-4x4/lobby/" />
@@ -229,13 +229,13 @@
   <section class="g-hero">
     <div class="wrap">
       <span class="gcover" aria-hidden="true"><svg role="img" aria-label="Sudoku 4×4"><use href="#cv-s4"/></svg></span>
-      <h1>Four digits. Big tiles. <em>First grid, big smiles.</em></h1>
-      <p class="sub">Every row, column and 2×2 box holds 1–4 exactly once. A gentle first sudoku for young solvers — same rules as the big grid, none of the pressure.</p>
+      <h1 data-i18n-html="ml.s4_hero_h1">Four digits. Big tiles. <em>First grid, big smiles.</em></h1>
+      <p class="sub" data-i18n="ml.s4_hero_sub">Every row, column and 2×2 box holds 1–4 exactly once. A gentle first sudoku for young solvers — same rules as the big grid, none of the pressure.</p>
       <div class="chips">
-        <span class="chip"><span class="dot"></span>Solo · Daily · Timed</span>
-        <span class="chip"><span class="dot"></span>Friend Battle · Random</span>
-        <span class="chip"><span class="dot"></span>Big friendly tiles</span>
-        <span class="chip"><span class="dot"></span>Logical hints</span>
+        <span class="chip"><span class="dot"></span><span data-i18n="ml.s4_chips_1">Solo · Daily · Timed</span></span>
+        <span class="chip"><span class="dot"></span><span data-i18n="ml.s4_chips_2">Friend Battle · Random</span></span>
+        <span class="chip"><span class="dot"></span><span data-i18n="ml.s4_chips_3">Big friendly tiles</span></span>
+        <span class="chip"><span class="dot"></span><span data-i18n="ml.s4_chips_4">Logical hints</span></span>
       </div>
       <div class="arb-grid4" id="heroGrid" aria-hidden="true"></div></a>
   </section>
@@ -243,27 +243,27 @@
   <!-- 模式选择 + 右栏信息 -->
   <div class="wrap lobby-grid">
     <section aria-labelledby="modesTitle">
-      <h2 class="sec-h" id="modesTitle">Choose your mode<small>Tap a card to jump straight in.</small></h2>
+      <h2 class="sec-h" id="modesTitle" data-i18n-html="ml.modes_title">Choose your mode<small data-i18n="ml.modes_subtitle">Tap a card to jump straight in.</small></h2>
       <div class="modes" id="modeGrid">
         <a class="mode" href="/games/sudoku-4x4/?mode=solo" data-mode="solo">
           <div class="mi" aria-hidden="true"><svg class="mi-ico" viewBox="0 0 24 24"><use href="#mi-solo"/></svg></div>
-          <div class="mt">Solo Practice</div>
+          <div class="mt" data-i18n="ml.mt_s4_solo">Solo Practice</div>
         </a>
         <a class="mode" href="/games/sudoku-4x4/?mode=daily" data-mode="daily">
           <div class="mi" aria-hidden="true"><svg class="mi-ico" viewBox="0 0 24 24"><use href="#mi-daily"/></svg></div>
-          <div class="mt">Daily Grid</div>
+          <div class="mt" data-i18n="ml.mt_s4_daily">Daily Grid</div>
         </a>
         <a class="mode" href="/games/sudoku-4x4/?mode=timed" data-mode="timed">
           <div class="mi" aria-hidden="true"><svg class="mi-ico" viewBox="0 0 24 24"><use href="#mi-timed"/></svg></div>
-          <div class="mt">Timed Sprint</div>
+          <div class="mt" data-i18n="ml.mt_s4_timed">Timed Sprint</div>
         </a>
         <a class="mode" href="/games/sudoku-4x4/?mode=battle" data-mode="friend">
           <div class="mi" aria-hidden="true"><svg class="mi-ico" viewBox="0 0 24 24"><use href="#mi-friend"/></svg></div>
-          <div class="mt">Friend Battle</div>
+          <div class="mt" data-i18n="ml.mt_s4_friend">Friend Battle</div>
         </a>
         <a class="mode" href="/games/sudoku-4x4/?mode=random" data-mode="random">
           <div class="mi" aria-hidden="true"><svg class="mi-ico" viewBox="0 0 24 24"><use href="#mi-random"/></svg></div>
-          <div class="mt">Random Match</div>
+          <div class="mt" data-i18n="ml.mt_s4_random">Random Match</div>
         </a>
       </div>
     </section>
@@ -271,10 +271,10 @@
     <!-- 右栏 -->
     <aside class="side">
       <section class="panel" aria-labelledby="boardTitle">
-        <h3 id="boardTitle">Your best times</h3>
-        <p class="pnote">Saved on this device only — beat your own record!</p>
+        <h3 id="boardTitle" data-i18n="ml.s4_panel1_title">Your best times</h3>
+        <p class="pnote" data-i18n="ml.s4_panel1_note">Saved on this device only — beat your own record!</p>
         <div id="bestRows" aria-live="polite">
-          <div class="arb-empty">Solve your first grid to set a record.</div>
+          <div class="arb-empty" data-i18n="ml.s4_panel1_empty">Solve your first grid to set a record.</div>
         </div>
         <a class="btn btn-amber block" href="/games/sudoku-4x4/?mode=solo" id="boardPlay" style="margin-top:12px"><span data-i18n="mp.play_now">Play now</span></a>
       </section>
@@ -282,9 +282,9 @@
       <section class="panel" aria-labelledby="rulesTitle">
         <h3 id="rulesTitle">How it works</h3>
         <div class="arb-rules">
-          <div class="arb-rule"><b>1</b><span>Every row, column and 2×2 box holds 1–4 exactly once</span></div>
-          <div class="arb-rule"><b>2</b><span>Paper cells are fixed clues — everything else is yours to place</span></div>
-          <div class="arb-rule"><b>3</b><span>Stuck? The hint button explains the logic, not just the answer</span></div>
+          <div class="arb-rule"><b>1</b><span data-i18n="ml.s4_rules_1">Every row, column and 2×2 box holds 1–4 exactly once</span></div>
+          <div class="arb-rule"><b>2</b><span data-i18n="ml.s4_rules_2">Paper cells are fixed clues — everything else is yours to place</span></div>
+          <div class="arb-rule"><b>3</b><span data-i18n="ml.s4_rules_3">Stuck? The hint button explains the logic, not just the answer</span></div>
         </div>
       </section>
     </aside>
@@ -292,12 +292,12 @@
 
   <!-- How to play -->
   <section class="how wrap" aria-labelledby="howTitle">
-    <h2 class="sec-h" id="howTitle">How to play<small>Look → place → smile.</small></h2>
+    <h2 class="sec-h" id="howTitle" data-i18n-html="ml.s4_how_h2">How to play<small data-i18n="ml.s4_how_small">Look → place → smile.</small></h2>
     <div class="how-grid">
-      <div class="step"><span class="sn">1</span><b>Find a row or box</b><span>Pick any row, column or 2×2 box that's almost full — it's the easiest place to start.</span></div>
-      <div class="step"><span class="sn">2</span><b>Spot the missing digit</b><span>Which of 1–4 is missing? If only one digit can fit, that's your answer!</span></div>
-      <div class="step"><span class="sn">3</span><b>Tap and place</b><span>Tap the cell, tap the number. Duplicates light up instantly so mistakes never stick.</span></div>
-      <div class="step"><span class="sn">4</span><b>Finish and celebrate</b><span>Fill every cell to complete the grid — then race a friend or beat the daily best time.</span></div>
+      <div class="step"><span class="sn">1</span><b data-i18n="ml.s4_steps_1_title">Find a row or box</b><span data-i18n="ml.s4_steps_1_body">Pick any row, column or 2×2 box that's almost full — it's the easiest place to start.</span></div>
+      <div class="step"><span class="sn">2</span><b data-i18n="ml.s4_steps_2_title">Spot the missing digit</b><span data-i18n="ml.s4_steps_2_body">Which of 1–4 is missing? If only one digit can fit, that's your answer!</span></div>
+      <div class="step"><span class="sn">3</span><b data-i18n="ml.s4_steps_3_title">Tap and place</b><span data-i18n="ml.s4_steps_3_body">Tap the cell, tap the number. Duplicates light up instantly so mistakes never stick.</span></div>
+      <div class="step"><span class="sn">4</span><b data-i18n="ml.s4_steps_4_title">Finish and celebrate</b><span data-i18n="ml.s4_steps_4_body">Fill every cell to complete the grid — then race a friend or beat the daily best time.</span></div>
   </section>
 </main>
 
