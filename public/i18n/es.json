@@ -440,7 +440,8 @@
     "mp_ws_p1_cont": "cada set se genera al instante, así que nunca hay dos iguales.",
     "mp_ws_p1_cont2": "Imprime con la clave de respuestas para deberes, acabados tempranos o suplencias.",
     "mp_ws_cta": "Empieza con <b>24 Game</b> — el favorito del aula.",
-    "mp_ws_p1_full": "Elige un juego arriba, escoge una dificultad y genera un set nuevo de problemas — cada set se genera al instante, así que nunca hay dos iguales. Imprime con la clave de respuestas para deberes, acabados tempranos o suplencias."
+    "mp_ws_p1_full": "Elige un juego arriba, escoge una dificultad y genera un set nuevo de problemas — cada set se genera al instante, así que nunca hay dos iguales. Imprime con la clave de respuestas para deberes, acabados tempranos o suplencias.",
+    "mp_nav_privacy": "Privacidad"
   },
   "ml": {
     "tier_bronze": "Bronce",

@@ -440,7 +440,8 @@
     "mp_ws_p1_cont": "每套题目都是现场生成，没有两张卷子是一样的。",
     "mp_ws_p1_cont2": "打印时附答案，适合课后作业、先完成者或代课备用。",
     "mp_ws_cta": "从 <b>24 点</b> 开始 —— 课堂最爱。",
-    "mp_ws_p1_full": "Pick a game above, choose a difficulty, and generate a fresh puzzle set — every set is generated on the spot, so no two are alike. Print it with the answer key for homework, early-finishers or substitute plans."
+    "mp_ws_p1_full": "Pick a game above, choose a difficulty, and generate a fresh puzzle set — every set is generated on the spot, so no two are alike. Print it with the answer key for homework, early-finishers or substitute plans.",
+    "mp_nav_privacy": "Privacy"
   },
   "ml": {
     "tier_bronze": "Bronze",
