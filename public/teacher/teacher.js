@@ -15,6 +15,8 @@
 const $ = (id) => document.getElementById(id);
 const API = '/api';
 const TS_SITEKEY = '0x4AAAAAAE9UnLMYQbPPsK5Q';   // 与主站 auth-modal 同 key
+/* i18n：运行时就绪前回退英文兜底文案；切换语言后由 i18n:change 重绘 */
+const T = (k, d, v) => { try { const r = window.t ? window.t(k, v) : null; return r && r !== k ? r : d; } catch (e) { return d; } };
 
 let classes = [];
 let current = null;
@@ -100,22 +102,22 @@ function enterAnonMode() {
   try { $('auth').style.display = 'none'; } catch (e) {}
   try { $('logoutBtn').style.display = 'none'; } catch (e) {}
   const who = $('who');
-  if (who) who.textContent = '👋 Demo · 免登陆';
+  if (who) who.textContent = T('tn.anon_demo', '👋 Demo · no sign-in');
 }
 
 /* ─── login / signup 双模式 ─── */
 let authMode = 'login';
-const HINTS = {
-  login: 'Sign in with your MathDuel account to open your classes.',
-  signup: 'Create a free account — teachers and players share the same account system. We\u2019ll email you a verification link.',
-};
+const HINTS = () => ({
+  login: T('tn.hint_login', 'Sign in with your MathDuel account to open your classes.'),
+  signup: T('tn.hint_signup', 'Create a free account — teachers and players share the same account system. We\u2019ll email you a verification link.'),
+});
 function setAuthMode(mode) {
   authMode = mode;
   $('tabLogin').classList.toggle('on', mode === 'login');
   $('tabSignup').classList.toggle('on', mode === 'signup');
   $('authName').style.display = mode === 'signup' ? '' : 'none';
-  $('authHint').textContent = HINTS[mode];
-  $('authSend').textContent = mode === 'signup' ? 'Create account' : 'Sign in';
+  $('authHint').textContent = HINTS()[mode];
+  $('authSend').textContent = mode === 'signup' ? T('tn.signup', 'Create account') : T('tn.signin', 'Sign in');
   $('authErr').textContent = '';
   $('authPass').autocomplete = mode === 'signup' ? 'new-password' : 'current-password';
 }
@@ -128,31 +130,31 @@ $('tabSignup').addEventListener('click', () => setAuthMode('signup'));
 $('oauthGoogle').addEventListener('click', () => { location.href = '/api/auth/oauth/google'; });
 $('oauthGithub').addEventListener('click', () => { location.href = '/api/auth/oauth/github'; });
 
-const LOGIN_ERRORS = {
-  turnstile_failed: 'Human check failed — please retry.',
-  invalid_credentials: 'Wrong email or password.',
-  email_not_verified: 'Please verify your email first — we sent you a link when you registered.',
-};
-const REGISTER_ERRORS = {
-  turnstile_failed: 'Human check failed — please retry.',
-  invalid_email: 'That email address doesn\u2019t look right.',
-  password_too_short: 'Password must be at least 8 characters.',
-  nickname_length_invalid: 'Name must be 2\u201320 characters.',
-  email_already_registered: 'This email already has an account — switch to Sign in.',
-  ip_register_limit: 'Too many sign-ups from this network today — try again tomorrow.',
-  email_service_unavailable: 'Sign-up is temporarily unavailable — please try again later.',
-};
+const LOGIN_ERRORS = () => ({
+  turnstile_failed: T('tn.err_login_turnstile', 'Human check failed — please retry.'),
+  invalid_credentials: T('tn.err_login_creds', 'Wrong email or password.'),
+  email_not_verified: T('tn.err_login_verify', 'Please verify your email first — we sent you a link when you registered.'),
+});
+const REGISTER_ERRORS = () => ({
+  turnstile_failed: T('tn.err_reg_turnstile', 'Human check failed — please retry.'),
+  invalid_email: T('tn.err_reg_email', 'That email address doesn\u2019t look right.'),
+  password_too_short: T('tn.err_reg_pwshort', 'Password must be at least 8 characters.'),
+  nickname_length_invalid: T('tn.err_reg_name', 'Name must be 2\u201320 characters.'),
+  email_already_registered: T('tn.err_reg_exists', 'This email already has an account — switch to Sign in.'),
+  ip_register_limit: T('tn.err_reg_iplimit', 'Too many sign-ups from this network today — try again tomorrow.'),
+  email_service_unavailable: T('tn.err_reg_emailsvc', 'Sign-up is temporarily unavailable — please try again later.'),
+});
 
 $('authSend').addEventListener('click', async () => {
   const email = $('authEmail').value.trim();
   const password = $('authPass').value;
-  if (!email || !password) { showAuth('Email and password are required.'); return; }
+  if (!email || !password) { showAuth(T('tn.err_fill', 'Email and password are required.')); return; }
   $('authSend').disabled = true;
   $('authErr').textContent = '';
   try {
     if (authMode === 'signup') {
       const nickname = $('authName').value.trim();
-      if (nickname.length < 2 || nickname.length > 20) { showAuth('Please enter your name (2\u201320 characters).'); return; }
+      if (nickname.length < 2 || nickname.length > 20) { showAuth(T('tn.err_name_len', 'Please enter your name (2\u201320 characters).')); return; }
       const res = await fetch(API + '/auth/register', {
         method: 'POST',
         credentials: 'same-origin',
@@ -162,13 +164,13 @@ $('authSend').addEventListener('click', async () => {
       const j = await res.json().catch(() => ({}));
       resetTurnstile();
       if (!res.ok) {
-        showAuth(REGISTER_ERRORS[j.error] || (j.error || 'Sign-up failed'));
+        showAuth(REGISTER_ERRORS()[j.error] || (j.error || T('tn.err_signup_failed', 'Sign-up failed')));
         return;
       }
       // 注册成功 → 切回登录，引导去邮箱验证
       $('authPass').value = '';
       setAuthMode('login');
-      showAuth('Account created! Check your inbox for the verification link, then sign in here.');
+      showAuth(T('tn.err_verify_sent', 'Account created! Check your inbox for the verification link, then sign in here.'));
       return;
     }
     const res = await fetch(API + '/auth/login', {
@@ -180,14 +182,14 @@ $('authSend').addEventListener('click', async () => {
     const j = await res.json().catch(() => ({}));
     resetTurnstile();
     if (!res.ok) {
-      showAuth(LOGIN_ERRORS[j.error] || (j.error || 'Login failed'));
+      showAuth(LOGIN_ERRORS()[j.error] || (j.error || T('tn.err_login_failed', 'Login failed')));
       return;
     }
     hideAuth();
     await boot();
   } catch (e) {
     resetTurnstile();
-    showAuth('Network error — please retry.');
+    showAuth(T('tn.err_network', 'Network error — please retry.'));
   } finally {
     $('authSend').disabled = false;
   }
@@ -196,7 +198,7 @@ $('authSend').addEventListener('click', async () => {
 $('logoutBtn').addEventListener('click', async () => {
   try { await fetch(API + '/auth/logout', { method: 'POST', credentials: 'same-origin' }); } catch (e) { /* ignore */ }
   classes = []; current = null; assignment = null; report = null; roster = [];
-  showAuth('Signed out.');
+  showAuth(T('tn.signed_out', 'Signed out.'));
 });
 
 /* ─── boot ─── */
@@ -213,7 +215,7 @@ async function boot() {
     if (current) await loadClass(current);
     else {
       emptyState();
-      toast('Create your first class to start');
+      toast(T('tn.toast_first_class', 'Create your first class to start'));
     }
   } catch (e) {
     if (e.message !== 'auth_required') toast('⚠ ' + e.message);
@@ -286,11 +288,11 @@ function renderRail() {
     b.className = 'cls' + (c.id === current ? ' on' : '');
     const words = String(c.name || '??').trim().split(/\s+/);
     const code = (words[words.length - 1] || '??').replace(/[^A-Za-z0-9]/g, '').slice(0, 4).toUpperCase() || '??';
-    b.innerHTML = `<span class="ci">${esc(code)}</span><span><span class="cn">${esc(c.name)}</span><br><span class="cs">${esc(c.grade || 'class')}</span></span><span class="cdel" title="Delete class">✕</span>`;
+    b.innerHTML = `<span class="ci">${esc(code)}</span><span><span class="cn">${esc(c.name)}</span><br><span class="cs">${esc(c.grade || 'class')}</span></span><span class="cdel" title="${esc(T('tn.delete_class_title', 'Delete class'))}">✕</span>`;
     b.addEventListener('click', () => loadClass(c.id));
     b.querySelector('.cdel').addEventListener('click', async (ev) => {
       ev.stopPropagation();
-      if (!confirm('Delete class "' + c.name + '" with all its assignments and reports? This cannot be undone.')) return;
+      if (!confirm(T('tn.confirm_del_class', 'Delete class "{name}" with all its assignments and reports? This cannot be undone.', { name: c.name }))) return;
       try {
         await api('/teacher/classes/' + c.id, { method: 'DELETE' });
         classes = classes.filter((x) => x.id !== c.id);
@@ -300,7 +302,7 @@ function renderRail() {
         }
         if (current) await loadClass(current);
         else { renderRail(); emptyState(); }
-        toast('🗑 Class deleted');
+        toast(T('tn.toast_class_deleted', '🗑 Class deleted'));
       } catch (e) { toast('⚠ ' + e.message); }
     });
     rail.insertBefore(b, add);
@@ -329,7 +331,7 @@ function renderTrendView() {
   const pts = ((d && d.points) || []).filter((p) => p.accuracy != null);
   host.style.display = '';
   if (pts.length < 2) {
-    host.innerHTML = '<div class="tr-hl">📊 Progress trend</div><div class="mini">Finish at least two assignments to see the class trend line.</div>';
+    host.innerHTML = '<div class="tr-hl">' + T('tn.trend_title', '📊 Progress trend') + '</div><div class="mini">' + T('tn.trend_need_two', 'Finish at least two assignments to see the class trend line.') + '</div>';
     return;
   }
   const W = 560, H = 110, PAD = 10;
@@ -344,15 +346,15 @@ function renderTrendView() {
   const first = pts[0].accuracy, last = pts[pts.length - 1].accuracy;
   const delta = last - first;
   const arrow = delta > 2 ? '📈 +' + delta : delta < -2 ? '📉 ' + delta : '➖ ' + (delta > 0 ? '+' : '') + delta;
-  host.innerHTML = '<div class="tr-hl">📊 Progress trend · last ' + pts.length + ' assignments' +
-    '<span class="tr-delta">' + arrow + ' pts</span></div>' +
+  host.innerHTML = '<div class="tr-hl">' + T('tn.trend_last_n', '📊 Progress trend · last {n} assignments', { n: pts.length }) +
+    '<span class="tr-delta">' + arrow + ' ' + T('tn.trend_pts', 'pts') + '</span></div>' +
     '<svg viewBox="0 0 ' + W + ' ' + H + '" class="tr-svg" role="img" aria-label="Class accuracy across assignments">' +
     '<polyline points="' + poly + '" fill="none" stroke="#3730A3" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>' + dots + '</svg>' +
     '<div class="tr-x">' + pts.map((p) => '<span>' + esc(String(p.title || '').slice(0, 16)) + '</span>').join('') + '</div>';
 }
 
 /* ─── M1：技能热力图（学生 × 技能正确率矩阵，数据来自 24 点自动标签）─── */
-const SKILL_LABEL = { div: '÷ division', mul: '× multiply', mix: '×± mixed', bracket: '( ) brackets', carry: 'carry', borrow: 'borrow' };
+const SKILL_LABEL = () => ({ div: T('tn.skill_div', '÷ division'), mul: T('tn.skill_mul', '× multiply'), mix: T('tn.skill_mix', '×± mixed'), bracket: T('tn.skill_bracket', '( ) brackets'), carry: T('tn.skill_carry', 'carry'), borrow: T('tn.skill_borrow', 'borrow') });
 function renderSkillMap(rep) {
   const ttl = $('skmTtl');
   const host = $('skillmap');
@@ -363,7 +365,7 @@ function renderSkillMap(rep) {
   if (!any) { ttl.style.display = 'none'; host.style.display = 'none'; host.innerHTML = ''; return; }
   ttl.style.display = ''; host.style.display = '';
   let html = '<div class="skm"><div class="skm-row skm-head"><span class="skm-code"></span>' +
-    sk.map((s) => '<span class="skm-col">' + esc(SKILL_LABEL[s.tag] || s.tag) + '</span>').join('') + '</div>';
+    sk.map((s) => '<span class="skm-col">' + esc(SKILL_LABEL()[s.tag] || s.tag) + '</span>').join('') + '</div>';
   for (const r of rows) {
     if (!r.skills || !Object.keys(r.skills).length) continue;
     html += '<div class="skm-row"><span class="skm-code">' + esc(r.code) + '</span>' +
@@ -371,11 +373,11 @@ function renderSkillMap(rep) {
         const cell = r.skills[s.tag];
         if (!cell) return '<span class="skm-cell na">·</span>';
         const cls = cell.acc >= 80 ? 'good' : cell.acc >= 40 ? 'mid' : 'low';
-        const label = SKILL_LABEL[s.tag] || s.tag;
+        const label = SKILL_LABEL()[s.tag] || s.tag;
         return '<span class="skm-cell ' + cls + '" title="' + esc(r.code) + ' · ' + esc(label) + ': ' + cell.ok + '/' + cell.n + ' correct">' + cell.acc + '</span>';
       }).join('') + '</div>';
   }
-  html += '</div><div class="mini" style="margin-top:6px">Green ≥80% · amber 40–79 · red &lt;40 · "·" = not attempted yet. Every recommendation starts from evidence you can open and check.</div>';
+  html += '</div><div class="mini" style="margin-top:6px">' + T('tn.skm_legend', 'Green ≥80% · amber 40–79 · red &lt;40 · "·" = not attempted yet. Every recommendation starts from evidence you can open and check.') + '</div>';
   host.innerHTML = html;
 }
 
@@ -384,12 +386,12 @@ function renderOverview() {
   const rows = report.rows || [];
   const sm = report.summary || {};
   $('aGame').textContent = assignment.gameLabel || assignment.game;
-  $('aMode').textContent = assignment.mode === 'battle' ? '🏅 Competition (rated)' : '📝 Practice (no rating)';
+  $('aMode').textContent = assignment.mode === 'battle' ? T('tn.opt_battle', '🏅 Competition (rated)') : T('tn.opt_practice', '📝 Practice (no rating)');
   $('aDone').textContent = sm.completed || 0;
   $('aTotal').textContent = sm.students || 0;
   $('aPend').textContent = Math.max(0, (sm.students || 0) - (sm.started || 0));
   const due = assignment.dueAt ? new Date(assignment.dueAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : null;
-  $('aDue').textContent = due ? '📅 due ' + due : '📅 no due';
+  $('aDue').textContent = due ? T('tn.due_on', '📅 due {date}', { date: due }) : T('tn.no_due', '📅 no due');
 
   // A1：报告首屏先给结论（谁没掌握 / 最难的一批 / 还没开始的人）
   renderInsights(report);
@@ -397,14 +399,14 @@ function renderOverview() {
   renderTrendView();        // M2：趋势卡（缓存命中即渲染）
 
   // 班级运算薄弱点（服务端算好的百分比）
-  $('weakTtl').textContent = 'Class weak spot · ' + (assignment.gameLabel || assignment.game);
+  $('weakTtl').textContent = T('tn.weak_ttl', 'Class weak spot') + ' · ' + (assignment.gameLabel || assignment.game);
   const w = $('weak');
   w.innerHTML = '';
   if (!(report.ops || []).length) {
     // 服务端对不上报运算符的游戏（数独/金字塔）返回空 ops —— 不再渲染 0% 假条形
     const msg = assignment.game === '24-game'
-      ? 'No attempts yet — students need to finish a round first.'
-      : 'Operator breakdown applies to 24-Point assignments. Per-student accuracy is shown below.';
+      ? T('tn.weak_no_attempts', 'No attempts yet — students need to finish a round first.')
+      : T('tn.weak_not_24', 'Operator breakdown applies to 24-Point assignments. Per-student accuracy is shown below.');
     w.innerHTML = '<div class="mini" style="padding:10px 0">' + msg + '</div>';
   } else (report.ops || []).forEach(({ op, sym, v }) => {
     if (op !== 'divide' && op !== 'multiply' && op !== 'add' && op !== 'subtract') return;
@@ -420,10 +422,10 @@ function renderOverview() {
 
   const g = $('glance');
   g.innerHTML = '';
-  [['✅ Completion', (sm.completion || 0) + '%'],
-   ['🎯 Avg accuracy', (sm.avgAcc || 0) + '%'],
-   ['⏱ Avg solve time', fmtMs(sm.avgMs || 0)],
-   ['👥 Started', `${sm.started || 0}/${sm.students || 0}`]].forEach(([k, v]) => {
+  [[T('tn.glance_completion', '✅ Completion'), (sm.completion || 0) + '%'],
+   [T('tn.glance_acc', '🎯 Avg accuracy'), (sm.avgAcc || 0) + '%'],
+   [T('tn.glance_time', '⏱ Avg solve time'), fmtMs(sm.avgMs || 0)],
+   [T('tn.glance_started', '👥 Started'), `${sm.started || 0}/${sm.students || 0}`]].forEach(([k, v]) => {
     const el = document.createElement('div');
     el.className = 'oprow hi';
     el.innerHTML = `<span class="op" style="width:auto">${k}</span><span class="mini" style="margin-left:auto;font-family:var(--disp);font-weight:700;color:var(--ink)">${esc(String(v))}</span>`;
@@ -432,23 +434,23 @@ function renderOverview() {
   const gaps = (report.ops || []).slice().filter(o => ['divide', 'multiply', 'add', 'subtract'].includes(o.op)).sort((a, b) => a.v - b.v);
   const biggest = gaps[0];
   if (!gaps.length) {
-    $('glanceNote').textContent = rows.length ? 'Summary based on accuracy and completion.' : 'Waiting for student attempts.';
+    $('glanceNote').textContent = rows.length ? T('tn.note_summary', 'Summary based on accuracy and completion.') : T('tn.note_waiting', 'Waiting for student attempts.');
   } else {
     $('glanceNote').textContent = biggest.v < 70
-      ? `${biggest.sym} combinations are the class's biggest gap — worth a reteach.`
-      : 'No major gaps — the class is on track.';
+      ? T('tn.note_gap', '{sym} combinations are the class\u2019s biggest gap — worth a reteach.', { sym: biggest.sym })
+      : T('tn.note_ontrack', 'No major gaps — the class is on track.');
   }
 
   const tb = $('stuBody');
   tb.innerHTML = '';
   if (!rows.length) {
-    tb.innerHTML = '<tr><td colspan="5" class="mini" style="padding:14px">No student codes yet. Add a roster, or let students join with the room code.</td></tr>';
+    tb.innerHTML = '<tr><td colspan="5" class="mini" style="padding:14px">' + T('tn.no_students', 'No student codes yet. Add a roster, or let students join with the room code.') + '</td></tr>';
     return;
   }
   rows.forEach((r) => {
     const tr = document.createElement('tr');
     tr.className = 'clickable';
-    tr.title = 'Click for round-by-round detail';
+    tr.title = T('tn.row_hint', 'Click for round-by-round detail');
     tr.addEventListener('click', () => openStudent(r.code));
     const doneOk = assignment.rounds ? r.solved >= assignment.rounds : r.solved > 0;
     const ak = r.acc >= 85;
@@ -468,7 +470,7 @@ function renderBoard() {
   $('bClass').textContent = `${c ? c.name : 'Class'} · ${assignment.gameLabel || assignment.game}`;
   $('bTitle').textContent = assignment.title || '—';
   $('bCode').textContent = assignment.roomCode || '—';
-  $('bTime').textContent = `⏱ ${assignment.timeLimit ? assignment.timeLimit + 's' : 'untimed'} · ${assignment.rounds || '—'} rounds`;
+  $('bTime').textContent = `⏱ ${assignment.timeLimit ? assignment.timeLimit + 's' : T('tn.untimed', 'untimed')} · ${T('tn.n_rounds', '{n} rounds', { n: assignment.rounds || '—' })}`;
   $('bDone').textContent = `✅ ${(report && report.summary && report.summary.started) || 0}/${(report && report.summary && report.summary.students) || 0}`;
 }
 
@@ -489,9 +491,9 @@ function renderInsights(rep) {
     const sev = it.severity || 'info';
     let act = '';
     if (it.action && it.action.type === 'reteach') {
-      act = '<button class="ins-act" data-act="reteach">↺ Re-teach these</button>';
+      act = '<button class="ins-act" data-act="reteach">' + T('tn.reteach_btn', '↺ Re-teach these') + '</button>';
     } else if (it.action && it.action.type === 'copy_invite') {
-      act = '<button class="ins-act" data-act="copy">🔗 Copy invite</button>';
+      act = '<button class="ins-act" data-act="copy">' + T('tn.copy_invite', '🔗 Copy invite') + '</button>';
     }
     html += `<div class="ins-item sev-${esc(sev)}">`
       + `<span class="ins-ic">${esc(it.icon || '')}</span>`
@@ -504,7 +506,7 @@ function renderInsights(rep) {
 
 /* ─── A2：从洞察一键生成再练作业 ─── */
 async function reteachFromReport() {
-  if (!assignment) { toast('No assignment loaded'); return; }
+  if (!assignment) { toast(T('tn.toast_no_asg', 'No assignment loaded')); return; }
   if (!await ensureAuth()) return;
   try {
     const d = await api('/teacher/assignments/' + assignment.id + '/reteach', { method: 'POST', body: JSON.stringify({}) });
@@ -514,7 +516,7 @@ async function reteachFromReport() {
     $('roomBox').style.display = 'flex';
     $('qrBox').style.display = 'none';
     await loadClass(current);
-    toast('↺ Re-teach room ' + d.roomCode + ' ready for ' + (d.targetedCount || 0) + ' student(s)');
+    toast(T('tn.toast_reteach', '↺ Re-teach room {code} ready for {n} student(s)', { code: d.roomCode, n: d.targetedCount || 0 }));
   } catch (e) { toast('⚠ ' + e.message); }
 }
 
@@ -523,7 +525,7 @@ function emptyState() {
   $('aGame').textContent = '—';
   $('aMode').textContent = '—';
   ['weak', 'glance', 'stuBody'].forEach((s) => $(s).innerHTML = '');
-  $('weak').innerHTML = '<div class="mini" style="padding:10px 0">Assign your first practice to see class data.</div>';
+  $('weak').innerHTML = '<div class="mini" style="padding:10px 0">' + T('tn.empty_assign', 'Assign your first practice to see class data.') + '</div>';
   const sel = $('asgSel'); if (sel) { sel.style.display = 'none'; sel.innerHTML = ''; }
   const dab = $('delAsgBtn'); if (dab) dab.style.display = 'none';
   const ib = $('insights');
@@ -555,7 +557,7 @@ function syncTimeField() {
   $('fTime').disabled = isPrac;
   $('fTime').style.opacity = isPrac ? '.5' : '1';
   const lbl = $('fTimeLbl');
-  if (lbl) lbl.textContent = isPrac ? 'TIME PER ROUND (s) — untimed' : 'TIME PER ROUND (s)';
+  if (lbl) lbl.textContent = isPrac ? T('tn.f_time_untimed', 'TIME PER ROUND (s) — untimed') : T('tn.f_time', 'TIME PER ROUND (s)');
 }
 $('fMode').addEventListener('change', syncTimeField);
 syncTimeField();   // 默认 practice → 初始即禁用
@@ -585,7 +587,7 @@ async function pollLive() {
     tb.innerHTML = '';
     const lb = d.leaderboard || [];
     if (!lb.length) {
-      tb.innerHTML = '<tr><td colspan="5" class="mini" style="padding:14px">Waiting for students to join…</td></tr>';
+      tb.innerHTML = '<tr><td colspan="5" class="mini" style="padding:14px">' + T('tn.waiting_join', 'Waiting for students to join…') + '</td></tr>';
     }
     lb.slice(0, 20).forEach((r) => {
       const tr = document.createElement('tr');
@@ -594,7 +596,7 @@ async function pollLive() {
       tb.appendChild(tr);
     });
     $('bDone').textContent = `✅ ${d.summary.started}/${d.summary.students}`;
-    $('bLive').textContent = '● live · updated ' + new Date().toLocaleTimeString();
+    $('bLive').textContent = T('tn.live_updated', '● live · updated') + ' ' + new Date().toLocaleTimeString();
     $('bLive').className = 'pg on';
   } catch (e) { /* 轮询失败静默，下次再试 */ }
 }
@@ -602,14 +604,14 @@ async function pollLive() {
 /* ─── classes ─── */
 $('newc').addEventListener('click', async () => {
   if (!await ensureAuth()) return;
-  const name = prompt('Class name (e.g. Class 4B)');
+  const name = prompt(T('tn.prompt_class_name', 'Class name (e.g. Class 4B)'));
   if (!name) return;
-  const grade = prompt('Grade (e.g. Grade 4 / Year 3)', 'Grade 4');
+  const grade = prompt(T('tn.prompt_grade', 'Grade (e.g. Grade 4 / Year 3)'), 'Grade 4');
   try {
     const d = await api('/teacher/classes', { method: 'POST', body: JSON.stringify({ name, grade }) });
     classes.push(d.class);
     await loadClass(d.class.id);
-    toast('Created ' + name);
+    toast(T('tn.toast_created', 'Created {name}', { name }));
   } catch (e) { toast('⚠ ' + e.message); }
 });
 $('addc').addEventListener('click', () => $('newc').click());
@@ -629,14 +631,14 @@ $('rosterSave').addEventListener('click', async () => {
     });
     roster = d.roster || [];
     $('rosterBox').style.display = 'none';
-    toast('👥 Roster saved — ' + roster.length + ' codes');
+    toast(T('tn.toast_roster', '👥 Roster saved — {n} codes', { n: roster.length }));
     await loadClass(current);
   } catch (e) { toast('⚠ ' + e.message); }
 });
 
 /* ─── assignment generation：房间码来自服务端 ─── */
 $('genBtn').addEventListener('click', async () => {
-  if (!current) { toast('Pick or create a class first'); return; }
+  if (!current) { toast(T('tn.toast_pick_class', 'Pick or create a class first')); return; }
   const dueRaw = $('fDue').value;
   try {
     const d = await api('/teacher/assignments', {
@@ -659,13 +661,13 @@ $('genBtn').addEventListener('click', async () => {
     $('roomBox').style.display = 'flex';
     $('qrBox').style.display = 'none';
     await loadClass(current);
-    toast('🚀 Room ' + d.roomCode + ' ready — share with the class');
+    toast(T('tn.toast_room_ready', '🚀 Room {code} ready — share with the class', { code: d.roomCode }));
   } catch (e) { toast('⚠ ' + e.message); }
 });
 
 $('copyBtn').addEventListener('click', async () => {
   const txt = $('roomUrl').textContent;
-  try { await navigator.clipboard.writeText(txt); toast('🔗 Invite copied to clipboard'); }
+  try { await navigator.clipboard.writeText(txt); toast(T('tn.toast_invite_copied', '🔗 Invite copied to clipboard')); }
   catch (e) { toast('🔗 ' + txt); }
 });
 
@@ -680,7 +682,7 @@ $('qrBtn').addEventListener('click', () => {
 /* 投影：新开大屏页（超大房间码 + 入房二维码），课堂一体机/白板直接全屏 */
 $('projBtn').addEventListener('click', () => {
   const c = ($('roomCode').textContent || '').trim();
-  if (!c) { toast('Generate a room first'); return; }
+  if (!c) { toast(T('tn.toast_gen_first', 'Generate a room first')); return; }
   const t = (assignment && assignment.title) || '';
   window.open('/teacher/project/?c=' + encodeURIComponent(c) + '&t=' + encodeURIComponent(t), '_blank', 'noopener');
 });
@@ -710,13 +712,13 @@ function drawQR(cv, text) {
   } catch (e) {
     const ctx = cv.getContext('2d');
     if (ctx) { ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, cv.width, cv.height); }
-    toast('▦ QR unavailable — use the invite link instead');
+    toast(T('tn.toast_qr_unavailable', '▦ QR unavailable — use the invite link instead'));
   }
 }
 
 /* ─── CSV export ─── */
 $('expBtn').addEventListener('click', () => {
-  if (!report || !assignment) { toast('Nothing to export yet'); return; }
+  if (!report || !assignment) { toast(T('tn.toast_nothing_export', 'Nothing to export yet')); return; }
   const c = classes.find((x) => x.id === current);
   const rows = [['student_code', 'rounds_solved', 'rounds_attempted', 'accuracy_pct', 'avg_time_s', 'weak_op']];
   (report.rows || []).forEach((r) => rows.push([r.code, r.solved, r.attempted || 0, r.rounds ? r.acc : '', r.avgMs ? (r.avgMs / 1000).toFixed(1) : '', r.weak || '']));
@@ -728,7 +730,7 @@ $('expBtn').addEventListener('click', () => {
   a.download = `${(c ? c.name : 'class')}-${assignment.roomCode || 'report'}.csv`;
   a.click();
   URL.revokeObjectURL(url);
-  toast('📊 CSV exported');
+  toast(T('tn.toast_csv', '📊 CSV exported'));
 });
 
 /* ─── misc ─── */
@@ -746,10 +748,10 @@ $('asgSel').addEventListener('change', async () => {
 });
 $('delAsgBtn').addEventListener('click', async () => {
   if (!assignment) return;
-  if (!confirm('Delete this assignment and its report? This cannot be undone.')) return;
+  if (!confirm(T('tn.confirm_del_asg', 'Delete this assignment and its report? This cannot be undone.'))) return;
   try {
     await api('/teacher/assignments/' + assignment.id, { method: 'DELETE' });
-    toast('🗑 Assignment deleted');
+    toast(T('tn.toast_asg_deleted', '🗑 Assignment deleted'));
     await loadClass(current);
   } catch (e) { toast('⚠ ' + e.message); }
 });
@@ -762,13 +764,13 @@ async function openStudent(code) {
     $('sTitle').textContent = code + ' · ' + (assignment.gameLabel || assignment.game);
     const recs = d.records || [];
     $('sBody').innerHTML = recs.length
-      ? '<table><thead><tr><th>Round</th><th>Result</th><th>Time</th><th>Ops</th></tr></thead><tbody>'
+      ? '<table><thead><tr><th>' + T('tn.dr_th_round', 'Round') + '</th><th>' + T('tn.dr_th_result', 'Result') + '</th><th>' + T('tn.dr_th_time', 'Time') + '</th><th>' + T('tn.dr_th_ops', 'Ops') + '</th></tr></thead><tbody>'
         + recs.map((r) => '<tr><td>#' + esc(r.round) + '</td><td>'
-          + (r.solved ? '✅ solved' : '❌ ' + (r.wrong || 0) + ' wrong') + '</td><td>'
+          + (r.solved ? T('tn.dr_solved', '✅ solved') : T('tn.dr_wrong', '❌ {n} wrong', { n: r.wrong || 0 })) + '</td><td>'
           + (r.solved && r.duration_ms ? fmtMs(r.duration_ms) : '—') + '</td><td class="mini">'
           + (esc((r.ops || []).join(' ')) || '—') + '</td></tr>').join('')
         + '</tbody></table>'
-      : '<p class="mini">No rounds recorded yet.</p>';
+      : '<p class="mini">' + T('tn.dr_no_rounds', 'No rounds recorded yet.') + '</p>';
     $('smodal').style.display = 'flex';
   } catch (e) { toast('⚠ ' + e.message); }
 }
@@ -789,15 +791,27 @@ document.querySelector('.tabs').addEventListener('keydown', (e) => {
 /* ─── turnstile 未加载完成时的友好提示（此前只会永远 turnstile_failed）─── */
 $('authSend').addEventListener('click', () => {
   if (tsToken === 'skip' && !window.turnstile) {
-    showAuth('Human check is still loading — wait a few seconds, or use Google/GitHub below.');
+    showAuth(T('tn.err_turnstile_loading', 'Human check is still loading — wait a few seconds, or use Google/GitHub below.'));
     waitTurnstile();
   }
 }, true); /* capture：提示后主 handler 照常执行，token 就绪即正常提交 */
+
+/* 语言切换后重绘：auth 界面 + 计时字段标签 + 已加载的报告视图 */
+const redrawI18n = () => {
+  try { setAuthMode(authMode); } catch (e) {}
+  try { syncTimeField(); } catch (e) {}
+  try { if (assignment) { renderOverview(); renderBoard(); } } catch (e) {}
+};
+window.addEventListener('i18n:ready', redrawI18n);
+window.addEventListener('i18n:change', () => {
+  redrawI18n();
+});
 
 /* screenshot hook: ?view=assign | ?view=board pre-switches tabs */
 const v = new URLSearchParams(location.search).get('view');
 if (v === 'assign' || v === 'board') switchTab(v);
 
 /* ─── start ─── */
+setAuthMode(authMode);   // 初始即按当前语言渲染 auth 文案（authHint/authSend 由 JS 管理，不加 data-i18n）
 waitTurnstile();
 (async () => { await ensureAuth().then((authed) => { if (!authed) showAuth(); else boot(); }); })();
