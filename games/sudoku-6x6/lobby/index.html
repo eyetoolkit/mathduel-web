@@ -7,8 +7,8 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#F4F5F9" />
-  <title>Sudoku 6×6 — Choose Your Mode · MathDuel</title>
-  <meta name="description" content="Six numbers, no repeats. Today’s global daily, a duel against the bot, timed runs or solo practice — the small grid with the full sudoku language." />
+  <title data-i18n="ml.s6_seo_title">Sudoku 6×6 — Choose Your Mode · MathDuel</title>
+  <meta name="description" content="Six numbers, no repeats. Today’s global daily, a duel against the bot, timed runs or solo practice — the small grid with the full sudoku language." data-i18n-content="ml.s6_seo_desc" />
   <link rel="canonical" href="https://mathduel.games/games/sudoku-6x6/lobby/" />
   <!-- PWA + favicons -->
   <link rel="icon" href="/favicon.ico" sizes="any" />
@@ -22,14 +22,14 @@
   <meta property="og:image" content="https://mathduel.games/og-image.svg" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
-  <meta property="og:image:alt" content="Sudoku 6×6 — the quick grid on MathDuel" />
+  <meta property="og:image:alt" content="Sudoku 6×6 — the quick grid on MathDuel" data-i18n-content="ml.s6_seo_og_alt" />
   <meta property="og:title" content="Sudoku 6×6 — Choose Your Mode · MathDuel" />
-  <meta property="og:description" content="Six numbers, no repeats. Today’s global daily, a duel against the bot, timed runs or solo practice — the small grid with the full sudoku language." />
+  <meta property="og:description" content="Six numbers, no repeats. Today’s global daily, a duel against the bot, timed runs or solo practice — the small grid with the full sudoku language." data-i18n-content="ml.s6_seo_og_desc" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:site" content="@mathduel" />
   <meta name="twitter:creator" content="@mathduel" />
   <meta name="twitter:title" content="Sudoku 6×6 — Choose Your Mode · MathDuel" />
-  <meta name="twitter:description" content="Six numbers, no repeats. Today’s global daily, a duel against the bot, timed runs or solo practice — the small grid with the full sudoku language." />
+  <meta name="twitter:description" content="Six numbers, no repeats. Today’s global daily, a duel against the bot, timed runs or solo practice — the small grid with the full sudoku language." data-i18n-content="ml.s6_seo_tw_desc" />
   <meta name="twitter:image" content="https://mathduel.games/og-image.svg" />
   <link rel="alternate" hreflang="en" href="https://mathduel.games/games/sudoku-6x6/lobby/" />
   <link rel="alternate" hreflang="x-default" href="https://mathduel.games/games/sudoku-6x6/lobby/" />
@@ -229,12 +229,12 @@
   <section class="g-hero">
     <div class="wrap">
       <span class="gcover" aria-hidden="true"><svg role="img" aria-label="Sudoku 6×6"><use href="#cv-s6"/></svg></span>
-      <h1>Six digits. Same rule. <em>Twice as fast.</em></h1>
-      <p class="sub">Six numbers, no repeats in any row, column or 2×3 block. Pick how you want to play — the grid is the same, the pressure isn’t.</p>
+      <h1 data-i18n-html="ml.s6_hero_h1">Six digits. Same rule. <em>Twice as fast.</em></h1>
+      <p class="sub" data-i18n="ml.s6_hero_sub">Six numbers, no repeats in any row, column or 2×3 block. Pick how you want to play — the grid is the same, the pressure isn’t.</p>
       <div class="chips">
-        <span class="chip"><span class="dot"></span>Solo · Duel · Daily</span>
-        <span class="chip"><span class="dot"></span>45s timed runs</span>
-        <span class="chip"><span class="dot"></span>Global daily grid</span>
+        <span class="chip"><span class="dot"></span><span data-i18n="ml.s6_chips_1">Solo · Duel · Daily</span></span>
+        <span class="chip"><span class="dot"></span><span data-i18n="ml.s6_chips_2">45s timed runs</span></span>
+        <span class="chip"><span class="dot"></span><span data-i18n="ml.s6_chips_3">Global daily grid</span></span>
       </div>
       <div class="arb-grid6" id="heroGrid" aria-hidden="true"></div></a>
   </section>
@@ -242,72 +242,72 @@
   <!-- 模式选择 + 右栏信息 -->
   <div class="wrap lobby-grid">
     <section aria-labelledby="modesTitle">
-      <h2 class="sec-h" id="modesTitle">Choose your mode<small>Tap a card to jump straight in.</small></h2>
+      <h2 class="sec-h" id="modesTitle" data-i18n-html="ml.modes_title">Choose your mode<small data-i18n="ml.modes_subtitle">Tap a card to jump straight in.</small></h2>
       <div class="modes" id="modeGrid">
         <a class="mode daily" href="/games/sudoku-6x6/?mode=daily" data-mode="daily">
           <div class="mi" aria-hidden="true"><svg class="mi-ico" viewBox="0 0 24 24"><use href="#mi-daily"/></svg></div>
-          <div class="mt">Daily Grid <span class="tag-done" id="dailyTag" hidden>Done today</span></div>
+          <div class="mt"><span data-i18n="ml.mt_s6_daily">Daily Grid</span> <span class="tag-done" id="dailyTag" hidden data-i18n="ml.mt_done_today">Done today</span></div>
         </a>
         <a class="mode" href="/games/sudoku-6x6/?mode=timed" data-mode="timed">
           <div class="mi" aria-hidden="true"><svg class="mi-ico" viewBox="0 0 24 24"><use href="#mi-timed"/></svg></div>
-          <div class="mt">Timed Practice</div>
+          <div class="mt" data-i18n="ml.mt_s6_timed">Timed Practice</div>
         </a>
         <a class="mode" href="/games/sudoku-6x6/?mode=solo" data-mode="solo">
           <div class="mi" aria-hidden="true"><svg class="mi-ico" viewBox="0 0 24 24"><use href="#mi-solo"/></svg></div>
-          <div class="mt">Solo Practice</div>
+          <div class="mt" data-i18n="ml.mt_s6_solo">Solo Practice</div>
         </a>
         <a class="mode" href="/games/sudoku-6x6/?mode=battle" data-mode="friend">
           <div class="mi" aria-hidden="true"><svg class="mi-ico" viewBox="0 0 24 24"><use href="#mi-friend"/></svg></div>
-          <div class="mt">Friend 1v1</div>
+          <div class="mt" data-i18n="ml.mt_s6_friend">Friend 1v1</div>
         </a>
         <a class="mode" href="/games/sudoku-6x6/?mode=random" data-mode="random">
           <div class="mi" aria-hidden="true"><svg class="mi-ico" viewBox="0 0 24 24"><use href="#mi-random"/></svg></div>
-          <div class="mt">Random Match</div>
+          <div class="mt" data-i18n="ml.mt_s6_random">Random Match</div>
         </a>
       </div></section>
 
     <!-- 右栏 -->
     <aside class="side">
       <section class="panel" aria-labelledby="boardTitle">
-        <h3 id="boardTitle">Global Daily Grid</h3>
-        <p class="pnote">One seeded 6×6 per day — same puzzle for everyone, one shot.</p>
+        <h3 id="boardTitle" data-i18n="ml.s6_panel1_title">Global Daily Grid</h3>
+        <p class="pnote" data-i18n="ml.s6_panel1_note">One seeded 6×6 per day — same puzzle for everyone, one shot.</p>
         <div id="boardRows" aria-live="polite">
-          <div class="arb-empty">Loading today's board…</div>
-        <a class="btn btn-amber block" href="/games/sudoku-6x6/?mode=daily" id="boardPlay" style="margin-top:12px">Play today’s grid</a>
+          <div class="arb-empty" data-i18n="ml.loading">Loading today's board…</div>
+        <a class="btn btn-amber block" href="/games/sudoku-6x6/?mode=daily" id="boardPlay" style="margin-top:12px" data-i18n="ml.s6_panel1_cta">Play today’s grid</a>
       </section>
 
       <section class="panel" aria-labelledby="rulesTitle">
         <h3 id="rulesTitle">How it works</h3>
         <div class="arb-rules">
-          <div class="arb-rule"><b>1</b><span>Every row, column and 2×3 block holds 1–6 exactly once</span></div>
-          <div class="arb-rule"><b>2</b><span>Paper cells are fixed clues — everything else is yours to place</span></div>
-          <div class="arb-rule"><b>3</b><span>Duel: you and the bot each own half the empty cells — first side done wins</span></div>
-          <div class="arb-rule"><b>4</b><span>Wrong digits flash teal and cost you +2.5s in duels</span></div>
+          <div class="arb-rule"><b>1</b><span data-i18n="ml.s6_rules_1">Every row, column and 2×3 block holds 1–6 exactly once</span></div>
+          <div class="arb-rule"><b>2</b><span data-i18n="ml.s6_rules_2">Paper cells are fixed clues — everything else is yours to place</span></div>
+          <div class="arb-rule"><b>3</b><span data-i18n="ml.s6_rules_3">Duel: you and the bot each own half the empty cells — first side done wins</span></div>
+          <div class="arb-rule"><b>4</b><span data-i18n="ml.s6_rules_4">Wrong digits flash teal and cost you +2.5s in duels</span></div>
       </section>
     </aside>
   </div>
 
   <!-- How to play -->
   <section class="how wrap" aria-labelledby="howTitle">
-    <h2 class="sec-h" id="howTitle">How to play<small>Scan → place → clear the board.</small></h2>
+    <h2 class="sec-h" id="howTitle" data-i18n-html="ml.s6_how_h2">How to play<small data-i18n="ml.s6_how_small">Scan → place → clear the board.</small></h2>
     <div class="how-grid">
-      <div class="step"><span class="sn">1</span><b>Scan the grid</b><span>Six cells per row, six per column — fixed clues anchor every 2×3 block.</span></div>
-      <div class="step"><span class="sn">2</span><b>Place what you know</b><span>Tap a cell, tap a number. Duplicates light up instantly.</span></div>
-      <div class="step"><span class="sn">3</span><b>Race the bot</b><span>Duel splits the empty cells — first side done wins, mistakes cost +2.5s.</span></div>
-      <div class="step"><span class="sn">4</span><b>Chain your clears</b><span>Timed runs give 45 seconds — back-to-back grids build streaks.</span></div></a>
+      <div class="step"><span class="sn">1</span><b data-i18n="ml.s6_steps_1_title">Scan the grid</b><span data-i18n="ml.s6_steps_1_body">Six cells per row, six per column — fixed clues anchor every 2×3 block.</span></div>
+      <div class="step"><span class="sn">2</span><b data-i18n="ml.s6_steps_2_title">Place what you know</b><span data-i18n="ml.s6_steps_2_body">Tap a cell, tap a number. Duplicates light up instantly.</span></div>
+      <div class="step"><span class="sn">3</span><b data-i18n="ml.s6_steps_3_title">Race the bot</b><span data-i18n="ml.s6_steps_3_body">Duel splits the empty cells — first side done wins, mistakes cost +2.5s.</span></div>
+      <div class="step"><span class="sn">4</span><b data-i18n="ml.s6_steps_4_title">Chain your clears</b><span data-i18n="ml.s6_steps_4_body">Timed runs give 45 seconds — back-to-back grids build streaks.</span></div></a>
   </section>
 
   <!-- 天梯 -->
   <section class="ladder wrap" aria-label="Rank ladder">
     <div class="ladder-panel">
-      <div class="ladder-title">6×6 Sudoku Elo ladder<small>Wins here feed the global ladder · weekly reset</small></div>
+      <div class="ladder-title" data-i18n-html="ml.s6_ladder_title">6×6 Sudoku Elo ladder<small data-i18n="ml.s6_ladder_small">Wins here feed the global ladder · weekly reset</small></div>
       <div class="tiers">
-        <div class="tier"><i style="height:16px"></i><span>Bronze</span></div>
-        <div class="tier"><i style="height:22px"></i><span>Silver</span></div>
-        <div class="tier"><i style="height:28px"></i><span>Gold</span></div>
-        <div class="tier"><i style="height:34px"></i><span>Platinum</span></div>
-        <div class="tier"><i style="height:40px"></i><span>Diamond</span></div>
-        <div class="tier master"><i style="height:48px"></i><span>Master</span></div></a>
+        <div class="tier"><i style="height:16px"></i><span data-i18n="ml.tier_bronze">Bronze</span></div>
+        <div class="tier"><i style="height:22px"></i><span data-i18n="ml.tier_silver">Silver</span></div>
+        <div class="tier"><i style="height:28px"></i><span data-i18n="ml.tier_gold">Gold</span></div>
+        <div class="tier"><i style="height:34px"></i><span data-i18n="ml.tier_platinum">Platinum</span></div>
+        <div class="tier"><i style="height:40px"></i><span data-i18n="ml.tier_diamond">Diamond</span></div>
+        <div class="tier master"><i style="height:48px"></i><span data-i18n="ml.tier_master">Master</span></div></a>
     </div>
   </section>
 </main>

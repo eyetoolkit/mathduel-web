@@ -7,8 +7,8 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#F4F5F9" />
-  <title>24 Game — Choose Your Mode · MathDuel</title>
-  <meta name="description" content="Six ways to make 24: today's global daily, a friend room, a 99-player race, solo practice or timed practice. Same four cards every time — only the pressure changes." />
+  <title data-i18n="ml.g24_seo_title">24 Game — Choose Your Mode · MathDuel</title>
+  <meta name="description" content="Six ways to make 24: today's global daily, a friend room, a 99-player race, solo practice or timed practice. Same four cards every time — only the pressure changes." data-i18n-content="ml.g24_seo_desc" />
   <link rel="canonical" href="https://mathduel.games/games/24-game/lobby/" />
   <!-- PWA + favicons -->
   <link rel="icon" href="/favicon.ico" sizes="any" />
@@ -23,14 +23,14 @@
   <meta property="og:image" content="https://mathduel.games/og-image.svg" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
-  <meta property="og:image:alt" content="24 Game — Six ways to make 24 on MathDuel" />
+  <meta property="og:image:alt" content="24 Game — Six ways to make 24 on MathDuel" data-i18n-content="ml.g24_seo_og_alt" />
   <meta property="og:title" content="24 Game — Choose Your Mode · MathDuel" />
-  <meta property="og:description" content="Daily challenge, friend 1v1, 99-player race, solo & timed practice, random match. Same cards, the pressure changes." />
+  <meta property="og:description" content="Daily challenge, friend 1v1, 99-player race, solo & timed practice, random match. Same cards, the pressure changes." data-i18n-content="ml.g24_seo_og_desc" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:site" content="@mathduel" />
   <meta name="twitter:creator" content="@mathduel" />
   <meta name="twitter:title" content="24 Game — Choose Your Mode · MathDuel" />
-  <meta name="twitter:description" content="Six ways to make 24 — daily, friend room, race, solo & timed practice, random match." />
+  <meta name="twitter:description" content="Six ways to make 24 — daily, friend room, race, solo & timed practice, random match." data-i18n-content="ml.g24_seo_tw_desc" />
   <meta name="twitter:image" content="https://mathduel.games/og-image.svg" />
   <link rel="alternate" hreflang="en" href="https://mathduel.games/games/24-game/lobby/" />
   <link rel="alternate" hreflang="x-default" href="https://mathduel.games/games/24-game/lobby/" />
@@ -228,12 +228,12 @@
   <section class="g-hero">
     <div class="wrap">
       <span class="gcover" aria-hidden="true"><svg role="img" aria-label="24 Game"><use href="#cv-24"/></svg></span>
-      <h1>Four cards. One target. <em>Make 24.</em></h1>
-      <p class="sub">Multiply, divide, add or subtract — use all four cards exactly once. The fastest correct answer takes the round.</p>
+      <h1 data-i18n-html="ml.g24_hero_h1">Four cards. One target. <em>Make 24.</em></h1>
+      <p class="sub" data-i18n="ml.g24_hero_sub">Multiply, divide, add or subtract — use all four cards exactly once. The fastest correct answer takes the round.</p>
       <div class="chips">
-        <span class="chip"><span class="dot"></span>Solo · 1v1 · Daily</span>
-        <span class="chip"><span class="dot"></span>60s per deal</span>
-        <span class="chip"><span class="dot"></span>Global daily board</span>
+        <span class="chip"><span class="dot"></span><span data-i18n="ml.g24_chips_1">Solo · 1v1 · Daily</span></span>
+        <span class="chip"><span class="dot"></span><span data-i18n="ml.g24_chips_2">60s per deal</span></span>
+        <span class="chip"><span class="dot"></span><span data-i18n="ml.g24_chips_3">Global daily board</span></span>
       </div>
     </div>
   </section>
@@ -241,31 +241,31 @@
   <!-- 模式选择 + 右栏信息 -->
   <div class="wrap lobby-grid">
     <section aria-labelledby="modesTitle">
-      <h2 class="sec-h" id="modesTitle">Choose your mode<small>Tap a card to jump straight in.</small></h2>
+      <h2 class="sec-h" id="modesTitle" data-i18n-html="ml.modes_title">Choose your mode<small data-i18n="ml.modes_subtitle">Tap a card to jump straight in.</small></h2>
       <div class="modes" id="modeGrid">
         <a class="mode daily" href="/games/24-game/?mode=daily" data-mode="daily">
           <div class="mi" aria-hidden="true"><svg class="mi-ico" viewBox="0 0 24 24"><use href="#mi-daily"/></svg></div>
-          <div class="mt">Daily Challenge <span class="tag-done" id="dailyTag" hidden>Done</span></div>
+          <div class="mt"><span data-i18n="ml.mt_24_daily">Daily Challenge</span> <span class="tag-done" id="dailyTag" hidden data-i18n="ml.mt_done_today">Done</span></div>
         </a>
         <a class="mode" href="/games/24-game/?mode=battle&amp;size=2" data-mode="friend">
           <div class="mi" aria-hidden="true"><svg class="mi-ico" viewBox="0 0 24 24"><use href="#mi-friend"/></svg></div>
-          <div class="mt">Friend 1v1</div>
+          <div class="mt" data-i18n="ml.mt_24_friend">Friend 1v1</div>
         </a>
         <a class="mode" href="/games/24-game/?mode=battle&amp;size=99" data-mode="race">
           <div class="mi" aria-hidden="true"><svg class="mi-ico" viewBox="0 0 24 24"><use href="#mi-race"/></svg></div>
-          <div class="mt">Race · 99</div>
+          <div class="mt" data-i18n="ml.mt_24_race">Race · 99</div>
         </a>
         <a class="mode" href="/games/24-game/?mode=practice" data-mode="solo">
           <div class="mi" aria-hidden="true"><svg class="mi-ico" viewBox="0 0 24 24"><use href="#mi-solo"/></svg></div>
-          <div class="mt">Solo Practice</div>
+          <div class="mt" data-i18n="ml.mt_24_solo">Solo Practice</div>
         </a>
         <a class="mode" href="/games/24-game/?mode=timed" data-mode="timed">
           <div class="mi" aria-hidden="true"><svg class="mi-ico" viewBox="0 0 24 24"><use href="#mi-timed"/></svg></div>
-          <div class="mt">Timed Practice</div>
+          <div class="mt" data-i18n="ml.mt_24_timed">Timed Practice</div>
         </a>
         <a class="mode" href="/games/24-game/?mode=random" data-mode="random">
           <div class="mi" aria-hidden="true"><svg class="mi-ico" viewBox="0 0 24 24"><use href="#mi-random"/></svg></div>
-          <div class="mt">Random Match</div>
+          <div class="mt" data-i18n="ml.mt_24_random">Random Match</div>
           <span class="soon-pill">SOON</span>
           </a>
         </div>
@@ -274,24 +274,24 @@
     <!-- 右栏 -->
     <aside class="side">
       <section class="panel" aria-labelledby="boardTitle">
-        <h3 id="boardTitle">Global Daily Board</h3>
-        <p class="pnote">Top solvers on today's 5-card challenge.</p>
+        <h3 id="boardTitle" data-i18n="ml.panel24_board">Global Daily Board</h3>
+        <p class="pnote" data-i18n="ml.panel24_board_note">Top solvers on today's 5-card challenge.</p>
         <div id="boardRows" aria-live="polite">
-          <div class="arb-empty">Loading today's board…</div>
+          <div class="arb-empty" data-i18n="ml.loading">Loading today's board…</div>
         </div>
-        <a class="btn btn-amber block" href="/games/24-game/?mode=daily" id="boardPlay" style="margin-top:12px">Play today's challenge</a>
+        <a class="btn btn-amber block" href="/games/24-game/?mode=daily" id="boardPlay" style="margin-top:12px" data-i18n="ml.panel24_play_today">Play today's challenge</a>
       </section>
 
       <section class="panel" aria-labelledby="roomTitle">
-        <h3 id="roomTitle">Start a friend room</h3>
-        <p class="pnote">Private room, 4–6 character code. Your code and QR appear once the room is open.</p>
+        <h3 id="roomTitle" data-i18n="ml.room_title">Start a friend room</h3>
+        <p class="pnote" data-i18n="ml.room_note">Private room, 4–6 character code. Your code and QR appear once the room is open.</p>
         <label class="field" for="roomInput">
-          <span>Have a code? Join it</span>
-          <input id="roomInput" type="text" maxlength="6" placeholder="K7Q2R" autocomplete="off" spellcheck="false">
+          <span data-i18n="ml.room_label">Have a code? Join it</span>
+          <input id="roomInput" type="text" maxlength="6" placeholder="K7Q2R" data-i18n-placeholder="ml.room_ph" data-i18n-placeholder="ml.room_ph" autocomplete="off" spellcheck="false">
         </label>
         <div class="btn-row">
-          <a class="btn btn-amber" href="/games/24-game/?mode=battle&amp;size=2" id="createRoom">Create a room</a>
-          <button class="btn btn-ghost" id="joinRoom" type="button">Join</button>
+          <a class="btn btn-amber" href="/games/24-game/?mode=battle&amp;size=2" id="createRoom" data-i18n="ml.room_create">Create a room</a>
+          <button class="btn btn-ghost" id="joinRoom" type="button" data-i18n="ml.room_join">Join</button>
         </div>
         <p class="err" id="roomErr" role="alert"></p>
       </section>
@@ -300,26 +300,26 @@
 
   <!-- How to play -->
   <section class="how wrap" aria-labelledby="howTitle">
-    <h2 class="sec-h" id="howTitle">How to play<small>Deal → combine → solve. That's the whole game.</small></h2>
+    <h2 class="sec-h" id="howTitle" data-i18n-html="ml.g24_how_h2">How to play<small data-i18n="ml.g24_how_small">Deal → combine → solve. That's the whole game.</small></h2>
     <div class="how-grid">
-      <div class="step"><span class="sn">1</span><b>Get four cards</b><span>Numbers 1–13, a fresh deal every round — online and for your opponent too.</span></div>
-      <div class="step"><span class="sn">2</span><b>Combine to 24</b><span>Use + − × ÷ and every card exactly once. Parentheses are free.</span></div>
-      <div class="step"><span class="sn">3</span><b>Beat the clock</b><span>Daily deals give you 60 seconds each. Duel mode: first correct answer wins.</span></div>
-      <div class="step"><span class="sn">4</span><b>Climb the ladder</b><span>Every win moves your Elo across all three Duel sites. Weekly reset keeps it honest.</span></div>
+      <div class="step"><span class="sn">1</span><b data-i18n="ml.g24_steps_1_title">Get four cards</b><span data-i18n="ml.g24_steps_1_body">Numbers 1–13, a fresh deal every round — online and for your opponent too.</span></div>
+      <div class="step"><span class="sn">2</span><b data-i18n="ml.g24_steps_2_title">Combine to 24</b><span data-i18n="ml.g24_steps_2_body">Use + − × ÷ and every card exactly once. Parentheses are free.</span></div>
+      <div class="step"><span class="sn">3</span><b data-i18n="ml.g24_steps_3_title">Beat the clock</b><span data-i18n="ml.g24_steps_3_body">Daily deals give you 60 seconds each. Duel mode: first correct answer wins.</span></div>
+      <div class="step"><span class="sn">4</span><b data-i18n="ml.g24_steps_4_title">Climb the ladder</b><span data-i18n="ml.g24_steps_4_body">Every win moves your Elo across all three Duel sites. Weekly reset keeps it honest.</span></div>
     </div>
   </section>
 
   <!-- 天梯 -->
   <section class="ladder wrap" aria-label="Rank ladder">
     <div class="ladder-panel">
-      <div class="ladder-title">24-point Elo ladder<small>Wins here feed the global ladder · weekly reset</small></div>
+      <div class="ladder-title" data-i18n-html="ml.g24_ladder_title">24-point Elo ladder<small data-i18n="ml.g24_ladder_small">Wins here feed the global ladder · weekly reset</small></div>
       <div class="tiers">
-        <div class="tier"><i style="height:16px"></i><span>Bronze</span></div>
-        <div class="tier"><i style="height:22px"></i><span>Silver</span></div>
-        <div class="tier"><i style="height:28px"></i><span>Gold</span></div>
-        <div class="tier"><i style="height:34px"></i><span>Platinum</span></div>
-        <div class="tier"><i style="height:40px"></i><span>Diamond</span></div>
-        <div class="tier master"><i style="height:48px"></i><span>Master</span></div>
+        <div class="tier"><i style="height:16px"></i><span data-i18n="ml.tier_bronze">Bronze</span></div>
+        <div class="tier"><i style="height:22px"></i><span data-i18n="ml.tier_silver">Silver</span></div>
+        <div class="tier"><i style="height:28px"></i><span data-i18n="ml.tier_gold">Gold</span></div>
+        <div class="tier"><i style="height:34px"></i><span data-i18n="ml.tier_platinum">Platinum</span></div>
+        <div class="tier"><i style="height:40px"></i><span data-i18n="ml.tier_diamond">Diamond</span></div>
+        <div class="tier master"><i style="height:48px"></i><span data-i18n="ml.tier_master">Master</span></div>
       </div>
     </div>
   </section>
