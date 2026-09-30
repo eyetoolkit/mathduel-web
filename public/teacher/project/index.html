@@ -89,7 +89,7 @@
         <div class="step"><em>2</em> &nbsp;Scan the code</div>
         <div class="step"><em>3</em> &nbsp;You're in — no account needed</div>
       </div>
-      <div class="joinurl">mathduel.games/join</div>
+      <div class="joinurl">numeriduel.com/join</div>
     </div>
     <div class="board">
       <h2>Live standings <small id="cnt"></small></h2>
@@ -115,7 +115,7 @@
 
   /* 二维码指向万能 join 页（而非直链游戏页）：join 页会解析房间对应的游戏再跳转，
      换游戏/换模式不用重印投影页，也避免链接过长降低扫码成功率。 */
-  var target = 'https://mathduel.games/join/?c=' + encodeURIComponent(code);
+  var target = 'https://numeriduel.com/join/?c=' + encodeURIComponent(code);
   try {
     var qr = window.qrcode(0, 'M');
     qr.addData(target);

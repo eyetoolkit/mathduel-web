@@ -375,7 +375,7 @@ function footerHtml(): string {
       <div class="sf-title" data-i18n="math_home.f_family">Explore the Duel family</div>
       <div class="sf-matrix">
         <a class="sf-item" href="https://boardduel.com"><span class="pip" style="background:#2FC4C9"></span><span data-i18n="math_home.f_board">BoardDuel — Chess &amp; Card Games</span></a>
-        <a class="sf-item" href="https://mathduel.games"><span class="pip" style="background:#F59E0B"></span><span data-i18n="math_home.f_math">MathDuel — Math Puzzle Games</span></a>
+        <a class="sf-item" href="https://numeriduel.com"><span class="pip" style="background:#F59E0B"></span><span data-i18n="math_home.f_math">MathDuel — Math Puzzle Games</span></a>
         <a class="sf-item" href="https://memoryduel.com"><span class="pip" style="background:#4F46E5"></span><span data-i18n="math_home.f_memory">MemoryDuel — Knowledge Battles</span></a>
       </div>
       <div class="sf-links">

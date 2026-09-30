@@ -421,7 +421,8 @@
   // 命中 ?lang 后 i18n 会把它写进 localStorage，后续该站全站跟随。
   var SIBLING_HOSTS = Array.isArray(CFG.siblingHosts)
     ? CFG.siblingHosts
-    : ['mathduel.games', 'boardduel.com', 'memoryduel.com'];
+    // 改名过渡期（2026-09-30 起 12 个月）：mathduel.games 与 numeriduel.com 并存
+    : ['numeriduel.com', 'mathduel.games', 'boardduel.com', 'memoryduel.com'];
   function decorateCrossSiteLinks(lang) {
     try {
       if (!lang) return;
