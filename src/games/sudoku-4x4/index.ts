@@ -31,6 +31,16 @@ import { createSudokuAdapter } from '../_shared/mp-adapters/sudoku';
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T | null;
 
 initI18n();
+const i18nT = (key: string, vars?: Record<string, string | number>): string => {
+  try {
+    const w = window as unknown as { i18n?: { t: (k: string, v?: Record<string, string | number>) => string } };
+    if (w.i18n && typeof w.i18n.t === 'function') return w.i18n.t(key, vars);
+    const fallback = (window as unknown as { t?: (k: string) => string }).t;
+    if (typeof fallback === 'function') return fallback(key);
+  } catch { /* ignore */ }
+  return key;
+};
+
 mountHeader(($('header') as HTMLElement | null) ?? document.createElement('div'), {
   brandName: 'MathDuel',
   brandSub: 'Sudoku 4×4',
@@ -156,7 +166,7 @@ function resetBoard(keepClock = false): void {
   }
   st.running = true;
   conflictCache = findConflicts(st.grid);
-  $('result')!.textContent = 'Pick a cell, then a number';
+  $('result')!.textContent = i18nT('mg.sg_pick_first');
 }
 
 /* ═══ 计时 ═══ */
@@ -484,7 +494,7 @@ function winTimed(): void {
 
 function endTimed(): void {
   stopAll();
-  $('stMain')!.innerHTML = '⏱ Time!';
+  $('stMain')!.innerHTML = i18nT('mg.sg_timeout');
   const unsolved = Math.max(0, st.timedDealt - st.timedSolved);
   showModal(
     '<div class="s4-verdict">⏱ Time’s up</div>' +

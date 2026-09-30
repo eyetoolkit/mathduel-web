@@ -31,6 +31,16 @@ import { initShareBindings, openShareOverlay, renderQR } from './share';
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T | null;
 
 initI18n();
+const i18nT = (key: string, vars?: Record<string, string | number>): string => {
+  try {
+    const w = window as unknown as { i18n?: { t: (k: string, v?: Record<string, string | number>) => string } };
+    if (w.i18n && typeof w.i18n.t === 'function') return w.i18n.t(key, vars);
+    const fallback = (window as unknown as { t?: (k: string) => string }).t;
+    if (typeof fallback === 'function') return fallback(key);
+  } catch { /* ignore */ }
+  return key;
+};
+
 mountHeader(($('header') as HTMLElement | null) ?? document.createElement('div'), {
   brandName: 'MathDuel',
   brandSub: '24 · Card Table',
@@ -105,7 +115,7 @@ timer = 0;
   }, 1000);
   render();
   resultEl.className = 'result';
-  resultEl.textContent = 'Use each card once — make 24';
+  resultEl.textContent = i18nT('mg.g24_pick_first');
 }
 
 const prettyFormula = (f: string) => f.replace(/\*/g, ' × ').replace(/\//g, ' ÷ ').replace(/-/g, ' − ');
@@ -242,7 +252,7 @@ function clearFormula(): void {
   computeUsedIndices();
   render();
   resultEl.className = 'result';
-  resultEl.textContent = 'Use each card once — make 24';
+  resultEl.textContent = i18nT('mg.g24_pick_first');
 }
 
 const trim = (r: number) => (Math.round(r * 100) / 100).toString();
@@ -255,7 +265,7 @@ function checkAnswer(): void {
   for (const v of fVals) {
     if (numbers.indexOf(v) === -1) {
       resultEl.className = 'result';
-      resultEl.textContent = `Number ${v} is not in your cards`;
+      resultEl.textContent = i18nT('mg.g24_invalid_card', { value: v });
       return;
     }
   }
@@ -266,7 +276,7 @@ function checkAnswer(): void {
   for (const n of uniq) {
     if ((cnt[n] || 0) !== numbers.filter((x) => x === n).length) {
       resultEl.className = 'result';
-      resultEl.textContent = 'Each card must be used exactly once';
+      resultEl.textContent = i18nT('mg.g24_each_once');
       return;
     }
   }
@@ -275,17 +285,17 @@ function checkAnswer(): void {
     if (Math.abs(r - 24) < 0.0001) onWin();
     else {
       resultEl.className = 'result';
-      resultEl.textContent = `= ${trim(r)} — ${trim(24 - r)} away from 24`;
+      resultEl.textContent = `= ${trim(r)} — ${i18nT('mg.g24_away_from', { delta: trim(24 - r) })}`;
     }
   } catch {
     resultEl.className = 'result';
-    resultEl.textContent = 'Incomplete — keep typing';
+    resultEl.textContent = i18nT('mg.g24_incomplete');
   }
 }
 
 function onWin(): void {
   resultEl.className = 'result ok';
-  resultEl.textContent = '🎉 Solved!';
+  resultEl.textContent = i18nT('mg.g24_solved');
   formulaEl.classList.add('success');
   scores.solved++;
   saveScores();
@@ -365,7 +375,8 @@ function showAnswer(): void {
   if (p.startsWith('(') && p.endsWith(')')) p = p.slice(1, -1);
   showResult({ win: true, answer: ans[1] });
   resultEl.className = 'result ok';
-  resultEl.textContent = 'Answer: ' + p.replace(/\*/g, '×').replace(/\//g, '÷').replace(/-/g, '−') + ' = 24';
+  const _ans = p.replace(/\*/g, '×').replace(/\//g, '÷').replace(/-/g, '−');
+  resultEl.textContent = i18nT('mg.g24_answer', { formula: _ans });
   // 答案揭晓后锁定输入：清空式子与已用牌状态，并拒绝后续 append，防止"接着上一题往下算"
   // —— 同时把已用牌保留为视觉提示，玩家可点 New Deal 重新发牌
   formula = '';
@@ -569,7 +580,7 @@ function renderDailyPreStart(): void {
     '</div>';
   cardsEl.innerHTML = Array.from({ length: DAILY_N }, () => '<div class="cb"><span class="cb-q">?</span></div>').join('');
   resultEl.className = 'result';
-  resultEl.textContent = 'Ready to start the Daily Challenge';
+  resultEl.textContent = i18nT('mg.g24_ready_daily');
   const sb = $('dbStart');
   if (sb) sb.onclick = beginDaily;
 }
@@ -692,7 +703,7 @@ async function dailySolve(): Promise<void> {
       daily.solved = Math.max(0, daily.solved - 1);
       daily.submits[q] = { solved: false, solution: null, time: daily.limit };
       resultEl.className = 'result bad';
-      resultEl.textContent = '⏰ Server flagged timeout';
+      resultEl.textContent = i18nT('mg.g24_server_timeout');
       advanceDaily(false);
       return;
     }
@@ -1617,7 +1628,7 @@ function renderSide(): void {
   } else if (mode === 'daily') {
     const myStats =
       '<div class="panel"><h3>📈 My Stats</h3>' +
-      statRow('Solved', scores.solved) +
+      statRow(i18nT('mg.sg_st_solved'), scores.solved) +
       statRow('Skipped', scores.skipped) +
       statRow('Streak', combo) +
       '<div class="hint-step" style="margin-top:10px"><b>·</b><span>Same puzzle worldwide — race the clock</span></div></div>';
@@ -1642,7 +1653,7 @@ function renderSide(): void {
     sideEl.innerHTML =
       '<div class="panel"><h3>⏱ Timed Practice</h3>' +
       '<div class="hint-step"><b>1</b><span>60 seconds per deal — solve it before the clock runs out</span></div>' +
-      '<div class="hint-step"><b>2</b><span>Solved? The next deal starts straight away</span></div>' +
+      '<div class="hint-step"><b>2</b><span>{__I18N_SG_HINT_NEXT__}</span></div>' +
       '<div class="hint-step"><b>3</b><span>Time up reveals the answer, then deals again</span></div></div>' +
       '<div class="panel"><h3>📈 This Session</h3>' +
       statRow('Solved', timed.solved) +
@@ -1658,7 +1669,7 @@ function renderSide(): void {
       '<div class="hint-step"><b>3</b><span><b>Score</b>: faster and correct = longer streak</span></div>' +
       '<p class="brand-hint">A pocket puzzle born in the 1960s, now raced across continents. Five games, one Elo ladder — no login, no ads.</p></div>' +
       '<div class="panel"><h3>📈 My Stats</h3>' +
-      statRow('Solved', scores.solved) +
+      statRow(i18nT('mg.sg_st_solved'), scores.solved) +
       statRow('Skipped', scores.skipped) +
       statRow('Streak', combo) +
       '</div>';

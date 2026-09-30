@@ -34,6 +34,16 @@ import {
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T | null;
 
 initI18n();
+const i18nT = (key: string, vars?: Record<string, string | number>): string => {
+  try {
+    const w = window as unknown as { i18n?: { t: (k: string, v?: Record<string, string | number>) => string } };
+    if (w.i18n && typeof w.i18n.t === 'function') return w.i18n.t(key, vars);
+    const fallback = (window as unknown as { t?: (k: string) => string }).t;
+    if (typeof fallback === 'function') return fallback(key);
+  } catch { /* ignore */ }
+  return key;
+};
+
 mountHeader(($('header') as HTMLElement | null) ?? document.createElement('div'), {
   brandName: 'MathDuel',
   brandSub: 'Sudoku 9×9',
@@ -203,7 +213,7 @@ function resetBoard(keepClock = false): void {
     $('oppSub')!.textContent = botPaceText();
     renderOppStatus();
   }
-  $('result')!.textContent = st.mode === 'duel' ? 'Claim your cells before GridBot' : 'Pick a cell, then a number';
+  $('result')!.textContent = st.mode === 'duel' ? i18nT('mg.sg_duel_first') : i18nT('mg.sg_pick_first');
 }
 
 const botPaceText = (): string =>
@@ -599,7 +609,7 @@ function winTimed(): void {
 
 function endTimed(): void {
   stopAll();
-  $('stMain')!.innerHTML = '⏱ Time!';
+  $('stMain')!.innerHTML = i18nT('mg.sg_timeout');
   const unsolved = Math.max(0, st.timedDealt - st.timedSolved); // 发出 − 解出 = 没解完的
   showModal(
     '<div class="s9-verdict">⏱ Time’s up</div>' +

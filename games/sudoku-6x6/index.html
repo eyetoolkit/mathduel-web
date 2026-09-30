@@ -176,14 +176,14 @@
     <section class="board" id="boardCol" aria-label="Sudoku board">
       <div class="g24-bar">
         <nav class="tabs" id="tabs" aria-label="Game modes">
-          <button class="tab" data-mode="solo">Solo</button>
+          <button class="tab" data-mode="solo" data-i18n="mg.shared_tab_solo">Solo</button>
           <button class="tab" data-mode="daily">Daily Grid</button>
-          <button class="tab" data-mode="timed">Timed</button>
+          <button class="tab" data-mode="timed" data-i18n="mg.shared_tab_timed">Timed</button>
           <button class="tab" data-mode="duel">Duel Bot</button>
         </nav>
         <div class="top-stats">
           <span class="chip" id="stMain">Ready</span>
-          <button class="icon-btn" id="backLobby" title="Back to lobby">🏠 Lobby</button>
+          <button class="icon-btn" id="backLobby" title="Back to lobby" data-i18n-title="mg.shared_lobby" data-i18n="mg.shared_lobby">🏠 Lobby</button>
         </div>
       </div>
 
@@ -215,21 +215,21 @@
       <div class="s6-board-wrap">
         <div class="s6-board" id="s6board" role="grid" aria-label="6 by 6 sudoku grid"></div>
         <div class="s6-pad" id="s6pad">
-          <button class="pk" data-v="1">1<small class="pk-left"></small></button>
-          <button class="pk" data-v="2">2<small class="pk-left"></small></button>
-          <button class="pk" data-v="3">3<small class="pk-left"></small></button>
-          <button class="pk" data-v="4">4<small class="pk-left"></small></button>
-          <button class="pk" data-v="5">5<small class="pk-left"></small></button>
-          <button class="pk" data-v="6">6<small class="pk-left"></small></button>
+          <button class="pk" data-v="1"><span data-i18n="mg.s4_pk_default">1</span><small class="pk-left"></small></button>
+          <button class="pk" data-v="2"><span data-i18n="mg.s4_pk_default">2</span><small class="pk-left"></small></button>
+          <button class="pk" data-v="3"><span data-i18n="mg.s4_pk_default">3</span><small class="pk-left"></small></button>
+          <button class="pk" data-v="4"><span data-i18n="mg.s4_pk_default">4</span><small class="pk-left"></small></button>
+          <button class="pk" data-v="5"><span data-i18n="mg.s4_pk_default">5</span><small class="pk-left"></small></button>
+          <button class="pk" data-v="6"><span data-i18n="mg.s4_pk_default">6</span><small class="pk-left"></small></button>
           <button class="pk erase s6-erase-wide" data-act="erase">⌫ Erase</button>
         </div>
         <div class="s6-padtools hidden" id="padTools">
-          <button class="btn ghost" id="hintBtn">💡 Hint</button>
-          <button class="btn ghost" id="newBtn">↻ New Grid</button>
+          <button class="btn ghost" id="hintBtn" data-i18n="mg.shared_hint">💡 Hint</button>
+          <button class="btn ghost" id="newBtn" data-i18n="mg.shared_new_grid">↻ New Grid</button>
         </div>
       </div>
 
-      <div class="result" id="result" role="status">Pick a cell, then a number</div>
+      <div class="result" id="result" role="status" data-i18n="mg.sg_pick_first">Pick a cell, then a number</div>
 
       <!-- 我方条（仅 Duel）：速度环 + 状态 -->
       <div id="youHead" class="s6-you-head hidden">
