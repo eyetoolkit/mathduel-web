@@ -1,5 +1,5 @@
 /**
- * MathDuel 主页 · papergames 浅色版（Homepage Redesign v2, 2026-09-23）
+ * NumeriDuel 主页 · papergames 浅色版（Homepage Redesign v2, 2026-09-23）
  * 设计稿：share-html/24zuixin.html
  *
  * 设计要点：
@@ -375,13 +375,13 @@ function footerHtml(): string {
       <div class="sf-title" data-i18n="math_home.f_family">Explore the Duel family</div>
       <div class="sf-matrix">
         <a class="sf-item" href="https://boardduel.com"><span class="pip" style="background:#2FC4C9"></span><span data-i18n="math_home.f_board">BoardDuel — Chess &amp; Card Games</span></a>
-        <a class="sf-item" href="https://numeriduel.com"><span class="pip" style="background:#F59E0B"></span><span data-i18n="math_home.f_math">MathDuel — Math Puzzle Games</span></a>
+        <a class="sf-item" href="https://numeriduel.com"><span class="pip" style="background:#F59E0B"></span><span data-i18n="math_home.f_math">NumeriDuel — Math Puzzle Games</span></a>
         <a class="sf-item" href="https://memoryduel.com"><span class="pip" style="background:#4F46E5"></span><span data-i18n="math_home.f_memory">MemoryDuel — Knowledge Battles</span></a>
       </div>
       <div class="sf-links">
         <a href="/daily/" data-i18n="math_home.f_daily">Daily &amp; Ranks</a><a href="/me/" data-i18n="math_home.f_me">My Journey</a><a href="/worksheets/" data-i18n="math_home.f_worksheets">Worksheets</a><a href="/teacher/" data-i18n="math_home.f_teachers">For teachers</a><a href="/about/" data-i18n="nav.about">About</a><a href="/contact/" data-i18n="nav.contact">Contact</a><a href="/privacy/" data-i18n="nav.privacy">Privacy</a><a href="/terms/" data-i18n="nav.terms">Terms</a><a href="/" data-i18n="math_home.f_allgames">All games</a>
       </div>
-      <div class="sf-copy" data-i18n="math_home.f_copy">© 2026 MathDuel · Pure static · Privacy-first · Free to play</div>
+      <div class="sf-copy" data-i18n="math_home.f_copy">© 2026 NumeriDuel · Pure static · Privacy-first · Free to play</div>
     </div>
   `;
 }
@@ -455,8 +455,8 @@ export function renderHomeV2(): void {
       <!-- 天梯 -->
       <section class="ladder wrap" aria-label="Rank ladder">${ladderHtml()}</section>
 
-      <!-- F-206 (c): Why MathDuel? brand story -->
-      <section class="why wrap" aria-label="Why MathDuel">
+      <!-- F-206 (c): Why NumeriDuel? brand story -->
+      <section class="why wrap" aria-label="Why NumeriDuel">
         <div class="why-card">
           <div class="why-eyebrow" data-i18n="math_home.why_eyebrow">WHY MATHDUEL</div>
           <h2 class="why-title" data-i18n="math_home.why_title">Math is more fun when you can prove it.</h2>

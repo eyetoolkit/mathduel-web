@@ -17,7 +17,7 @@
    ③ given 数字高对比（浅 #1E293B on #F1F5F9 ≈ 13:1；原 var(--bg) 1.00:1 全消失）
    ④ 数字垂直居中：line-height:1 + text-box:trim + padding-top em 补偿（桌面 0.08/移动 0.02）
    ⑤ 状态色全部不透明预混合（浅/暗各一套 hex），不再用 rgba
-   ⑥ MathDuel 靛蓝映射（设计稿注释给定）：--line-box #3730A3、--line-outer #1E1B4B、
+   ⑥ NumeriDuel 靛蓝映射（设计稿注释给定）：--line-box #3730A3、--line-outer #1E1B4B、
       --accent/--user-ink #4F46E5；状态底色沿用设计稿的紫罗兰浅调（与靛蓝同族） */
 .s9-board-wrap { margin-top: 6px; }
 .s9-board {

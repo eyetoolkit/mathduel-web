@@ -138,7 +138,7 @@ export function renderShareCard(canvas: HTMLCanvasElement, d: ShareData, streak:
 
   x.fillStyle = '#4D97E6';
   x.font = '700 20px "Space Grotesk", system-ui, sans-serif';
-  x.fillText('MathDuel · Global Same Puzzle', W / 2, 545);
+  x.fillText('NumeriDuel · Global Same Puzzle', W / 2, 545);
   x.fillStyle = 'rgba(203,213,225,.55)';
   x.font = '500 16px "Sora", system-ui, sans-serif';
   x.fillText("Scan to play today's 24 →", W / 2, 575);

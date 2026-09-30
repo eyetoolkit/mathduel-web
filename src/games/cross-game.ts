@@ -161,7 +161,7 @@ export function getBadges(): Badge[] {
     },
     {
       id: 'daily-5',
-      name: 'Math Duelist',
+      name: 'Numeri Duelist',
       emoji: '⚔️',
       hint: 'Complete 5 Daily Challenges in total.',
       unlocked: dailyDone >= 5,
@@ -276,7 +276,7 @@ export function formatShareText(gameId: GameId, summary: { mode: string; duratio
   const gameName = labels[gameId] || gameId;
   const dur = summary.duration ? ` in ${summary.duration.toFixed(1)}s` : '';
   const extra = summary.extra ? ` — ${summary.extra}` : '';
-  return `I just ${summary.mode} ${gameName}${dur}${extra} on MathDuel · numeriduel.com`;
+  return `I just ${summary.mode} ${gameName}${dur}${extra} on NumeriDuel · numeriduel.com`;
 }
 
 /* ═══ F1.3 挑战卡 + F1.2 修复：统一每日完赛记录 ═══
@@ -331,7 +331,7 @@ export function challengeText(gameId: GameId, result: DailyResult = {}): string 
   const name = labels[gameId] || gameId;
   const dur = result.durationSec ? ` in ${result.durationSec.toFixed(1)}s` : '';
   const score = result.total ? ` (${result.solved ?? result.total}/${result.total})` : '';
-  return `⚔️ I solved today's ${name} Daily${dur}${score} on MathDuel — can you beat me? ${challengeLink(gameId)}`;
+  return `⚔️ I solved today's ${name} Daily${dur}${score} on NumeriDuel — can you beat me? ${challengeLink(gameId)}`;
 }
 
 /** 记录每日完赛（幂等）：更新 streak/进度数据；当天首次完成时弹挑战卡 */

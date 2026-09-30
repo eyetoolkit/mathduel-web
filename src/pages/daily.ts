@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   MathDuel Daily Challenge Hub
+   NumeriDuel Daily Challenge Hub
    ────────────────────────────────────────────────────────────────
    - 5 款游戏每日挑战卡（深链 ?mode=daily，与各游戏深链契约一致）
    - streak / 今日完成度：cross-game.ts localStorage（免登录、纯本地）

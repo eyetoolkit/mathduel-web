@@ -3,7 +3,7 @@
    Token remap 复用 ../24-game/arena.css（body.arena），本文件只放
    数独专属组件：4×4 棋盘（三级 SVG 网格线）/ 2×2 数字键盘 / 侧栏。
    设计稿：sudoku4x4-redesign.html（2026-09-26），与 9×9 同套 token：
-   MathDuel 靛蓝映射 --line-box #3730A3、--line-outer #1E1B4B、
+   NumeriDuel 靛蓝映射 --line-box #3730A3、--line-outer #1E1B4B、
    --accent/--user-ink #4F46E5；状态底色紫罗兰浅调。
    ============================================================ */
 

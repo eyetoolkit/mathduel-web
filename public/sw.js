@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   MathDuel Service Worker —— 最小可用 PWA 策略
+   NumeriDuel Service Worker —— 最小可用 PWA 策略
    ────────────────────────────────────────────────────────────────
    原则（与 CF Pages + HTML max-age=0 must-revalidate 约束共存）：
    1. /api/、/ws（WebSocket 升级）绝不拦截 —— 实时与账号数据永远走网络

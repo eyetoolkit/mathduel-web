@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   MathDuel Worksheets — 可打印练习纸生成器
+   NumeriDuel Worksheets — 可打印练习纸生成器
    ────────────────────────────────────────────────────────────────
    复用各游戏的真实引擎（24 点 / 数独 4x4·6x6·9x9 / 等式金字塔），
    屏幕预览 + @media print 一键打印。纯前端、零后端、零账号。
@@ -215,7 +215,7 @@ function renderSet(): void {
   /* 页眉：标题 + 元信息 + 姓名栏（老师发纸必备） */
   const head = el('div', 'ws-head');
   const t = el('div', 'ws-title');
-  t.appendChild(el('b', undefined, 'MathDuel · ' + def.label));
+  t.appendChild(el('b', undefined, 'NumeriDuel · ' + def.label));
   const diffText = diff === 'fixed' ? '' : ' · ' + (diffSel.selectedOptions[0]?.textContent || diff);
   t.appendChild(el('span', 'ws-diff', diffText));
   head.appendChild(t);

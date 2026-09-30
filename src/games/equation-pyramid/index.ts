@@ -42,7 +42,7 @@ const i18nT = (key: string, vars?: Record<string, string | number>): string => {
 };
 
 mountHeader(($('header') as HTMLElement | null) ?? document.createElement('div'), {
-  brandName: 'MathDuel',
+  brandName: 'NumeriDuel',
   brandSub: 'Equation Pyramid',
   mark: '△',
   nav: [

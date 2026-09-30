@@ -1,6 +1,6 @@
 'use strict';
 /* ═══════════════════════════════════════════════════════════════
-   MathDuel · Teacher dashboard — logic (Worker API edition)
+   NumeriDuel · Teacher dashboard — logic (Worker API edition)
    ────────────────────────────────────────────────────────────────
    与设计包原实现的两处决定性差异：
      1. 认证：复用站点已有的邮箱+密码 auth（POST /api/auth/login），
@@ -108,7 +108,7 @@ function enterAnonMode() {
 /* ─── login / signup 双模式 ─── */
 let authMode = 'login';
 const HINTS = () => ({
-  login: T('tn.hint_login', 'Sign in with your MathDuel account to open your classes.'),
+  login: T('tn.hint_login', 'Sign in with your NumeriDuel account to open your classes.'),
   signup: T('tn.hint_signup', 'Create a free account — teachers and players share the same account system. We\u2019ll email you a verification link.'),
 });
 function setAuthMode(mode) {

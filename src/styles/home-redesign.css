@@ -1,5 +1,5 @@
 /* ============================================================
- * MathDuel 主页重构样式 · papergames 浅色版（2026-09-23）
+ * NumeriDuel 主页重构样式 · papergames 浅色版（2026-09-23）
  * ------------------------------------------------------------
  * 设计稿：workbuddy share-html/24zuixin.html
  * 实现策略：
@@ -288,7 +288,7 @@ body.rail .main { margin-left: var(--sb-rail); }
 .home-v2 .tier.master i { background: var(--amber); }
 .home-v2 .tier.master span { color: var(--amber); font-weight: 800; }
 
-/* ============ Why MathDuel (F-206) ============ */
+/* ============ Why NumeriDuel (F-206) ============ */
 .home-v2 .why { padding: 48px 0 28px; }
 .home-v2 .why-card {
   background: linear-gradient(135deg, #1E1B39 0%, #312E81 100%);

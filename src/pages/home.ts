@@ -1,5 +1,5 @@
 /**
- * 首页 · 主页重构（MathDuel Homepage Redesign）
+ * 首页 · 主页重构（NumeriDuel Homepage Redesign）
  * - 竞技墙 (renderArenaWall)：hero 右侧 4 格迷你面板，用各游戏的「真实起始局面」。
  * - 游戏网格 (renderGameGrid)：6 个已上线竞技场 + 1 个 Coming soon 卡片。
  * 视觉与结构对齐 mathduel-homepage-redesign.html 设计稿。

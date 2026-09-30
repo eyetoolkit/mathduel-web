@@ -1,5 +1,5 @@
 /**
- * MathDuel 首页入口（Homepage Redesign v2 · papergames 浅色版, 2026-09-23）
+ * NumeriDuel 首页入口（Homepage Redesign v2 · papergames 浅色版, 2026-09-23）
  * 设计稿：share-html/24zuixin.html
  * - 装配侧栏 + 游戏墙 + hero + 每日/周赛 + 天梯 + 特性 + 页脚
  * - 字体/CSS 沿用设计系统站内自托管（Space Grotesk / Sora）
