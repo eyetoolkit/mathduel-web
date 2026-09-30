@@ -249,3 +249,10 @@ table tbody tr.clickable:hover{background:#F6F7FC}
 .cdel{position:absolute;top:8px;right:8px;font-size:.72rem;color:#B6BDD6;line-height:1;padding:2px 5px;border-radius:6px}
 .cdel:hover{color:#DC2626;background:#FDECEC}
 @media (max-width:720px){.asgsel{max-width:100%}}
+
+/* ── 跨站跳转卡（2026-09-30 三站联动） ── */
+.cross{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin-top:8px}
+.xcard{display:flex;flex-direction:column;gap:4px;padding:14px;border:1px solid #E3E7F0;border-radius:12px;background:#fff;color:var(--ink);text-decoration:none;transition:.15s}
+.xcard:hover{border-color:var(--brand,#7C3AED);box-shadow:0 4px 16px rgba(124,58,237,.12);transform:translateY(-1px)}
+.xcard strong{font-family:var(--disp);font-size:.95rem}
+.xcard span{font-size:.8rem;color:var(--muted,#6b7280);line-height:1.45}
