@@ -6,7 +6,8 @@
   <title>Daily Challenge Hub — five fresh puzzles every day | MathDuel</title>
   <meta name="description" content="Five daily math puzzles, one seeded set worldwide: 24 Point, Equation Pyramid and Sudoku 4x4 / 6x6 / 9x9. Build a streak — no account needed. Plus today's finishers and the Elo ladder." />
   <link rel="canonical" href="https://mathduel.games/daily/" />
-  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <script>window.__I18N_CONFIG__={supported:["en","zh","ja","es","fr","de"],dictVersion:37,fallback:"en"}</script>
+<link rel="icon" href="/favicon.ico" sizes="any" />
   <link rel="icon" href="/icon.svg" type="image/svg+xml" />
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="MathDuel" />
@@ -19,23 +20,23 @@
 <body class="dhub">
   <header class="dh-top">
     <a class="dh-brand" href="/"><b>Math</b><i>Duel</i></a>
-    <span class="dh-sub">Daily Challenge Hub</span>
-    <span class="dh-streak" id="streak" title="Consecutive days with at least one daily finished">
-      <span class="flame">🔥</span><b id="streakN">0</b><span class="dh-streak-lbl">day streak</span>
+    <span class="dh-sub" data-i18n="mp.mp_daily_brand_sub">Daily Challenge Hub</span>
+    <span class="dh-streak" id="streak" data-i18n-title="mp.mp_daily_streak_title" title="Consecutive days with at least one daily finished">
+      <span class="flame">🔥</span><b id="streakN">0</b><span class="dh-streak-lbl" data-i18n="mp.mp_daily_streak_lbl">day streak</span>
     </span>
   </header>
 
   <main class="dh-main">
     <section class="hero">
       <div class="hero-l">
-        <h1>Today's five</h1>
+        <h1 data-i18n="mp.mp_daily_h1_today">Today's five</h1>
         <p class="dh-date" id="dateLine"></p>
-        <p class="hero-sub">One seeded puzzle set worldwide, refreshed at midnight (UTC+8).
+        <p class="hero-sub" data-i18n="mp.mp_daily_hero_sub">One seeded puzzle set worldwide, refreshed at midnight (UTC+8).
            Finish any of them to keep the streak. Nothing is uploaded — progress lives in your browser.</p>
       </div>
       <div class="hero-r">
         <div class="ring" id="ring"><span id="ringTxt">0/5</span></div>
-        <span class="ring-lbl">today</span>
+        <span class="ring-lbl" data-i18n="mp.mp_daily_ring_lbl">today</span>
       </div>
     </section>
 
@@ -43,26 +44,26 @@
 
     <section class="dh-ranks">
       <div class="dh-ranks-head">
-        <h2>Leaderboards</h2>
+        <h2 data-i18n="mp.mp_daily_h2_ranks">Leaderboards</h2>
         <div class="rank-tabs" id="rankTabs" role="tablist">
-          <button class="rtab on" data-rank="elo" role="tab">🏆 Elo ladder</button>
-          <button class="rtab" data-rank="24-game" role="tab">24 Game</button>
-          <button class="rtab" data-rank="sudoku" role="tab">Sudoku 9×9</button>
-          <button class="rtab" data-rank="sudoku-6x6" role="tab">Sudoku 6×6</button>
-          <button class="rtab" data-rank="equation-pyramid" role="tab">Pyramid</button>
+          <button class="rtab on" data-rank="elo" role="tab" data-i18n="mp.mp_daily_rank_elo">🏆 Elo ladder</button>
+          <button class="rtab" data-rank="24-game" role="tab" data-i18n="mp.mp_daily_rank_24g">24 Game</button>
+          <button class="rtab" data-rank="sudoku" role="tab" data-i18n="mp.mp_daily_rank_s9">Sudoku 9×9</button>
+          <button class="rtab" data-rank="sudoku-6x6" role="tab" data-i18n="mp.mp_daily_rank_s6">Sudoku 6×6</button>
+          <button class="rtab" data-rank="equation-pyramid" role="tab" data-i18n="mp.mp_daily_rank_pyr">Pyramid</button>
         </div>
       </div>
       <div class="rank-panel" id="rankPanel" aria-live="polite"></div>
-      <p class="rank-note">Daily boards rank <b>today's finishers by time</b> (Shanghai day). Elo ladder is the all-time PvP rating across games. Anonymized nicknames only.</p>
+      <p class="rank-note" data-i18n-html="mp.mp_daily_rank_note">Daily boards rank <b>today's finishers by time</b> (Shanghai day). Elo ladder is the all-time PvP rating across games. Anonymized nicknames only.</p>
     </section>
   </main>
 
   <footer class="dh-foot">
-    <a href="/me/">🧭 My Journey</a>
-    <a href="/worksheets/">🖨 Worksheets</a>
-    <a href="/games/24-game/lobby/">Games</a>
-    <a href="/teacher/">Teachers</a>
-    <a href="/">mathduel.games</a>
+    <a href="/me/" data-i18n="mp.mp_daily_foot_myjourney">🧭 My Journey</a>
+    <a href="/worksheets/" data-i18n="mp.mp_daily_foot_worksheets">🖨 Worksheets</a>
+    <a href="/games/24-game/lobby/" data-i18n="mp.mp_daily_foot_games">Games</a>
+    <a href="/teacher/" data-i18n="mp.mp_daily_foot_teachers">Teachers</a>
+    <a href="/" data-i18n="mp.mp_daily_foot_home">mathduel.games</a>
   </footer>
 
   <script type="module" src="/src/pages/daily.ts"></script>
