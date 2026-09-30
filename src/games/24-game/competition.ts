@@ -59,11 +59,14 @@ export interface CompCallbacks {
   onSelfSpectator: () => void;
 }
 
-const PROD_HOST = 'mathduel.games';
+/** 数学站生产环境 host（数学站改名路线图 2026-09-30：mathduel.games → numeriduel.com）
+ *  保留 mathduel.games 12 个月过渡期（CF Bulk Redirects）— 教师邀请码不中断 */
+const PROD_HOSTS = ['numeriduel.com', 'mathduel.games'] as const;
 
-/** 是否处于真实后端环境 */
+/** 是否处于真实后端环境（接受新主域与旧主域，过渡期 12 个月） */
 export function isProdEnv(): boolean {
-  return location.host.indexOf(PROD_HOST) >= 0;
+  const h = location.host.toLowerCase();
+  return PROD_HOSTS.some((host) => h.indexOf(host) >= 0);
 }
 
 const BOT_NAMES = ['Nova','Pixel','Luna','Echo','Kai','Vega','Milo','Zero','Iris','Leo','Hugo','Rin','Aki','Yuki','Cleo','Finn','Theo','Nori','Zoe','Mira','Eden','Wren','Ozzy','Lux','Ben','Sol','Remy','Sage','Otto','Nyx','Vex','Cy','Jun','Tao','Rue','Pia','Bao','Nim','Ace','Sky','Rex','Max','Zara','Kira','Jett','Nico','Aria','Dex','Ivy','Ash','Blaze','Cole','Drew','Felix','Gia','Hale','Ike','Jade','Knox','Maya','Neo','Orin','Pax','Quinn','Rory','Soren','Toby','Uma','Vance','Wade','Xan','Yara','Zane'];
@@ -197,7 +200,9 @@ export class Competition {
 
   private connectWS(code?: string): void {
     if (code) this.room = code;
-    const url = `wss://${PROD_HOST}/ws?code=${encodeURIComponent(this.room)}&name=${encodeURIComponent(this.myName)}`;
+    // 数学站改名（2026-09-30）：用 location.host 派生 WS URL,支持 numeriduel.com 与 mathduel.games 双域并存
+    const wsProto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const url = `${wsProto}//${location.host}/ws?code=${encodeURIComponent(this.room)}&name=${encodeURIComponent(this.myName)}`;
     try {
       this.ws = new WebSocket(url);
     } catch {
