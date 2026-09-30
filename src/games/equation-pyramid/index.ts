@@ -31,6 +31,16 @@ import {
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T | null;
 
 initI18n();
+const i18nT = (key: string, vars?: Record<string, string | number>): string => {
+  try {
+    const w = window as unknown as { i18n?: { t: (k: string, v?: Record<string, string | number>) => string } };
+    if (w.i18n && typeof w.i18n.t === 'function') return w.i18n.t(key, vars);
+    const fallback = (window as unknown as { t?: (k: string) => string }).t;
+    if (typeof fallback === 'function') return fallback(key);
+  } catch { /* ignore */ }
+  return key;
+};
+
 mountHeader(($('header') as HTMLElement | null) ?? document.createElement('div'), {
   brandName: 'MathDuel',
   brandSub: 'Equation Pyramid',
@@ -181,7 +191,7 @@ function resetBoard(): void {
   st.penalty = 0;
   st.startTs = Date.now();
   st.running = true;
-  $('result')!.textContent = st.mode === 'duel' ? 'Find equations before Bot does' : 'Click three cells · the click order is the formula';
+  $('result')!.textContent = st.mode === 'duel' ? i18nT('mg.pyr_duel_first') : i18nT('mg.pyr_pick_first');
 }
 
 /* ═══ 计时 ═══ */

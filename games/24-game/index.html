@@ -174,10 +174,10 @@
     <section class="board" id="board" aria-label="Game board">
       <div class="g24-bar">
         <nav class="tabs" id="tabs" aria-label="Game modes">
-          <button class="tab active" data-mode="practice">Practice</button>
-          <button class="tab" data-mode="daily">Daily Challenge</button>
-          <button class="tab" data-mode="timed">Timed Practice</button>
-          <button class="tab" data-mode="battle">Competition</button>
+          <button class="tab active" data-mode="practice" data-i18n="mg.shared_tab_practice">Practice</button>
+          <button class="tab" data-mode="daily" data-i18n="mg.shared_tab_daily_challenge">Daily Challenge</button>
+          <button class="tab" data-mode="timed" data-i18n="mg.shared_tab_timed_practice">Timed Practice</button>
+          <button class="tab" data-mode="battle" data-i18n="mg.shared_tab_competition">Competition</button>
         </nav>
         <div class="top-stats">
           <span class="chip">Solved <b id="stSolved">0</b></span>
@@ -227,7 +227,7 @@
 
       <div class="cards" id="cards"></div>
       <div class="formula" id="formula" aria-live="polite"><span class="ph">Pick cards + operators to make 24</span></div>
-      <div class="result" id="result" role="status">Use each card once — make 24</div>
+      <div class="result" id="result" role="status" data-i18n="mg.g24_pick_first">Use each card once — make 24</div>
 
       <div class="pad" id="pad">
         <button class="op-btn op" data-v="+">+</button>
@@ -241,10 +241,10 @@
       </div>
 
       <div class="actions" id="actions">
-        <button class="btn primary" id="newBtn">🂠 New Deal</button>
-        <button class="btn ghost" id="hintBtn">💡 Hint</button>
-        <button class="btn ghost" id="answerBtn">Show Answer</button>
-        <button class="btn primary hidden" id="enterBtn">🏆 Enter Competition</button>
+        <button class="btn primary" id="newBtn" data-i18n="mg.shared_new_deal">🂠 New Deal</button>
+        <button class="btn ghost" id="hintBtn" data-i18n="mg.shared_hint">💡 Hint</button>
+        <button class="btn ghost" id="answerBtn" data-i18n="mg.shared_show_answer">Show Answer</button>
+        <button class="btn primary hidden" id="enterBtn" data-i18n="mg.shared_enter_competition">🏆 Enter Competition</button>
       </div>
 
       <!-- 观战条（仅观战者可见） -->
@@ -259,7 +259,7 @@
   <!-- Lobby -->
   <div class="lobby" id="lobby" role="dialog" aria-modal="true" aria-labelledby="lobbyTitle">
     <div class="lobby-card">
-      <button class="lobby-close" id="lobbyClose" aria-label="Close lobby">✕</button>
+      <button class="lobby-close" id="lobbyClose" aria-label="Close lobby" data-i18n-aria-label="mg.shared_close">✕</button>
       <h2 id="lobbyTitle">🏆 Math Competition</h2>
       <p class="ldesc" id="lobbyDesc">Create a room or enter a code to race players worldwide on the same cards. Up to 99 players per room.</p>
 
@@ -269,13 +269,13 @@
           <input id="nameInput" type="text" maxlength="14" placeholder="Your name" autocomplete="off" />
         </div>
         <div class="lobby-actions">
-          <button class="btn primary" id="createBtn">🚀 Create Competition</button>
-          <button class="btn ghost" id="joinToggle">Have a code? Join</button>
+          <button class="btn primary" id="createBtn" data-i18n="mg.shared_create_competition">🚀 Create Competition</button>
+          <button class="btn ghost" id="joinToggle" data-i18n="mg.shared_have_code_join">Have a code? Join</button>
         </div>
         <div id="joinRow" class="field hidden">
           <label for="joinInput">Room code (5 chars)</label>
           <input id="joinInput" type="text" maxlength="5" placeholder="e.g. A7K2M" class="upcase" />
-          <button class="btn primary btn-block mt-2" id="joinBtn">Join Room</button>
+          <button class="btn primary btn-block mt-2" id="joinBtn" data-i18n="mg.shared_join_room">Join Room</button>
         </div>
         <div class="lobby-divider">Competition Size</div>
         <div class="size-row" id="sizeRow" role="group" aria-label="Competition size">
@@ -296,11 +296,11 @@
             <img class="rc-qr" id="roomQr" width="140" height="140" alt="QR code to join this room" />
             <div class="rc-qr-txt">📱 <b>Scan to join</b> — opens with the code filled in</div>
           </div>
-          <button class="btn ghost btn-block" id="shareBtn">🔗 Copy Invite Link</button>
+          <button class="btn ghost btn-block" id="shareBtn" data-i18n="mg.shared_copy_invite">🔗 Copy Invite Link</button>
         </div>
         <div class="room-players" id="roomPlayers"></div>
         <div class="room-hint" id="roomHint">⏳ Waiting for players…</div>
-        <button class="btn primary btn-block" id="startBtn" disabled>🚀 Start Competition (2+ players)</button>
+        <button class="btn primary btn-block" id="startBtn" disabled data-i18n="mg.shared_start_competition_2">🚀 Start Competition (2+ players)</button>
       </div>
 
       <div class="lobby-err" id="lobbyErr" role="alert"></div>
@@ -315,7 +315,7 @@
     <div class="share-card">
       <div class="share-head">
         <h3 id="shareTitle">🏆 My Score</h3>
-        <button class="share-close" id="shareClose" aria-label="Close">✕</button>
+        <button class="share-close" id="shareClose" aria-label="Close" data-i18n-aria-label="mg.shared_close">✕</button>
       </div>
       <div class="share-canvas-wrap"><canvas id="shareCanvas" width="600" height="760"></canvas></div>
       <div class="share-qr-row">
@@ -323,12 +323,12 @@
         <div class="share-qr-txt">📱 <b>Scan or tap the link</b><br>Share your score with friends</div>
       </div>
       <div class="share-url-row">
-        <input id="shareUrl" type="text" readonly aria-label="Share link" />
-        <button class="btn primary" id="shareCopy">📋 Copy</button>
+        <input id="shareUrl" type="text" readonly aria-label="Share link" data-i18n-aria-label="mg.shared_share_link" />
+        <button class="btn primary" id="shareCopy" data-i18n="mg.shared_copy">📋 Copy</button>
       </div>
       <div class="share-actions">
-        <button class="btn ghost" id="shareDownload">⬇ Save Image</button>
-        <button class="btn ghost" id="shareWechat">💬 Share</button>
+        <button class="btn ghost" id="shareDownload" data-i18n="mg.shared_save_image">⬇ Save Image</button>
+        <button class="btn ghost" id="shareWechat" data-i18n="mg.shared_share_wechat">💬 Share</button>
       </div>
     </div>
   </div>
