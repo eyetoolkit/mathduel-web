@@ -6,59 +6,60 @@
   <title>My Journey — streaks, badges and progress | MathDuel</title>
   <meta name="description" content="Your personal MathDuel journey: daily streak calendar, badges and games explored. Everything is stored only in your browser — no account, no tracking." />
   <meta name="robots" content="noindex" />
-  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <script>window.__I18N_CONFIG__={supported:["en","zh","ja","es","fr","de"],dictVersion:37,fallback:"en"}</script>
+<link rel="icon" href="/favicon.ico" sizes="any" />
   <link rel="icon" href="/icon.svg" type="image/svg+xml" />
 </head>
 <body class="mehub">
   <header class="dh-top">
     <a class="dh-brand" href="/"><b>Math</b><i>Duel</i></a>
-    <span class="dh-sub">My Journey</span>
-    <span class="dh-streak" title="Consecutive days with at least one daily finished">
-      <span class="flame">🔥</span><b id="streakN">0</b><span class="dh-streak-lbl">day streak</span>
+    <span class="dh-sub" data-i18n="mp.mp_me_brand_sub">My Journey</span>
+    <span class="dh-streak" data-i18n-title="mp.mp_me_streak_title" title="Consecutive days with at least one daily finished">
+      <span class="flame">🔥</span><b id="streakN">0</b><span class="dh-streak-lbl" data-i18n="mp.mp_me_streak_lbl">day streak</span>
     </span>
   </header>
 
   <main class="dh-main">
     <section class="hero">
       <div class="hero-l">
-        <h1>Your journey, your device</h1>
+        <h1 data-i18n="mp.mp_me_h1_journey">Your journey, your device</h1>
         <p class="mj-sub" id="totals"></p>
       </div>
       <div class="hero-r">
         <div class="ring" id="ring"><span id="ringTxt">0/5</span></div>
-        <span class="ring-lbl">today</span>
+        <span class="ring-lbl" data-i18n="mp.mp_me_ring_lbl">today</span>
       </div>
     </section>
 
     <section class="mj-card">
-      <h2>Daily streak calendar</h2>
-      <p class="mj-note">Last 8 weeks — one cell per day. Brighter = more dailies finished that day.</p>
+      <h2 data-i18n="mp.mp_me_h2_streak">Daily streak calendar</h2>
+      <p class="mj-note" data-i18n="mp.mp_me_streak_note">Last 8 weeks — one cell per day. Brighter = more dailies finished that day.</p>
       <div class="mj-cal" id="cal"></div>
       <div class="mj-legend"><span>less</span><i class="l0"></i><i class="l1"></i><i class="l2"></i><i class="l3"></i><span>more</span></div>
     </section>
 
     <section class="mj-card">
-      <h2>Games explored</h2>
+      <h2 data-i18n="mp.mp_me_h2_games">Games explored</h2>
       <div class="mj-games" id="games"></div>
     </section>
 
     <section class="mj-card">
-      <h2>Badges</h2>
+      <h2 data-i18n="mp.mp_me_h2_badges">Badges</h2>
       <div class="mj-badges" id="badges"></div>
     </section>
 
     <section class="mj-privacy">
-      🔒 Everything on this page lives only in this browser (localStorage). No account, no server, no tracking —
-      <a href="/privacy/">read the privacy note</a>.
+      <span data-i18n="mp.mp_me_privacy">🔒 Everything on this page lives only in this browser (localStorage). No account, no server, no tracking —</span>
+      <a href="/privacy/" data-i18n="mp.mp_me_privacy_link">read the privacy note</a>.
     </section>
   </main>
 
   <footer class="dh-foot">
-    <a href="/daily/">🔥 Daily Hub</a>
-    <a href="/worksheets/">🖨 Worksheets</a>
-    <a href="/games/24-game/lobby/">Games</a>
-    <a href="/teacher/">Teachers</a>
-    <a href="/">mathduel.games</a>
+    <a href="/daily/" data-i18n="mp.mp_me_foot_daily">🔥 Daily Hub</a>
+    <a href="/worksheets/" data-i18n="mp.mp_me_foot_worksheets">🖨 Worksheets</a>
+    <a href="/games/24-game/lobby/" data-i18n="mp.mp_me_foot_games">Games</a>
+    <a href="/teacher/" data-i18n="mp.mp_me_foot_teachers">Teachers</a>
+    <a href="/" data-i18n="mp.mp_me_foot_home">mathduel.games</a>
   </footer>
 
   <script type="module" src="/src/pages/me.ts"></script>
