@@ -174,12 +174,12 @@
   <main class="ep-arena">
     <div class="ep-top">
       <div class="ep-tabs" id="tabs">
-        <button class="ep-tab" data-mode="solo">Solo</button>
-        <button class="ep-tab" data-mode="daily">Daily</button>
-        <button class="ep-tab" data-mode="timed">Timed</button>
-        <button class="ep-tab" data-mode="duel">Duel</button>
+        <button class="ep-tab" data-mode="solo" data-i18n="mg.shared_tab_solo">Solo</button>
+        <button class="ep-tab" data-mode="daily" data-i18n="mg.shared_tab_daily">Daily</button>
+        <button class="ep-tab" data-mode="timed" data-i18n="mg.shared_tab_timed">Timed</button>
+        <button class="ep-tab" data-mode="duel" data-i18n="mg.shared_tab_battle">Duel</button>
       </div>
-      <button class="ep-back" id="backLobby" type="button" title="Mode select">← Mode select</button>
+      <button class="ep-back" id="backLobby" type="button" title="Mode select" data-i18n-title="mp.how_to_play" data-i18n="mp.shared_back">← Mode select</button>
     </div>
 
     <div class="ep-opp" id="oppHead" hidden>
@@ -196,9 +196,9 @@
     <div id="modeBanner"></div>
 
     <div class="ep-diff" id="diffPick" role="group" aria-label="Difficulty (solution count)">
-      <button class="ep-pk" data-t="warmup">Warm-up<small>6–12 ways</small></button>
-      <button class="ep-pk active" data-t="standard">Standard<small>4–7 ways</small></button>
-      <button class="ep-pk" data-t="tricky">Tricky<small>exactly 3</small></button>
+      <button class="ep-pk" data-t="warmup"><span data-i18n="mg.diff_warmup">Warm-up</span><small data-i18n="mg.diff_warmup_small">6–12 ways</small></button>
+      <button class="ep-pk active" data-t="standard"><span data-i18n="mg.diff_standard">Standard</span><small data-i18n="mg.diff_standard_small_pyr">4–7 ways</small></button>
+      <button class="ep-pk" data-t="tricky"><span data-i18n="mg.diff_tricky">Tricky</span><small data-i18n="mg.diff_tricky_small">exactly 3</small></button>
     </div>
 
     <div class="ep-board" id="epboard" aria-label="Equation pyramid board">
@@ -229,9 +229,9 @@
     </div>
 
     <div class="ep-tools">
-      <button class="ep-tool" id="clearBtn" title="Reset current pick order">↻ Clear</button>
-      <button class="ep-tool" id="newBtn" title="Fresh board">🔄 New</button>
-      <button class="ep-tool" id="hintBtn" title="Reveal a remaining solution">💡 Hint <span id="hintLeft">×3</span></button>
+      <button class="ep-tool" id="clearBtn" title="Reset current pick order" data-i18n-title="mp.shared_back" data-i18n="mg.shared_back">↻ Clear</button>
+      <button class="ep-tool" id="newBtn" title="Fresh board" data-i18n-title="mg.shared_new_game" data-i18n="mg.shared_new_game">🔄 New</button>
+      <button class="ep-tool" id="hintBtn" title="Reveal a remaining solution" data-i18n-title="mg.s4_hint_step" data-i18n-aria-label="mg.shared_hint"><span class="ep-hint-label">💡 <span data-i18n="mg.shared_hint">Hint</span></span> <span id="hintLeft">×3</span></button>
     </div>
 
     <div id="result" class="ep-result-msg"></div>
