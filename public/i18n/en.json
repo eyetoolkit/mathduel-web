@@ -877,6 +877,9 @@
     "dr_solved": "✅ solved",
     "dr_wrong": "❌ {n} wrong",
     "dr_no_rounds": "No rounds recorded yet.",
-    "err_turnstile_loading": "Human check is still loading — wait a few seconds, or use Google/GitHub below."
+    "err_turnstile_loading": "Human check is still loading — wait a few seconds, or use Google/GitHub below.",
+    "cross_ttl": "Try the other Duel family sites",
+    "cross_bd": "Chess · Gomoku · Connect 4 · Othello · Tic-Tac-Toe · live class board + CSV",
+    "cross_md": "1v1 knowledge duels for vocabulary / history / science classrooms"
   }
 }

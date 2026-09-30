@@ -877,6 +877,9 @@
     "dr_solved": "✅ gelöst",
     "dr_wrong": "❌ {n} falsch",
     "dr_no_rounds": "Noch keine Runden aufgezeichnet.",
-    "err_turnstile_loading": "Menschliche Überprüfung lädt noch — einige Sekunden warten oder Google/GitHub unten nutzen."
+    "err_turnstile_loading": "Menschliche Überprüfung lädt noch — einige Sekunden warten oder Google/GitHub unten nutzen.",
+    "cross_ttl": "Probiere weitere Duel-Seiten",
+    "cross_bd": "Schach · Gomoku · Vier gewinnt · Othello · Tic-Tac-Toe · Live-Klassenbrett + CSV",
+    "cross_md": "1v1 Wissensduelle für Vokabeln / Geschichte / Naturwissenschaften"
   }
 }

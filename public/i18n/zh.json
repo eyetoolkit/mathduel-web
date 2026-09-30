@@ -880,6 +880,9 @@
     "dr_solved": "✅ 解出",
     "dr_wrong": "❌ 错 {n} 次",
     "dr_no_rounds": "还没有作答记录。",
-    "err_turnstile_loading": "人机验证还在加载——请稍等几秒，或使用下方 Google/GitHub 登录。"
+    "err_turnstile_loading": "人机验证还在加载——请稍等几秒，或使用下方 Google/GitHub 登录。",
+    "cross_ttl": "试试其他 Duel 系列站点",
+    "cross_bd": "国际象棋 · 五子棋 · 四子棋 · 黑白棋 · 井字棋 · 实时课堂投影 + CSV",
+    "cross_md": "1v1 知识对抗，覆盖词汇 / 历史 / 科学等 12 类目"
   }
 }

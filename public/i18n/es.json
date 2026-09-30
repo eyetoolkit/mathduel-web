@@ -877,6 +877,9 @@
     "dr_solved": "✅ resuelto",
     "dr_wrong": "❌ {n} errores",
     "dr_no_rounds": "Aún no hay rondas registradas.",
-    "err_turnstile_loading": "La verificación humana sigue cargando — espera unos segundos o usa Google/GitHub abajo."
+    "err_turnstile_loading": "La verificación humana sigue cargando — espera unos segundos o usa Google/GitHub abajo.",
+    "cross_ttl": "Prueba las otras webs de la familia Duel",
+    "cross_bd": "Ajedrez · Gomoku · Connect 4 · Othello · Tres en raya · tablero en vivo + CSV",
+    "cross_md": "Duelos 1v1 de conocimiento en vocabulario / historia / ciencia"
   }
 }

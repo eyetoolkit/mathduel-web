@@ -877,6 +877,9 @@
     "dr_solved": "✅ 正解",
     "dr_wrong": "❌ {n}回ミス",
     "dr_no_rounds": "まだラウンド記録がありません。",
-    "err_turnstile_loading": "人間認証を読み込み中です—数秒待つか、下のGoogle/GitHubをご利用ください。"
+    "err_turnstile_loading": "人間認証を読み込み中です—数秒待つか、下のGoogle/GitHubをご利用ください。",
+    "cross_ttl": "他の Duel シリーズも試す",
+    "cross_bd": "チェス · 五目並べ · Connect 4 · オセロ · 三目並べ · ライブ授業ボード + CSV",
+    "cross_md": "語彙 / 歴史 / 科学など 12 カテゴリの 1v1 知識デュエル"
   }
 }

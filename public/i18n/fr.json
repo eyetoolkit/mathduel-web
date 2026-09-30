@@ -877,6 +877,9 @@
     "dr_solved": "✅ résolu",
     "dr_wrong": "❌ {n} erreurs",
     "dr_no_rounds": "Aucune manche enregistrée pour l’instant.",
-    "err_turnstile_loading": "La vérification humaine est en cours — patientez quelques secondes ou utilisez Google/GitHub ci-dessous."
+    "err_turnstile_loading": "La vérification humaine est en cours — patientez quelques secondes ou utilisez Google/GitHub ci-dessous.",
+    "cross_ttl": "Découvrez les autres sites Duel",
+    "cross_bd": "Échecs · Gomoku · Puissance 4 · Othello · Morpion · tableau de classe en direct + CSV",
+    "cross_md": "Duels 1v1 de connaissances en vocabulaire / histoire / sciences"
   }
 }
