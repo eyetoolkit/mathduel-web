@@ -276,7 +276,7 @@ export function formatShareText(gameId: GameId, summary: { mode: string; duratio
   const gameName = labels[gameId] || gameId;
   const dur = summary.duration ? ` in ${summary.duration.toFixed(1)}s` : '';
   const extra = summary.extra ? ` — ${summary.extra}` : '';
-  return `I just ${summary.mode} ${gameName}${dur}${extra} on MathDuel · mathduel.games`;
+  return `I just ${summary.mode} ${gameName}${dur}${extra} on MathDuel · numeriduel.com`;
 }
 
 /* ═══ F1.3 挑战卡 + F1.2 修复：统一每日完赛记录 ═══
@@ -311,7 +311,7 @@ function ensureCardStyles(): void {
 
 /** 每日挑战的分享深链（同一种子 = 同一套题） */
 export function challengeLink(gameId: GameId): string {
-  return `https://mathduel.games/games/${gameId}/?mode=daily`;
+  return `https://numeriduel.com/games/${gameId}/?mode=daily`;
 }
 
 export interface DailyResult {

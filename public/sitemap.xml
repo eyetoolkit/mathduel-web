@@ -3,67 +3,67 @@
         xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <!-- 首页 + 5 个游戏（24-game / sudoku 4×4 / sudoku 9×9 / sudoku 6×6 / equation-pyramid）+ 5 个 lobby -->
   <url>
-    <loc>https://mathduel.games/</loc>
+    <loc>https://numeriduel.com/</loc>
     <lastmod>2026-09-23</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://mathduel.games/games/24-game/</loc>
+    <loc>https://numeriduel.com/games/24-game/</loc>
     <lastmod>2026-09-23</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://mathduel.games/games/24-game/lobby/</loc>
+    <loc>https://numeriduel.com/games/24-game/lobby/</loc>
     <lastmod>2026-09-23</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://mathduel.games/games/sudoku/</loc>
+    <loc>https://numeriduel.com/games/sudoku/</loc>
     <lastmod>2026-09-23</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://mathduel.games/games/sudoku/lobby/</loc>
+    <loc>https://numeriduel.com/games/sudoku/lobby/</loc>
     <lastmod>2026-09-23</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://mathduel.games/games/sudoku-6x6/</loc>
+    <loc>https://numeriduel.com/games/sudoku-6x6/</loc>
     <lastmod>2026-09-23</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://mathduel.games/games/sudoku-6x6/lobby/</loc>
+    <loc>https://numeriduel.com/games/sudoku-6x6/lobby/</loc>
     <lastmod>2026-09-23</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://mathduel.games/games/sudoku-4x4/</loc>
+    <loc>https://numeriduel.com/games/sudoku-4x4/</loc>
     <lastmod>2026-09-23</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://mathduel.games/games/sudoku-4x4/lobby/</loc>
+    <loc>https://numeriduel.com/games/sudoku-4x4/lobby/</loc>
     <lastmod>2026-09-23</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
       <url>
-    <loc>https://mathduel.games/games/equation-pyramid/</loc>
+    <loc>https://numeriduel.com/games/equation-pyramid/</loc>
     <lastmod>2026-09-23</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://mathduel.games/games/equation-pyramid/lobby/</loc>
+    <loc>https://numeriduel.com/games/equation-pyramid/lobby/</loc>
     <lastmod>2026-09-23</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>

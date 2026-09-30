@@ -2,7 +2,7 @@
  * 24 点游戏 · 多人竞赛（最多 99 人）
  * 严格复用真实后端契约：
  *   建房  POST /api/rooms  { gameType:'24', name, mode:'competition', maxPlayers, ... } → { code }
- *   连接  wss://mathduel.games/ws?code=<CODE>&name=<NAME>
+ *   连接  wss://numeriduel.com/ws?code=<CODE>&name=<NAME>
  * 非生产域名下自动降级为本地 DEMO（模拟 99 人），便于预览验收。
  *
  * 2026-09-22 补齐三项「后端已实现、前端零消费」的能力（零后端改动）：

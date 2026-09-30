@@ -9,10 +9,10 @@
 ## 一、分支模型
 
 ```
-main                     生产环境    mathduel.games
+main                     生产环境    numeriduel.com
   ▲ 合并（游戏打磨完成）
   │
-beta                     测试环境    beta.mathduel.games
+beta                     测试环境    beta.numeriduel.com
   ▲ 合并（自测通过）
   │
 game/<slug>              功能分支    <branch>.mathduel-games.pages.dev
@@ -33,8 +33,8 @@ slug 需与 `src/pages/home.ts` 中 `GameDef.id` 一致。
 
 | 环境 | 分支 | 访问地址 | `VITE_SHOW_BETA` |
 |---|---|---|---|
-| 生产 | `main` | https://mathduel.games | 空（不展示 beta 游戏） |
-| 测试 | `beta` | https://beta.mathduel.games | `1` |
+| 生产 | `main` | https://numeriduel.com | 空（不展示 beta 游戏） |
+| 测试 | `beta` | https://beta.numeriduel.com | `1` |
 | 预览 | `game/*` | https://<branch>.mathduel-games.pages.dev | `1` |
 
 > Cloudflare Pages 不支持把自定义域名绑定到非生产分支，
@@ -78,12 +78,12 @@ git push -u origin game/sudoku
 
 # 2. 进入公开测试
 git checkout beta && git merge game/sudoku && git push
-# → https://beta.mathduel.games 上可玩，收集反馈
+# → https://beta.numeriduel.com 上可玩，收集反馈
 
 # 3. 正式上线
 # 编辑 src/pages/home.ts：stage: 'beta' → stage: 'live'
 git checkout main && git merge beta && git push
-# → https://mathduel.games 自动出现该游戏
+# → https://numeriduel.com 自动出现该游戏
 ```
 
 ---
@@ -109,8 +109,8 @@ git checkout main && git merge beta && git push
 | 步骤 | 分支 | 提交 | 结果 |
 |---|---|---|---|
 | 1. 新架构重写 | `game/bulls` | `4617d0e` | 预览地址自动生成 |
-| 2. 进入公开测试 | `beta` | `67153bd` | beta.mathduel.games 可玩 |
-| 3. 提升上线 | `main` | `80e875c` | mathduel.games 出现该游戏 |
+| 2. 进入公开测试 | `beta` | `67153bd` | beta.numeriduel.com 可玩 |
+| 3. 提升上线 | `main` | `80e875c` | numeriduel.com 出现该游戏 |
 
 **新增文件**：`src/games/bulls/{engine.ts,index.ts,styles.css}`、`games/bulls/index.html`
 **删除**：`legacy/games/bulls`（18KB 旧页面）
@@ -124,11 +124,11 @@ git checkout main && git merge beta && git push
 
 ```bash
 # 1. 编译时开关是否被正确内联
-curl -s https://mathduel.games/assets/home-*.js | grep -oE 'const v=!{0,1}'
+curl -s https://numeriduel.com/assets/home-*.js | grep -oE 'const v=!{0,1}'
 # 主站应为 !1（关），beta 站应为 !0（开）
 
 # 2. 该游戏的 stage 字段
-curl -s https://mathduel.games/assets/home-*.js | grep -oE 'href:"/games/bulls/".{0,200}'
+curl -s https://numeriduel.com/assets/home-*.js | grep -oE 'href:"/games/bulls/".{0,200}'
 # 应含 stage:"live"
 ```
 

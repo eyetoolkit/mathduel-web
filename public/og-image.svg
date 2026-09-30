@@ -33,7 +33,7 @@
   <!-- 副标题 -->
   <g font-family="ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif" font-weight="500" fill="#94A3B8">
     <text x="360" y="430" font-size="28">Two brains. One board. Sixty seconds.</text>
-    <text x="360" y="470" font-size="22" opacity="0.75">mathduel.games</text>
+    <text x="360" y="470" font-size="22" opacity="0.75">numeriduel.com</text>
   </g>
   <!-- 底部署名条 -->
   <rect x="0" y="580" width="1200" height="50" fill="#000" opacity="0.3"/>
