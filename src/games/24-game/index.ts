@@ -27,6 +27,7 @@ import {
 } from './engine';
 import { Competition, isProdEnv, type RaceEntry, type EloEntry, type ChatMsg } from './competition';
 import { initShareBindings, openShareOverlay, renderQR } from './share';
+import { playSfx, sfxOn, setSfx, unlockSfx } from '../../shared/sfx';
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T | null;
 
@@ -116,7 +117,109 @@ timer = 0;
   render();
   resultEl.className = 'result';
   resultEl.textContent = i18nT('mg.g24_pick_first');
+  // 进对局：进入沉浸态（gomoku 第 1 轮范式 · 2026-10-03）
+  document.body.classList.add('in-match');
+  armBackGuard();
+  // 开局音（gomoku 第 2 轮范式）
+  playSfx('start');
 }
+
+/* ===================== 退出守卫（gomoku 第 4/6 轮范式 · 2026-10-03 接入）=====================
+ * 手机侧滑 / 浏览器返回键拦截 → 弹 #g24-leavecard 二次确认
+ * · 进对局 deal() 末尾调 armBackGuard()：pushState 压占位条目
+ * · popstate 触发 → 立刻 pushState 把条目补回去（URL 不变、页面不退）→ 显示 leaveCard
+ * · 玩家点 "Keep playing" → 仅关框
+ * · 玩家点 "Leave" 或确认离开 → exitMatchToLobby() 回大厅页 + 消费占位条目
+ * 注：状态 + 函数必须在 init() 闭包**外**声明（deal()/compLeave() 也在闭包外），
+ *     addEventListener 监听器在 module 顶层执行（Vite module script 默认 defer）。
+ */
+const leaveCard = $<HTMLDivElement>('g24-leavecard');
+let backGuard = false;        // 是否已武装（占位条目在栈里）
+let backLeaving = false;      // 玩家已确认离开 → 放行这一次 popstate
+let pendingLobbyNav = false;
+
+function armBackGuard(): void {
+  // 仅在"对局中"武装：lobby / mode=以外不拦
+  if (!document.body.classList.contains('in-match')) return;
+  try {
+    history.pushState({ g24Match: 1 }, '');
+    backGuard = true;
+  } catch (e) { /* history 不可用则放弃拦截 */ }
+}
+
+window.addEventListener('popstate', () => {
+  if (backLeaving) {
+    // 已确认离开：消费占位条目，URL 回到对局页本身
+    backLeaving = false;
+    backGuard = false;
+    return;
+  }
+  if (!backGuard) return;     // 没武装过（不在对局中）→ 不拦
+  if (!document.body.classList.contains('in-match')) {
+    // 对局已结束 → 不拦
+    backGuard = false;
+    return;
+  }
+  // 用户侧滑 / 返回 → 立刻 pushState 补回条目（URL 不变、页面不退）+ 弹 leaveCard
+  try { history.pushState({ g24Match: 1 }, ''); } catch (e) { /* noop */ }
+  if (leaveCard) leaveCard.hidden = false;
+});
+
+function exitMatchToLobby(): void {
+  if (leaveCard) leaveCard.hidden = true;
+  backGuard = false;
+  document.body.classList.remove('in-match');
+  // 回大厅页（gomoku 第 6 轮范式：占位条目经 popstate 放行后 replace 掉对局页历史）
+  backLeaving = true;
+  pendingLobbyNav = true;
+  // 兜底：若 back() 没有触发 popstate，600ms 后直接走
+  window.setTimeout(() => {
+    if (pendingLobbyNav) {
+      pendingLobbyNav = false;
+      backLeaving = false;
+      window.location.replace('/games/24-game/lobby/');
+    }
+  }, 600);
+  try { history.back(); } catch (e) {
+    pendingLobbyNav = false;
+    backLeaving = false;
+    window.location.replace('/games/24-game/lobby/');
+  }
+}
+
+// leaveCard 三键绑定
+$('g24-leave-close')?.addEventListener('click', () => { if (leaveCard) leaveCard.hidden = true; });
+$('g24-leave-stay')?.addEventListener('click', () => { if (leaveCard) leaveCard.hidden = true; });
+$('g24-leave-yes')?.addEventListener('click', exitMatchToLobby);
+
+/* ===================== 音效键（gomoku 第 2/7 轮范式 · 2026-10-03 接入）===================== */
+const soundBtn = $<HTMLButtonElement>('g24-sound');
+if (soundBtn) {
+  soundBtn.setAttribute('aria-pressed', String(sfxOn()));
+  soundBtn.addEventListener('click', () => {
+    const next = !sfxOn();
+    setSfx(next);
+    soundBtn.setAttribute('aria-pressed', String(next));
+    soundBtn.setAttribute('aria-label', next ? 'Sound on' : 'Sound off');
+    soundBtn.setAttribute('title', next ? 'Sound' : 'Sound off');
+    // 手动开声时立刻解锁（iOS Safari 必须在手势里 resume）
+    if (next) {
+      unlockSfx();
+      playSfx('place');
+    }
+  });
+}
+
+/* ===================== 音频保活（gomoku 第 7 轮范式 · 2026-10-03）===================== */
+// iOS / 鸿蒙浏览器要求 AudioContext 在真实手势里 resume 多次（中断后会重新挂起），
+// 常驻监听 pointerdown + touchstart + mousedown + visibilitychange；解锁幂等。
+const keepAudioAlive = (): void => unlockSfx();
+document.addEventListener('pointerdown', keepAudioAlive, { passive: true });
+document.addEventListener('touchstart', keepAudioAlive, { passive: true });
+document.addEventListener('mousedown', keepAudioAlive, { passive: true });
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) keepAudioAlive();
+});
 
 const prettyFormula = (f: string) => f.replace(/\*/g, ' × ').replace(/\//g, ' ÷ ').replace(/-/g, ' − ');
 
@@ -194,6 +297,8 @@ function append(text: string): void {
   computeUsedIndices();
   render();
   checkAnswer();
+  // 落子音（gomoku 第 2 轮范式 · 2026-10-03）— 数字 / 运算符 / 括号唯一出口
+  playSfx('place');
 }
 
 const endsWithDigit = (s: string) => /\d$/.test(s);
@@ -1598,7 +1703,12 @@ function compLeave(silent: boolean): void {
   $('lobbyChat')?.remove();
   // silent=true 是 setMode 内部的清理路径（避免与玩家主动退房争抢
   // race-list 等 DOM）；silent=false 玩家主动退房 → 回到 practice
-  if (!silent) setMode('practice');
+  if (!silent) {
+    setMode('practice');
+    // 退到 practice 屏：去掉对局沉浸（gomoku 第 6 轮范式 · 2026-10-03）
+    document.body.classList.remove('in-match');
+    if (leaveCard) leaveCard.hidden = true;
+  }
   closeLobby();
 }
 
@@ -1938,5 +2048,7 @@ refreshTop();
       ov.classList.remove('show');
     }
   });
+
 })();
+// force-rebuild: trigger fresh CF Pages build so 24-game bundle reflects audit i18n fix
 // force-rebuild: trigger fresh CF Pages build so 24-game bundle reflects audit i18n fix

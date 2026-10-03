@@ -1,0 +1,249 @@
+/**
+ * NumeriDuel · 极简音效（WebAudio 实时合成 + <audio> 元素兜底，零外部音频文件）
+ * ------------------------------------------------------------
+ * 从 BoardDuel src/shared/sfx.ts 复制并改 namespace key（bd-sfx → mg-sfx）。
+ * 设计原则与踩过的坑（gomoku 第 7-9 轮）：
+ *   · 主通道：<audio> + 同源 /sfx/*.wav，避开 CSP `default-src 'self'` 拦 data: 的坑；
+ *   · 次通道：WebAudio 实时合成兜底（华为/鸿蒙自带浏览器 state running 却无声时顶上）；
+ *   · 解锁监听必须 pointerdown + touchstart + mousedown + visibilitychange 常驻，
+ *     不能 once —— iOS 中断后 AudioContext 会重新挂起，once 之后就永久静音。
+ *
+ * 用法：
+ *   import { playSfx, sfxOn, setSfx, unlockSfx } from '../../shared/sfx';
+ *   playSfx('place');            // 落子（数字牌 / 选数字 / 提交）
+ *   setSfx(false);               // 关（写 localStorage，跨页记住）
+ */
+
+const LS_KEY = 'mg-sfx';
+
+export type SfxName = 'place' | 'win' | 'lose' | 'start';
+
+let ctx: AudioContext | null = null;
+let unlockedOnce = false;
+let enabled = true;
+
+try {
+  const v = localStorage.getItem(LS_KEY);
+  // 只认显式的 '0' —— 缺省即为开（用户没反对过就不要自作主张关掉）
+  enabled = v !== '0';
+} catch (e) {
+  enabled = true;
+}
+
+export function sfxOn(): boolean {
+  return enabled;
+}
+
+export function setSfx(on: boolean): void {
+  enabled = on;
+  try { localStorage.setItem(LS_KEY, on ? '1' : '0'); } catch (e) { /* 隐私模式 */ }
+}
+
+/**
+ * 在真实用户手势里解锁音频（iOS Safari / 微信内置浏览器必需）。
+ *
+ * 这些浏览器要求：AudioContext 必须在手势回调里创建过、且 resume 到一个
+ * "真正播过东西"的状态，之后才能出声。
+ *
+ * 🔴 必须"每次手势都调"，不能 once：iOS 在锁屏 / 切后台 / 来电中断后会把
+ * AudioContext 重新挂起（state → suspended/interrupted），只解锁一次的话，
+ * 中断之后就永久静音直到刷新——这正是"声音时有时无"的主因。
+ * 本函数幂等且开销极小（多数时候只是一次 state 判断），放心常驻。
+ */
+export function unlockSfx(): void {
+  if (!enabled) return;
+  const c = ac();
+  if (!c) return;
+  if (c.state !== 'running') void c.resume().catch(() => {});
+  unlockElements();          // 顺手把 <audio> 通道也在手势里解锁（兜底通道需要）
+  if (!unlockedOnce) {
+    try {
+      const s = c.createBufferSource();
+      s.buffer = c.createBuffer(1, 1, c.sampleRate);
+      s.connect(c.destination);
+      s.start(0);
+      unlockedOnce = true;   // 静音采样只需播一次把 ctx 踢进 running
+    } catch (e) { /* 解锁失败不影响棋局 */ }
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+ * 主通道：<audio> 元素 + 同源 wav 文件
+ * ------------------------------------------------------------
+ * 站点 CSP 是 `default-src 'self'`，没有单独的 media-src 覆盖 →
+ * media-src 回落到 'self'，**data: 音频被 CSP 直接拦掉**。
+ * 改用同源 /sfx/*.wav 引用：可被 CDN 缓存、不踩 data URI 兼容坑。
+ *
+ * 为什么元素通道当主通道：真机存在"WebAudio state 报 running 却不出声"
+ * 的情况（华为/鸿蒙自带浏览器即如此）。<audio> 走系统媒体通道，
+ * 只要在某个真实手势里播过一次解锁，之后 setTimeout 里的程序化 play() 也放行。
+ * ══════════════════════════════════════════════════════════════ */
+
+const SFX_URL: Record<SfxName, string> = {
+  place: '/sfx/place.wav',
+  win: '/sfx/win.wav',
+  lose: '/sfx/lose.wav',
+  start: '/sfx/start.wav',
+};
+
+const FALLBACK_VOL = 0.9;
+const elCache: Partial<Record<SfxName, HTMLAudioElement>> = {};
+let elUnlocked = false;
+let elUnlocking = false;
+let elBroken = false;      // 元素通道被浏览器明确拒绝过 → 之后改用 WebAudio
+
+/** 取（必要时创建）某个音效的 <audio> 元素；失败返回 null */
+function el(name: SfxName): HTMLAudioElement | null {
+  if (elCache[name]) return elCache[name] || null;
+  try {
+    const a = new Audio(SFX_URL[name]);
+    a.preload = 'auto';
+    a.volume = FALLBACK_VOL;
+    elCache[name] = a;
+    return a;
+  } catch (e) {
+    return null;
+  }
+}
+
+/** 走 <audio> 元素通道播放；返回是否真的发起了播放 */
+function playViaElement(name: SfxName): boolean {
+  const a = el(name);
+  if (!a) return false;
+  try {
+    // ⚠️ 必须显式写回音量：解锁过程会临时把音量置 0，若解锁还在进行中
+    //    就播这一声，会继承 volume=0 → 无声。
+    a.volume = FALLBACK_VOL;
+    a.currentTime = 0;
+    const pr = a.play();
+    if (pr && typeof pr.catch === 'function') pr.catch(() => { elBroken = true; });
+    return true;
+  } catch (e) {
+    elBroken = true;
+    return false;
+  }
+}
+
+/** 在手势里把 <audio> 通道也解锁（音量 0 偷播一次，听不见但能解锁） */
+function unlockElements(): void {
+  if (elUnlocked || elUnlocking) return;   // 幂等 + 防重入
+  const a = el('place');
+  if (!a) return;
+  elUnlocking = true;
+  const done = (): void => {
+    try { a.pause(); a.currentTime = 0; } catch (e) { /* noop */ }
+    a.volume = FALLBACK_VOL;               // 用常量写回，别用"当前值"——重入时会记成 0
+    elUnlocked = true; elUnlocking = false;
+  };
+  try {
+    a.volume = 0;
+    const pr = a.play();
+    if (pr && typeof pr.then === 'function') pr.then(done, done);
+    else done();
+  } catch (e) {
+    done();
+  }
+}
+
+/** 取（必要时创建）AudioContext；创建失败（无 WebAudio）返回 null，全函数静默降级 */
+function ac(): AudioContext | null {
+  // iOS 中断后可能把 context 关闭（state='closed'）——丢弃重建，别卡死在坏实例上
+  if (ctx && ctx.state === 'closed') { ctx = null; unlockedOnce = false; }
+  if (ctx) return ctx;
+  try {
+    const Ctor: typeof AudioContext =
+      window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+    if (!Ctor) return null;
+    ctx = new Ctor();
+  } catch (e) {
+    return null;
+  }
+  return ctx;
+}
+
+/** 短噪声缓冲（白噪 → 后面用带通塑形成脆响） */
+function noiseBuffer(c: AudioContext): AudioBuffer {
+  const n = Math.floor(c.sampleRate * 0.08);
+  const buf = c.createBuffer(1, n, c.sampleRate);
+  const d = buf.getChannelData(0);
+  for (let i = 0; i < n; i++) d[i] = Math.random() * 2 - 1;
+  return buf;
+}
+
+/** 单个衰减音：osc(type, f0→f1) + gain 指数衰减 */
+function ping(
+  c: AudioContext,
+  type: OscillatorType,
+  f0: number,
+  f1: number,
+  dur: number,
+  gain: number,
+  delay = 0,
+): void {
+  const t = c.currentTime + delay;
+  const o = c.createOscillator();
+  const g = c.createGain();
+  o.type = type;
+  o.frequency.setValueAtTime(f0, t);
+  if (f1 !== f0) o.frequency.exponentialRampToValueAtTime(Math.max(1, f1), t + dur);
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.exponentialRampToValueAtTime(gain, t + 0.008);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  o.connect(g).connect(c.destination);
+  o.start(t);
+  o.stop(t + dur + 0.02);
+}
+
+/** 噪声脉冲（短促的"啪"） */
+function clack(c: AudioContext, dur: number, center: number, gain: number, delay = 0): void {
+  const t = c.currentTime + delay;
+  const src = c.createBufferSource();
+  src.buffer = noiseBuffer(c);
+  const bp = c.createBiquadFilter();
+  bp.type = 'bandpass';
+  bp.frequency.setValueAtTime(center, t);
+  bp.Q.value = 1.4;
+  const g = c.createGain();
+  g.gain.setValueAtTime(gain, t);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  src.connect(bp).connect(g).connect(c.destination);
+  src.start(t);
+  src.stop(t + dur + 0.02);
+}
+
+export function playSfx(name: SfxName): void {
+  if (!enabled) return;
+  const c = ac();
+  // WebAudio 通道保持就绪（挂起态就恢复），但发声优先交给 <audio> 元素
+  if (c && c.state !== 'running') void c.resume().catch(() => {});
+  // 主通道：<audio> 元素（真机最稳）。发起成功就不再叠 WebAudio，避免重音。
+  if (!elBroken && playViaElement(name)) return;
+  if (!c) return;                 // 元素通道不可用、又没有 WebAudio → 只能放弃
+  try {
+    if (name === 'place') {
+      // 落子：脆响 + 木共鸣 + 高频"啪"，听感短促
+      clack(c, 0.075, 1750, 0.34);
+      ping(c, 'triangle', 260, 130, 0.13, 0.30);
+      ping(c, 'sine', 900, 620, 0.035, 0.14);
+      return;
+    }
+    if (name === 'start') {
+      ping(c, 'sine', 520, 660, 0.14, 0.12);
+      return;
+    }
+    if (name === 'win') {
+      // 上行三音（C-E-G 感），短促不吵
+      ping(c, 'triangle', 523, 523, 0.16, 0.14, 0);
+      ping(c, 'triangle', 659, 659, 0.16, 0.14, 0.11);
+      ping(c, 'triangle', 784, 784, 0.28, 0.15, 0.22);
+      return;
+    }
+    if (name === 'lose') {
+      ping(c, 'sine', 392, 392, 0.20, 0.12, 0);
+      ping(c, 'sine', 294, 262, 0.34, 0.12, 0.13);
+      return;
+    }
+  } catch (e) {
+    /* 音频失败绝不能影响棋局 */
+  }
+}

@@ -6,7 +6,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#F4F5F9" />
-  <title>24 · Card Table — Make 24 Multiplayer Race | MathDuel</title>
+  <title>24 · Card Table — Make 24 Multiplayer Race | NumeriDuel</title>
   <meta name="description" content="Make 24 from four cards. Practice solo, take the global daily challenge, or race up to 99 players on identical cards." />
   <link rel="canonical" href="https://numeriduel.com/games/24-game/" />
   <!-- PWA + favicons -->
@@ -17,15 +17,15 @@
   <link rel="preconnect" href="wss://numeriduel.com" />
   <!-- Open Graph / Twitter -->
   <meta property="og:type" content="website" />
-  <meta property="og:site_name" content="MathDuel" />
+  <meta property="og:site_name" content="NumeriDuel" />
   <meta property="og:url" content="https://numeriduel.com/games/24-game/" />
   <meta property="og:image" content="https://numeriduel.com/og-image.svg" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
-  <meta property="og:image:alt" content="MathDuel — Five math arenas, one Elo ladder" />
+  <meta property="og:image:alt" content="NumeriDuel — Five math arenas, one Elo ladder" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:site" content="@mathduel" />
-  <meta name="twitter:creator" content="@mathduel" />
+  <meta name="twitter:site" content="@numeriduel" />
+  <meta name="twitter:creator" content="@numeriduel" />
   <meta name="twitter:image" content="https://numeriduel.com/og-image.svg" />
   <!-- hreflang (站点仅英文版，x-default = en) -->
   <link rel="alternate" hreflang="en" href="https://numeriduel.com/games/24-game/" />
@@ -139,7 +139,7 @@
   <button class="burger" id="pgBurger" aria-label="Open navigation" data-i18n-aria-label="mp.open_nav" aria-expanded="false">
     <svg viewBox="0 0 24 24" fill="none"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
   </button>
-  <a class="logo" href="/">Math<b>Duel</b></a>
+  <a class="logo" href="/">Numeri<b>Duel</b></a>
   <a class="btn-play-top" href="/games/24-game/?mode=daily" data-i18n="mp.play_now">Play now</a>
 </div>
 <div class="pg-overlay" id="pgOverlay"></div>
@@ -147,7 +147,7 @@
 <!-- ═══════════ 侧边导航（24 Game 高亮） ═══════════ -->
 <aside class="pg-sidebar" id="pgSidebar">
   <div class="sb-top">
-    <a class="logo" href="/">Math<b>Duel</b></a>
+    <a class="logo" href="/">Numeri<b>Duel</b></a>
     <button class="sb-collapse" id="pgCollapse" title="Collapse sidebar" aria-label="Collapse sidebar" data-i18n-title="mp.collapse_sidebar" data-i18n-aria-label="mp.collapse_sidebar">«</button>
   </div>
   <div class="sb-login">
@@ -244,6 +244,10 @@
         <button class="btn primary" id="newBtn" data-i18n="mg.shared_new_deal">🂠 New Deal</button>
         <button class="btn ghost" id="hintBtn" data-i18n="mg.shared_hint">💡 Hint</button>
         <button class="btn ghost" id="answerBtn" data-i18n="mg.shared_show_answer">Show Answer</button>
+        <button class="sound-btn" id="g24-sound" type="button" aria-pressed="true" aria-label="Sound on" title="Sound">
+          <svg class="ico-on" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5v5h3.4L12.5 19V5L7.4 9.5H4z"/><path d="M15.8 9.4a4.2 4.2 0 0 1 0 5.2"/><path d="M18.4 7a7.6 7.6 0 0 1 0 10"/></svg>
+          <svg class="ico-off" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5v5h3.4L12.5 19V5L7.4 9.5H4z"/><path d="M16.5 10l4.5 4"/><path d="M21 10l-4.5 4"/></svg>
+        </button>
         <button class="btn primary hidden" id="enterBtn" data-i18n="mg.shared_enter_competition">🏆 Enter Competition</button>
       </div>
 
@@ -309,6 +313,21 @@
 
   <div class="overlay" id="overlay"><div class="modal" id="modal" role="dialog" aria-modal="true"></div></div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <!-- 退出二次确认（gomoku 第 4/6 轮范式 · 2026-10-03 接入） -->
+  <div class="leavecard hidden" id="g24-leavecard" role="dialog" aria-modal="true" aria-labelledby="g24-leave-title">
+    <div class="leave-panel">
+      <div class="leave-h">
+        <b id="g24-leave-title">Leave the game?</b>
+        <button type="button" id="g24-leave-close" aria-label="Cancel">×</button>
+      </div>
+      <p class="leave-note">This game is still in progress — leaving now loses your streak and today's progress.</p>
+      <div class="leave-acts">
+        <button type="button" class="is-primary" id="g24-leave-stay">Keep playing</button>
+        <button type="button" class="is-danger" id="g24-leave-yes">Leave</button>
+      </div>
+    </div>
+  </div>
 
   <!-- 成绩分享（链接 + 二维码） -->
   <div class="share-overlay" id="shareOverlay" role="dialog" aria-modal="true" aria-labelledby="shareTitle">

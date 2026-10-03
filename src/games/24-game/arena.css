@@ -249,3 +249,151 @@ body.arena.skin-paper .lobby,
 body.arena.skin-paper .share-overlay {
   background: rgba(30, 27, 75, 0.45);
 }
+
+/* ============================================================
+   进对局沉浸 · body.in-match 触发（gomoku 第 1 轮范式 · 2026-10-03）
+   ------------------------------------------------------------
+   进对局时给 body 加 .in-match 类：
+   · 移动端隐藏站点 chrome（pg-topbar / pg-sidebar / pg-footer），腾出整屏
+   · body 锁定位移 + 禁止滚动，避免地址栏伸缩造成布局跳动
+   · 桌面端（≥1120px）只隐藏 footer，保留 sidebar 让玩家随时切其他游戏
+   ============================================================ */
+body.arena.in-match {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  touch-action: manipulation;
+}
+
+@media (max-width: 1119px) {
+  body.arena.in-match .pg-topbar,
+  body.arena.in-match .pg-sidebar,
+  body.arena.in-match .pg-footer,
+  body.arena.in-match .pg-overlay {
+    display: none !important;
+  }
+  body.arena.in-match .pg-main {
+    padding: 0 !important;
+    max-width: 100vw !important;
+  }
+}
+
+/* ============================================================
+   退出二次确认 · leavecard（gomoku 第 4/6 轮范式 · 2026-10-03）
+   ------------------------------------------------------------
+   手机侧滑 / 返回键拦截时弹出，让玩家确认是否放弃当前对局。
+   复用 lobby 遮罩观感：浅色皮肤用稍透靛蓝夜幕。
+   ============================================================ */
+.leavecard {
+  position: fixed;
+  inset: 0;
+  background: rgba(30, 27, 75, 0.45);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+.leavecard.hidden { display: none; }
+
+.leavecard .leave-panel {
+  background: var(--surface, #ffffff);
+  border-radius: 16px;
+  padding: 24px 22px 20px;
+  max-width: 360px;
+  width: 100%;
+  box-shadow: 0 8px 16px rgba(30, 27, 57, .10), 0 24px 56px rgba(30, 27, 57, .16);
+  color: var(--text, #1e1b39);
+}
+
+.leavecard .leave-h {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.leavecard .leave-h b {
+  font-weight: 700;
+  font-size: 17px;
+  letter-spacing: -.005em;
+}
+.leavecard .leave-h button {
+  background: none;
+  border: 0;
+  font-size: 20px;
+  color: var(--text-muted, #5b6079);
+  cursor: pointer;
+  padding: 4px 8px;
+  line-height: 1;
+}
+.leavecard .leave-h button:hover { color: var(--text, #1e1b39); }
+
+.leavecard .leave-note {
+  color: var(--text-muted, #5b6079);
+  font-size: 14px;
+  line-height: 1.55;
+  margin: 0 0 20px;
+}
+
+.leavecard .leave-acts {
+  display: flex;
+  gap: 8px;
+}
+.leavecard .leave-acts button {
+  flex: 1;
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 0;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  font-family: inherit;
+  letter-spacing: -.005em;
+}
+.leavecard .leave-acts .is-primary {
+  background: var(--brand-subtle, #eef0fb);
+  color: var(--brand-600, #3730a3);
+}
+.leavecard .leave-acts .is-primary:hover {
+  background: var(--brand-100, rgba(55, 48, 163, .13));
+}
+.leavecard .leave-acts .is-danger {
+  background: var(--brand-600, #3730a3);
+  color: #ffffff;
+}
+.leavecard .leave-acts .is-danger:hover {
+  background: var(--brand-700, #312e81);
+}
+
+/* ============================================================
+   音效键 · 22px icon button（gomoku 第 7 轮范式 · 2026-10-03）
+   ------------------------------------------------------------
+   两个 SVG 图标（ico-on / ico-off）二选一显示，aria-pressed 同步状态。
+   ============================================================ */
+.sound-btn {
+  background: transparent;
+  border: 1px solid var(--border, #e3e6f0);
+  border-radius: 999px;
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  color: var(--text-muted, #5b6079);
+  transition: background .15s ease, color .15s ease;
+}
+.sound-btn:hover {
+  background: var(--brand-subtle, #eef0fb);
+  color: var(--brand-600, #3730a3);
+}
+.sound-btn svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.sound-btn .ico-off { display: none; }
+.sound-btn[aria-pressed="false"] .ico-on { display: none; }
+.sound-btn[aria-pressed="false"] .ico-off { display: block; }
+
+/* 减少动效：关掉音效键 hover 过渡 */
+@media (prefers-reduced-motion: reduce) {
+  .sound-btn { transition: none; }
+}
