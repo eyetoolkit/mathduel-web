@@ -118,10 +118,7 @@ timer = 0;
   resultEl.className = 'result';
   resultEl.textContent = i18nT('mg.g24_pick_first');
   // 进对局：进入沉浸态（gomoku 第 1 轮范式 · 2026-10-03）
-  document.body.classList.add('in-match');
-  armBackGuard();
-  // 开局音（gomoku 第 2 轮范式）
-  playSfx('start');
+  enterMatchMode();
 }
 
 /* ===================== 退出守卫（gomoku 第 4/6 轮范式 · 2026-10-03 接入）=====================
@@ -137,6 +134,18 @@ const leaveCard = $<HTMLDivElement>('g24-leavecard');
 let backGuard = false;        // 是否已武装（占位条目在栈里）
 let backLeaving = false;      // 玩家已确认离开 → 放行这一次 popstate
 let pendingLobbyNav = false;
+
+/* ===================== 进对局统一入口（gomoku 第 1 轮范式 · 2026-10-03）=====================
+ * 之前只在 deal() 末尾加 body.in-match，导致 daily/timed/battle 模式走另一条路径时
+ * 沉浸态没被加上（如 Daily Challenge 走 startDaily() → 玩家点"开始挑战"才进对局）。
+ * 现在抽 helper：所有"开始对局"的入口（deal / startDailyTimer / battle 进对局）
+ * 都调 enterMatchMode()，统一触发 body.in-match + 退出守卫 + 开局音。
+ */
+function enterMatchMode(): void {
+  document.body.classList.add('in-match');
+  armBackGuard();
+  playSfx('start');
+}
 
 function armBackGuard(): void {
   // 仅在"对局中"武装：lobby / mode=以外不拦
@@ -750,6 +759,8 @@ function startDailyTimer(): void {
   };
   tick();
   daily._iv = window.setInterval(tick, 200);
+  // Daily 模式真正"开始对局"时刻：进沉浸态（gomoku 极简范式 · 2026-10-03）
+  enterMatchMode();
 }
 
 function updateDailyClock(): void {
@@ -1022,7 +1033,7 @@ function startTimed(): void {
   $('enterBtn')!.classList.add('hidden');
 
   renderTimedBanner();
-  deal();
+  deal();  // deal 末尾已加 enterMatchMode（in-match + 退出守卫 + 开局音）
   startTimedTimer();
   renderSide();
 }
