@@ -4,22 +4,13 @@
   <script>window.__I18N_CONFIG__={supported:["en","zh","ja","es","fr","de"],dictVersion:39,fallback:"en"};</script>
   <script src="/i18n/i18n.js?v=39"></script>
   <meta charset="utf-8" />
-  <!-- 缓存兜底 (2026-10-03 cache-bust): 微信/老旧浏览器不尊重 meta no-cache -->
-  <!-- 强制让浏览器失效缓存 reload 一次到最新 commit -->
   <script>
   (function(){
-    var VER = 'ccca480';
-    var KEY = 'mb_v';
-    var stored = sessionStorage.getItem(KEY);
+    var VER = 'a2d43f6';
     var u = new URL(location.href);
-    if (u.searchParams.get('v') !== VER) {
-      if (stored !== VER) {
-        sessionStorage.setItem(KEY, VER);
-        u.searchParams.set('v', VER);
-        location.replace(u.toString());
-        return;
-      }
-    }
+    if (u.searchParams.get('v') === VER) return;
+    u.searchParams.set('v', VER);
+    location.replace(u.toString());
   })();
   </script>
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
