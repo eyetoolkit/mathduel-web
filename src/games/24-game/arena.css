@@ -261,7 +261,14 @@ body.arena.skin-paper .share-overlay {
 body.arena.in-match {
   position: fixed;
   inset: 0;
-  overflow: hidden;
+  /* overflow-y: auto（不是 hidden）· 2026-10-03 修复：
+     24-game page 顺序是 table-head → cards → pad（运算符）→ actions，
+     pad + actions 在手机视口 fold 之外；overflow: hidden 会截断运算符键盘
+     让用户看不到。gomoku 用 overflow: hidden 是因为棋盘 SVG viewBox 固定，
+     24-game 是 HTML grid 牌面 + 运算符键盘，不需要 lock viewport。
+     touch-action: manipulation 保留（防止移动端双指缩放影响）。 */
+  overflow-y: auto;
+  overflow-x: hidden;
   touch-action: manipulation;
 }
 
