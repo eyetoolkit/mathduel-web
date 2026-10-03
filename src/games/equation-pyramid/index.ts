@@ -44,6 +44,19 @@ const i18nT = (key: string, vars?: Record<string, string | number>): string => {
   return key;
 };
 
+/* 🔴 修复 (2026-10-03 移动端 P0 兜底) 监听 i18n:ready 事件 —— enterMode() 在 dict 异步加载完成之前已跑过，
+   resetBoard 里 i18nT('mg.pyr_pick_first') 拿到 fallback 原 key 直接写进 #result 文本，
+   等字典就绪后不再 rerender，导致对局页 #result 一直显示裸 key（gomoku 第 12 轮同款坑）。
+   解决：监听 i18n:ready + i18n:change，触发时 rerenderResult 重新查 dict。 */
+function rerenderResult(): void {
+  const result = $('result');
+  if (!result || !st.board || !st.running) return;
+  if (result.classList.contains('win') || result.classList.contains('lose')) return; // 结算文案不动
+  result.textContent = st.mode === 'duel' ? i18nT('mg.pyr_duel_first') : i18nT('mg.pyr_pick_first');
+}
+window.addEventListener('i18n:ready', rerenderResult);
+window.addEventListener('i18n:change', rerenderResult);
+
 mountHeader(($('header') as HTMLElement | null) ?? document.createElement('div'), {
   brandName: 'NumeriDuel',
   brandSub: 'Equation Pyramid',
