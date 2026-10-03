@@ -275,6 +275,13 @@ body.arena.in-match {
   body.arena.in-match .pg-main {
     padding: 0 !important;
     max-width: 100vw !important;
+    /* 🔴 修复 (2026-10-03 移动端 P0) 内容溢出裁掉底部：
+       eq-pyr/sudoku/sudoku-6x6 内容超 667px 时（如 .ep-you/.ep-tray/.s9-you-head）
+       在 fixed body 内被裁。改：height: 100vh + overflow-y: auto，
+       锁定位移保留（防地址栏伸缩跳动），但主区可垂直滚动。 */
+    height: 100vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
 }
 
