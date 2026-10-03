@@ -153,3 +153,11 @@ body.arena:not(.skin-paper) .s4-board {
 .s4-verdict { font-family: var(--font-display); font-weight: 800; font-size: 1.7rem; color: var(--brand-text); }
 .s4-newbest { margin-top: 8px; font-size: 0.85rem; color: var(--warning-strong); font-weight: 600; }
 .modal .s4-verdict { text-align: center; }
+
+/* Disabled tab（占位，Duel Bot 等引擎接入后启用） */
+.g24-bar .tab.is-disabled,
+.g24-bar .tab[disabled] {
+  opacity: .45;
+  cursor: not-allowed;
+  pointer-events: none;
+}
