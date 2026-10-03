@@ -107,7 +107,6 @@ export function bindLeaveCard(opts: MatchGuardOptions): void {
  * 24-game 还在这里触发 playSfx('start')；其他棋类可在 deal() 末尾自己 playSfx。
  */
 export function enterMatchMode(opts: MatchGuardOptions): void {
-  const s = getState(opts);
   const immersive = opts.immersive !== false;
   if (immersive) document.body.classList.add('in-match');
   armBackGuard(opts);
