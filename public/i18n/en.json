@@ -737,7 +737,14 @@
     "sg_timeout": "⏱ Time!",
     "sg_st_solved": "Solved",
     "sg_hint_next": "Solved? The next deal starts straight away",
-    "sg_hint_reveal": "Time up reveals the answer, then deals again"
+    "sg_hint_reveal": "Time up reveals the answer, then deals again",
+
+    "diff_warmup": "Warm-up",
+    "diff_warmup_small": "6–12 ways",
+    "diff_standard": "Standard",
+    "diff_standard_small_pyr": "4–7 ways",
+    "diff_tricky": "Tricky",
+    "diff_tricky_small": "exactly 3"
   },
   "tn": {
     "title": "NumeriDuel · Teacher dashboard",

@@ -737,7 +737,14 @@
     "sg_timeout": "⏱ 時間切れ！",
     "sg_st_solved": "正解数",
     "sg_hint_next": "正解したら次の問題へ",
-    "sg_hint_reveal": "時間切れで答えを表示、次の問題へ"
+    "sg_hint_reveal": "時間切れで答えを表示、次の問題へ",
+
+    "diff_warmup": "ウォームアップ",
+    "diff_warmup_small": "解法 6〜12",
+    "diff_standard": "スタンダード",
+    "diff_standard_small_pyr": "解法 4〜7",
+    "diff_tricky": "トリッキー",
+    "diff_tricky_small": "ちょうど 3"
   },
   "tn": {
     "title": "NumeriDuel · 教師ダッシュボード",

@@ -737,7 +737,14 @@
     "sg_timeout": "⏱ Temps !",
     "sg_st_solved": "Résolues",
     "sg_hint_next": "Résolu ? La donne suivante démarre tout de suite",
-    "sg_hint_reveal": "Temps écoulé révèle la réponse, puis on recommence"
+    "sg_hint_reveal": "Temps écoulé révèle la réponse, puis on recommence",
+
+    "diff_warmup": "Échauffement",
+    "diff_warmup_small": "6–12 solutions",
+    "diff_standard": "Standard",
+    "diff_standard_small_pyr": "4–7 solutions",
+    "diff_tricky": "Coriace",
+    "diff_tricky_small": "exactement 3"
   },
   "tn": {
     "title": "NumeriDuel · Tableau de bord enseignant",

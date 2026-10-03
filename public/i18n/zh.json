@@ -740,7 +740,14 @@
     "sg_timeout": "⏱ 时间到！",
     "sg_st_solved": "已答",
     "sg_hint_next": "答对？下一题立刻开始",
-    "sg_hint_reveal": "时间到会展示答案，然后发下一题"
+    "sg_hint_reveal": "时间到会展示答案，然后发下一题",
+
+    "diff_warmup": "热身",
+    "diff_warmup_small": "6–12 种解法",
+    "diff_standard": "标准",
+    "diff_standard_small_pyr": "4–7 种解法",
+    "diff_tricky": "进阶",
+    "diff_tricky_small": "恰好 3 种"
   },
   "tn": {
     "title": "NumeriDuel · 教师端",

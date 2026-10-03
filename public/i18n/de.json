@@ -737,7 +737,14 @@
     "sg_timeout": "⏱ Zeit!",
     "sg_st_solved": "Gelöst",
     "sg_hint_next": "Gelöst? Die nächste Runde startet sofort",
-    "sg_hint_reveal": "Bei Zeitum wird die Antwort gezeigt, dann geht’s weiter"
+    "sg_hint_reveal": "Bei Zeitum wird die Antwort gezeigt, dann geht’s weiter",
+
+    "diff_warmup": "Aufwärmen",
+    "diff_warmup_small": "6–12 Wege",
+    "diff_standard": "Standard",
+    "diff_standard_small_pyr": "4–7 Wege",
+    "diff_tricky": "Knifflig",
+    "diff_tricky_small": "genau 3"
   },
   "tn": {
     "title": "NumeriDuel · Lehrer-Dashboard",

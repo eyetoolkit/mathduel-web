@@ -737,7 +737,14 @@
     "sg_timeout": "⏱ ¡Tiempo!",
     "sg_st_solved": "Resueltos",
     "sg_hint_next": "¿Resuelto? La siguiente mano empieza ya",
-    "sg_hint_reveal": "Si se acaba el tiempo se muestra la respuesta y vuelve a empezar"
+    "sg_hint_reveal": "Si se acaba el tiempo se muestra la respuesta y vuelve a empezar",
+
+    "diff_warmup": "Calentamiento",
+    "diff_warmup_small": "6–12 formas",
+    "diff_standard": "Estándar",
+    "diff_standard_small_pyr": "4–7 formas",
+    "diff_tricky": "Difícil",
+    "diff_tricky_small": "exactamente 3"
   },
   "tn": {
     "title": "NumeriDuel · Panel del docente",
