@@ -497,8 +497,10 @@ body.arena.answer-revealed .formula { opacity: 0.5; font-style: italic; }
 
   /* ── 顶：模式条 + 统计（order=0，flex:0 0 auto） ── */
   body.arena.in-match .g24-bar { order: 0; flex: 0 0 auto; margin-bottom: 8px; gap: 8px; }
-  /* 隐藏 Solved/Streak/You chips（次要信息，腾出空间） */
-  body.arena.in-match .top-stats { display: none; }
+  /* 🔴 修复 (2026-10-03) 删掉 .top-stats 隐藏规则 —— 此规则同时隐藏 sudoku/s4/s6 的
+     🏠 Lobby 按钮（backLobby 在 .top-stats 内），导致 in-match 时玩家无法回大厅。
+     24-game 自己的 Solved/Streak chip 在 in-match 时仍可见不影响对局（结算页另有 chip）。 */
+  /* body.arena.in-match .top-stats { display: none; } */
 
   /* ── 中：桌头 + 4 张牌 + 算式 + 结果（order=1-4，flex:0 0 auto） ── */
   body.arena.in-match .table-head { order: 1; flex: 0 0 auto; margin-bottom: 10px; gap: 10px; }

@@ -95,6 +95,9 @@ const st = {
   timedStartTs: 0,
   // solo/timed 错误计数
   mistakes: 0,
+  // pencil marks (notes mode)
+  marks: Array.from({ length: 36 }, () => new Set<number>()),
+  notes: false,
 };
 
 let conflictCache: Set<number> = new Set();
@@ -198,6 +201,9 @@ function resetBoard(keepClock = false): void {
   st.grid = p.puzzle.slice();
   st.owner = new Array(36).fill(0);
   st.filledBy = new Array(36).fill(0);
+  st.marks = Array.from({ length: 36 }, () => new Set<number>());
+  st.notes = false;
+  $('notesBtn')?.classList.remove('on');
   st.sel = -1;
   st.penalty = 0;
   if (!keepClock) {
@@ -279,6 +285,7 @@ function cellClass(i: number): string {
   if (conflictCache.has(i)) cls.push('conflict');
   if (st.mode === 'duel' && st.owner[i] === 1 && !st.grid[i]) cls.push('lock');
   if (st.mode === 'duel' && st.owner[i] === 0 && !st.grid[i] && !st.puzzle!.puzzle[i]) cls.push('free');
+  if (!st.grid[i] && st.marks[i].size) cls.push('marks');
   if (st.sel >= 0 && st.grid[st.sel]) {
     if (i !== st.sel && (rowOf(i) === rowOf(st.sel) || colOf(i) === colOf(st.sel) || boxOf(i) === boxOf(st.sel))) cls.push('peer');
     if (i !== st.sel && st.grid[i] && st.grid[i] === st.grid[st.sel]) cls.push('same');
@@ -304,7 +311,16 @@ function renderBoard(): void {
     const v = st.grid[i];
     const cls = cellClass(i);
     if (c.className !== cls) c.className = cls;
-    const html = v ? `<span>${v}</span>` : '';
+    let html: string;
+    if (v) {
+      html = `<span>${v}</span>`;
+    } else if (st.marks[i].size) {
+      let cells = '';
+      for (let n = 1; n <= 6; n++) cells += `<i class="${st.marks[i].has(n) ? 'on' : ''}">${n}</i>`;
+      html = `<div class="n6">${cells}</div>`;
+    } else {
+      html = '';
+    }
     if (c.innerHTML !== html) c.innerHTML = html;
   });
   updateGridStats();
@@ -447,8 +463,16 @@ function place(v: number): void {
     toast('🏁 Free cells unlock after duels — claim yours');
     return;
   }
+  // notes 模式：仅 toggle 候选数字（不写入真实数字）
+  if (st.notes && !st.grid[i]) {
+    if (st.marks[i].has(v)) st.marks[i].delete(v);
+    else st.marks[i].add(v);
+    renderBoard();
+    return;
+  }
   st.grid[i] = v;
   st.filledBy[i] = 1;
+  st.marks[i].clear(); // 写入真实数字时清空 marks
   const conflicts = findConflicts(st.grid);
   if (conflicts.has(i)) {
     st.mistakes++;
@@ -485,8 +509,10 @@ function erase(): void {
   }
   const i = st.sel;
   if (st.puzzle!.puzzle[i] || st.filledBy[i] === 2) return;
+  // 数字 + marks 全清；notes 模式下清空更彻底（玩家可能 toggle 错）
   st.grid[i] = 0;
   st.filledBy[i] = 0;
+  st.marks[i].clear();
   renderBoard();
 }
 
@@ -752,7 +778,10 @@ $('s6pad')!.addEventListener('click', (e) => {
   const b = (e.target as HTMLElement).closest<HTMLElement>('button');
   if (!b) return;
   if (b.dataset.act === 'erase') erase();
-  else if (b.dataset.v) place(Number(b.dataset.v));
+  else if (b.dataset.act === 'notes') {
+    st.notes = !st.notes;
+    $('notesBtn')!.classList.toggle('on', st.notes);
+  } else if (b.dataset.v) place(Number(b.dataset.v));
 });
 
 /** 方向键在棋盘上移动选格（环绕；duel 跳过 bot 格） */

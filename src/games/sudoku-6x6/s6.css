@@ -127,12 +127,18 @@ body.arena:not(.skin-paper) .s6-board {
   color: var(--text); font-family: var(--font-sans); font-size: 1.3rem; font-weight: 600; cursor: pointer;
   display: flex; align-items: center; justify-content: center;
   transition: border-color 0.12s, color 0.12s, background 0.12s;
+  position: relative;
 }
 .s6-pad .pk:hover { border-color: var(--brand); color: var(--brand); }
 .s6-pad .pk.erase { font-size: 0.9rem; color: var(--text-muted); }
 .s6-pad .pk.erase:hover { color: var(--text); }
+.s6-pad .pk.notes { font-size: 0.9rem; color: var(--text-muted); }
+.s6-pad .pk.notes:hover { color: var(--brand); }
+.s6-pad .pk.notes.on { border-color: var(--brand); background: rgba(79,70,229,.1); color: var(--brand); }
+.s6-pad .pk:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+.s6-pad .s6-padfoot { grid-column: 1 / -1; display: flex; gap: 8px; margin-top: 2px; }
+.s6-pad .s6-padfoot .pk { flex: 1; padding: 12px 6px; font-size: 0.95rem; aspect-ratio: auto; }
 /* 剩余计数角标：该数字盘面还差几个；集齐 6 个整键置灰 */
-.s6-pad .pk { position: relative; }
 .s6-pad .pk .pk-left {
   position: absolute; right: 6px; bottom: 3px;
   font-size: 0.62rem; font-weight: 700; line-height: 1;
@@ -143,7 +149,21 @@ body.arena:not(.skin-paper) .s6-board {
 @media (max-width: 560px) {
   .s6-pad { gap: 6px; }
   .s6-pad .pk { aspect-ratio: 1.05; font-size: 1.15rem; }
+  .s6-pad .s6-padfoot .pk { aspect-ratio: auto; padding: 10px 4px; font-size: 0.86rem; }
 }
+
+/* ─── pencil marks：cell 内的 2×3 候选微格（6×6 的「第二语言」）─── */
+.s6-board .c6cell.marks { align-items: stretch; justify-content: stretch; padding: 0; }
+.s6-board .c6cell .n6 {
+  display: grid; grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(3, 1fr);
+  width: 100%; height: 100%; padding: 3%;
+}
+.s6-board .c6cell .n6 i {
+  display: flex; align-items: center; justify-content: center;
+  font-style: normal; font-family: var(--font-sans); font-weight: 500;
+  font-size: 0.28em; line-height: 1; color: transparent;
+}
+.s6-board .c6cell .n6 i.on { color: var(--a-ember-dim, #ff8b66); opacity: 0.7; }
 
 .s6-padtools { display: flex; justify-content: center; gap: 10px; margin-top: 10px; }
 
