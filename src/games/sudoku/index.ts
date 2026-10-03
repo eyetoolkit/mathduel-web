@@ -30,6 +30,9 @@ import {
   type Grid,
   type Puzzle,
 } from './engine';
+import { playSfx } from '../../shared/sfx';
+import { bindLeaveCard, enterMatchMode, exitMatchToLobby } from '../_shared/match-guard';
+import { bindSoundButton, keepAudioAlive } from '../_shared/match-sound';
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T | null;
 
@@ -122,6 +125,15 @@ const goLobby = (): void => {
   location.href = LOBBY_URL;
 };
 
+/* ═══ 退出守卫 + 沉浸态（24-game 第 1/4/6 轮范式 · 2026-10-03 接入）═══ */
+const MATCH_GUARD_OPTS = { leaveCardId: 's9-leavecard', lobbyUrl: LOBBY_URL };
+bindLeaveCard(MATCH_GUARD_OPTS);
+bindSoundButton('s9-sound');
+keepAudioAlive();
+// 顶栏 "🏠 Lobby" 按钮 → 统一走退出出口（保留 in-match 沉浸态守卫）
+const s9LobbyBtn = $<HTMLButtonElement>('backLobby');
+if (s9LobbyBtn) s9LobbyBtn.addEventListener('click', () => exitMatchToLobby(MATCH_GUARD_OPTS));
+
 function enterMode(m: Mode): void {
   stopAll();
   st.view = 'play';
@@ -136,6 +148,9 @@ function enterMode(m: Mode): void {
   $('hintBtn')!.style.display = '';
   if (duel) botTrashTalk('hello');
   startRound();
+  // 进对局统一入口（24-game 范式 · 2026-10-03 接入 sudoku 系）
+  enterMatchMode(MATCH_GUARD_OPTS);
+  playSfx('start');
 }
 
 function stopAll(): void {

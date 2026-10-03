@@ -247,15 +247,36 @@
         </div>
       </div>
 
-      <!-- Duel bot 聊天 -->
-      <div class="chat-dock hidden" id="chatDock" aria-label="Match chat"></div>
-    </section>
+    <!-- Duel bot 聊天 -->
+    <div class="chat-dock hidden" id="chatDock" aria-label="Match chat"></div>
+  </section>
 
-    <aside class="side" id="side"></aside>
-  </main>
+  <aside class="side" id="side"></aside>
+</main>
 
-  <div class="overlay" id="overlay"><div class="modal" id="modal" role="dialog" aria-modal="true"></div></div>
-  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div class="overlay" id="overlay"><div class="modal" id="modal" role="dialog" aria-modal="true"></div></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <!-- 退出二次确认（24-game 第 4/6 轮范式 · 2026-10-03 接入 sudoku 系） -->
+  <div class="leavecard hidden" id="s9-leavecard" role="dialog" aria-modal="true" aria-labelledby="s9-leave-title">
+    <div class="leave-panel">
+      <div class="leave-h">
+        <b id="s9-leave-title">Leave the game?</b>
+        <button type="button" id="s9-leave-close" aria-label="Cancel">×</button>
+      </div>
+      <p class="leave-note">This game is still in progress — leaving now loses your streak and today's progress.</p>
+      <div class="leave-acts">
+        <button type="button" class="is-primary" id="s9-leave-stay">Keep playing</button>
+        <button type="button" class="is-danger" id="s9-leave-yes">Leave</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 音效开关（24-game 第 2/7 轮范式 · 2026-10-03 接入 sudoku 系） -->
+  <button class="sound-btn" id="s9-sound" type="button" aria-pressed="true" aria-label="Sound on" title="Sound" style="position:fixed;bottom:18px;left:18px;z-index:60">
+    <svg class="ico-on" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5v5h3.4L12.5 19V5L7.4 9.5H4z"/><path d="M15.8 9.4a4.2 4.2 0 0 1 0 5.2"/><path d="M18.4 7a7.6 7.6 0 0 1 0 10"/></svg>
+    <svg class="ico-off" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5v5h3.4L12.5 19V5L7.4 9.5H4z"/><path d="M16.5 10l4.5 4"/><path d="M21 10l-4.5 4"/></svg>
+  </button>
 
     <script src="/shared/qrcode.min.js"></script>
 <script type="module" src="/src/games/sudoku/index.ts"></script>
