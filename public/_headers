@@ -21,6 +21,15 @@
   Permissions-Policy: geolocation=(), microphone=(), camera=()
   Strict-Transport-Security: max-age=31536000; includeSubDomains
 
+# HTML 短缓存（2026-10-03 接入 · 修复"经常打不开"）
+# max-age=300：CF 边缘命中 5 分钟，避开链路抖动 + 边缘选错（AMS）的根因
+# stale-while-revalidate=86400：5 分钟后用户先拿旧 HTML，后台异步拉新版本
+# 部署后需手动 purge_cache 让新 HTML 立即生效（scripts/deploy 钩子里加）
+/
+  Cache-Control: public, max-age=300, stale-while-revalidate=86400
+/*.html
+  Cache-Control: public, max-age=300, stale-while-revalidate=86400
+
 /fonts/*
   Cache-Control: public, max-age=14400, must-revalidate
 
