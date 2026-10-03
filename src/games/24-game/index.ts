@@ -1675,6 +1675,9 @@ function compEnterGame(): void {
   dealingAnim = true; // 竞赛每轮开局也播一次发牌动画
   render();
   renderSide();
+  // Battle 模式进对局：进入沉浸态（gomoku 极简范式 · 2026-10-03）
+  // 之前漏了——battle 走 compEnterGame() 而非 deal()，导致竞技模式也看不到运算符键盘
+  enterMatchMode();
 }
 
 function updateCompTimer(left: number): void {
