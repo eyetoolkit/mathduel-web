@@ -30,6 +30,12 @@
 /*.html
   Cache-Control: public, max-age=300, stale-while-revalidate=86400
 
+# i18n dict 短缓存（2026-10-03 接入 · 修复"修复 i18n 后玩家看不到新版"）
+# 默认 CF Pages 对无规则静态文件 = max-age=7200 (2h)，玩家改 dict 修复要等 2 小时
+# 才能在浏览器看到新词条。max-age=300 与 HTML 对齐，stale-while-revalidate 兜底。
+/i18n/*
+  Cache-Control: public, max-age=300, stale-while-revalidate=86400
+
 /fonts/*
   Cache-Control: public, max-age=14400, must-revalidate
 
