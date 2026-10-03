@@ -27,6 +27,9 @@ import {
   type Board,
   type Tier,
 } from './engine';
+import { playSfx } from '../../shared/sfx';
+import { bindLeaveCard, enterMatchMode, exitMatchToLobby } from '../_shared/match-guard';
+import { bindSoundButton, keepAudioAlive } from '../_shared/match-sound';
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T | null;
 
@@ -123,6 +126,11 @@ function mulberryFromDate(seedExtra: number): () => number {
 }
 
 /* ═══ 模式入口 ═══ */
+const MATCH_GUARD_OPTS = { leaveCardId: 'ep-leavecard', lobbyUrl: '/games/equation-pyramid/lobby/' };
+bindLeaveCard(MATCH_GUARD_OPTS);
+bindSoundButton('ep-sound');
+keepAudioAlive();
+
 function enterMode(m: Mode): void {
   stopAll();
   st.mode = m;
@@ -131,6 +139,9 @@ function enterMode(m: Mode): void {
   $('oppHead')!.hidden = !duel;
   $('diffPick')!.style.display = m === 'daily' ? 'none' : '';
   startRound();
+  // 进对局统一入口（24-game 范式 · 2026-10-03 接入）
+  enterMatchMode(MATCH_GUARD_OPTS);
+  playSfx('start');
 }
 
 function stopAll(): void {
@@ -629,7 +640,7 @@ window.addEventListener('keydown', (e) => {
   }
 });
 
-$('backLobby')!.addEventListener('click', goLobby);
+$('backLobby')!.addEventListener('click', () => exitMatchToLobby(MATCH_GUARD_OPTS));
 $('overlay')!.addEventListener('click', (e) => { if (e.target === $('overlay')!) hideModal(); });
 
 /* ═══ init ═══ */
