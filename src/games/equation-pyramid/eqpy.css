@@ -83,8 +83,12 @@
 
 /* ===== 难度行 ===== */
 .ep-diff { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-.ep-diff .ep-pk {
-  flex-direction: column; align-items: flex-start;
+.ep-pk {
+  /* 🔴 修复 (2026-10-03 移动端) 漏 display:flex 导致 <span>/<small> 水平贴一起 */
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
   padding: 9px 11px;
 }
 .ep-diff .ep-pk small { font-size: 0.7rem; font-weight: 400; color: var(--a-mute); }
