@@ -27,6 +27,9 @@ import {
 } from './engine';
 import { mountCompetition } from '../_shared/mp-client';
 import { createSudokuAdapter } from '../_shared/mp-adapters/sudoku';
+import { playSfx } from '../../shared/sfx';
+import { bindLeaveCard, enterMatchMode, exitMatchToLobby } from '../_shared/match-guard';
+import { bindSoundButton, keepAudioAlive } from '../_shared/match-sound';
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T | null;
 
@@ -107,12 +110,21 @@ const goLobby = (): void => {
   location.href = LOBBY_URL;
 };
 
+/* ═══ 退出守卫 + 沉浸态（24-game 第 1/4/6 轮范式 · 2026-10-03 接入）═══ */
+const MATCH_GUARD_OPTS = { leaveCardId: 's4-leavecard', lobbyUrl: LOBBY_URL };
+bindLeaveCard(MATCH_GUARD_OPTS);
+bindSoundButton('s4-sound');
+keepAudioAlive();
+
 function enterMode(m: Mode): void {
   stopAll();
   st.view = 'play';
   st.mode = m;
   document.querySelectorAll<HTMLButtonElement>('#tabs .tab').forEach((t) => t.classList.toggle('active', t.dataset.mode === m));
   startRound();
+  // 进对局统一入口
+  enterMatchMode(MATCH_GUARD_OPTS);
+  playSfx('start');
 }
 
 function stopAll(): void {
@@ -567,7 +579,7 @@ $('s4pad')!.addEventListener('click', (e) => {
   else if (b.dataset.v) place(Number(b.dataset.v));
 });
 
-$('backLobby')!.addEventListener('click', goLobby);
+$('backLobby')!.addEventListener('click', () => exitMatchToLobby(MATCH_GUARD_OPTS));
 $('newBtn')!.addEventListener('click', () => startRound());
 $('hintBtn')!.addEventListener('click', giveHint);
 

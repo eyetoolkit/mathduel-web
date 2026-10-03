@@ -29,6 +29,9 @@ import {
   type Grid,
   type Puzzle,
 } from './engine';
+import { playSfx } from '../../shared/sfx';
+import { bindLeaveCard, enterMatchMode, exitMatchToLobby } from '../_shared/match-guard';
+import { bindSoundButton, keepAudioAlive } from '../_shared/match-sound';
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T | null;
 
@@ -119,6 +122,12 @@ const goLobby = (): void => {
   location.href = LOBBY_URL;
 };
 
+/* ═══ 退出守卫 + 沉浸态（24-game 第 1/4/6 轮范式 · 2026-10-03 接入）═══ */
+const MATCH_GUARD_OPTS = { leaveCardId: 's6-leavecard', lobbyUrl: LOBBY_URL };
+bindLeaveCard(MATCH_GUARD_OPTS);
+bindSoundButton('s6-sound');
+keepAudioAlive();
+
 function enterMode(m: Mode): void {
   stopAll();
   st.view = 'play';
@@ -133,6 +142,9 @@ function enterMode(m: Mode): void {
   $('hintBtn')!.style.display = '';
   if (duel) botTrashTalk('hello');
   startRound();
+  // 进对局统一入口
+  enterMatchMode(MATCH_GUARD_OPTS);
+  playSfx('start');
 }
 
 function stopAll(): void {
@@ -774,7 +786,7 @@ window.addEventListener('keydown', (e) => {
   }
 });
 
-$('backLobby')!.addEventListener('click', goLobby);
+$('backLobby')!.addEventListener('click', () => exitMatchToLobby(MATCH_GUARD_OPTS));
 $('newBtn')!.addEventListener('click', () => startRound());
 $('hintBtn')!.addEventListener('click', giveHint);
 /* ═══ Hint（naked-single 逻辑提示，不直接泄答案位次序）═══ */
