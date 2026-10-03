@@ -1,13 +1,13 @@
 <!doctype html>
-<html lang="en" data-site="mathduel" data-build="%VITE_SHOW_BETA%">
+<html lang="en" data-site="numeriduel" data-build="%VITE_SHOW_BETA%">
 <head>
-  <script>window.__I18N_CONFIG__={supported:["en","zh","ja","es","fr","de"],dictVersion:39,fallback:"en"};</script>
-  <script src="/i18n/i18n.js?v=39"></script>
+  <script>window.__I18N_CONFIG__={supported:["en","zh","ja","es","fr","de"],dictVersion:40,fallback:"en"};</script>
+  <script src="/i18n/i18n.js?v=40"></script>
   <script>(function(){try{var t=localStorage.getItem("md-theme");if(t!=="dark"&&t!=="light"){t=(window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches)?"dark":"light";}if(t==="dark"){document.documentElement.setAttribute("data-theme","dark");}}catch(e){}})();</script>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#F4F5F9" />
-  <title data-i18n="ml.g24_seo_title">24 Game — Choose Your Mode · MathDuel</title>
+  <title data-i18n="ml.g24_seo_title">24 Game — Choose Your Mode · NumeriDuel</title>
   <meta name="description" content="Six ways to make 24: today's global daily, a friend room, a 99-player race, solo practice or timed practice. Same four cards every time — only the pressure changes." data-i18n-content="ml.g24_seo_desc" />
   <link rel="canonical" href="https://numeriduel.com/games/24-game/lobby/" />
   <!-- PWA + favicons -->
@@ -18,18 +18,18 @@
   <link rel="preconnect" href="wss://numeriduel.com" />
   <!-- Open Graph / Twitter -->
   <meta property="og:type" content="website" />
-  <meta property="og:site_name" content="MathDuel" />
+  <meta property="og:site_name" content="NumeriDuel" />
   <meta property="og:url" content="https://numeriduel.com/games/24-game/lobby/" />
   <meta property="og:image" content="https://numeriduel.com/og-image.svg" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
-  <meta property="og:image:alt" content="24 Game — Six ways to make 24 on MathDuel" data-i18n-content="ml.g24_seo_og_alt" />
-  <meta property="og:title" content="24 Game — Choose Your Mode · MathDuel" />
+  <meta property="og:image:alt" content="24 Game — Six ways to make 24 on NumeriDuel" data-i18n-content="ml.g24_seo_og_alt" />
+  <meta property="og:title" content="24 Game — Choose Your Mode · NumeriDuel" />
   <meta property="og:description" content="Daily challenge, friend 1v1, 99-player race, solo & timed practice, random match. Same cards, the pressure changes." data-i18n-content="ml.g24_seo_og_desc" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:site" content="@mathduel" />
-  <meta name="twitter:creator" content="@mathduel" />
-  <meta name="twitter:title" content="24 Game — Choose Your Mode · MathDuel" />
+  <meta name="twitter:site" content="@numeriduel" />
+  <meta name="twitter:creator" content="@numeriduel" />
+  <meta name="twitter:title" content="24 Game — Choose Your Mode · NumeriDuel" />
   <meta name="twitter:description" content="Six ways to make 24 — daily, friend room, race, solo & timed practice, random match." data-i18n-content="ml.g24_seo_tw_desc" />
   <meta name="twitter:image" content="https://numeriduel.com/og-image.svg" />
   <link rel="alternate" hreflang="en" href="https://numeriduel.com/games/24-game/lobby/" />
@@ -191,7 +191,7 @@
   <button class="burger" id="burger" aria-label="Open navigation" data-i18n-aria-label="mp.open_nav" aria-expanded="false">
     <svg viewBox="0 0 24 24" fill="none"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
   </button>
-  <a class="logo" href="/">Math<b>Duel</b></a>
+  <a class="logo" href="/">Numeri<b>Duel</b></a>
   <a class="btn-login" data-i18n="mp.play_now" href="/games/24-game/?mode=daily" style="flex:none;padding:8px 18px">Play now</a>
 </div>
 <div class="overlay" id="overlay"></div>
@@ -199,7 +199,7 @@
 <!-- ═══════════ 侧边导航（24 Game 高亮；顶部 CTA Play now） ═══════════ -->
 <aside class="sidebar" id="sidebar">
   <div class="sb-top">
-    <a class="logo" href="/">Math<b>Duel</b></a>
+    <a class="logo" href="/">Numeri<b>Duel</b></a>
     <button class="sb-collapse" id="collapse" title="Collapse navigation" aria-label="Collapse navigation" data-i18n-title="mp.collapse_nav" data-i18n-aria-label="mp.collapse_nav">«</button>
   </div>
   <div class="sb-login">
@@ -263,11 +263,11 @@
           <div class="mi" aria-hidden="true"><svg class="mi-ico" viewBox="0 0 24 24"><use href="#mi-timed"/></svg></div>
           <div class="mt" data-i18n="ml.mt_24_timed">Timed Practice</div>
         </a>
-        <a class="mode" href="/games/24-game/?mode=random" data-mode="random">
+        <span class="mode disabled" data-mode="random" aria-disabled="true" title="Random match is on the way. Worker endpoint not live yet.">
           <div class="mi" aria-hidden="true"><svg class="mi-ico" viewBox="0 0 24 24"><use href="#mi-random"/></svg></div>
           <div class="mt" data-i18n="ml.mt_24_random">Random Match</div>
           <span class="soon-pill">SOON</span>
-          </a>
+        </span>
         </div>
     </section>
 
@@ -331,13 +331,13 @@
     <div class="sf-title" data-i18n="mp.explore_family">Explore the Duel family</div>
     <div class="sf-matrix">
       <a class="sf-item" href="https://boardduel.com"><span class="pip" style="background:#2FC4C9"></span><span data-i18n="mp.fam_board">BoardDuel · Chess &amp; Card Games</span></a>
-      <a class="sf-item" href="https://numeriduel.com"><span class="pip" style="background:#F59E0B"></span><span data-i18n="mp.fam_math">MathDuel · Math Puzzle Games</span></a>
+      <a class="sf-item" href="https://numeriduel.com"><span class="pip" style="background:#F59E0B"></span><span data-i18n="mp.fam_math">NumeriDuel · Math Puzzle Games</span></a>
       <a class="sf-item" href="https://memoryduel.com"><span class="pip" style="background:#4F46E5"></span><span data-i18n="mp.fam_memory">MemoryDuel · Knowledge Battles</span></a>
     </div>
     <div class="sf-links">
       <a data-i18n="footer.about" href="/about/">About</a><a data-i18n="footer.contact" href="/contact/">Contact</a><a data-i18n="footer.privacy" href="/privacy/">Privacy</a><a data-i18n="footer.terms" href="/terms/">Terms</a><a data-i18n="mp.all_games" href="/">All games</a>
     </div>
-    <div class="sf-copy" data-i18n="mp.copy_line">© 2026 MathDuel · Pure static · Privacy-first · Free to play</div>
+    <div class="sf-copy" data-i18n="mp.copy_line">© 2026 NumeriDuel · Pure static · Privacy-first · Free to play</div>
   </div>
 </footer>
 
