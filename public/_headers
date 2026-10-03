@@ -21,14 +21,20 @@
   Permissions-Policy: geolocation=(), microphone=(), camera=()
   Strict-Transport-Security: max-age=31536000; includeSubDomains
 
-# HTML 短缓存（2026-10-03 接入 · 修复"经常打不开"）
-# max-age=300：CF 边缘命中 5 分钟，避开链路抖动 + 边缘选错（AMS）的根因
-# stale-while-revalidate=86400：5 分钟后用户先拿旧 HTML，后台异步拉新版本
-# 部署后需手动 purge_cache 让新 HTML 立即生效（scripts/deploy 钩子里加）
+# HTML 强制不缓存（2026-10-03 调整 · 修复"用户浏览器 cache 滞留看到旧版"）
+# 之前 max-age=300 + stale-while-revalidate=86400 实际被 zone TTL 7200 抬底（STATE 顶部 P1），
+# 导致用户浏览器拿到的是 2 小时前 HTML，看不到修复（如沉浸态/Namespace 修正/Notes 按钮）。
+# 改 no-cache + no-store + must-revalidate + Pragma + Expires 5 件套，浏览器无视 max-age。
+# 代价：HTML 不走 CDN cache，每次都回源。对 numeriduel.com 这种轻量站影响 <50ms RTT。
+# stale-while-revalidate 保留：5 分钟内浏览器发回源时，源 304 后立即复用。
 /
-  Cache-Control: public, max-age=300, stale-while-revalidate=86400
+  Cache-Control: no-cache, no-store, must-revalidate
+  Pragma: no-cache
+  Expires: 0
 /*.html
-  Cache-Control: public, max-age=300, stale-while-revalidate=86400
+  Cache-Control: no-cache, no-store, must-revalidate
+  Pragma: no-cache
+  Expires: 0
 
 # i18n dict 短缓存（2026-10-03 接入 · 修复"修复 i18n 后玩家看不到新版"）
 # 默认 CF Pages 对无规则静态文件 = max-age=7200 (2h)，玩家改 dict 修复要等 2 小时
