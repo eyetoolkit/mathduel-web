@@ -461,3 +461,94 @@ body.arena.answer-revealed .formula { opacity: 0.5; font-style: italic; }
 }
 /* F-103 — 开局后 comp-status 切到 Live 状态用绿色点强调 */
 .comp-status[data-live="1"] { color: var(--amber, #d97706); font-weight: 700; }
+
+/* ════════════════════════════════════════════════════════════════════
+   24-game 移动端沉浸对局（body.arena.in-match + <900px，2026-10-03）
+   ------------------------------------------------------------
+   参照 boardduel gomoku-paper.css 同款极简范式（gomoku 第 1-6 轮迭代沉淀）：
+   · 满屏 arena：position:fixed; inset:0; overflow:hidden 锁 viewport
+   · 三段纵向 flex：顶 = 模式条 + 状态 · 中 = 桌头 + 4 张牌 + 算式 · 底 = 运算符 + 操作
+   · 隐藏 chrome（pg-topbar / pg-sidebar / pg-footer）+ 次要面板（banner / 每日题 banner）
+   · 牌面 + 运算符键盘紧凑排版，触控目标 ≥44px
+   · 操作行 flex-wrap：6 键（New Deal / Hint / Show Answer / Sound / Erase / Clear）横排挤爆换行不裁字
+   ════════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 899.5px) {
+  /* ── 锁定 viewport：对局中整页不可滚动 ── */
+  body.arena.in-match {
+    position: fixed; inset: 0; overflow: hidden;
+    background: var(--bg, #FAFAF7);
+  }
+
+  /* ── 主区：纵向 flex 三段 ── */
+  body.arena.in-match .pg-main {
+    max-width: none; margin: 0; padding: 0;
+    height: 100dvh; display: flex; flex-direction: column; overflow: hidden;
+  }
+
+  /* board 是对局主区，纵向 flex 占满剩余空间 */
+  body.arena.in-match .board {
+    flex: 1; min-height: 0; overflow: hidden;
+    display: flex; flex-direction: column;
+    padding: 10px 12px;
+    border-radius: 0; border: none; box-shadow: none; background: transparent;
+  }
+  body.arena.in-match .board::before { display: none; }  /* 关掉 radial-gradient */
+
+  /* ── 顶：模式条 + 统计（order=0，flex:0 0 auto） ── */
+  body.arena.in-match .g24-bar { order: 0; flex: 0 0 auto; margin-bottom: 8px; gap: 8px; }
+  /* 隐藏 Solved/Streak/You chips（次要信息，腾出空间） */
+  body.arena.in-match .top-stats { display: none; }
+
+  /* ── 中：桌头 + 4 张牌 + 算式 + 结果（order=1-4，flex:0 0 auto） ── */
+  body.arena.in-match .table-head { order: 1; flex: 0 0 auto; margin-bottom: 10px; gap: 10px; }
+  body.arena.in-match .target b { font-size: clamp(2rem, 7vw, 2.6rem); }
+  body.arena.in-match .prac-timer { padding: 4px 10px; font-size: 0.75rem; }
+  body.arena.in-match .prac-timer b { font-size: 0.95rem; }
+
+  body.arena.in-match .cards {
+    order: 2; flex: 0 0 auto; gap: 8px; margin-bottom: 8px;
+  }
+  body.arena.in-match .card .num { font-size: clamp(1.6rem, 9vw, 2.4rem); }
+  body.arena.in-match .card .suit { font-size: 0.85rem; top: 6px; left: 8px; }
+  body.arena.in-match .card .suit.br { bottom: 6px; right: 8px; }
+
+  body.arena.in-match .formula {
+    order: 3; flex: 0 0 auto; min-height: 44px;
+    font-size: clamp(1.05rem, 4.5vw, 1.3rem); padding: 8px 12px; margin-bottom: 6px;
+  }
+
+  body.arena.in-match .result {
+    order: 4; flex: 0 0 auto; font-size: 0.82rem; min-height: 18px; margin-bottom: 0;
+  }
+
+  /* ── 隐藏次要面板：每日 banner / 竞赛头 / lobby ── */
+  body.arena.in-match #modeBanner,
+  body.arena.in-match #compHead,
+  body.arena.in-match .banner,
+  body.arena.in-match .spec-bar,
+  body.arena.in-match .chat-dock { display: none !important; }
+
+  /* ── 底：运算符键盘 + 操作行（order=5-6，flex:0 0 auto） ── */
+  body.arena.in-match .pad {
+    order: 5; flex: 0 0 auto; gap: 8px; margin-bottom: 6px;
+  }
+  body.arena.in-match .op-btn { min-height: 48px; font-size: 1.3rem; }
+
+  body.arena.in-match .actions {
+    order: 6; flex: 0 0 auto; gap: 8px; flex-wrap: wrap;
+  }
+  body.arena.in-match .actions .btn {
+    flex: 1 1 28%; min-width: 0; min-height: 44px;
+    font-size: 0.84rem; padding: 8px 4px;
+    display: inline-flex; align-items: center; justify-content: center; gap: 4px;
+  }
+  body.arena.in-match .actions .btn.sound-btn { flex: 0 0 44px; padding: 0; }
+  /* enterBtn 默认 hidden，不必管 */
+
+  /* ── 结算：浮层居中（gomoku 同款） ── */
+  body.arena.in-match .lobby,
+  body.arena.in-match .share-overlay {
+    background: rgba(30, 27, 75, 0.45);
+  }
+}
