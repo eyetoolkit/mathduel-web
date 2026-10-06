@@ -31,6 +31,14 @@ export function createEqpyrAdapter(opts: EqpyrAdapterOpts): MpAdapter {
   let picks: string[] = [];
   let myName = '';
 
+  /* 运算符号白名单。relay 模式下题面由房主广播，op 完全不可信：
+     渲染、判题、提交三处都只能接受这 4 个字符，其余一律当空。 */
+  const OPS = ['+', '-', '×', '÷'];
+  const sanitizeOp = (s: any): string => {
+    const v = String(s == null ? '' : s).trim();
+    return OPS.indexOf(v) >= 0 ? v : '';
+  };
+
   const render = (boardEl: HTMLElement, shell: MpShell) => {
     if (!last) { boardEl.innerHTML = '<p style="color:#6B7280">Waiting for puzzle…</p>'; return; }
     const { target, cells, solutionsCount } = last;
@@ -41,9 +49,23 @@ export function createEqpyrAdapter(opts: EqpyrAdapterOpts): MpAdapter {
 
     const top = document.createElement('div');
     top.style.cssText = 'display:flex;align-items:center;gap:12px;font-size:13px;color:#6B7280';
-    top.innerHTML = `<span style="font-size:12px;letter-spacing:.5px;text-transform:uppercase">Target</span><b style="font-size:30px;color:#B45309;letter-spacing:1px">${target}</b>${
-      solutionsCount != null ? `<span style="margin-left:8px;font-size:12px;color:#9CA3AF">· ${solutionsCount} solution${solutionsCount === 1 ? '' : 's'}</span>` : ''
-    }`;
+    /* 安全（2026-10-06）：target 此前是 payload 原值直接拼进 innerHTML，而 relay 模式下
+       payload 由**房主**通过 set_puzzle 广播给全体成员 → 一个恶意房主即可在所有参与者
+       页面执行任意脚本（存储型 XSS）。改为用 DOM 节点 + textContent 写值。 */
+    const topLabel = document.createElement('span');
+    topLabel.style.cssText = 'font-size:12px;letter-spacing:.5px;text-transform:uppercase';
+    topLabel.textContent = 'Target';
+    const topVal = document.createElement('b');
+    topVal.style.cssText = 'font-size:30px;color:#B45309;letter-spacing:1px';
+    topVal.textContent = String(target);
+    top.appendChild(topLabel);
+    top.appendChild(topVal);
+    if (solutionsCount != null) {
+      const sol = document.createElement('span');
+      sol.style.cssText = 'margin-left:8px;font-size:12px;color:#9CA3AF';
+      sol.textContent = `· ${solutionsCount} solution${solutionsCount === 1 ? '' : 's'}`;
+      top.appendChild(sol);
+    }
     wrap.appendChild(top);
 
     const grid = document.createElement('div');
@@ -55,7 +77,16 @@ export function createEqpyrAdapter(opts: EqpyrAdapterOpts): MpAdapter {
       btn.type = 'button';
       btn.dataset.id = id;
       btn.style.cssText = 'width:64px;height:64px;border-radius:10px;background:#FFFFFF;border:1px solid #E5E7EB;color:#1A1B2E;font-size:18px;font-weight:700;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;transition:background .15s,border-color .15s,transform .1s';
-      btn.innerHTML = `<span style="font-size:20px;line-height:1">${cell.num}</span><span style="font-size:11px;color:#9CA3AF;line-height:1">${cell.op || '·'}</span>`;
+      /* 安全（2026-10-06）：cell.op 此前只经 String() 就进 innerHTML，同样是房主可控的
+         注入面。num 已由 renderRound 用 Number() 收敛，op 则必须白名单化。 */
+      const numSpan = document.createElement('span');
+      numSpan.style.cssText = 'font-size:20px;line-height:1';
+      numSpan.textContent = String(cell.num);
+      const opSpan = document.createElement('span');
+      opSpan.style.cssText = 'font-size:11px;color:#9CA3AF;line-height:1';
+      opSpan.textContent = sanitizeOp(cell.op) || '·';
+      btn.appendChild(numSpan);
+      btn.appendChild(opSpan);
       btn.addEventListener('click', () => onPick(id));
       grid.appendChild(btn);
     }
@@ -84,12 +115,23 @@ export function createEqpyrAdapter(opts: EqpyrAdapterOpts): MpAdapter {
       });
       const ok = (() => {
         if (!shell.relay) return null;          // DO 路径不本地判
-        // 符号映射：board.op 可能是 + - × ÷ 字符串
-        const v = (s: string): string => s === '×' ? '*' : s === '÷' ? '/' : s;
-        const expr = `${triple[0].num}${v(triple[0].op)}${triple[1].num}${v(triple[1].op)}${triple[2].num}`;
-        let r: number;
-        try { r = Math.round(eval(expr)); } catch { return false; }
-        return r === target;
+        /* 安全（2026-10-06）：符号映射此前只认 ×/÷，其余字符原样拼进 eval()。
+         而 op 来自**房主**广播的 relay payload —— 房主发 op:"+alert(document.cookie)+"
+         就会在每个参与者页面执行任意脚本。改为：op 白名单化 + 纯算术求值，彻底不用 eval。 */
+        const a = Number(triple[0].num), b = Number(triple[1].num), c = Number(triple[2].num);
+        const o1 = sanitizeOp(triple[0].op), o2 = sanitizeOp(triple[1].op);
+        if (!Number.isFinite(a) || !Number.isFinite(b) || !Number.isFinite(c) || !o1 || !o2) return false;
+        const apply = (x: number, y: number, op: string): number => {
+          switch (op) {
+            case '+': return x + y;
+            case '-': return x - y;
+            case '×': return x * y;
+            case '÷': return y === 0 ? NaN : x / y;
+            default: return NaN;
+          }
+        };
+        const r = Math.round(apply(apply(a, b, o1), c, o2));
+        return Number.isFinite(r) && r === Number(target);
       })();
       if (ok === true) {
         shell.relaySubmit();
@@ -167,10 +209,13 @@ export function createEqpyrAdapter(opts: EqpyrAdapterOpts): MpAdapter {
       };
     },
     renderRound(payload: any, _ctx: RoundCtx, boardEl: HTMLElement, shell: MpShell) {
+      /* 安全（2026-10-06）：target 与 op 均来自房主广播的 relay payload，
+         此处统一收敛 —— target 强制 Number，op 走白名单。
+         非数字 target 一律记为 NaN，渲染成 "NaN" 而不是把原字符串留在状态里。 */
       last = {
-        target: payload.target,
-        cells: (payload.cells || []).map((c: any) => ({ id: String(c.id), num: Number(c.num), op: String(c.op || '') })),
-        solutionsCount: payload.solutionsCount,
+        target: Number(payload?.target),
+        cells: (payload?.cells || []).map((c: any) => ({ id: String(c.id), num: Number(c.num), op: sanitizeOp(c.op) })),
+        solutionsCount: payload?.solutionsCount,
       };
       render(boardEl, shell);
     },
@@ -183,8 +228,8 @@ export function createEqpyrAdapter(opts: EqpyrAdapterOpts): MpAdapter {
       if (msg.type === 'eqpyr_timeout') {
         // 展示正确答案（target + cells）
         last = {
-          target: msg.target,
-          cells: (msg.cells || []).map((c: any) => ({ id: String(c.id), num: Number(c.num), op: String(c.op || '') })),
+          target: Number(msg?.target),
+          cells: (msg?.cells || []).map((c: any) => ({ id: String(c.id), num: Number(c.num), op: sanitizeOp(c.op) })),
         };
         return true;
       }

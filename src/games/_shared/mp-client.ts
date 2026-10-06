@@ -645,6 +645,12 @@ export class MpShell {
       case 'room_joined':
         this.room = d.code;
         this.players = {};
+        /* P0（2026-10-06）：进房是唯一对所有游戏类型都必经的信号 ——
+           relay 只在收到 new_round{hasPuzzle:false} / puzzle 时置 true，而 sudoku/eqpyr
+           的 DO 房从不开 new_round。故在这里复位，保证换房后一定是 DO 模式。
+           （leave() 里也复位了一处，覆盖不开新房的「离开」路径。） */
+        this.relay = false;
+        this.relayDone = false;
         if (d.players) d.players.forEach((n: string) => (this.players[n] = { score: 0 }));
         this.players[this.myName] = { score: 0 };
         this.onRoomReady(this.room);
@@ -963,6 +969,14 @@ export class MpShell {
 
   leave(silent = false): void {
     this.active = false; this.started = false; this.waiting = false; this.spectator = false; this.spectatorCount = 0;
+    /* P0（2026-10-06）：relay / relayDone 此前**只在**收到 new_round 时复位，
+       而 DO 的 sudoku/eqpyr 用 sudoku_new_game / eqpyr_new_game 开局，从不发 new_round。
+       于是玩完一局 relay 后 relay=true、relayDone=true 会一直粘着：再进任何 CF DO
+       的 sudoku/eqpyr 房，适配器走 shell.relay 分支、**永远不发 sudoku_place**，
+       且 relaySubmit() 因 relayDone 直接 early-return —— 棋盘完全死掉且无任何报错。
+       这是一次房间切换就让游戏彻底不可玩，故与其它状态一起在此复位。 */
+    this.relay = false;
+    this.relayDone = false;
     this.stopRandomMatch(true);
     this.resetRandomBtn();
     if (this.ping) { window.clearInterval(this.ping); this.ping = null; }
