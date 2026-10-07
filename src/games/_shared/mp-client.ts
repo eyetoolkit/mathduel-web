@@ -26,6 +26,23 @@ export function isProdEnv(): boolean {
   return PROD_HOSTS.some((host) => h.indexOf(host) >= 0);
 }
 
+/* ─── 玩家身份 ───
+   名字的真相在服务端账号上，本机 localStorage 只是断网时的兜底。
+   模块按需加载一次，之后 window.Identity 就是唯一入口。 */
+let _idtPromise: Promise<any> | null = null;
+function identity(): Promise<any> {
+  if ((window as any).Identity) return Promise.resolve((window as any).Identity);
+  if (_idtPromise) return _idtPromise;
+  _idtPromise = new Promise((resolve) => {
+    const s = document.createElement('script');
+    s.src = '/shared/identity.js';
+    s.onload = () => resolve((window as any).Identity || null);
+    s.onerror = () => resolve(null);
+    document.head.appendChild(s);
+  });
+  return _idtPromise;
+}
+
 /* ===================== 类型 ===================== */
 
 export interface RaceEntry {
@@ -395,7 +412,7 @@ export class MpShell {
     el.querySelector('#mpCreate')!.addEventListener('click', () => {
       const name = (el.querySelector('#mpName') as HTMLInputElement).value.trim();
       if (!name) { this.lobbyErr('Enter a name'); return; }
-      this.myName = name;
+      this.rememberName(name);
       this.lobbyErr('');
       this.createRoom(name);
     });
@@ -408,7 +425,7 @@ export class MpShell {
       const code = (el.querySelector('#mpJoinCode') as HTMLInputElement).value.trim().toUpperCase();
       if (!name) { this.lobbyErr('Enter a name'); return; }
       if (!/^[A-Z0-9]{4,6}$/.test(code)) { this.lobbyErr('Invalid code (4–6 chars)'); return; }
-      this.myName = name;
+      this.rememberName(name);
       this.lobbyErr('');
       this.joinRoom(code, name);
     });
@@ -474,7 +491,17 @@ export class MpShell {
     else {
       const s = localStorage.getItem('mp_name');
       if (s) ni.value = s;
+      // 本机没存过（换设备、清了缓存）→ 去服务端账号要回来
+      else void identity().then((I) => { if (I) I.fill(ni); });
     }
+  }
+
+  /** 记住这个名字：本机立刻能用到，服务端那边异步落盘。
+      以前只有「随机匹配」这条路径记得住，建房和输房间码的人都得每次重填。 */
+  private rememberName(name: string): void {
+    this.myName = name;
+    try { localStorage.setItem('mp_name', name); } catch { /* 隐私模式 */ }
+    void identity().then((I) => { if (I) I.save(name); });
   }
 
   /* ===================== 随机匹配 ===================== */
@@ -485,8 +512,7 @@ export class MpShell {
     if (this.demo) { this.lobbyErr('Random match needs the live site'); return; }
     const name = (this.lobbyEl.querySelector('#mpName') as HTMLInputElement).value.trim();
     if (!name) { this.lobbyErr('Enter a name'); return; }
-    this.myName = name;
-    localStorage.setItem('mp_name', name);
+    this.rememberName(name);
     this.lobbyErr('');
     const btn = this.lobbyEl.querySelector('#mpRandom') as HTMLButtonElement | null;
     if (btn) { btn.disabled = true; btn.textContent = '🎲 Looking for an opponent…'; }
