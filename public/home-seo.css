@@ -1,0 +1,118 @@
+/* NumeriDuel 首页静态 SEO 骨架样式
+ * 仅在 JS 未执行（首屏 / 爬虫 / 无 JS）时可见；
+ * SPA 挂载后 #home-v2 内容被替换，本文件随之闲置（类名 ss- 前缀，零冲突）。
+ * 外部文件，同源加载，不受站点 CSP 限制。 */
+.seo-shell {
+  --ss-paper: #F4F5F9;
+  --ss-ink: #1E1B39;
+  --ss-mute: #5B6079;
+  --ss-indigo: #4F46E5;
+  --ss-card: #1E1B4B;
+  --ss-card-line: #16143C;
+  --ss-amber: #F59E0B;
+  --ss-soft: #EEF0FB;
+
+  background: var(--ss-paper);
+  color: var(--ss-ink);
+  font-family: "Sora", system-ui, -apple-system, "Segoe UI", sans-serif;
+  line-height: 1.6;
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 64px 20px 90px;
+  box-sizing: border-box;
+}
+.seo-shell * { box-sizing: border-box; }
+
+.ss-hero { text-align: center; }
+.ss-hero h1 {
+  font-family: "Space Grotesk", system-ui, -apple-system, sans-serif;
+  font-weight: 700;
+  font-size: clamp(2rem, 5.2vw, 3.25rem);
+  line-height: 1.04;
+  letter-spacing: -0.02em;
+  margin: 0 0 18px;
+  text-wrap: balance;
+}
+.ss-hero h1 em { font-style: normal; color: var(--ss-indigo); }
+.ss-sub {
+  color: var(--ss-mute);
+  font-size: 1.12rem;
+  max-width: 34em;
+  margin: 0 auto 30px;
+}
+.ss-cta {
+  display: inline-block;
+  background: var(--ss-amber);
+  color: var(--ss-ink);
+  font-family: "Space Grotesk", system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 1.02rem;
+  padding: 13px 28px;
+  border-radius: 13px;
+  text-decoration: none;
+}
+.ss-chips {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  padding: 0;
+  margin: 28px 0 0;
+}
+.ss-chips li {
+  background: var(--ss-soft);
+  color: #3730A3;
+  border-radius: 999px;
+  padding: 7px 15px;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.ss-games { margin-top: 72px; }
+.ss-games h2 {
+  font-family: "Space Grotesk", system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 1.6rem;
+  text-align: center;
+  margin: 0 0 26px;
+  letter-spacing: -0.01em;
+}
+.ss-grid {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+.ss-grid a {
+  display: block;
+  background: var(--ss-card);
+  color: #fff;
+  border: 1px solid var(--ss-card-line);
+  border-radius: 18px;
+  padding: 22px;
+  text-decoration: none;
+  transition: transform 0.15s ease;
+}
+.ss-grid a:hover { transform: translateY(-3px); }
+.ss-name {
+  display: block;
+  font-family: "Space Grotesk", system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 1.22rem;
+  margin-bottom: 6px;
+}
+.ss-tag { display: block; color: #A6AAC6; font-size: 0.85rem; }
+
+/* 可访问性：键盘焦点可见 */
+.ss-cta:focus-visible,
+.ss-grid a:focus-visible {
+  outline: 3px solid var(--ss-indigo);
+  outline-offset: 3px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ss-grid a { transition: none; }
+  .ss-grid a:hover { transform: none; }
+}

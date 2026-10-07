@@ -37,10 +37,69 @@
   <!-- 预加载自托管字体（同源 /fonts/，避免生产 CSP 拦截 Google Fonts） -->
   <link rel="preload" href="/fonts/space-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin />
   <link rel="preload" href="/fonts/sora-latin.woff2" as="font" type="font/woff2" crossorigin />
+  <!-- 静态 SEO 骨架样式（无 JS / 首屏 / 爬虫可见；SPA 挂载后由 #home-v2 替换，类名 ss- 前缀零冲突） -->
+  <link rel="stylesheet" href="/home-seo.css" />
+  <!-- 结构化数据：站点身份 + 游戏清单（持久存在于 head，不受 SPA 替换影响） -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "name": "NumeriDuel",
+        "url": "https://numeriduel.com/",
+        "logo": "https://numeriduel.com/icon.svg"
+      },
+      {
+        "@type": "WebSite",
+        "name": "NumeriDuel",
+        "url": "https://numeriduel.com/",
+        "inLanguage": "en",
+        "description": "Five free math games — Sudoku, 24-point mental math, and equation pyramids. The same puzzle for everyone, every day. No login, no ads."
+      },
+      {
+        "@type": "ItemList",
+        "name": "NumeriDuel math games",
+        "numberOfItems": 5,
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "item": { "@type": "Game", "name": "24 Game", "url": "https://numeriduel.com/games/24-game/lobby/" } },
+          { "@type": "ListItem", "position": 2, "item": { "@type": "Game", "name": "Sudoku 4×4", "url": "https://numeriduel.com/games/sudoku-4x4/lobby/" } },
+          { "@type": "ListItem", "position": 3, "item": { "@type": "Game", "name": "Sudoku 9×9", "url": "https://numeriduel.com/games/sudoku/lobby/" } },
+          { "@type": "ListItem", "position": 4, "item": { "@type": "Game", "name": "Sudoku 6×6", "url": "https://numeriduel.com/games/sudoku-6x6/lobby/" } },
+          { "@type": "ListItem", "position": 5, "item": { "@type": "Game", "name": "Equation Pyramid", "url": "https://numeriduel.com/games/equation-pyramid/lobby/" } }
+        ]
+      }
+    ]
+  }
+  </script>
 </head>
 <body class="home-v2">
-  <!-- 渲染挂载点（由 src/main.ts 注入结构） -->
-  <div id="home-v2"></div>
+  <!-- 渲染挂载点（由 src/main.ts 注入结构；其内静态骨架为无 JS / 首屏 / 爬虫可见，挂载后会被整段替换） -->
+  <div id="home-v2">
+    <div class="seo-shell">
+      <header class="ss-hero">
+        <h1>NumeriDuel — <em>5 free math games</em> you can play in your browser</h1>
+        <p class="ss-sub">Sudoku, 24-point mental math, and equation pyramids. Every day the whole world gets the same puzzle. No login, no ads, free forever.</p>
+        <a class="ss-cta" href="/games/24-game/?mode=daily">Start today's challenge</a>
+        <ul class="ss-chips">
+          <li>No login</li>
+          <li>Free · no ads</li>
+          <li>Privacy-first</li>
+          <li>Same puzzle daily</li>
+        </ul>
+      </header>
+      <section class="ss-games" aria-label="All games">
+        <h2>Five games, one ladder</h2>
+        <ul class="ss-grid">
+          <li><a href="/games/24-game/lobby/"><span class="ss-name">24 Game</span><span class="ss-tag">Mental math · 1v1 · daily</span></a></li>
+          <li><a href="/games/sudoku-4x4/lobby/"><span class="ss-name">Sudoku 4×4</span><span class="ss-tag">Quick logic · beginner</span></a></li>
+          <li><a href="/games/sudoku/lobby/"><span class="ss-name">Sudoku 9×9</span><span class="ss-tag">Classic · daily</span></a></li>
+          <li><a href="/games/sudoku-6x6/lobby/"><span class="ss-name">Sudoku 6×6</span><span class="ss-tag">Mid logic · beginner</span></a></li>
+          <li><a href="/games/equation-pyramid/lobby/"><span class="ss-name">Equation Pyramid</span><span class="ss-tag">Build the equation · daily</span></a></li>
+        </ul>
+      </section>
+    </div>
+  </div>
 
   <script type="module" src="/src/main.ts"></script>
   <script src="/i18n/lang-switcher.js?v=38" defer></script>
