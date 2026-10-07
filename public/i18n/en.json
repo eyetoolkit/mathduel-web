@@ -314,7 +314,7 @@
     "pill_polishing": "POLISHING",
     "card_polishing_aria": "{name} (polishing, available in beta)",
     "hero_h1": "Make your <em>brain</em> smarter, 5 minutes a day",
-    "hero_sub": "Sudoku reasoning · 24-point speed math · equation climbs · code-breaking — six hand-picked math games,<br>same puzzle worldwide. Just tap and play.",
+    "hero_sub": "Sudoku reasoning · 24-point speed math · equation pyramids — 5 hand-picked math games,<br>same puzzle worldwide. Just tap and play.",
     "cta_daily": "Start today's challenge",
     "cta_friend": "Challenge a friend",
     "chip_nologin": "No login",
@@ -370,9 +370,9 @@
     "f_allgames": "All games",
     "f_copy": "© 2026 NumeriDuel · Pure static · Privacy-first · Free to play",
     "seo_title": "NumeriDuel · 5 Premium Math Games — Play Free, No Login, No Ads",
-    "seo_desc": "Sudoku reasoning, 24-point speed math, equation climbs, and code-breaking — hand-picked math games. Same puzzle worldwide. No login, no ads, free forever.",
+    "seo_desc": "Sudoku reasoning, 24-point speed math, and equation pyramids — 5 hand-picked math games. Same puzzle worldwide. No login, no ads, free forever.",
     "seo_og_title": "NumeriDuel · 5 Premium Math Games — Play Free",
-    "seo_og_desc": "Sudoku reasoning, 24-point speed math, equation climbs, code-breaking — seven hand-picked math games. Same puzzle worldwide."
+    "seo_og_desc": "Sudoku reasoning, 24-point speed math, and equation pyramids — 5 hand-picked math games. Same puzzle worldwide."
   },
   "mp": {
     "play_now": "Play now",

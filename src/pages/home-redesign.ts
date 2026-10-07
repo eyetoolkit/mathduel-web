@@ -435,7 +435,7 @@ export function renderHomeV2(): void {
       <section class="hero">
         <div class="wrap">
           <h1 data-i18n-html="math_home.hero_h1">Make your <em>brain</em> smarter, 5 minutes a day</h1>
-          <p class="sub" data-i18n-html="math_home.hero_sub">Sudoku reasoning · 24-point speed math · equation climbs · code-breaking — six hand-picked math games,<br>same puzzle worldwide. Just tap and play.</p>
+          <p class="sub" data-i18n-html="math_home.hero_sub">Sudoku reasoning · 24-point speed math · equation pyramids — 5 hand-picked math games,<br>same puzzle worldwide. Just tap and play.</p>
           <div class="cta-row">
             <a class="btn btn-amber" href="/games/24-game/?mode=daily" data-i18n="math_home.cta_daily">Start today's challenge</a>
             <a class="btn btn-ghost" href="/games/24-game/lobby/" data-i18n="math_home.cta_friend">Challenge a friend</a>

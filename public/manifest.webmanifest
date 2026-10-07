@@ -1,7 +1,7 @@
 {
   "name": "NumeriDuel — Five math arenas, one Elo ladder",
   "short_name": "NumeriDuel",
-  "description": "Math duels in 24, sudoku, killer, equations and code-breaking. The server deals the identical puzzle to both players — the faster correct answer takes the round. No login, no ads.",
+  "description": "Math duels in 24, sudoku and equation pyramids. The server deals the identical puzzle to both players — the faster correct answer takes the round. No login, no ads.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

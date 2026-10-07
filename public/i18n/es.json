@@ -314,7 +314,7 @@
     "pill_polishing": "EN AJUSTES",
     "card_polishing_aria": "{name} (en ajustes, disponible en beta)",
     "hero_h1": "Entrena tu <em>cerebro</em> 5 minutos al día",
-    "hero_sub": "Lógica de sudoku · cálculo rápido del 24 · escaleras de ecuaciones · descifrado de códigos — seis juegos de matemáticas,<br>el mismo rompecabezas en todo el mundo. Toca y juega.",
+    "hero_sub": "Lógica de sudoku · cálculo rápido del 24 · escaleras de ecuaciones — cinco juegos de matemáticas,<br>el mismo rompecabezas en todo el mundo. Toca y juega.",
     "cta_daily": "Empezar el desafío de hoy",
     "cta_friend": "Retar a un amigo",
     "chip_nologin": "Sin registro",
@@ -370,9 +370,9 @@
     "f_allgames": "Todos los juegos",
     "f_copy": "© 2026 NumeriDuel · Totalmente estático · Privacidad primero · Gratis",
     "seo_title": "NumeriDuel · 5 juegos de matemáticas premium — gratis, sin registro y sin anuncios",
-    "seo_desc": "Lógica de sudoku, cálculo rápido del 24, escaleras de ecuaciones y descifrado de códigos: juegos de matemáticas seleccionados. Mismo puzle en todo el mundo. Sin registro, sin anuncios y gratis para siempre.",
+    "seo_desc": "Lógica de sudoku, cálculo rápido del 24 y escaleras de ecuaciones: juegos de matemáticas seleccionados. Mismo puzle en todo el mundo. Sin registro, sin anuncios y gratis para siempre.",
     "seo_og_title": "NumeriDuel · 5 juegos de matemáticas premium — juega gratis",
-    "seo_og_desc": "Lógica de sudoku, cálculo rápido del 24, escaleras de ecuaciones y descifrado: juegos de matemáticas seleccionados. Mismo puzle en todo el mundo."
+    "seo_og_desc": "Lógica de sudoku, cálculo rápido del 24 y escaleras de ecuaciones: juegos de matemáticas seleccionados. Mismo puzle en todo el mundo."
   },
   "mp": {
     "play_now": "Jugar ahora",

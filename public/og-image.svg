@@ -28,7 +28,7 @@
   <!-- 主标题 -->
   <g font-family="ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif" font-weight="800" fill="#E4E8EE">
     <text x="360" y="280" font-size="70">NumeriDuel</text>
-    <text x="360" y="350" font-size="36" fill="#F2C14E" font-weight="700">Six math arenas · one Elo ladder</text>
+    <text x="360" y="350" font-size="36" fill="#F2C14E" font-weight="700">Five math arenas · one Elo ladder</text>
   </g>
   <!-- 副标题 -->
   <g font-family="ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif" font-weight="500" fill="#94A3B8">
@@ -38,6 +38,6 @@
   <!-- 底部署名条 -->
   <rect x="0" y="580" width="1200" height="50" fill="#000" opacity="0.3"/>
   <text x="80" y="612" font-family="ui-sans-serif,system-ui,sans-serif" font-size="20" fill="#94A3B8">
-    24 · Sudoku · Killer · Equation Pyramid · Number Pyramid · Bulls · Code-breaking
+    24 · Sudoku · Equation Pyramid
   </text>
 </svg>

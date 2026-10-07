@@ -314,7 +314,7 @@
     "pill_polishing": "EN COURS",
     "card_polishing_aria": "{name} (en cours de peaufinage, disponible en bêta)",
     "hero_h1": "Boostez votre <em>cerveau</em> 5 minutes par jour",
-    "hero_sub": "Logique de sudoku · calcul rapide du 24 · ascensions d’équations · décryptage — six jeux de maths choisis,<br>la même énigme dans le monde entier. Touchez et jouez.",
+    "hero_sub": "Logique de sudoku · calcul rapide du 24 · ascensions d’équations — cinq jeux de maths choisis,<br>la même énigme dans le monde entier. Touchez et jouez.",
     "cta_daily": "Commencer le défi du jour",
     "cta_friend": "Défier un ami",
     "chip_nologin": "Sans connexion",
@@ -370,9 +370,9 @@
     "f_allgames": "Tous les jeux",
     "f_copy": "© 2026 NumeriDuel · 100 % statique · Confidentialité d’abord · Gratuit",
     "seo_title": "NumeriDuel · 5 jeux de maths premium — gratuit, sans connexion ni pub",
-    "seo_desc": "Logique de sudoku, calcul rapide du 24, ascensions d’équations et décryptage : des jeux de maths sélectionnés. La même énigme dans le monde entier. Sans connexion, sans pub, gratuit pour toujours.",
+    "seo_desc": "Logique de sudoku, calcul rapide du 24 et ascensions d’équations : des jeux de maths sélectionnés. La même énigme dans le monde entier. Sans connexion, sans pub, gratuit pour toujours.",
     "seo_og_title": "NumeriDuel · 5 jeux de maths premium — jouez gratuitement",
-    "seo_og_desc": "Logique de sudoku, calcul rapide du 24, ascensions d’équations et décryptage : des jeux de maths sélectionnés. La même énigme dans le monde entier."
+    "seo_og_desc": "Logique de sudoku, calcul rapide du 24 et ascensions d’équations : des jeux de maths sélectionnés. La même énigme dans le monde entier."
   },
   "mp": {
     "play_now": "Jouer maintenant",
