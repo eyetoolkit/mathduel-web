@@ -161,3 +161,130 @@ tabs.forEach((t) => t.addEventListener('click', () => {
 }));
 
 loadRank('elo');
+
+/* ═══════════ 赛事榜（每日 / 每周 / 每月）═══════════
+   这里显示的是「打对战攒的 Elo 涨幅」，和上面的每日题完赛榜是两回事：
+   那个比的是解题速度，这个比的是一段时间里赢了多少分。
+
+   后端到 2026-10-07 才真正开始落成绩（KV binding 缺失 + 结算路径没接上报，
+   两个故障都是静默的：API 一直 200，榜单一直空）。所以空态不是异常路径，
+   而是现在每天的真实状态 —— 文案要能接得住「还没人打」这件事。 */
+interface TourEntry {
+  rank: number | null; nickname: string | null; eloDelta: number;
+  wins: number; losses: number; draws: number; score: number;
+  tier: { name: string; emoji: string; color: string } | null; unplayed?: boolean;
+}
+interface TourResp {
+  period: string; key: string; endsAt: string;
+  prizes: { gold: number; silver: number; bronze: number; emoji: string };
+  participantCount: number; entries: TourEntry[]; me: TourEntry | null;
+}
+
+let tourPeriod = 'daily';
+let tourData: TourResp | null = null;
+let tourTick: number | null = null;
+let tourReloading = false;
+
+/** 取隐藏节点的已翻译文案（data-i18n 由 i18n.js 替换过） */
+const TI = (id: string): string => (document.getElementById(id)?.textContent || '').trim();
+
+function fmtLeft(ms: number): string {
+  if (!isFinite(ms) || ms < 0) ms = 0;
+  const total = Math.floor(ms / 1000);
+  const d = Math.floor(total / 86400);
+  const h = Math.floor((total % 86400) / 3600);
+  const m = Math.floor((total % 3600) / 60);
+  const s = total % 60;
+  const hh = String(h).padStart(2, '0');
+  const mm = String(m).padStart(2, '0');
+  const ss = String(s).padStart(2, '0');
+  // 日赛按秒跳动（时间压力就在那一秒一秒上）；周/月赛到分钟就够
+  return d > 0 ? `${d}d ${hh}:${mm}` : `${hh}:${mm}:${ss}`;
+}
+
+function renderTour(): void {
+  const d = tourData;
+  if (!d) return;
+  const flag = $('tourFlag');
+  if (flag && d.prizes) flag.textContent = d.prizes.emoji || '⚡';
+  const prize = $('tourPrize');
+  if (prize && d.prizes) {
+    prize.textContent = `${d.prizes.emoji || '🏆'}${d.prizes.gold} · 🥈${d.prizes.silver} · 🥉${d.prizes.bronze}`;
+  }
+
+  const board = $('tourBoard');
+  if (!d.entries.length) {
+    board.innerHTML = `<div class="rempty">${esc(TI('tiEmpty'))}</div>`;
+  } else {
+    board.innerHTML =
+      `<div class="rhead"><span>#</span><span>${esc(TI('tiPlayer'))}</span>` +
+      `<span>${esc(TI('tiElo'))}</span><span>${esc(TI('tiScore'))}</span></div>` +
+      d.entries.slice(0, 5).map((e, i) => `<div class="rrow${i === 0 ? ' top1' : ''}">
+        <span class="r-rank">${['🥇', '🥈', '🥉'][i] || '#' + (i + 1)}</span>
+        <span class="rname">${esc(e.nickname || '—')}</span>
+        <span class="rtime">${e.eloDelta > 0 ? '+' : ''}${e.eloDelta}</span>
+        <span class="rsol">${e.score}</span>
+      </div>`).join('');
+  }
+
+  const me = $('tourMe');
+  if (me) {
+    if (d.me && typeof d.me.rank === 'number') {
+      me.textContent = `${TI('tiYou')} #${d.me.rank} · ${d.me.score}`;
+      me.classList.remove('muted');
+    } else {
+      me.textContent = TI('tiUnplayed');
+      me.classList.add('muted');
+    }
+  }
+}
+
+function startTourClock(): void {
+  if (tourTick) clearInterval(tourTick);
+  const paint = (): void => {
+    if (!tourData) return;
+    const left = new Date(tourData.endsAt).getTime() - Date.now();
+    const el = $('tourClock');
+    if (el) el.textContent = fmtLeft(left);
+    // 周期翻篇：拉一次新榜（新一期的 endsAt 会自己把时钟续上）
+    if (left <= 0 && !tourReloading) {
+      tourReloading = true;
+      loadTournament(tourPeriod).finally(() => {
+        setTimeout(() => { tourReloading = false; }, 5000);
+      });
+    }
+  };
+  paint();
+  tourTick = window.setInterval(paint, 1000);
+}
+
+async function loadTournament(period: string): Promise<void> {
+  const board = $('tourBoard');
+  board.innerHTML = '<div class="rload">Loading…</div>';
+  try {
+    const r = await fetch(`/api/tournament/${encodeURIComponent(period)}`, { credentials: 'include' });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    tourData = await r.json() as TourResp;
+    tourPeriod = period;
+    renderTour();
+    startTourClock();
+  } catch {
+    tourData = null;
+    board.innerHTML = `<div class="rempty">${esc(TI('tiFail'))}</div>`;
+  }
+}
+
+const tourTabs = Array.from(document.querySelectorAll<HTMLButtonElement>('#tourTabs .rtab'));
+tourTabs.forEach((t) => t.addEventListener('click', () => {
+  tourTabs.forEach((x) => x.classList.toggle('on', x === t));
+  loadTournament(t.dataset.period || 'daily');
+}));
+
+loadTournament('daily');
+/* 切回页面时刷新一次：打完一局回来想立刻看到自己上榜。
+   不做定时轮询 —— 倒计时已经是这块唯一在动的东西了。 */
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) loadTournament(tourPeriod);
+});
+/* 语言切换后动态文案要跟着变 */
+window.addEventListener('i18n:ready', () => renderTour());

@@ -101,6 +101,40 @@ body.dhub {
 .rempty, .rload { padding: 34px 10px; text-align: center; color: var(--mute); font-size: .88rem; }
 .rank-note { color: var(--mute); font-size: .74rem; margin: 10px 2px 0; line-height: 1.5; }
 
+/* ─── 赛事榜（每日 / 每周 / 每月）───
+   与上面的榜单同构（白卡 + 同款行网格），区别只在开头那行：
+   倒计时是这块唯一在动、也是唯一强调的东西。 */
+.dh-tour { margin-top: 34px; }
+.tour-head { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 10px; }
+.tour-head h2 { font-family: var(--disp); font-size: 1.2rem; margin: 0; letter-spacing: -.01em;
+  display: flex; align-items: center; gap: 8px; }
+.tour-flag { font-style: normal; font-size: 1.05rem; }
+.tour-line { display: flex; align-items: baseline; gap: 9px; flex-wrap: wrap; margin: 0 0 12px; }
+.tour-clock {
+  font-family: var(--disp); font-weight: 800; font-size: 1.5rem; line-height: 1;
+  font-variant-numeric: tabular-nums;   /* 秒跳动时数字不左右抖 */
+  letter-spacing: -.01em;
+}
+.tour-until { font-size: .78rem; color: var(--mute); font-weight: 700; }
+.tour-prize {
+  margin-left: auto; background: var(--white); border: 1.5px solid var(--line); border-radius: 999px;
+  padding: 5px 12px; font-size: .82rem; font-weight: 800; font-variant-numeric: tabular-nums;
+}
+.tour-board {
+  background: var(--white); border: 1.5px solid var(--line); border-radius: 16px;
+  padding: 8px 16px; min-height: 96px;
+}
+.tour-foot { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-top: 12px; }
+.tour-cta {
+  background: var(--indigo); color: #fff; text-decoration: none;
+  font-weight: 800; font-size: .84rem; padding: 9px 18px; border-radius: 999px;
+}
+.tour-cta:hover { background: #2A2481; }
+.tour-me { font-size: .8rem; font-weight: 700; }
+.tour-me.muted { color: var(--mute); }
+.tour-note { color: var(--mute); font-size: .74rem; margin: 10px 2px 0; line-height: 1.5; }
+.i18n-src { display: none; }
+
 /* ─── 页脚 ─── */
 .dh-foot {
   border-top: 1px solid var(--line); padding: 16px 20px 26px; display: flex; gap: 18px; flex-wrap: wrap;
@@ -116,4 +150,6 @@ body.dhub {
   .dh-grid { grid-template-columns: 1fr; }
   .rhead, .rrow { grid-template-columns: 44px 1fr 90px 70px; font-size: .8rem; }
   .dh-sub { display: none; }
+  .tour-clock { font-size: 1.3rem; }
+  .tour-prize { margin-left: 0; }
 }

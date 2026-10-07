@@ -6,7 +6,7 @@
   <title>Daily Challenge Hub — five fresh puzzles every day | MathDuel</title>
   <meta name="description" content="Five daily math puzzles, one seeded set worldwide: 24 Point, Equation Pyramid and Sudoku 4x4 / 6x6 / 9x9. Build a streak — no account needed. Plus today's finishers and the Elo ladder." />
   <link rel="canonical" href="https://numeriduel.com/daily/" />
-  <script>window.__I18N_CONFIG__={supported:["en","zh","ja","es","fr","de"],dictVersion:39,fallback:"en"}</script>
+  <script>window.__I18N_CONFIG__={supported:["en","zh","ja","es","fr","de"],dictVersion:41,fallback:"en"}</script>
 <link rel="icon" href="/favicon.ico" sizes="any" />
   <link rel="icon" href="/icon.svg" type="image/svg+xml" />
   <meta property="og:type" content="website" />
@@ -41,6 +41,40 @@
     </section>
 
     <section class="dh-grid" id="cards"></section>
+
+    <section class="dh-tour" aria-labelledby="tourTitle">
+      <div class="tour-head">
+        <h2 id="tourTitle"><i class="tour-flag" id="tourFlag">⚡</i><span data-i18n="mp.mp_tour_title">Today's tournament</span></h2>
+        <div class="rank-tabs" id="tourTabs" role="tablist">
+          <button class="rtab on" data-period="daily" role="tab" data-i18n="mp.mp_tour_daily">Today</button>
+          <button class="rtab" data-period="weekly" role="tab" data-i18n="mp.mp_tour_weekly">This week</button>
+          <button class="rtab" data-period="monthly" role="tab" data-i18n="mp.mp_tour_monthly">This month</button>
+        </div>
+      </div>
+      <p class="tour-line">
+        <b class="tour-clock" id="tourClock" role="timer" aria-live="off">--:--:--</b>
+        <span class="tour-until" data-i18n="mp.mp_tour_until">until this board resets</span>
+        <span class="tour-prize" id="tourPrize"></span>
+      </p>
+      <div class="tour-board" id="tourBoard" aria-live="polite"></div>
+      <div class="tour-foot">
+        <a class="tour-cta" href="/games/24-game/lobby/" data-i18n="mp.mp_tour_cta">Find an opponent</a>
+        <span class="tour-me" id="tourMe"></span>
+      </div>
+      <p class="tour-note" data-i18n="mp.mp_tour_note">Every rated duel you finish counts. The board ranks Elo gained, with a bonus per win.</p>
+
+      <!-- 动态文案的翻译源：JS 渲染时读这些节点的 textContent，
+           跟着 i18n 切语言一起变（i18n:ready 后重渲染一次）。 -->
+      <span class="i18n-src" hidden>
+        <b id="tiPlayer" data-i18n="mp.mp_tour_col_player">Player</b>
+        <b id="tiElo" data-i18n="mp.mp_tour_col_elo">Elo gained</b>
+        <b id="tiScore" data-i18n="mp.mp_tour_col_score">Score</b>
+        <b id="tiEmpty" data-i18n="mp.mp_tour_empty">No rated duel finished yet — the first name on this board could be yours.</b>
+        <b id="tiFail" data-i18n="mp.mp_tour_fail">Could not load the board — check your connection.</b>
+        <b id="tiYou" data-i18n="mp.mp_tour_you">Your rank</b>
+        <b id="tiUnplayed" data-i18n="mp.mp_tour_unplayed">You haven't finished a rated duel in this period yet.</b>
+      </span>
+    </section>
 
     <section class="dh-ranks">
       <div class="dh-ranks-head">
