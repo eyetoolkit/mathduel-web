@@ -191,7 +191,7 @@
     }
   },
   "seo": {
-    "software_name": "Board Duelo - Classic Board Games",
+    "software_name": "Board Duelo - Juegos de mesa clásicos",
     "software_inlang": "en",
     "software_featurelist": "Ajedrez,Gomoku,Othello,Connect4,Damas,Tres en raya,AI Duelo,en línea Partida,Clasificación",
     "software_rating": "4.7",
@@ -205,7 +205,7 @@
     "gamelist_chess_desc": "Clásico 8×8 con enroque, al paso y promoción de peón",
     "gamelist_othello_desc": "Juego clásico de voltear de 8×8; gana quien más fichas tenga",
     "gamelist_connect4_desc": "Suelta fichas y conecta cuatro en línea",
-    "gamelist_checkers_desc": "Must-capture Damas on 8x8 board",
+    "gamelist_checkers_desc": "Damas en tablero 8×8 con captura obligatoria",
     "gamelist_tictactoe_desc": "Clásico 3×3; gana quien haga tres en línea primero"
   },
   "share": {

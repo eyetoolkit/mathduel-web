@@ -191,7 +191,7 @@
     }
   },
   "seo": {
-    "software_name": "Board Duell - Classic Board Games",
+    "software_name": "Board Duell - Klassische Brettspiele",
     "software_inlang": "en",
     "software_featurelist": "Schach,Gomoku,Othello,Connect4,Dame,Tic-Tac-Toe,AI Duell,online Spiel,Bestenliste",
     "software_rating": "4.7",
@@ -205,7 +205,7 @@
     "gamelist_chess_desc": "Klassisches 8×8 mit Rochade, En passant und Bauerumwandlung",
     "gamelist_othello_desc": "Klassisches 8×8-Flip-Spiel, mehr Steine gewinnen",
     "gamelist_connect4_desc": "Steine fallen lassen, vier in einer Reihe gewinnt",
-    "gamelist_checkers_desc": "Must-capture Dame on 8x8 board",
+    "gamelist_checkers_desc": "Dame auf 8×8-Brett mit Pflichtschlag",
     "gamelist_tictactoe_desc": "Klassisches 3×3, wer zuerst drei in einer Reihe hat, gewinnt"
   },
   "share": {

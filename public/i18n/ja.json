@@ -191,7 +191,7 @@
     }
   },
   "seo": {
-    "software_name": "Board デュエル - Classic Board Games",
+    "software_name": "Board デュエル - 古典ボードゲーム",
     "software_inlang": "en",
     "software_featurelist": "チェス,五目並べ,オセロ,Connect4,チェッカー,三目並べ,AI デュエル,オンライン マッチ,リーダーボード",
     "software_rating": "4.7",
@@ -205,7 +205,7 @@
     "gamelist_chess_desc": "8×8のクラシック、キャスリング・アン・パッサン・昇格あり",
     "gamelist_othello_desc": "8×8の裏返しゲーム、駒の多い方が勝ち",
     "gamelist_connect4_desc": "駒を落として四つ並べる",
-    "gamelist_checkers_desc": "Must-capture チェッカー on 8x8 board",
+    "gamelist_checkers_desc": "8×8 盤面。相手の駒を必ず取る強制捕獲ルール。",
     "gamelist_tictactoe_desc": "3×3のクラシック、三つ並べる"
   },
   "share": {

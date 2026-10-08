@@ -191,7 +191,7 @@
     }
   },
   "seo": {
-    "software_name": "Board Duel - Classic Board Games",
+    "software_name": "Board Duel - Jeux de plateau classiques",
     "software_inlang": "en",
     "software_featurelist": "Échecs,Gomoku,Othello,Connect4,Dames,Morpion,AI Duel,en ligne Match,Classement",
     "software_rating": "4.7",
@@ -205,7 +205,7 @@
     "gamelist_chess_desc": "Classique 8×8 avec roque, prise en passant et promotion de pion",
     "gamelist_othello_desc": "Jeu classique de retournement 8×8, le plus de pions gagne",
     "gamelist_connect4_desc": "Laisse tomber tes jetons, aligns-en quatre",
-    "gamelist_checkers_desc": "Must-capture Dames on 8x8 board",
+    "gamelist_checkers_desc": "Dames sur plateau 8×8 avec prise obligatoire",
     "gamelist_tictactoe_desc": "Classique 3×3, gagne celui qui aligne trois en premier"
   },
   "share": {
