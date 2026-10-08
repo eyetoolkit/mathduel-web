@@ -142,10 +142,10 @@
     "you_tag": "(你)",
     "guest": "玩家",
     "player1": "玩家 1",
-    "player.you_tag": "(你)",
+    "you_tag": "(你)",
     "player2": "玩家 2",
-    "player.player1": "玩家 1",
-    "player.player2": "玩家 2",
+    "player1": "玩家 1",
+    "player2": "玩家 2",
     "opp": "对手",
     "white": "白方",
     "white_turn": "白方走"
