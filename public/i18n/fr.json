@@ -417,6 +417,8 @@
     "mp_tour_daily": "Aujourd'hui",
     "mp_tour_weekly": "Cette semaine",
     "mp_tour_monthly": "Ce mois",
+    "mp_tour_rolling30": "30 derniers jours",
+    "mp_tour_rolling_clock": "30 jours",
     "mp_tour_until": "avant la remise à zéro",
     "mp_tour_cta": "Trouver un adversaire",
     "mp_tour_note": "Chaque duel classé que tu termines compte. Le tableau suit l’Elo gagné, avec un bonus par victoire.",

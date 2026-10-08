@@ -205,6 +205,9 @@ function fmtLeft(ms: number): string {
 function renderTour(): void {
   const d = tourData;
   if (!d) return;
+  // 滚动 30 天榜没有「翻篇重置」时刻：隐藏 "until this board resets" 行内文案
+  const until = document.querySelector('.tour-until') as HTMLElement | null;
+  if (until) until.style.display = (d.period === 'rolling30') ? 'none' : '';
   const flag = $('tourFlag');
   if (flag && d.prizes) flag.textContent = d.prizes.emoji || '⚡';
   const prize = $('tourPrize');
@@ -243,8 +246,13 @@ function startTourClock(): void {
   if (tourTick) clearInterval(tourTick);
   const paint = (): void => {
     if (!tourData) return;
-    const left = new Date(tourData.endsAt).getTime() - Date.now();
     const el = $('tourClock');
+    // 滚动 30 天榜 endsAt 即此刻 → 倒计时恒为 0，不能走倒计时/翻篇重载逻辑（否则每秒重载）
+    if (tourPeriod === 'rolling30') {
+      if (el) el.textContent = TI('tiRollingClock');
+      return;
+    }
+    const left = new Date(tourData.endsAt).getTime() - Date.now();
     if (el) el.textContent = fmtLeft(left);
     // 周期翻篇：拉一次新榜（新一期的 endsAt 会自己把时钟续上）
     if (left <= 0 && !tourReloading) {

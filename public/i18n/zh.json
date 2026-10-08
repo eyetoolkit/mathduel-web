@@ -420,6 +420,8 @@
     "mp_tour_daily": "今日",
     "mp_tour_weekly": "本周",
     "mp_tour_monthly": "本月",
+    "mp_tour_rolling30": "近 30 天",
+    "mp_tour_rolling_clock": "滚动 30 天",
     "mp_tour_until": "后本榜重置",
     "mp_tour_cta": "找个对手",
     "mp_tour_note": "每场计入等级分的对战都会算进去。榜单按这段时间里涨的 Elo 排序，每胜一场另有加分。",

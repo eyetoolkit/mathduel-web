@@ -417,6 +417,8 @@
     "mp_tour_daily": "Today",
     "mp_tour_weekly": "This week",
     "mp_tour_monthly": "This month",
+    "mp_tour_rolling30": "Last 30 days",
+    "mp_tour_rolling_clock": "rolling 30 days",
     "mp_tour_until": "until this board resets",
     "mp_tour_cta": "Find an opponent",
     "mp_tour_note": "Every rated duel you finish counts. The board ranks Elo gained, with a bonus per win.",
