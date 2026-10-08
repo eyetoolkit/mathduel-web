@@ -198,15 +198,15 @@
     "gamelist_gomoku_name": "Gomoku",
     "gamelist_chess_name": "Schach",
     "gamelist_othello_name": "Othello",
-    "gamelist_connect4_name": "Connect4",
+    "gamelist_connect4_name": "Connect 4",
     "gamelist_checkers_name": "Dame",
     "gamelist_tictactoe_name": "Tic-Tac-Toe",
-    "gamelist_gomoku_desc": "Classic 15x15, first to connect five",
-    "gamelist_chess_desc": "Classic 8x8, castling, en passant, pawn promotion",
-    "gamelist_othello_desc": "Classic 8x8 flip game, most pieces wins",
-    "gamelist_connect4_desc": "Drop pieces, four in a row wins",
+    "gamelist_gomoku_desc": "Klassisches 15×15-Brett, wer zuerst fünf verbindet, gewinnt",
+    "gamelist_chess_desc": "Klassisches 8×8 mit Rochade, En passant und Bauerumwandlung",
+    "gamelist_othello_desc": "Klassisches 8×8-Flip-Spiel, mehr Steine gewinnen",
+    "gamelist_connect4_desc": "Steine fallen lassen, vier in einer Reihe gewinnt",
     "gamelist_checkers_desc": "Must-capture Dame on 8x8 board",
-    "gamelist_tictactoe_desc": "Classic 3x3, first to get three in a row"
+    "gamelist_tictactoe_desc": "Klassisches 3×3, wer zuerst drei in einer Reihe hat, gewinnt"
   },
   "share": {
     "overlay_copy_link": "📋 Link kopieren",
