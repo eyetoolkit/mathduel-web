@@ -613,6 +613,14 @@ function startDaily(): void {
   $('enterBtn')!.classList.add('hidden');
   $('newBtn')!.classList.add('hidden');
 
+  // 🔴 修复 (2026-10-09)：开局前不是对局，必须退出沉浸态。
+  // 页面加载即 Practice 发牌（in-match 常驻），此时切到 Daily 标签，styles.css 的
+  // 移动端沉浸规则 `body.arena.in-match #modeBanner { display:none !important }`
+  // 会把渲染在 #modeBanner 里的「Start Challenge」按钮藏掉 → 玩家永远无法开始。
+  // 计时本来就等到点「开始」（beginDaily → startDailyTimer → enterMatchMode）才进沉浸态。
+  document.body.classList.remove('in-match');
+  backGuard = false;
+
   // 这里刻意不拉题：线上是「拉题即开 Q1 计时」，拉题必须推迟到玩家点「开始挑战」那一刻
   renderDailyPreStart();
   renderSide();
@@ -692,7 +700,9 @@ function renderDailyPreStart(): void {
     '<button class="btn primary db-start" id="dbStart">🂠 Start Challenge</button>' +
     `<p class="db-hint">Cards reveal and the timer starts when you begin; solve all ${DAILY_N} to win</p>` +
     '</div>';
-  cardsEl.innerHTML = Array.from({ length: DAILY_N }, () => '<div class="cb"><span class="cb-q">?</span></div>').join('');
+  // 占位卡渲染 4 张（与每题实际发牌数一致）。注意 DAILY_N=5 是「每日题数」，
+  // 之前按它渲染 5 张 "?" 被玩家误读成一手 5 张牌。
+  cardsEl.innerHTML = Array.from({ length: 4 }, () => '<div class="cb"><span class="cb-q">?</span></div>').join('');
   resultEl.className = 'result';
   resultEl.textContent = i18nT('mg.g24_ready_daily');
   const sb = $('dbStart');
