@@ -524,12 +524,23 @@ body.arena.answer-revealed .formula { opacity: 0.5; font-style: italic; }
     order: 4; flex: 0 0 auto; font-size: 0.82rem; min-height: 18px; margin-bottom: 0;
   }
 
-  /* ── 隐藏次要面板：每日 banner / 竞赛头 / lobby ── */
-  body.arena.in-match #modeBanner,
+  /* ── 隐藏次要面板：竞赛头 / 非每日 banner（battle 轮次条）/ spec / chat ──
+     🔴 修复 (2026-10-09)：#modeBanner 与 .banner.daily 绝不能隐藏 ——
+     每日/计时挑战的倒计时（db-timer / db-clock）就渲染在 #modeBanner > .banner.daily 内，
+     原规则在对局中把整个 banner 藏掉，导致「进每日挑战后看不到计时器」。
+     Practice 模式不用 #modeBanner（独立 prac-timer），Battle 用 .banner.battle（非 daily）仍隐藏。 */
   body.arena.in-match #compHead,
-  body.arena.in-match .banner,
+  body.arena.in-match .banner:not(.daily),
   body.arena.in-match .spec-bar,
   body.arena.in-match .chat-dock { display: none !important; }
+
+  /* 对局中显示每日/计时倒计时条：贴 tabs 之下、紧凑不撑高 */
+  body.arena.in-match #modeBanner { flex: 0 0 auto; display: block; margin: 0; }
+  body.arena.in-match .banner.daily { padding: 6px 10px; margin: 0; }
+  body.arena.in-match .banner.daily .b-title { font-size: 0.85rem; }
+  body.arena.in-match .banner.daily .b-sub { font-size: 0.72rem; margin-top: 1px; }
+  body.arena.in-match .banner.daily .db-timer { margin-top: 5px; }
+  body.arena.in-match .banner.daily .db-clock { margin-top: 2px; font-size: 0.82rem; }
 
   /* ── 底：运算符键盘 + 操作行（order=5-6，flex:0 0 auto） ── */
   body.arena.in-match .pad {
