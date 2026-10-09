@@ -262,6 +262,9 @@ body.has-papergames-shell.rail .pg-main { margin-left: var(--pg-sb-rail); }
     flex: 1 1 auto; min-height: 0;
     display: flex; flex-direction: column;
     overflow: hidden;
+    /* 中和各游戏 base 的桌面居中规则（如金字塔 main{max-width:720px;margin:0 auto}），
+       否则 margin:auto 会吃掉 flex 自由空间、让 flex-grow 失效 → 棋盘被挤窄并居中 */
+    margin: 0 !important; max-width: none !important;
     padding: 4px 6px env(safe-area-inset-bottom) !important;
   }
 
