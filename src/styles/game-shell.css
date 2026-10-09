@@ -228,3 +228,97 @@ body.has-papergames-shell.rail .pg-main { margin-left: var(--pg-sb-rail); }
 @keyframes mdHintIn { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 @keyframes mdHintOut { to { transform: translateY(20px); opacity: 0; } }
 @media (max-width: 640px) { .md-first-hint { left: 12px; right: 12px; bottom: 16px; } }
+
+/* ============================================================
+ * 移动端对局沉浸模式（2026-10-09）
+ * ------------------------------------------------------------
+ * 作用域：body.has-papergames-shell.in-match + ≤1119px。
+ * in-match 由 _shared/match-guard.ts 的 enterMatchMode() 统一添加，
+ * 退出对局即摘掉 → 非对局页完全不受影响。
+ *
+ * 对标 boardduel 的 bd-in-match：外壳铺满视口、隐藏页头页脚、
+ * 去掉桌面两栏堆到下方的侧栏（stats），棋盘区 flex:1 吃满剩余空间、
+ * 数字键盘/操作条钉底，做到「一屏装下、零滚动」。
+ *
+ * min-height:560px 是安全阀：横屏手机（高 ~390px）装不下整局，
+ * 此时不进沉浸模式，回退普通可滚动布局，避免内容被裁掉且无法滚动。
+ * ============================================================ */
+@media (max-width: 1119px) and (min-height: 560px) {
+  body.has-papergames-shell.in-match { position: fixed; inset: 0; overflow: hidden; }
+
+  body.has-papergames-shell.in-match .pg-topbar,
+  body.has-papergames-shell.in-match .pg-footer,
+  body.has-papergames-shell.in-match .pg-overlay,
+  body.has-papergames-shell.in-match .side { display: none !important; }
+
+  body.has-papergames-shell.in-match .pg-main {
+    margin: 0 !important; padding: 0;
+    height: 100dvh; max-height: 100dvh;
+    overflow: hidden;
+  }
+
+  /* 游戏根容器：吃掉整屏，内部按 头 / 棋盘(flex:1) / 操作区 三段排 */
+  body.has-papergames-shell.in-match .pg-main > main {
+    flex: 1 1 auto; min-height: 0;
+    display: flex; flex-direction: column;
+    overflow: hidden;
+    padding: 4px 6px env(safe-area-inset-bottom) !important;
+  }
+
+  /* 对局区（section.board）铺满剩余高度 */
+  body.has-papergames-shell.in-match section.board {
+    flex: 1 1 auto; min-height: 0;
+    display: flex; flex-direction: column; overflow: hidden;
+    padding: 4px !important;
+  }
+  /* 金字塔 ep-board 内部是自有行布局，只能给弹性不能改 display（改了会压扁）；
+     给它收缩下限，配合下面压缩 chrome，让棋盘尽量大又不顶掉数字托盘 */
+  body.has-papergames-shell.in-match .ep-arena > .ep-board {
+    flex: 0 0 auto; display: block;   /* 不收缩：收缩会让网格溢出压住目标条 */
+  }
+  /* 难度选择器属于开局前操作，对局期隐藏（lobby 可重选） */
+  body.has-papergames-shell.in-match .ep-diff { display: none !important; }
+  /* 收掉 arena 的 28px 底部留白，否则数字托盘会被裁掉 */
+  body.has-papergames-shell.in-match .ep-arena { padding: 4px !important; }
+  /* 棋盘放宽：桌面 440px 上限在手机上用不满，去掉留白让金字塔吃满屏宽 */
+  body.has-papergames-shell.in-match .ep-board { width: 100% !important; }
+  /* 金字塔对局期压缩：结果横幅（信息已在 HUD/目标条）+ 双方条 + HUD 单元格 */
+  body.has-papergames-shell.in-match .ep-result-msg { display: none !important; }
+  body.has-papergames-shell.in-match .ep-opp,
+  body.has-papergames-shell.in-match .ep-you { padding: 7px 10px !important; }
+  body.has-papergames-shell.in-match .ep-hud-cell { padding: 5px 6px !important; }
+  body.has-papergames-shell.in-match .ep-hud-cell small { font-size: .56rem !important; margin-bottom: 0 !important; }
+  body.has-papergames-shell.in-match .ep-hud-cell b { font-size: 1rem !important; }
+
+  /* 压缩对局 chrome：难度选择器/表头属开局前操作（lobby 可重选），对局期整块让位给棋盘 */
+  body.has-papergames-shell.in-match .diff-pick-hint,
+  body.has-papergames-shell.in-match .diff-pick,
+  body.has-papergames-shell.in-match .table-head { display: none !important; }
+  body.has-papergames-shell.in-match .g24-bar { flex: none; padding: 6px 10px !important; }
+
+  /* ── 数独 9×9 / 6×6 / 4×4：棋盘吃满，数字键盘钉底 ── */
+  body.has-papergames-shell.in-match .s9-board-wrap,
+  body.has-papergames-shell.in-match .s6-board-wrap,
+  body.has-papergames-shell.in-match .s4-board-wrap {
+    flex: 1 1 auto; min-height: 0;
+    display: flex; flex-direction: column; justify-content: center;
+    padding: 0;
+  }
+  body.has-papergames-shell.in-match .s9-board,
+  body.has-papergames-shell.in-match .s6-board,
+  body.has-papergames-shell.in-match .s4-board {
+    flex: 0 1 auto; width: 100%; height: auto; max-height: 100%;
+    margin: 0 auto;
+  }
+  body.has-papergames-shell.in-match .s9-pad,
+  body.has-papergames-shell.in-match .s6-pad,
+  body.has-papergames-shell.in-match .s4-pad { flex: none; }
+
+  /* ── 24 点：牌组置顶、运算符键盘与按钮钉底（中间富余空间留在牌与键盘之间）── */
+  body.has-papergames-shell.in-match .pad { margin-top: auto !important; }
+  /* 牌区吃掉富余高度并在其中垂直居中：避免「牌贴顶 + 下方一大块空白」的失衡观感 */
+  body.has-papergames-shell.in-match .cards {
+    flex: 1 1 auto; min-height: 0;
+    align-content: center;
+  }
+}
