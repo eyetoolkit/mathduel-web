@@ -127,14 +127,15 @@ body.has-papergames-shell.rail .pg-sidebar .btn-play { flex: none; width: 38px; 
 body.has-papergames-shell.rail .pg-main { margin-left: var(--pg-sb-rail); }
 
 /* ────────── 主区（与 sidebar 等宽偏移） ────────── */
-.pg-main { margin-left: var(--pg-sb-w); transition: margin .22s ease; }
+.pg-main { margin-left: var(--pg-sb-w); transition: margin .22s ease; padding-bottom: env(safe-area-inset-bottom, 0px); }
 
 /* ────────── 移动端顶栏（≤1119px 显示） ────────── */
 .pg-topbar {
   display: none;
   position: sticky; top: 0; z-index: 30;
   background: rgba(255, 255, 255, .92); backdrop-filter: blur(10px);
-  border-bottom: 1px solid var(--pg-line); padding: 11px 18px;
+  border-bottom: 1px solid var(--pg-line);
+  padding: calc(11px + env(safe-area-inset-top, 0px)) 18px calc(11px + env(safe-area-inset-bottom, 0px));
   align-items: center; gap: 14px;
 }
 .pg-topbar .burger {
@@ -154,7 +155,7 @@ body.has-papergames-shell.rail .pg-main { margin-left: var(--pg-sb-rail); }
 /* ────────── 浅色页脚 ────────── */
 .pg-footer {
   background: var(--pg-card); color: #C9CCF2; margin-left: var(--pg-sb-w);
-  margin-top: 40px; padding: 44px 0 30px; transition: margin .22s ease;
+  margin-top: 40px; padding: 44px 0 calc(30px + env(safe-area-inset-bottom, 0px)); transition: margin .22s ease;
 }
 .pg-footer .sf-title { font-family: var(--font-display, system-ui, sans-serif); font-weight: 800; color: #fff; font-size: 1.02rem; margin-bottom: 16px; }
 .pg-footer .sf-matrix { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 22px; }
@@ -265,7 +266,7 @@ body.has-papergames-shell.rail .pg-main { margin-left: var(--pg-sb-rail); }
     /* 中和各游戏 base 的桌面居中规则（如金字塔 main{max-width:720px;margin:0 auto}），
        否则 margin:auto 会吃掉 flex 自由空间、让 flex-grow 失效 → 棋盘被挤窄并居中 */
     margin: 0 !important; max-width: none !important;
-    padding: 4px 6px env(safe-area-inset-bottom) !important;
+    padding: env(safe-area-inset-top, 0px) 6px env(safe-area-inset-bottom, 0px) !important;
   }
 
   /* 对局区（section.board）铺满剩余高度 */

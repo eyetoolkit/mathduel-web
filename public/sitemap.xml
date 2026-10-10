@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:xhtml="http://www.w3.org/1999/xhtml">
-  <!-- 由 scripts/gen-sitemap.mjs 从 vite.config.ts 的 rollupOptions.input 自动派生，勿手改 -->
   <url>
     <loc>https://numeriduel.com/</loc>
     <lastmod>2026-09-30</lastmod>

@@ -1,7 +1,4 @@
 # numeriduel.com — robots.txt
-# 注意：此前该路径被 SPA fallback 接管，返回的是首页 HTML，
-# 爬虫完全无法解析。必须先在 public/ 放入本文件 + 404.html 才会生效。
-
 User-agent: *
 Allow: /
 
