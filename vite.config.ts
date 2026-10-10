@@ -20,6 +20,15 @@ export default defineConfig({
         return html.replace(/%VITE_[A-Z0-9_]+%/g, '');
       },
     },
+    {
+      // iOS 原生 APP 手感层：注入到 MPA 全部 HTML 入口。
+      // 走 public/ 静态文件而非 import —— @tri-sites/design-system 是 file: 依赖，
+      // pnpm 只在安装期快照 vendor 源码到 node_modules/.pnpm，改源码不生效。
+      name: 'inject-ios-feel',
+      transformIndexHtml(html) {
+        return html.replace('</head>', '<link rel="stylesheet" href="/css/ios-feel.css"></head>');
+      },
+    },
   ],
   build: {
     outDir: 'dist',
