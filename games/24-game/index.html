@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en" data-site="numeriduel">
 <head>
-  <script>window.__I18N_CONFIG__={supported:["en","zh","ja","es","fr","de"],dictVersion:43,fallback:"en"};</script>
+  <script>window.__I18N_CONFIG__={supported:["en","zh","ja","es","fr","de"],dictVersion:44,fallback:"en"};</script>
   <script src="/i18n/i18n.js?v=40"></script>
   <meta charset="utf-8" />
   <script>
@@ -276,14 +276,25 @@
     <aside class="side" id="side"></aside>
   </main>
 
-  <!-- Lobby -->
-  <div class="lobby" id="lobby" role="dialog" aria-modal="true" aria-labelledby="lobbyTitle">
+  <!-- Lobby —— 全屏 arena（沉浸式改造 2026-10-10）
+       · .lobby 自己接管整屏；data-view 三个值：form（入口）/ join（邀请落地）/ room（房内整页）
+       · 显隐由 CSS 驱动（styles.css 的 .lobby[data-view=…]），JS 只切属性，见 index.ts setLobbyView()
+       · 房内是「左=房码/二维码，右=玩家/聊天/开局 CTA」两栏；CTA 吸底，小屏满员也够得着 -->
+  <div class="lobby" id="lobby" role="dialog" aria-modal="true" aria-labelledby="lobbyTitle" data-view="form">
     <div class="lobby-card">
       <button class="lobby-close" id="lobbyClose" aria-label="Close lobby" data-i18n-aria-label="mg.shared_close">✕</button>
-      <h2 id="lobbyTitle">🏆 Math Competition</h2>
-      <p class="ldesc" id="lobbyDesc">Create a room or enter a code to race players worldwide on the same cards. Up to 99 players per room.</p>
 
-      <div id="lobbyForm">
+      <!-- ⚠️ #lobbyTitle / #lobbyDesc 不要加 data-i18n：它们由 index.ts 的 setLobbyView()
+           按视图切换文案。initI18n() 的 data-i18n 应用是异步的（先 fetch 字典），
+           会在 setLobbyView() 之后跑一遍，把刚设好的文案覆盖回默认那一份。
+           去掉 data-i18n 后 setLobbyView() 成为唯一真值来源，且一定在弹窗显示前跑过。 -->
+      <div class="lobby-head">
+        <h2 id="lobbyTitle">🏆 Math Competition</h2>
+        <p class="ldesc" id="lobbyDesc">Create a room or enter a code to race players worldwide on the same cards. Up to 99 players per room.</p>
+      </div>
+
+      <!-- 视图 1 · 入口：建房 / 手动输房码 -->
+      <div class="lobby-view lobby-entry" id="lobbyForm">
         <div class="field">
           <label for="nameInput">Name</label>
           <input id="nameInput" type="text" maxlength="14" placeholder="Your name" autocomplete="off" />
@@ -307,20 +318,45 @@
         </div>
       </div>
 
-      <div id="roomView" class="room-view">
-        <div id="lobbyMe" class="arb-account" style="margin-bottom:12px"></div>
-        <div class="room-code-box">
-          <div class="rc-lbl">Room code · share with friends</div>
-          <div class="rc-code" id="roomCode">·····</div>
-          <div class="rc-qr-wrap">
-            <img class="rc-qr" id="roomQr" width="140" height="140" alt="QR code to join this room" />
-            <div class="rc-qr-txt">📱 <b>Scan to join</b> — opens with the code filled in</div>
-          </div>
-          <button class="btn ghost btn-block" id="shareBtn" data-i18n="mg.shared_copy_invite">🔗 Copy Invite Link</button>
+      <!-- 视图 2 · 邀请落地：?room=CODE 直接进这里。
+           被邀请者不再需要看懂「建房 / 竞赛人数」表单，只要认房码 + 填名字 + 加入。 -->
+      <div class="lobby-view lobby-entry" id="joinView">
+        <div class="join-code">
+          <div class="jc-lbl" data-i18n="mg.shared_room_code">Room code</div>
+          <div class="jc-code" id="joinCodeOut">·····</div>
         </div>
-        <div class="room-players" id="roomPlayers"></div>
-        <div class="room-hint" id="roomHint">⏳ Waiting for players…</div>
-        <button class="btn primary btn-block" id="startBtn" disabled data-i18n="mg.shared_start_competition_2">🚀 Start Competition (2+ players)</button>
+        <p class="join-note" data-i18n="mg.shared_invite_note">Someone invited you to a competition. Pick a name to race.</p>
+        <div class="field">
+          <label for="joinName" data-i18n="mg.shared_your_name">Your name</label>
+          <input id="joinName" type="text" maxlength="14" placeholder="Your name" autocomplete="off" />
+        </div>
+        <button class="btn primary btn-block" id="joinGo" data-i18n="mg.shared_join_competition">Join Competition</button>
+        <button class="btn ghost btn-block mt-2" id="joinBack" data-i18n="mg.shared_create_own_room">Create my own room instead</button>
+      </div>
+
+      <!-- 视图 3 · 房内：沉浸式整页 -->
+      <div class="lobby-view room-view" id="roomView">
+        <div class="room-aside">
+          <div id="lobbyMe" class="arb-account"></div>
+          <div class="room-code-box">
+            <div class="rc-lbl">Room code · share with friends</div>
+            <div class="rc-code" id="roomCode">·····</div>
+            <div class="rc-qr-wrap">
+              <img class="rc-qr" id="roomQr" width="140" height="140" alt="QR code to join this room" />
+              <div class="rc-qr-txt">📱 <b>Scan to join</b> — opens with the code filled in</div>
+            </div>
+            <button class="btn ghost btn-block" id="shareBtn" data-i18n="mg.shared_copy_invite">🔗 Copy Invite Link</button>
+          </div>
+        </div>
+        <div class="room-main">
+          <div class="room-players" id="roomPlayers"></div>
+          <!-- showRoomView() 把 #lobbyChat 挂到这里；节点常驻，chat dock 只插一次 -->
+          <div class="room-chat-slot" id="lobbyChatSlot"></div>
+          <div class="room-foot">
+            <div class="room-hint" id="roomHint">⏳ Waiting for players…</div>
+            <button class="btn primary btn-block" id="startBtn" disabled data-i18n="mg.shared_start_competition_2">🚀 Start Competition (2+ players)</button>
+          </div>
+        </div>
       </div>
 
       <div class="lobby-err" id="lobbyErr" role="alert"></div>

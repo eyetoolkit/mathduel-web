@@ -1383,19 +1383,58 @@ initChatDelegation();
 const lobby = $('lobby')!;
 let raceMax = 99;
 
-function openLobby(): void {
-  lobby.classList.add('show');
-  $('lobbyForm')!.style.display = '';
-  $('roomView')!.style.display = 'none';
+/** Lobby 视图：form=入口 / join=邀请落地 / room=房内整页 */
+type LobbyView = 'form' | 'join' | 'room';
+
+/** 邀请链接 ?room=CODE 带进来的房码；在玩家真正 join 之前一直暂存 */
+let pendingRoomCode = '';
+
+/**
+ * 切 Lobby 视图（沉浸式改造 2026-10-10）
+ * 显隐全部由 CSS 的 `.lobby[data-view=…]` 驱动，这里只切属性 + 换标题文案。
+ * 旧实现是在 openLobby / showRoomView 里各写一遍 `element.style.display`，两处真值
+ * 来源分散，容易出现「一个视图开了另一个没关」的半开状态。
+ * 顺带修掉旧缺陷：建房成功后 `#lobbyDesc` 仍显示「Create a room or enter a code…」。
+ */
+function setLobbyView(view: LobbyView): void {
+  lobby.dataset.view = view;
+  const title = $('lobbyTitle');
+  const desc = $('lobbyDesc');
+  if (title) {
+    title.textContent =
+      view === 'room'
+        ? i18nT('mg.shared_competition_room')
+        : view === 'join'
+          ? i18nT('mg.shared_join_competition')
+          : i18nT('mg.lobby_title');
+  }
+  if (desc) {
+    desc.textContent = view === 'join' ? i18nT('mg.shared_invite_note') : i18nT('mg.lobby_desc');
+  }
   $('lobbyErr')!.textContent = '';
-  $('joinRow')!.classList.add('hidden');
-  const ni = $<HTMLInputElement>('nameInput');
+}
+
+function openLobby(view: LobbyView = 'form'): void {
+  lobby.classList.add('show');
+  setLobbyView(view);
+  const ni = $<HTMLInputElement>(view === 'join' ? 'joinName' : 'nameInput');
   if (ni) {
     if (comp.myName) ni.value = comp.myName;
     else {
       const s = localStorage.getItem('twentyfour_name');
       if (s) ni.value = s;
     }
+  }
+  if (view === 'join') {
+    $('joinCodeOut')!.textContent = pendingRoomCode || '·····';
+  } else if (pendingRoomCode) {
+    // 邀请链接带来的房码还没被用掉（玩家可能先关了大厅再从「Enter Competition」重开）：
+    // 手动输码那条老路要能直接用，不能把房码藏起来。
+    const ji = $<HTMLInputElement>('joinInput');
+    if (ji) ji.value = pendingRoomCode;
+    $('joinRow')!.classList.remove('hidden');
+  } else {
+    $('joinRow')!.classList.add('hidden');
   }
 }
 const closeLobby = () => lobby.classList.remove('show');
@@ -1424,22 +1463,22 @@ function renderRoomQr(): void {
 }
 
 function showRoomView(): void {
-  $('lobbyForm')!.style.display = 'none';
-  $('roomView')!.style.display = 'block';
+  setLobbyView('room');
   $('roomCode')!.textContent = comp.room;
   renderRoomQr();
   renderRoomPlayers();
   // F-102: 满员时高亮 startBtn，提示 host 当前可开打（worker 不自动开局）
   highlightStartIfReady();
   // 大厅房间视图也挂一条聊天（等待开局时就能闲聊——服务端任何时刻都接受 chat）
-  const rp = $('roomPlayers');
-  if (rp && !$('lobbyChat')) {
+  // 挂到 #lobbyChatSlot（room-main 的独立插槽），不要再用 roomPlayers.insertAdjacentElement：
+  // 沉浸式布局下 .room-players 是独立滚动区，把聊天插进去会被卷走看不见。
+  const slot = $('lobbyChatSlot');
+  if (slot && !$('lobbyChat')) {
     const box = document.createElement('div');
     box.id = 'lobbyChat';
     box.className = 'chat-dock';
-    box.style.marginTop = '14px';
     box.innerHTML = chatDockHtml('lobby');
-    rp.insertAdjacentElement('afterend', box);
+    slot.appendChild(box);
   }
   renderChatLog();
   const mine = $('lobbyMe');
@@ -1848,7 +1887,9 @@ function setMode(m: string): void {
   } else if (m === 'timed') {
     startTimed();
   } else if (m === 'battle') {
-    openLobby();
+    // 带 ?room= 进来的（被邀请者）直接进「加入房间」视图：房码大字 + 名字 + 加入，
+    // 不用先看懂「建房 / 竞赛人数」表单再自己找输码入口。
+    openLobby(pendingRoomCode ? 'join' : 'form');
   }
   renderSide();
 }
@@ -1917,7 +1958,8 @@ $('answerBtn')!.onclick = () => {
   if (daily.active) return; // 开始前忽略
   showAnswer();
 };
-$('enterBtn')!.onclick = openLobby;
+// ⚠️ 必须包一层箭头函数：openLobby 现在带 view 参数，直接赋值会把 PointerEvent 当成 view 传进去
+$('enterBtn')!.onclick = () => openLobby();
 $('lobbyClose')!.onclick = closeLobby;
 $('joinToggle')!.onclick = () => {
   $('joinRow')!.classList.toggle('hidden');
@@ -1943,22 +1985,50 @@ $('createBtn')!.onclick = () => {
   $('lobbyErr')!.textContent = '';
   comp.createRoom(name);
 };
-$('joinBtn')!.onclick = () => {
-  const name = ($<HTMLInputElement>('nameInput')?.value || '').trim();
-  const code = ($<HTMLInputElement>('joinInput')?.value || '').trim().toUpperCase();
+/**
+ * 加入房间：入口视图（#joinBtn + #joinInput）和邀请落地视图（#joinGo + pendingRoomCode）
+ * 共用同一套校验与提交，避免两条路径行为漂移。旧代码里手输房码的报错文案是硬编码英文，
+ * 现在一并走 i18n。
+ */
+function joinWith(rawName: string, rawCode: string): boolean {
+  const name = (rawName || '').trim();
   if (!name) {
-    $('lobbyErr')!.textContent = 'Enter a name';
-    return;
+    $('lobbyErr')!.textContent = i18nT('mg.shared_enter_name');
+    return false;
   }
+  const code = (rawCode || '').trim().toUpperCase();
   if (!/^[A-Z0-9]{4,6}$/.test(code)) {
-    $('lobbyErr')!.textContent = 'Invalid code (4–6 chars)';
-    return;
+    $('lobbyErr')!.textContent = i18nT('mg.shared_invalid_code');
+    return false;
   }
   comp.myName = name;
   localStorage.setItem('twentyfour_name', name);
   comp.setDifficulty(difficulty);
   $('lobbyErr')!.textContent = '';
+  // 房码用掉了就清掉：否则 setMode('battle') 会一直把玩家往「加入房间」视图送，
+  // 加入并离开后再点 Competition 标签，会看到一个房码早已作废的加入页。
+  pendingRoomCode = '';
   comp.joinRoom(code, name);
+  return true;
+}
+
+$('joinBtn')!.onclick = () => {
+  joinWith($<HTMLInputElement>('nameInput')?.value || '', $<HTMLInputElement>('joinInput')?.value || '');
+};
+
+// 邀请落地视图：主 CTA 直接用 URL 带进来的房码，被邀请者不需要手动输码
+$('joinGo')!.onclick = () => {
+  joinWith($<HTMLInputElement>('joinName')?.value || '', pendingRoomCode);
+};
+$('joinName')?.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') $('joinGo')?.click();
+});
+// 兜底路径：被邀请者也可以回入口视图手动输码（房码已预填，不用重敲）
+$('joinBack')!.onclick = () => {
+  const ji = $<HTMLInputElement>('joinInput');
+  if (ji && pendingRoomCode) ji.value = pendingRoomCode;
+  $('joinRow')!.classList.remove('hidden');
+  setLobbyView('form');
 };
 $('shareBtn')!.onclick = async () => {
   const url = roomInviteUrl();
@@ -2046,12 +2116,11 @@ refreshTop();
   else if (startMode === 'battle' || startMode === 'random') window.setTimeout(() => setMode('battle'), 0);
 
   if (rc) {
-    window.setTimeout(() => {
-      setMode('battle');
-      const ji = $<HTMLInputElement>('joinInput');
-      if (ji) ji.value = rc;
-      $('joinRow')?.classList.remove('hidden');
-    }, 0);
+    pendingRoomCode = rc;
+    // 手动输码那条老路径也得能用：房码同步进 #joinInput（#joinBack 会用它）
+    const ji = $<HTMLInputElement>('joinInput');
+    if (ji) ji.value = rc;
+    window.setTimeout(() => setMode('battle'), 0);
   }
 
   // 生产环境暴露竞赛入口（DEMO 也允许体验完整 99 人流程）
@@ -2061,11 +2130,19 @@ refreshTop();
     if (badge) badge.style.display = 'inline-flex';
   }
 
-  // 全局 Esc 关闭 overlay 弹窗（仅当 #overlay 当前是 .show 状态；聊天/输入框不抢 Esc）
+  // 全局 Esc 关闭浮层（聊天/输入框不抢 Esc）
   document.addEventListener('keydown', (ev) => {
     if (ev.key !== 'Escape') return;
     const t = ev.target as HTMLElement | null;
     if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || (t as HTMLElement).isContentEditable)) return;
+    // Lobby 现在是全屏页（仍是 role=dialog aria-modal），Esc 必须能关；
+    // 它的 z-index 高于 #overlay，先判它再判 overlay。
+    const lb = $('lobby');
+    if (lb && lb.classList.contains('show')) {
+      ev.preventDefault();
+      closeLobby();
+      return;
+    }
     const ov = $('overlay');
     if (ov && ov.classList.contains('show')) {
       ev.preventDefault();

@@ -285,21 +285,58 @@ body.arena.answer-revealed .formula { opacity: 0.5; font-style: italic; }
 .race-empty { font-size: 0.8125rem; color: var(--text-muted); text-align: center; padding: var(--s-4) 0; }
 .race-more { font-size: 0.75rem; color: var(--text-muted); text-align: center; padding: 5px 0; }
 
-/* ---------- Lobby 覆盖层 ---------- */
+/* ════════════════════════════════════════════════════════════════════
+   Lobby —— 全屏 arena（沉浸式改造 2026-10-10）
+   ------------------------------------------------------------
+   改造前：fixed 遮罩里浮一张 max-width:460px 的居中卡片，房码/二维码被
+           塞在一个子盒里，99 人满员 + 聊天进来后 Start 按钮会掉出视口。
+   改造后：.lobby 自己接管整屏，三个视图由 data-view 统一驱动 ——
+             form（入口：建房 / 手动输码）  → 仍聚焦居中卡片
+             join （邀请落地 ?room=CODE）   → 房码大字 + 名字 + 加入
+             room （房内）                   → 铺满整页，桌面左右两栏、
+                                               移动上下两栏，CTA 吸底
+   配色零改动：.rc-* / .rp-* / .room-code-box 全部走设计系统 token，
+   自动跟随 arena.css 的 skin-paper 皮肤。
+   ⚠️ 显隐不再由 JS 写 inline style.display，一律走 .lobby[data-view=…]，
+      见 index.ts 的 setLobbyView()。
+   ════════════════════════════════════════════════════════════════════ */
 .lobby {
   position: fixed; inset: 0; z-index: var(--z-modal); display: none;
-  align-items: center; justify-content: center; padding: var(--s-4);
-  background: rgba(2, 6, 23, 0.66); backdrop-filter: blur(10px);
+  background: var(--bg); overflow: hidden;
 }
-.lobby.show { display: flex; }
+.lobby.show { display: block; }
 .lobby-card {
-  position: relative; width: 100%; max-width: 460px; max-height: 92vh; overflow-y: auto;
-  background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-xl);
-  padding: var(--s-6); box-shadow: var(--shadow-xl);
-  animation: ds-modal-in var(--dur-slow) var(--ease-spring) both;
+  position: relative; width: 100%; height: 100%;
+  display: flex; flex-direction: column;
+  gap: clamp(12px, 1.8vw, 20px);
+  padding: clamp(16px, 3vw, 36px);
+  /* 刘海屏 / 手势条：内容不要顶到状态栏和底部横条下面 */
+  padding-top: max(clamp(16px, 3vw, 36px), env(safe-area-inset-top, 0px));
+  padding-bottom: max(clamp(16px, 3vw, 36px), env(safe-area-inset-bottom, 0px));
+  overflow: hidden;
 }
-.lobby-card h2 { margin: 0 0 4px; font-family: var(--font-display); font-size: 1.375rem; }
-.lobby-card .ldesc { font-size: 0.84375rem; color: var(--text-muted); margin: 0 0 var(--s-5); }
+.lobby-head { flex: 0 0 auto; }
+.lobby-head h2 {
+  margin: 0 0 4px; padding-right: 48px;
+  font-family: var(--font-display); font-size: clamp(1.25rem, 3.4vw, 1.75rem);
+}
+.lobby-head .ldesc { font-size: 0.84375rem; color: var(--text-muted); margin: 0; max-width: 62ch; }
+/* 房内 / 邀请落地两个视图都不显示页头说明：
+   · 房内——房已建好，「Create a room or enter a code…」只会误导（修 2026-10-10 的旧缺陷）
+   · 邀请落地——卡片里已经有一份同文案（.join-note），页头再来一份是重复 */
+.lobby[data-view="room"] .ldesc,
+.lobby[data-view="join"] .ldesc { display: none; }
+
+/* ── 三个视图的显隐（取代旧的内联 style.display） ── */
+.lobby-view { display: none; }
+
+.lobby-close {
+  position: absolute; top: 10px; right: 12px; z-index: 3;
+  width: var(--tap); height: var(--tap);
+  border: 0; border-radius: var(--r-sm); background: transparent;
+  color: var(--text-muted); font-size: 1.375rem; line-height: 1;
+}
+.lobby-close:hover { background: var(--bg-subtle); color: var(--text); }
 .lobby-actions { display: flex; gap: var(--s-3); margin: var(--s-2) 0 var(--s-4); flex-wrap: wrap; }
 .lobby-actions .btn { flex: 1 1 160px; }
 .size-row { display: flex; gap: 7px; flex-wrap: wrap; }
@@ -312,41 +349,132 @@ body.arena.answer-revealed .formula { opacity: 0.5; font-style: italic; }
 .size-chip.on { background: var(--brand-600); color: var(--on-brand); border-color: transparent; }
 .lobby-divider { display: flex; align-items: center; gap: var(--s-3); color: var(--text-muted); font-size: 0.75rem; margin: var(--s-4) 0; }
 .lobby-divider::before, .lobby-divider::after { content: ""; flex: 1; height: 1px; background: var(--border); }
-.lobby-err { color: var(--danger-strong); font-size: 0.8125rem; min-height: 18px; margin-top: var(--s-2); }
-.lobby-close {
-  position: absolute; top: 14px; right: 16px; width: var(--tap); height: var(--tap);
-  border: 0; border-radius: var(--r-sm); background: transparent;
-  color: var(--text-muted); font-size: 1.375rem; line-height: 1;
-}
-.lobby-close:hover { background: var(--bg-subtle); color: var(--text); }
+.lobby-err { flex: 0 0 auto; color: var(--danger-strong); font-size: 0.8125rem; min-height: 18px; margin-top: var(--s-2); }
 .upcase { text-transform: uppercase; letter-spacing: 3px; }
 .mt-2 { margin-top: var(--s-2); }
 
+/* ---------- 视图 1 / 2：入口卡（聚焦，不铺满） ---------- */
+.lobby[data-view="form"] #lobbyForm,
+.lobby[data-view="join"] #joinView {
+  display: flex; flex-direction: column;
+  /* flex:0 1 auto = 贴着内容高度（内容过高才收缩）；margin:auto 在 flex 列里
+     把它水平垂直居中，而不是拉满整屏再把内容甩到一大片空白中间。
+     标题 .lobby-head 保持在顶部当页面标题，入口卡居中像一张聚焦的卡片。 */
+  flex: 0 1 auto; max-height: 100%; overflow-y: auto;
+  width: 100%; max-width: 460px; margin: auto;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r-xl); padding: clamp(18px, 3vw, 28px);
+  box-shadow: var(--shadow-xl);
+  animation: ds-modal-in var(--dur-slow) var(--ease-spring) both;
+}
+
+/* 邀请落地：房码是这一屏唯一的主角 */
+.join-code { text-align: center; margin-bottom: var(--s-4); }
+.join-code .jc-lbl {
+  font-family: var(--font-mono); font-size: 0.6875rem;
+  letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-muted);
+}
+.join-code .jc-code {
+  font-family: var(--font-display); font-weight: 700;
+  font-size: clamp(2.25rem, 11vw, 3.25rem); letter-spacing: 0.18em;
+  color: var(--brand-text); margin-top: 4px;
+}
+.join-note { font-size: 0.84375rem; color: var(--text-muted); margin: 0 0 var(--s-5); text-align: center; }
+
+/* ---------- 视图 3：房内整页 ---------- */
+.room-view {
+  flex: 1 1 auto; min-height: 0;
+  gap: clamp(14px, 2vw, 26px);
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr);
+}
+.lobby[data-view="room"] #roomView {
+  display: grid;
+  animation: roomFade var(--dur-slow) var(--ease-out) both;
+}
+.room-aside { display: flex; flex-direction: column; gap: var(--s-4); min-width: 0; }
+/* overflow:hidden = 空间不够时宁可让玩家列表少露几行，也绝不让聊天/CTA 溢出到屏幕外。
+   CTA 是 host 唯一的操作入口，必须永远够得着。 */
+.room-main { display: flex; flex-direction: column; gap: var(--s-3); min-height: 0; min-width: 0; overflow: hidden; }
+/* 玩家列表吃掉剩余高度并独立滚动 → room-foot（提示 + Start CTA）永远留在可视区内 */
+.room-players {
+  flex: 1 1 auto; min-height: 0; overflow-y: auto; margin: 0;
+  display: flex; flex-direction: column; gap: 6px;
+}
+/* 聊天不参与收缩（flex:0 0 auto）：它的输入框被压扁比少显示几行玩家更糟。
+   空间不够时只有上面 .room-players 让位（它 flex-shrink:1 且 min-height:0），
+   这样「聊天 + 提示 + Start CTA」永远完整可见，CTA 不会被裁。 */
+.room-chat-slot { flex: 0 0 auto; overflow: hidden; }
+.room-chat-slot:empty { display: none; }
+.room-foot { flex: 0 0 auto; }
+
+@keyframes roomFade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+@media (min-width: 860px) {
+  .lobby[data-view="room"] #roomView {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+    grid-template-rows: minmax(0, 1fr);
+  }
+  .room-aside { justify-content: center; }
+}
+
+/* 窄屏：房码与二维码并排，别让二维码吃掉半屏。
+   竖屏手机的垂直预算要留给「玩家列表 + 聊天 + Start CTA」——满员 99 人时那才是主角。
+   ⚠️ lbl / code / qr 必须是**三行**的 areas：写成两行（"code qr"）时这两个元素会落进
+     同一个格子，align-self 把标签甩到格子底部、代码甩到顶部，中间裂开一大片空白。 */
+@media (max-width: 859.5px) {
+  .room-code-box {
+    display: grid; align-items: center; text-align: left;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas: "lbl qr" "code qr" "btn btn";
+    column-gap: var(--s-4); row-gap: 2px;
+    padding: var(--s-4);
+  }
+  .room-code-box .rc-lbl { grid-area: lbl; align-self: end; }
+  .room-code-box .rc-code { grid-area: code; align-self: start; margin: 0; font-size: clamp(1.6rem, 7.5vw, 2.25rem); }
+  .room-code-box .rc-qr-wrap { grid-area: qr; margin: 0; }
+  .room-code-box .rc-qr { width: 96px; height: 96px; padding: 6px; }
+  /* 二维码已经自解释，窄屏上这句说明纯属抢垂直预算（文案在 ≥860px 保留） */
+  .room-code-box .rc-qr-txt { display: none; }
+  .room-code-box #shareBtn { grid-area: btn; margin-top: var(--s-3); }
+  /* 大厅阶段的聊天压扁一点，把垂直预算让给玩家列表 */
+  .room-chat-slot .chat-log { max-height: 56px; }
+}
+/* 矮屏（如 iPhone SE 竖屏 / 开了 DevTools 的窄窗）：再砍聊天快捷表情条，
+   优先保住玩家列表和 Start CTA */
+@media (max-width: 859.5px) and (max-height: 700px) {
+  .room-chat-slot .chat-rail { display: none; }
+  .room-chat-slot .chat-log { max-height: 44px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lobby[data-view="join"] #joinView,
+  .lobby[data-view="room"] #roomView { animation: none; }
+}
+
 /* 房间等待 */
-.room-view { display: none; }
 .room-code-box {
-  text-align: center; padding: var(--s-5); background: var(--bg-subtle);
-  border: 1px solid var(--brand-200); border-radius: var(--r-lg); margin: var(--s-4) 0;
+  text-align: center; padding: var(--s-5) var(--s-4); background: var(--bg-subtle);
+  border: 1px solid var(--brand-200); border-radius: var(--r-lg); margin: 0;
 }
 .room-code-box .rc-lbl { font-family: var(--font-mono); font-size: 0.6875rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-muted); }
-.room-code-box .rc-code { font-family: var(--font-display); font-weight: 700; font-size: 2.5rem; letter-spacing: 0.2em; color: var(--brand-text); margin: 4px 0; }
+.room-code-box .rc-code { font-family: var(--font-display); font-weight: 700; font-size: clamp(2.25rem, 9vw, 3.25rem); letter-spacing: 0.2em; color: var(--brand-text); margin: 4px 0; }
 /* 房间二维码：白底 + 留白静默区，保证深浅色主题下都能扫 */
 .room-code-box .rc-qr-wrap {
   display: flex; flex-direction: column; align-items: center; gap: var(--s-2);
   margin: var(--s-3) 0 var(--s-4);
 }
 .room-code-box .rc-qr {
-  width: 140px; height: 140px; display: block;
+  width: clamp(140px, 30vw, 190px); height: clamp(140px, 30vw, 190px); display: block;
   background: #fff; padding: 8px; border-radius: var(--r-sm);
   box-shadow: var(--shadow-sm);
 }
-.room-code-box .rc-qr-txt { font-size: 0.75rem; color: var(--text-muted); line-height: 1.4; }
-.room-players { display: flex; flex-direction: column; gap: 6px; margin: var(--s-4) 0; max-height: 180px; overflow-y: auto; }
+.room-code-box .rc-qr-txt { font-size: 0.75rem; color: var(--text-muted); line-height: 1.4; max-width: 30ch; }
 .rp-item { display: flex; align-items: center; gap: var(--s-3); padding: 9px 12px; border-radius: var(--r-sm); background: var(--bg-subtle); font-size: 0.875rem; }
 .rp-item.me { border: 1px solid var(--brand-200); background: var(--brand-subtle); }
 .rp-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--success); flex: none; }
 .rp-host { margin-left: auto; font-family: var(--font-mono); font-size: 0.6875rem; color: var(--brand-text); font-weight: 700; }
-.room-hint { font-size: 0.8125rem; color: var(--text-muted); text-align: center; margin: var(--s-3) 0; }
+.room-hint { font-size: 0.8125rem; color: var(--text-muted); text-align: center; margin: 0 0 var(--s-3); }
 
 /* ---------- 弹窗 ---------- */
 .modal h2 { margin: 0 0 6px; font-family: var(--font-display); font-size: 1.5rem; text-align: center; }
@@ -524,15 +652,18 @@ body.arena.answer-revealed .formula { opacity: 0.5; font-style: italic; }
     order: 4; flex: 0 0 auto; font-size: 0.82rem; min-height: 18px; margin-bottom: 0;
   }
 
-  /* ── 隐藏次要面板：竞赛头 / 非每日 banner（battle 轮次条）/ spec / chat ──
+  /* ── 隐藏次要面板：竞赛头 / 非每日 banner（battle 轮次条）/ spec / 对局内聊天 ──
      🔴 修复 (2026-10-09)：#modeBanner 与 .banner.daily 绝不能隐藏 ——
      每日/计时挑战的倒计时（db-timer / db-clock）就渲染在 #modeBanner > .banner.daily 内，
      原规则在对局中把整个 banner 藏掉，导致「进每日挑战后看不到计时器」。
-     Practice 模式不用 #modeBanner（独立 prac-timer），Battle 用 .banner.battle（非 daily）仍隐藏。 */
+     Practice 模式不用 #modeBanner（独立 prac-timer），Battle 用 .banner.battle（非 daily）仍隐藏。
+     🔴 修复 (2026-10-10)：聊天改用 #chatDock 精确匹配。原来写 .chat-dock 会把
+     房内等待大厅的 #lobbyChat（showRoomView() 挂到 #lobbyChatSlot，同样带 .chat-dock 类）
+     一起藏掉 —— 而它是在对局开始**之前**就要用的聊天面板，等于在 ≤899px 屏上永久不可见。 */
   body.arena.in-match #compHead,
   body.arena.in-match .banner:not(.daily),
   body.arena.in-match .spec-bar,
-  body.arena.in-match .chat-dock { display: none !important; }
+  body.arena.in-match #chatDock { display: none !important; }
 
   /* 对局中显示每日/计时倒计时条：贴 tabs 之下、紧凑不撑高 */
   body.arena.in-match #modeBanner { flex: 0 0 auto; display: block; margin: 0; }
@@ -559,8 +690,11 @@ body.arena.answer-revealed .formula { opacity: 0.5; font-style: italic; }
   body.arena.in-match .actions .btn.sound-btn { flex: 0 0 44px; padding: 0; }
   /* enterBtn 默认 hidden，不必管 */
 
-  /* ── 结算：浮层居中（gomoku 同款） ── */
-  body.arena.in-match .lobby,
+  /* ── 结算：浮层居中（gomoku 同款） ──
+     🔴 2026-10-10：.lobby 已从这条规则里移除（arena.css 里同名的另一条也已移除）。
+     Lobby 现在是自己接管整屏的 arena 页面，不是盖在牌桌上的弹窗遮罩；
+     半透明夜幕会让底下牌桌透出来干扰房码和二维码。底色交给 .lobby 的
+     background: var(--bg)，随 skin-paper / 深色皮肤自动切换。 */
   body.arena.in-match .share-overlay {
     background: rgba(30, 27, 75, 0.45);
   }

@@ -244,8 +244,11 @@ body.arena.skin-paper .card.red { color: #dc2626; }
    浅色皮肤下换成琥珀亮档 */
 body.arena.skin-paper .chat-input-row .send:hover { background: #fbbf24; }
 
-/* 弹窗遮罩：浅色页面用稍透的靛蓝夜幕（与 lobby overlay 一致观感） */
-body.arena.skin-paper .lobby,
+/* 弹窗遮罩：浅色页面用稍透的靛蓝夜幕（与 lobby overlay 一致观感）
+   🔴 2026-10-10：.lobby 已从这条规则里移除 —— 它不再是「盖在牌桌上的弹窗遮罩」，
+   而是**自己接管整屏的 arena 页面**（styles.css 的全屏改造）。继续用半透明夜幕会
+   让底下牌桌透出来干扰房码和二维码。房内页需要的是不透明底色，交给 .lobby 的
+   background: var(--bg)，随皮肤自动切换。 */
 body.arena.skin-paper .share-overlay {
   background: rgba(30, 27, 75, 0.45);
 }
