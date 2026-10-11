@@ -362,6 +362,17 @@ body.rail .main { margin-left: var(--sb-rail); }
 .home-v2 .sf-item .pip { width: 9px; height: 9px; border-radius: 3px; flex: none; }
 .home-v2 .sf-links { display: flex; gap: 20px; flex-wrap: wrap; font-size: .84rem; margin-bottom: 16px; }
 .home-v2 .sf-links a:hover { color: #fff; text-decoration: underline; text-underline-offset: 3px; }
+
+/* ── P2 (2026-10-11): iOS 44pt 触摸目标兜底 ──
+   页脚/导航文字链接高度不足 44pt，移动端难点中。仅加最小高度与垂直居中，不改视觉布局。 */
+.home-v2 footer a,
+.home-v2 .sf-links a,
+.home-v2 .site-footer a {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  touch-action: manipulation;
+}
 .home-v2 .sf-copy {
   font-size: .76rem; color: #8B8FC0; border-top: 1px solid rgba(255, 255, 255, .12);
   padding-top: 16px;
