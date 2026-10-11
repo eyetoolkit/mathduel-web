@@ -228,7 +228,7 @@ function sidebarHtml(): string {
   
   return `
     <div class="sb-top">
-      <a class="logo" href="/">Math<b>Duel</b></a>
+      <a class="logo" href="/">Numeri<b>Duel</b></a>
       <button class="sb-collapse" id="sbCollapse" title="Collapse sidebar" aria-label="Collapse sidebar" data-i18n-title="math_home.sb_collapse" data-i18n-aria-label="math_home.sb_collapse">«</button>
     </div>
     <div class="sb-login">
@@ -394,7 +394,7 @@ function topbarHtml(): string {
     <button class="burger" id="burger" aria-label="Open navigation" data-i18n-aria-label="math_home.burger_aria" aria-expanded="false">
       <svg viewBox="0 0 24 24" fill="none"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
     </button>
-    <a class="logo" href="/">Math<b>Duel</b></a>
+    <a class="logo" href="/">Numeri<b>Duel</b></a>
     <div class="tb-lang" data-lang-switcher></div>
   `;
 }
