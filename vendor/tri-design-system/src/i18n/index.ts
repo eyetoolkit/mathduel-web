@@ -118,6 +118,15 @@ const STORAGE_KEY = 'tri_lang';
 let current: Lang = 'en';
 
 export function detectLang(): Lang {
+  // 站点语言切换器写入的跨站通用键 'lang'（i18n.js 的 GENERIC_KEY）是整页语言的权威来源。
+  // 必须优先采用，否则设计系统只用自有 tri_lang 会与之脱节，导致 <html lang> 与站点
+  // getLang() 分裂（VoiceOver 会用错误语种朗读整页文本）。
+  try {
+    const siteLang = localStorage.getItem('lang');
+    if (siteLang && (DICT as Record<string, unknown>)[siteLang]) return siteLang as Lang;
+  } catch {
+    /* ignore */
+  }
   try {
     const saved = localStorage.getItem(STORAGE_KEY) as Lang | null;
     if (saved && DICT[saved]) return saved;
