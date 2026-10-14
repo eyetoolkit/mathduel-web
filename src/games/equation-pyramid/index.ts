@@ -7,7 +7,7 @@ import { createEqpyrAdapter } from "../_shared/mp-adapters/eqpyr";
  * 玩法：金字塔 board（顶层 target，9 格按 2/3/4 三行展开），每格 = 数字 + 上行运算符；target 是 apex 目标。
  * 玩家按点击顺序选 3 格：第 1 格 = anchor（op 删除线）；
  * 公式 = a [b.op] b [c.op] c = target，按 ×÷ 优先 +− 次之 计算。
- * 难度按「解的数量」分：Warm-up 6-12 / Standard 4-7 / Tricky 恰好 3。
+ * 难度按「解的数量」分：Warm-up 8-12 / Standard 4-7 / Tricky 恰好 3。
  * 目标：穷尽所有解（banked chips），而非填空白格。
  */
 
@@ -71,6 +71,10 @@ type Mode = 'solo' | 'daily' | 'timed' | 'duel';
 const TIMED_LIMIT = 60;
 const DUEL_PENALTY = 2.5;
 const HINT_BUDGET = 3;
+/** Bot 每解节奏（ms）· 按难度档递减 → 给人类留可胜区间（#09） */
+const BOT_PACE: Record<Tier, number> = { warmup: 6000, standard: 3400, tricky: 1800 };
+/** 玩家无操作超过该时长 → 提示一次（#09 零操作保护） */
+const DUEL_IDLE_MS = 12000;
 
 const tierLabel = (t: Tier): string => ({ warmup: 'Warm-up', standard: 'Standard', tricky: 'Tricky' })[t];
 
@@ -98,6 +102,11 @@ const st = {
   myBanks: 0, // 玩家本人的 bank 数（st.banked 是共享池，含 bot 的）
   oppBanks: 0,
   oppTimer: null as number | null,
+  lastActTs: 0, // 玩家上次操作时刻（#09 零操作保护）
+  idleWarned: false,
+  timedLeft: TIMED_LIMIT, // Timed 剩余秒数（#12 倒计时）
+  gatePending: false, // #14：等待玩家首点才开始计时
+  gateUsed: false,
 };
 
 const LS_BEST = 'ep_best_v1';
@@ -188,7 +197,7 @@ function startRound(): void {
     banner(
       m === 'timed'
         ? `<div class="ep-bn"><div class="ep-bt">⏱ Timed · ${TIMED_LIMIT}s · exhaust as many as you can</div><div class="ep-bs">Found <b id="tmSolved">0</b> · Streak <b id="tmStreak">0</b></div></div>`
-        : `<div class="ep-bn"><div class="ep-bt">🎯 ${tierLabel(st.tier)} · target ${st.board.target} · ${st.board.solutions.length} ways in</div><div class="ep-bs">Bank every equation; bank all ${st.board.solutions.length} to clear.</div></div>`,
+        : `<div class="ep-bn"><div class="ep-bt">🎯 ${tierLabel(st.tier)} · target ${st.board.target} · ${st.board.solutions.length} sets in</div><div class="ep-bs">Bank all ${st.board.solutions.length} sets to clear — the same 3 numbers in any order count once.</div></div>`,
     );
   }
   resetBoard();
@@ -197,6 +206,12 @@ function startRound(): void {
   renderStrip();
   renderTray();
   updateHud();
+  // #14：首次进入 solo/timed 不立即计时，等玩家点第一格再启动（避免“秒表已经开始”）
+  st.gatePending = !st.gateUsed && (m === 'solo' || m === 'timed');
+  if (st.gatePending) {
+    banner(`<div class="ep-bn"><div class="ep-bt">🎯 ${tierLabel(st.tier)} · target ${st.board!.target} · ${st.board!.solutions.length} sets in</div><div class="ep-bs">Tap any cell to start the clock — pick 3 cells in order to build the equation.</div></div>`);
+    return;
+  }
   if (st.mode === 'duel') scheduleOpp();
   beginTimer();
 }
@@ -215,6 +230,9 @@ function resetBoard(): void {
   st.penalty = 0;
   st.startTs = Date.now();
   st.running = true;
+  st.lastActTs = Date.now();
+  st.idleWarned = false;
+  st.timedLeft = TIMED_LIMIT;
   $('result')!.textContent = st.mode === 'duel' ? i18nT('mg.pyr_duel_first') : i18nT('mg.pyr_pick_first');
 }
 
@@ -230,6 +248,7 @@ function tick(): void {
   st.elapsed = effElapsed();
   if (st.mode === 'timed') {
     const left = Math.max(0, TIMED_LIMIT - (Date.now() - st.timedStartTs) / 1000);
+    st.timedLeft = left;
     const tms = $('tmSolved');
     if (tms) tms.textContent = String(st.timedSolved);
     const tmsk = $('tmStreak');
@@ -307,7 +326,7 @@ function renderStrip(): void {
   const t = st.board!;
   const [a, b, c] = [st.picks[0], st.picks[1], st.picks[2]];
   const strip = $('strip')!;
-  strip.classList.remove('ok', 'bad');
+  strip.classList.remove('ok', 'bad', 'eshake');
   // anchor slot
   const slotA = $('slotA')!;
   if (a != null) {
@@ -353,6 +372,12 @@ function renderStrip(): void {
         if (st.banked.size >= t.solutions.length) {
           winBoard();
         }
+      } else {
+        // #10：同一组 3 格换顺序 → 提示“已找到”，不静默、不扣分
+        sres.textContent = String(val);
+        sres.classList.add('ok');
+        strip.classList.add('ok');
+        toast('✓ Already found — the same 3 numbers in any order count once.');
       }
     } else if (val === null) {
       sres.textContent = '÷0!';
@@ -381,18 +406,21 @@ function renderStrip(): void {
 
 function renderTray(): void {
   const t = st.board!;
+  const found = st.banked.size;
+  const total = t.solutions.length;
+  // #11：复用页面里唯一的 #trayLabel，不再往 #trayList 里再插一个并列计数标签
+  const lab = $('trayLabel');
+  if (lab) lab.textContent = total ? `Found ${found} of ${total}` : '—';
   const chips: string[] = [];
   for (const triple of t.solutions) {
     const k = tripleKey(triple);
     if (st.banked.has(k)) chips.push(`<span class="ep-chip">✓ ${escHtml(describeSolution(triple, t))}</span>`);
   }
-  const remaining = t.solutions.length - st.banked.size;
-  const html = [
-    `<span class="ep-lab">Found ${st.banked.size} of ${t.solutions.length}</span>`,
+  const remaining = total - found;
+  $('trayList')!.innerHTML = [
     ...chips,
     ...Array.from({ length: remaining }, () => '<span class="ep-dot"></span>'),
   ].join('');
-  $('trayList')!.innerHTML = html;
 }
 
 function escHtml(s: string): string {
@@ -410,6 +438,15 @@ function nudgeJudge(): void {
 
 function onCellClick(i: number): void {
   if (!st.running || !st.board) return;
+  // #14：首局点击即启动计时（gate）
+  if (st.gatePending) {
+    st.gatePending = false;
+    st.gateUsed = true;
+    st.startTs = Date.now();
+    if (st.mode === 'timed') st.timedStartTs = Date.now();
+    beginTimer();
+  }
+  st.lastActTs = Date.now();
   // 同格重复点 → 取消该格（移除）
   const idx = st.picks.indexOf(i);
   if (idx >= 0) {
@@ -442,7 +479,7 @@ function onCellClick(i: number): void {
 function updateHud(): void {
   const t = st.board!;
   $('hudScore')!.textContent = String(st.score);
-  $('hudTime')!.textContent = fmtClock(st.elapsed);
+  $('hudTime')!.textContent = fmtClock(st.mode === 'timed' ? st.timedLeft : st.elapsed);
   $('hudLeft')!.textContent = String(Math.max(0, t.solutions.length - st.banked.size));
   $('hudMiss')!.textContent = String(st.misses);
   $('hintLeft')!.textContent = `×${st.hintsLeft}`;
@@ -459,7 +496,7 @@ function winBoard(): void {
   st.running = false;
   if (st.timer) window.clearInterval(st.timer);
   if (st.mode === 'duel') {
-    finishDuel(true);
+    endDuel();
     return;
   }
   if (st.mode === 'timed') {
@@ -546,12 +583,18 @@ function endTimed(): void {
 }
 
 function scheduleOpp(): void {
-  // 简化 bot：每 2-4s 随机从剩余解中 bank 一个
+  // Bot：按难度档 pace 从剩余解中随机 bank 一个（#09 可胜区间 + 零操作保护）
+  const pace = BOT_PACE[st.tier] ?? 3400;
   const step = (): void => {
     if (!st.running || st.mode !== 'duel') return;
     const t = st.board!;
     const remaining = t.solutions.filter((tri) => !st.banked.has(tripleKey(tri)));
     if (!remaining.length) return;
+    // 零操作保护：玩家长时间无操作 → 提示一次，避免被误判“卡死/作弊”
+    if (Date.now() - st.lastActTs > DUEL_IDLE_MS && !st.idleWarned) {
+      st.idleWarned = true;
+      toast('⏳ Still there? The Bot keeps banking — tap the board to keep up.');
+    }
     const triple = remaining[Math.floor(Math.random() * remaining.length)];
     st.banked.add(tripleKey(triple));
     st.oppBanks++;
@@ -561,25 +604,35 @@ function scheduleOpp(): void {
     renderTray();
     updateHud();
     if (st.banked.size >= t.solutions.length) {
-      // bot 收下最后一解 → bot 胜（玩家收尾走 renderStrip → winBoard → finishDuel(true)）
-      finishDuel(false);
+      // 池子被清空 → 按 banks 计数统一结算（#09）
+      endDuel();
       return;
     }
-    st.oppTimer = window.setTimeout(step, 2000 + Math.random() * 2000);
+    // 每解节奏：难度档 pace + ±30% 抖动
+    st.oppTimer = window.setTimeout(step, Math.round(pace * (0.7 + Math.random() * 0.6)));
   };
-  st.oppTimer = window.setTimeout(step, 2200);
+  st.oppTimer = window.setTimeout(step, Math.round(pace * 0.6));
 }
 
-function finishDuel(playerWon: boolean): void {
+/** 对局结算：统一以「bank 数」判定胜负与展示（#09） */
+function endDuel(): void {
   stopAll();
+  const t = st.board!;
+  const total = t.solutions.length;
+  const p = st.myBanks;
+  const b = st.oppBanks;
+  const playerWon = p > b;
+  const tie = p === b;
   $('result')!.innerHTML = playerWon
-    ? `🏆 You banked the last one in <b>${fmt(st.elapsed)}</b>`
-    : `🤖 Bot banked the last one — you had ${st.myBanks} banks`;
+    ? `🏆 You banked more — <b>${p}</b> of <b>${total}</b>`
+    : tie
+      ? `🤝 Draw — <b>${p}</b> banks each`
+      : `🤖 Bot banked more — <b>${b}</b> vs <b>${p}</b>`;
   showModal(
-    `<div class="ep-verdict">${playerWon ? 'You win 🏆' : 'Bot wins 🤖'}</div>
+    `<div class="ep-verdict">${playerWon ? 'You win 🏆' : tie ? 'Draw 🤝' : 'Bot wins 🤖'}</div>
      <div class="ep-scores">
-       <div class="ep-me num">${playerWon ? fmt(st.elapsed) : `${st.myBanks} banks`}<small>you</small></div>
-       <div class="ep-op num">${playerWon ? `${st.oppBanks} banks` : fmt(st.elapsed)}<small>Bot</small></div>
+       <div class="ep-me num">${p}<small>your banks</small></div>
+       <div class="ep-op num">${b}<small>Bot banks</small></div>
      </div>
      <div class="ep-acts">
        <button class="ep-prim" id="mAgain">⚔️ Rematch</button>

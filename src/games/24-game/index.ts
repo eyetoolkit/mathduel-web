@@ -1802,8 +1802,8 @@ function renderSide(): void {
     const myStats =
       '<div class="panel"><h3>📈 My Stats</h3>' +
       statRow(i18nT('mg.sg_st_solved'), scores.solved) +
-      statRow('Skipped', scores.skipped) +
-      statRow('Streak', combo) +
+      statRow(i18nT('mg.sg_st_skipped'), scores.skipped) +
+      statRow(i18nT('mg.sg_st_streak'), combo) +
       '<div class="hint-step" style="margin-top:10px"><b>·</b><span>Same puzzle worldwide — race the clock</span></div></div>';
     if (!daily.started) {
       sideEl.innerHTML =
@@ -1829,10 +1829,10 @@ function renderSide(): void {
       '<div class="hint-step"><b>2</b><span>{__I18N_SG_HINT_NEXT__}</span></div>' +
       '<div class="hint-step"><b>3</b><span>Time up reveals the answer, then deals again</span></div></div>' +
       '<div class="panel"><h3>📈 This Session</h3>' +
-      statRow('Solved', timed.solved) +
-      statRow('Best', timed.best ? timed.best.toFixed(1) + 's' : '—') +
-      statRow('Skipped', scores.skipped) +
-      statRow('Streak', combo) +
+      statRow(i18nT('mg.sg_st_solved'), timed.solved) +
+      statRow(i18nT('mg.sg_st_best'), timed.best ? timed.best.toFixed(1) + 's' : '—') +
+      statRow(i18nT('mg.sg_st_skipped'), scores.skipped) +
+      statRow(i18nT('mg.sg_st_streak'), combo) +
       '</div>';
   } else {
     sideEl.innerHTML =
@@ -1843,8 +1843,8 @@ function renderSide(): void {
       '<p class="brand-hint">A pocket puzzle born in the 1960s, now raced across continents. Five games, one Elo ladder — no login, no ads.</p></div>' +
       '<div class="panel"><h3>📈 My Stats</h3>' +
       statRow(i18nT('mg.sg_st_solved'), scores.solved) +
-      statRow('Skipped', scores.skipped) +
-      statRow('Streak', combo) +
+      statRow(i18nT('mg.sg_st_skipped'), scores.skipped) +
+      statRow(i18nT('mg.sg_st_streak'), combo) +
       '</div>';
   }
 }

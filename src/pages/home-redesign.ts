@@ -381,7 +381,7 @@ function footerHtml(): string {
       <div class="sf-links">
         <a href="/daily/" data-i18n="math_home.f_daily">Daily &amp; Ranks</a><a href="/me/" data-i18n="math_home.f_me">My Journey</a><a href="/worksheets/" data-i18n="math_home.f_worksheets">Worksheets</a><a href="/teacher/" data-i18n="math_home.f_teachers">For teachers</a><a href="/about/" data-i18n="nav.about">About</a><a href="/contact/" data-i18n="nav.contact">Contact</a><a href="/privacy/" data-i18n="nav.privacy">Privacy</a><a href="/terms/" data-i18n="nav.terms">Terms</a><a href="/" data-i18n="math_home.f_allgames">All games</a>
       </div>
-      <div class="sf-copy" data-i18n="math_home.f_copy">© 2026 NumeriDuel · Pure static · Privacy-first · Free to play</div>
+      <div class="sf-copy" data-i18n="math_home.f_copy">© 2026 NumeriDuel · Paper-light · Privacy-first · Free to play</div>
     </div>
   `;
 }

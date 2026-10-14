@@ -145,7 +145,7 @@ function startRound(): void {
     banner(`<div class="banner daily timed"><div class="daily-top"><div class="daily-meta"><div class="b-title">⏱ Timed · ${TIMED_LIMIT}s per grid</div><div class="b-sub">Solved <b id="tmSolved">0</b> · Streak <b id="tmStreak">0</b> · wrong digits just flash</div></div></div></div>`);
   } else if (st.mode === 'daily') {
     st.puzzle = newRoundPuzzle();
-    banner(`<div class="banner"><div class="daily-top"><div class="daily-meta"><div class="b-title">📅 Daily Grid · ${shanghaiDateKey()}</div><div class="b-sub">Same puzzle for everyone today · best time saved locally</div></div></div></div>`);
+    banner(`<div class="banner"><div class="daily-top"><div class="daily-meta"><div class="b-title">📅 ${i18nT('ml.mt_s4_daily')} · ${shanghaiDateKey()}</div><div class="b-sub">Same puzzle for everyone today · best time saved locally</div></div></div></div>`);
   } else {
     st.puzzle = newRoundPuzzle();
     banner(`<div class="banner"><div class="daily-top"><div class="daily-meta"><div class="b-title">🎯 Solo</div><div class="b-sub">Unique solution · best time saved locally</div></div></div></div>`);

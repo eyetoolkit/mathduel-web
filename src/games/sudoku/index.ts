@@ -172,7 +172,7 @@ function startRound(): void {
   if (m === 'daily') {
     const dk = shanghaiDateKey();
     st.puzzle = dailyPuzzle(dk);
-    banner(`<div class="banner daily"><div class="daily-top"><div class="daily-meta"><div class="b-title">🌐 Daily Grid #${dk}</div><div class="b-sub">One seeded puzzle worldwide · Medium · finish to log today</div></div></div></div>`);
+    banner(`<div class="banner daily"><div class="daily-top"><div class="daily-meta"><div class="b-title">🌐 ${i18nT('ml.mt_sd_daily')} #${dk}</div><div class="b-sub">One seeded puzzle worldwide · Medium · finish to log today</div></div></div></div>`);
   } else if (m === 'duel') {
     const rng = mulberry32((Date.now() ^ hashString(String(performance.now()))) >>> 0);
     st.puzzle = duelDeal(st.diff, rng) as Puzzle;

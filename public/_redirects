@@ -8,3 +8,13 @@
 /legacy/games/sudoku/*      /games/sudoku/       301
 /legacy/games/killer-sudoku/*  /games/sudoku/    301
 /legacy/games/equation-pyramid/*  /games/equation-pyramid/  301
+
+# NumeriDuel 9x9 旧路径 -> 现行路径 301（2026-10-15 修死链）
+# 背景：/games/sudoku-9x9/ 及 /lobby/ 均 404；现行 9x9 入口为 /games/sudoku/。
+/games/sudoku-9x9/lobby/    /games/sudoku/lobby/    301
+/games/sudoku-9x9/lobby     /games/sudoku/lobby/    301
+/games/sudoku-9x9/*         /games/sudoku/:splat    301
+/games/sudoku-9x9/          /games/sudoku/          301
+/games/sudoku-9x9           /games/sudoku/          301
+/games/sudoku9x9/*          /games/sudoku/:splat    301
+/games/sudoku9x9/           /games/sudoku/          301

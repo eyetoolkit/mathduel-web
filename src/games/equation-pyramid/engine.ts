@@ -7,7 +7,7 @@
  *   2. 第二格的运算符才是真正的运算符 1（连接第一格数字与第二格数字）；
  *   3. 第三格的运算符 = 运算符 2（连接第二格与第三格）；
  *   4. 优先级：× ÷ 优先于 + −。
- * 难度按「解的数量」分：Warm-up 6-12 / Standard 4-7 / Tricky 恰好 3（÷/×-heavy 板）。
+ * 难度按「解的数量」分：Warm-up 8-12 / Standard 4-7 / Tricky 恰好 3（÷/×-heavy 板）。
  *
  * 生成策略：
  *   1. 随机生成候选 board（9 个数字 1-9 + 9 个运算符 + 1 个 target）；
@@ -32,7 +32,7 @@ export const TIER_LABEL: Record<Tier, string> = {
   tricky: 'Tricky',
 };
 export const TIER_RANGE: Record<Tier, [number, number]> = {
-  warmup: [6, 12],
+  warmup: [8, 12],
   standard: [4, 7],
   tricky: [3, 3], // 恰好 3
 };

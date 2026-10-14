@@ -169,7 +169,7 @@ function startRound(): void {
   if (m === 'daily') {
     const dk = shanghaiDateKey();
     st.puzzle = dailyPuzzle(dk);
-    banner(`<div class="banner daily"><div class="daily-top"><div class="daily-meta"><div class="b-title">🌐 Daily Grid #${dk}</div><div class="b-sub">One seeded puzzle worldwide · Standard · finish to log today</div></div></div></div>`);
+    banner(`<div class="banner daily"><div class="daily-top"><div class="daily-meta"><div class="b-title">🌐 ${i18nT('ml.mt_s6_daily')} #${dk}</div><div class="b-sub">One seeded puzzle worldwide · Standard · finish to log today</div></div></div></div>`);
   } else if (m === 'duel') {
     const rng = mulberry32((Date.now() ^ hashString(String(performance.now()))) >>> 0);
     st.puzzle = duelDeal(st.diff, rng) as Puzzle;
@@ -308,6 +308,7 @@ function renderBoard(): void {
   conflictCache = findConflicts(st.grid);
   [...el.children].forEach((cell, i) => {
     const c = cell as HTMLElement;
+    if (!c.classList.contains('c6cell')) return; // 跳过 SVG 覆盖层等非 cell 子元素（#15：修复 Duel 崩溃）
     const v = st.grid[i];
     const cls = cellClass(i);
     if (c.className !== cls) c.className = cls;
