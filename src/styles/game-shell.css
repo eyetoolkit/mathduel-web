@@ -138,8 +138,10 @@ body.has-papergames-shell.rail .pg-main { margin-left: var(--pg-sb-rail); }
   padding: calc(11px + env(safe-area-inset-top, 0px)) 18px calc(11px + env(safe-area-inset-bottom, 0px));
   align-items: center; gap: 14px;
 }
+/* 🔴 触摸目标 ≥44px（评测 ep-02 / 12 红线 #4）：汉堡原 38×38px 低于 44px 下限，
+   移动端是最常点的控件却最难点。提到 44×44，SVG 图标保持 18px 视觉不变。 */
 .pg-topbar .burger {
-  width: 38px; height: 38px; border: 1px solid var(--pg-line); background: #fff;
+  width: 44px; height: 44px; border: 1px solid var(--pg-line); background: #fff;
   border-radius: 10px; display: grid; place-items: center; cursor: pointer;
 }
 .pg-topbar .burger svg { width: 18px; height: 18px; stroke: var(--pg-ink); stroke-width: 2; stroke-linecap: round; }

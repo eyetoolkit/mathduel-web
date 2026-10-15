@@ -431,11 +431,13 @@
   .epc .ep-op { font-size: 0.95rem; }
   .epc .ep-num { font-size: 1.3rem; }
   .ep-grid { --ep-gap: 7px; }
-  .ep-slot { min-width: 38px; height: 40px; font-size: 1.1rem; }
+  .ep-slot { min-width: 44px; min-height: 44px; height: auto; font-size: 1.1rem; }
   .ep-slot b { font-size: 1.05rem; }
   .ep-sop { font-size: 1rem; }
-  .ep-result { min-width: 38px; height: 40px; font-size: 1.1rem; }
-  .ep-tab { padding: 6px 9px; font-size: 0.78rem; }
+  .ep-result { min-width: 44px; min-height: 44px; height: auto; font-size: 1.1rem; }
+  /* 🔴 触摸目标 ≥44px（评测 ep-02）：模式切换 tab 原 padding 6px 9px + 0.78rem 字号
+     实测高度约 30px，是本页最小的核心交互控件，移动端易误触。提到 44px 高。 */
+  .ep-tab { padding: 12px 14px; font-size: 0.82rem; min-height: 44px; }
 }
 
 /* ===== 🔴 关键修复：author 的 display:flex 会覆盖 UA 的 [hidden]{display:none}，

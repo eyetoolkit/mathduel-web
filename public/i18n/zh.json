@@ -925,6 +925,7 @@
     "gs_share_copied": "分享链接已复制",
     "gs_room_copied": "房间码已复制：",
     "gs_demo_ribbon": "🤖 离线练习 — 对手是机器人，不是真人。成绩与 Elo 不计入。",
+    "gs_comp_no_answer": "⚔️ 竞赛中已锁定答案 — 请自己解，否则本局不计分。点「新发牌」跳过本题。",
     "ep_already_found": "✓ 已找到过 — 同样的 3 个数换顺序只算一次。",
     "ep_div_zero": "⚠️ 不能除以零",
     "ep_judging": "⏳ 正在判定当前选择 — 点 ↻ 清除可重置",

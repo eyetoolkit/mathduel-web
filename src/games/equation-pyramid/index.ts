@@ -297,11 +297,14 @@ function tick(): void {
 
 /* ═══ 渲染：board / target / strip / tray ═══ */
 function renderTarget(): void {
-  $('targetNum')!.textContent = String(st.board!.target);
+  const b = st.board;
+  if (!b) return; // P1 guard：st.board 在 startRound() 前为 null，避免 'reading target' 崩溃
+  $('targetNum')!.textContent = String(b.target);
 }
 
 function renderBoard(): void {
   const el = $('epgrid')!;
+  const b = st.board;
   if (!el.dataset.built) {
     // 金字塔布局：顶层 target（HTML 静态），9 个 cell 按 2/3/4 三行排布
     el.innerHTML = '';
@@ -327,11 +330,12 @@ function renderBoard(): void {
     });
   }
   // 更新内容 + 状态类
+  if (!b) return; // P1 guard：st.board 为 null（首屏尚未 startRound）时只建骨架不渲染内容
   const cells = el.querySelectorAll<HTMLElement>('.epc');
   for (let i = 0; i < 9; i++) {
     const cell = cells[i];
     if (!cell) continue;
-    const c = st.board!.cells[i];
+    const c = b.cells[i];
     cell.querySelector('.ep-op')!.textContent = c.op;
     cell.querySelector('.ep-num')!.textContent = String(c.num);
     // 状态：pick1/2/3 在 picks 中？banked？hinted？
@@ -360,7 +364,8 @@ function tripleKey(triple: number[]): string {
 }
 
 function renderStrip(): void {
-  const t = st.board!;
+  const t = st.board;
+  if (!t) return; // P1 guard
   const [a, b, c] = [st.picks[0], st.picks[1], st.picks[2]];
   const strip = $('strip')!;
   strip.classList.remove('ok', 'bad', 'eshake');
@@ -446,7 +451,8 @@ function renderStrip(): void {
 }
 
 function renderTray(): void {
-  const t = st.board!;
+  const t = st.board;
+  if (!t) return; // P1 guard
   const found = st.banked.size;
   const total = t.solutions.length;
   // #11：复用页面里唯一的 #trayLabel，不再往 #trayList 里再插一个并列计数标签
@@ -518,7 +524,8 @@ function onCellClick(i: number): void {
 
 /* ═══ HUD ═══ */
 function updateHud(): void {
-  const t = st.board!;
+  const t = st.board;
+  if (!t) return; // P1 guard
   $('hudScore')!.textContent = String(st.score);
   $('hudTime')!.textContent = fmtClock(st.mode === 'timed' ? st.timedLeft : st.elapsed);
   $('hudLeft')!.textContent = String(Math.max(0, t.solutions.length - st.banked.size));
@@ -634,7 +641,8 @@ function scheduleOpp(): void {
   const pace = BOT_PACE[st.tier] ?? 3400;
   const step = (): void => {
     if (!st.running || st.mode !== 'duel') return;
-    const t = st.board!;
+    const t = st.board;
+    if (!t) return; // P1 guard
     const remaining = t.solutions.filter((tri) => !st.banked.has(tripleKey(tri)));
     if (!remaining.length) return;
     // 零操作保护：玩家长时间无操作 → 提示一次，避免被误判“卡死/作弊”
@@ -664,7 +672,8 @@ function scheduleOpp(): void {
 /** 对局结算：统一以「bank 数」判定胜负与展示（#09） */
 function endDuel(): void {
   stopAll();
-  const t = st.board!;
+  const t = st.board;
+  if (!t) return; // P1 guard
   const total = t.solutions.length;
   const p = st.myBanks;
   const b = st.oppBanks;

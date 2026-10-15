@@ -384,8 +384,12 @@ body.arena.in-match {
   background: transparent;
   border: 1px solid var(--border, #e3e6f0);
   border-radius: 999px;
-  width: 40px;
-  height: 40px;
+  /* 🔴 触摸目标 ≥44px（评测 12 红线 #4）：原 40×40px 低于 44px 下限。
+     音效按钮在 5 个游戏页共用（match-sound.ts 的 bindSoundButton），
+     deep 检测里每个游戏都报它 40×40 —— 是全站出现频次最高的小目标。
+     SVG 图标保持 18px，视觉几乎不变，只放大可点区域。 */
+  width: 44px;
+  height: 44px;
   display: inline-flex;
   align-items: center;
   justify-content: center;

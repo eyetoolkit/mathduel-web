@@ -925,6 +925,7 @@
     "gs_share_copied": "Share link copied",
     "gs_room_copied": "Room code copied:",
     "gs_demo_ribbon": "🤖 Offline practice — bots, not players. Results and Elo do not count.",
+    "gs_comp_no_answer": "⚔️ Answer is locked in a competition — solve it yourself, or the round won't count. Use New Deal to skip.",
     "ep_already_found": "✓ Already found — the same 3 numbers in any order count once.",
     "ep_div_zero": "⚠️ Can’t divide by zero",
     "ep_judging": "⏳ Judging current pick — tap ↻ Clear to reset",

@@ -925,6 +925,7 @@
     "gs_share_copied": "Enlace para compartir copiado",
     "gs_room_copied": "Código de sala copiado:",
     "gs_demo_ribbon": "🤖 Práctica sin conexión — bots, no jugadores. Los resultados y el Elo no cuentan.",
+    "gs_comp_no_answer": "⚔️ La respuesta está bloqueada en una competición — resuélvela tú mismo, o la ronda no contará. Usa Nueva Baraja para saltar.",
     "ep_already_found": "✓ Ya encontrado — los mismos 3 números en cualquier orden cuentan una vez.",
     "ep_div_zero": "⚠️ No se puede dividir entre cero",
     "ep_judging": "⏳ Comprobando la selección — toca ↻ Limpiar para reiniciar",

@@ -216,11 +216,17 @@
       altNode.setAttribute('alt', t(altKey, parseVars(altNode)));
     }
     // data-i18n-content → content attr（用于 meta[name=description] / og:title / og:description）
+    // 🔴 P1 修复：加 i18n-ready guard。applyToDOM 会在 i18n:ready 前被调用（initI18n 同步分支 /
+    // 字典 fetch 未返回时），此时 t(key) 回退返回键值，会把 'math_home.seo_desc' 写进 <meta content>。
+    // guard 让字典就绪前的调用跳过 content 替换（保留 HTML 里真实英文兜底），ready 后再补译。
     var ctNodes = root.querySelectorAll('[data-i18n-content]');
     for (var c = 0; c < ctNodes.length; c++) {
       var ctNode = ctNodes[c];
       var ctKey = ctNode.getAttribute('data-i18n-content');
-      ctNode.setAttribute('content', t(ctKey, parseVars(ctNode)));
+      var ctVal = t(ctKey, parseVars(ctNode));
+      if (ctVal && ctVal !== ctKey) {
+        ctNode.setAttribute('content', ctVal);
+      }
     }
     // <title data-i18n="key"> → document.title
     var titleNode = root.querySelector('title[data-i18n]');

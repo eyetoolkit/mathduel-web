@@ -882,6 +882,7 @@
     "gs_share_copied": "Freigabelink kopiert",
     "gs_room_copied": "Raumcode kopiert:",
     "gs_demo_ribbon": "🤖 Offline-Übung — Bots, keine echten Spieler. Ergebnisse und Elo zählen nicht.",
+    "gs_comp_no_answer": "⚔️ Antwort ist im Wettbewerb gesperrt — löse sie selbst, sonst zählt der Durchgang nicht. Nutze Neue Karte, um zu springen.",
     "ep_already_found": "✓ Schon gefunden — dieselben 3 Zahlen in beliebiger Reihenfolge zählen einmal.",
     "ep_div_zero": "⚠️ Division durch null geht nicht",
     "ep_judging": "⏳ Aktuelle Auswahl wird geprüft — tippe auf ↻ Leeren zum Zurücksetzen",

@@ -152,6 +152,15 @@ body.arena:not(.skin-paper) .s6-board {
   .s6-pad .pk { aspect-ratio: 1.05; font-size: 1.15rem; }
   .s6-pad .s6-padfoot .pk { aspect-ratio: auto; padding: 10px 4px; font-size: 0.86rem; }
 }
+/* 🔴 触摸目标 ≥44px（评测 s6-01）：窄屏 6 列 1fr 网格每格实测仅 ~31×30px，
+   移动端点数字易误触相邻键。这里不改视觉尺寸（aspect-ratio 仍生效），
+   只把 flex/grid 项目的最小高度顶到 44px —— 网格行高随之变大，格子变高不变宽。
+   aspect-ratio 在 min-height 生效时会让宽度按比例略增，必要时由下面的
+   aspect-ratio:auto 交回控制权，保证 6 列仍能在一屏内排下。 */
+@media (max-width: 560px) {
+  .s6-pad .pk { min-height: 44px; aspect-ratio: auto; }
+  .s6-pad { grid-template-columns: repeat(6, minmax(44px, 1fr)); }
+}
 
 /* ─── pencil marks：cell 内的 2×3 候选微格（6×6 的「第二语言」）─── */
 .s6-board .c6cell.marks { align-items: stretch; justify-content: stretch; padding: 0; }

@@ -12,9 +12,20 @@
 #   /api/auth/login 在生产强制校验 turnstile_token（实测传 skip 返回 400 turnstile_failed），
 #   而 Turnstile 部件本身是两个子资源：外链脚本（script-src）+ 验证 iframe（frame-src）。
 #   二者缺一都只会出现「控件渲染不出来、点了没反应」的静默失败，故一并放行。
+# 2026-10-15 CSP 加固（评测 site-03）：
+#   ① script-src-attr 'none' —— 全站生产 HTML（排除 legacy/，legacy 线上 404 不部署）实测
+#      0 个内联事件处理器（onclick/onerror/... 全为 0），故可安全禁掉内联事件属性。
+#      这条真正堵住「注入 <img onerror=...> 型 XSS」的常见路径 —— 此前 script-src 的
+#      'unsafe-inline' 会把事件属性一并放行，等于 XSS 防护形同虚设。
+#   ② 保留 script-src 'unsafe-inline'：生产 HTML 有 12+ 处必要内联 script
+#      （window.__I18N_CONFIG__ 配置注入、主题防闪烁 IIFE、pg 导航 burger/collapse），
+#      移除需全站 nonce 化改造（构建链路 + 12 个 HTML 模板），风险 >> 收益，
+#      故本次只封事件属性这一条实际可利用的注入面（script-src-attr 'none' 优先级高于
+#      script-src 的 'unsafe-inline'，对内联 <script> 无影响）。
+#   ③ object-src 'none' + upgrade-insecure-requests 补齐历史缺口（此前两者都没有）。
 
 /*
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob: https:; connect-src 'self' https://numeriduel.com https://mathduel.games https://static.cloudflareinsights.com wss://numeriduel.com wss://mathduel.games https://challenges.cloudflare.com; frame-src 'self' https://challenges.cloudflare.com; frame-ancestors 'self'; base-uri 'self'; form-action 'self'
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com https://challenges.cloudflare.com; script-src-attr 'none'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob: https:; connect-src 'self' https://numeriduel.com https://mathduel.games https://static.cloudflareinsights.com wss://numeriduel.com wss://mathduel.games https://challenges.cloudflare.com; frame-src 'self' https://challenges.cloudflare.com; object-src 'none'; frame-ancestors 'self'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
   X-Frame-Options: SAMEORIGIN

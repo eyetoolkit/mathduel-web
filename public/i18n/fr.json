@@ -925,6 +925,7 @@
     "gs_share_copied": "Lien de partage copié",
     "gs_room_copied": "Code du salon copié :",
     "gs_demo_ribbon": "🤖 Entraînement hors ligne — des bots, pas des joueurs. Les résultats et l’Elo ne comptent pas.",
+    "gs_comp_no_answer": "⚔️ Réponse verrouillée en compétition — résolvez-la vous-même, sinon la manche ne comptera pas. Utilisez Nouvelle main pour passer.",
     "ep_already_found": "✓ Déjà trouvé — les mêmes 3 nombres dans n’importe quel ordre ne comptent qu’une fois.",
     "ep_div_zero": "⚠️ Impossible de diviser par zéro",
     "ep_judging": "⏳ Vérification du choix en cours — touchez ↻ Effacer pour réinitialiser",
