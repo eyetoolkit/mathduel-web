@@ -246,6 +246,30 @@ body.has-papergames-shell.rail .pg-main { margin-left: var(--pg-sb-rail); }
  * min-height:560px 是安全阀：横屏手机（高 ~390px）装不下整局，
  * 此时不进沉浸模式，回退普通可滚动布局，避免内容被裁掉且无法滚动。
  * ============================================================ */
+
+/* 🔴 2026-10-16 桌面端（≥1120px）兜底：
+   arena.css 里 `body.arena.in-match{position:fixed;overflow:hidden}` 的「主区可滚动」
+   修复只写在 @media (max-width:1119px) 内；≥1120px 时 body 仍锁死，
+   而 .pg-main 高度等于内容高度、外层又没有滚动容器 →
+   内容超出视口后被永久裁掉且滚不动（实测 1280×900 下 9×9 数字键盘整体不可见、
+   不可达，键盘底边在 y=1128 而视口只有 900；1366×660 笔记本更严重）。
+   这里补上同款可滚动兜底：放得下时无滚动条，放不下时可滚。 */
+@media (min-width: 1120px) {
+  body.arena.in-match .pg-main {
+    height: 100dvh; max-height: 100dvh;
+    overflow-y: auto; overflow-x: hidden;
+    overscroll-behavior: contain;
+  }
+  /* 🔴 2026-10-16 桌面矮屏（≤~1000px 视口高）：把棋盘按视口高度收缩，
+     让数字键盘落在首屏内 —— 否则 1280×900 下要滚动近 420px 才看得到点选键。
+     上限仍是各棋盘设计尺寸，视口够高时自动取上限、无任何视觉变化；
+     下限保护棋盘不至于小到难以点按。系数 = 1024 非棋盘 chrome（页头/模式条/
+     难度行/数字键盘/工具栏/结果条）实测高度，见 _audit-board-20261016。 */
+  body.arena.in-match .s9-board { width: clamp(300px, calc(100dvh - 588px), 540px); }
+  body.arena.in-match .s6-board { width: clamp(260px, calc(100dvh - 456px), 380px); }
+  body.arena.in-match .s4-board { width: clamp(280px, calc(100dvh - 524px), 420px); }
+}
+
 @media (max-width: 1119px) and (min-height: 560px) {
   body.has-papergames-shell.in-match { position: fixed; inset: 0; overflow: hidden; }
 
@@ -257,24 +281,33 @@ body.has-papergames-shell.rail .pg-main { margin-left: var(--pg-sb-rail); }
   body.has-papergames-shell.in-match .pg-main {
     margin: 0 !important; padding: 0;
     height: 100dvh; max-height: 100dvh;
-    overflow: hidden;
+    /* 🔴 2026-10-16：原为 overflow:hidden。它把 §10-03 在 arena.css 里为
+       「内容超出一屏」写下的 overflow-y:auto 兜底覆盖掉了（两处同断点，本文件后
+       加载获胜）→ 棋盘/数字键盘被永久裁掉且滚不动。改回可垂直滚动；
+       内容确实放得下时不会产生滚动条，沉浸感不变。 */
+    overflow-y: auto; overflow-x: hidden;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
   }
 
-  /* 游戏根容器：吃掉整屏，内部按 头 / 棋盘(flex:1) / 操作区 三段排 */
+  /* 游戏根容器：头 / 棋盘 / 操作区 三段纵向排布。
+     🔴 2026-10-16：原为 flex:1 1 auto + overflow:hidden（被压缩到一屏内），
+     导致内容超过一屏时棋盘先被压扁、再由 overflow:hidden 裁掉底行。
+     改为高度由内容决定 + overflow:visible，超出一屏交给 .pg-main 滚动。 */
   body.has-papergames-shell.in-match .pg-main > main {
-    flex: 1 1 auto; min-height: 0;
+    flex: none; min-height: 100dvh;
     display: flex; flex-direction: column;
-    overflow: hidden;
+    overflow: visible;
     /* 中和各游戏 base 的桌面居中规则（如金字塔 main{max-width:720px;margin:0 auto}），
        否则 margin:auto 会吃掉 flex 自由空间、让 flex-grow 失效 → 棋盘被挤窄并居中 */
     margin: 0 !important; max-width: none !important;
     padding: env(safe-area-inset-top, 0px) 6px env(safe-area-inset-bottom, 0px) !important;
   }
 
-  /* 对局区（section.board）铺满剩余高度 */
+  /* 对局区（section.board）高度由内容决定并允许溢出（见上） */
   body.has-papergames-shell.in-match section.board {
-    flex: 1 1 auto; min-height: 0;
-    display: flex; flex-direction: column; overflow: hidden;
+    flex: none;
+    display: flex; flex-direction: column; overflow: visible;
     padding: 4px !important;
   }
   /* 金字塔 ep-board 内部是自有行布局，只能给弹性不能改 display（改了会压扁）；
@@ -302,18 +335,23 @@ body.has-papergames-shell.rail .pg-main { margin-left: var(--pg-sb-rail); }
   body.has-papergames-shell.in-match .table-head { display: none !important; }
   body.has-papergames-shell.in-match .g24-bar { flex: none; padding: 6px 10px !important; }
 
-  /* ── 数独 9×9 / 6×6 / 4×4：棋盘吃满，数字键盘钉底 ── */
+  /* ── 数独 9×9 / 6×6 / 4×4：棋盘按宽度取正方形，数字键盘钉底 ── */
   body.has-papergames-shell.in-match .s9-board-wrap,
   body.has-papergames-shell.in-match .s6-board-wrap,
   body.has-papergames-shell.in-match .s4-board-wrap {
-    flex: 1 1 auto; min-height: 0;
+    flex: none;
     display: flex; flex-direction: column; justify-content: center;
     padding: 0;
   }
+  /* 🔴 2026-10-16：原为 flex:0 1 auto + max-height:100%。棋盘内部格子用
+     aspect-ratio:1 由宽度推高度，一旦外层把高度压到小于「宽 × 行数」，
+     格子就会溢出棋盘、被 .s9-board 的 overflow:hidden 裁掉底行
+     （实测 9×9 对战模式 360px 屏只剩 6px）。改为不收缩、不限高：
+     棋盘永远是完整正方形，放不下交给 .pg-main 滚动。 */
   body.has-papergames-shell.in-match .s9-board,
   body.has-papergames-shell.in-match .s6-board,
   body.has-papergames-shell.in-match .s4-board {
-    flex: 0 1 auto; width: 100%; height: auto; max-height: 100%;
+    flex: none; width: 100%; height: auto; max-height: none;
     margin: 0 auto;
   }
   body.has-papergames-shell.in-match .s9-pad,
