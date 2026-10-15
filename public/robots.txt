@@ -10,5 +10,7 @@ Disallow: /*?mode=
 Disallow: /*?lang=
 Disallow: /*?count=
 Disallow: /*?time=
+# 24 Game 的版本校验重载参数（不改 URL 的改造前先屏蔽）
+Disallow: /*?v=
 
 Sitemap: https://numeriduel.com/sitemap.xml

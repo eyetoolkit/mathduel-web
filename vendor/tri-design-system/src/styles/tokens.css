@@ -125,7 +125,10 @@ img { max-width: 100%; display: block; }
 }
 
 /* ============ MathDuel Blue ============ */
-html[data-site="mathduel"] {
+/* numeriduel 是 mathduel 品牌更名后的新 data-site 值（2026-10-15 统一），
+   令牌完全一致 —— 用选择器列表别名，避免两套值漂移。 */
+html[data-site="mathduel"],
+html[data-site="numeriduel"] {
   --brand-50:  #EFF5FD;
   --brand-100: #DCEBFB;
   --brand-200: #B9D6F6;

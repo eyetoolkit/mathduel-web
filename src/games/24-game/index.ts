@@ -1956,6 +1956,10 @@ $('answerBtn')!.onclick = () => {
     return;
   }
   if (daily.active) return; // 开始前忽略
+  // ⚠️ 竞赛（comp.active）下这里仍会走 showAnswer()：本地只展示答案、showResult 的 win
+  // 不计入服务端计分，所以不刷榜；但「看完答案再自己算」等于免费提示。
+  // 要按调研报告 A1 收紧（竞赛也弃题），需 mp-client 先提供弃题/交白卷 API，
+  // 属跨模块改动，暂缓，见 _NumeriDuel调研报告核验_20261015.md 待决策清单。
   showAnswer();
 };
 // ⚠️ 必须包一层箭头函数：openLobby 现在带 view 参数，直接赋值会把 PointerEvent 当成 view 传进去

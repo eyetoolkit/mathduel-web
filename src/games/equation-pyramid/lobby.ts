@@ -109,7 +109,9 @@ function wireDifficulty(): void {
     } catch {
       /* ignore */
     }
-    document.querySelectorAll<HTMLAnchorElement>('a.arb-mode[data-mode]').forEach((a) => {
+    // 🔴 选择器必须与 DOM 实际 class 对齐：这里是 a.mode[data-mode]，
+    //    曾写成 a.arb-mode 导致整行难度按钮「有 active 态、href 却不变」的静默失效
+    document.querySelectorAll<HTMLAnchorElement>('a.mode[data-mode]').forEach((a) => {
       const m = a.dataset.mode;
       if (!m || m === 'daily') return;
       a.href = `/games/equation-pyramid/?mode=${m}&t=${t}`;

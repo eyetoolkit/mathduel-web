@@ -652,7 +652,7 @@ function scheduleBot(): void {
 
 function renderOppStatus(): void {
   const s = $('oppStatus')!;
-  s.innerHTML = `<span class="d"></span>Filled ${st.botDone}/${st.botTotal}`;
+  s.innerHTML = `<span class="d"></span>Bot cells ${st.botDone}/${st.botTotal}`;
   s.classList.toggle('done', st.botDone >= st.botTotal);
   const you = $('youSub')!;
   if (you) you.textContent = `your cells: ${correctMine()}/${st.mineTotal}`;
