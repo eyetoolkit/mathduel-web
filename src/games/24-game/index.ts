@@ -22,6 +22,7 @@ import {
   normalize24,
   safeEval,
   SeededRandom,
+  shanghaiDateKey,
   solve,
   type Difficulty,
 } from './engine';
@@ -521,11 +522,6 @@ const DAILY_DIFFS: Difficulty[] = ['easy', 'easy', 'standard', 'standard', 'hard
 const diffForIndex = (i: number): Difficulty => DAILY_DIFFS[i % DAILY_DIFFS.length];
 const diffLabel = (d: Difficulty): string => (d === 'easy' ? 'Easy' : d === 'hard' ? 'Hard' : 'Medium');
 // 上海时间(UTC+8)的 YYYYMMDD：确保全球玩家"同一天"一致，不依赖浏览器本地时区
-function shanghaiDateKey(d = new Date()): string {
-  const utc = d.getTime() + d.getTimezoneOffset() * 60000;
-  const sh = new Date(utc + 8 * 3600000);
-  return `${sh.getFullYear()}${String(sh.getMonth() + 1).padStart(2, '0')}${String(sh.getDate()).padStart(2, '0')}`;
-}
 function seedFromDateKey(dk: string): number {
   const y = parseInt(dk.slice(0, 4), 10);
   const m = parseInt(dk.slice(4, 6), 10);
@@ -573,7 +569,9 @@ function updatePracticeTimer(): void {
 
 const dailyCompletedToday = () => {
   try {
-    return JSON.parse(localStorage.getItem('twentyfour_daily') || '{}')[dailyKeyStr()] === true;
+    // 与 cross-game 的 todayKey() 同口径（上海日 YYYYMMDD）：避免「本地日」与
+    // 「上海日」在跨午夜/跨时区时让 lobby 徽标与 /daily/ 中心环各说各话
+    return JSON.parse(localStorage.getItem('twentyfour_daily') || '{}')[shanghaiDateKey()] === true;
   } catch {
     return false;
   }
@@ -585,7 +583,7 @@ function dailyComplete(): void {
   } catch {
     /* ignore */
   }
-  o[dailyKeyStr()] = true;
+  o[shanghaiDateKey()] = true;
   try { localStorage.setItem('twentyfour_daily', JSON.stringify(o)); } catch {}
 }
 

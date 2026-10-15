@@ -23,7 +23,7 @@ interface DailyCardDef {
 
 const CARDS: DailyCardDef[] = [
   {
-    id: '24-game', name: '24 Point', blurb: 'Make 24 from four numbers — 6 puzzles today.',
+    id: '24-game', name: '24 Point', blurb: 'Make 24 from four numbers — 5 puzzles today.',
     href: '/games/24-game/?mode=daily', hue: '#3730A3',
     icon: '<svg viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="3" width="8" height="8" rx="2"/><rect x="3" y="13" width="8" height="8" rx="2"/><rect x="13" y="13" width="8" height="8" rx="2"/></svg>',
   },
@@ -33,7 +33,7 @@ const CARDS: DailyCardDef[] = [
     icon: '<svg viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/><path d="M11.5 4v16M4 11.5h16" stroke-width="2"/></svg>',
   },
   {
-    id: 'sudoku', name: 'Sudoku 9×9', blurb: 'The classic — today’s seeded medium grid.',
+    id: 'sudoku', name: 'Sudoku 9×9', blurb: 'The classic — today’s seeded standard grid.',
     href: '/games/sudoku/?mode=daily', hue: '#3730A3',
     icon: '<svg viewBox="0 0 24 24"><path d="M4 4h16v16H4z" fill="none" stroke-width="2"/><path d="M9.3 4v16M14.6 4v16M4 9.3h16M4 14.6h16"/></svg>',
   },
@@ -75,22 +75,30 @@ function renderRing(): void {
 }
 
 /* ─── 卡片 ─── */
+/** gameId → i18n 键后缀（ml.dc_<k>_name / ml.dc_<k>_blurb，六语） */
+const DC_KEY: Record<GameId, string> = {
+  '24-game': '24', 'sudoku-4x4': 's4', 'sudoku': 's9', 'sudoku-6x6': 's6', 'equation-pyramid': 'pyr',
+};
+
 function renderCards(): void {
   const host = $('cards');
   host.textContent = '';
   for (const c of CARDS) {
     const done = dones.includes(c.id);
+    const k = DC_KEY[c.id];
     const a = document.createElement('a');
     a.className = 'dcard' + (done ? ' done' : '');
     a.href = c.href;
     a.style.setProperty('--hue', c.hue);
+    // data-i18n：i18n.js 的 MutationObserver 会自动翻译动态插入的节点，
+    // 语言切换时也会跟着重译（无需手动监听）
     a.innerHTML = `
       <span class="dcard-ic">${c.icon}</span>
       <span class="dcard-body">
-        <span class="dcard-name">${c.name}</span>
-        <span class="dcard-blurb">${c.blurb}</span>
+        <span class="dcard-name" data-i18n="ml.dc_${k}_name">${c.name}</span>
+        <span class="dcard-blurb" data-i18n="ml.dc_${k}_blurb">${c.blurb}</span>
       </span>
-      <span class="dcard-cta">${done ? '<b class="ok">✓ Done today</b>' : 'Play now →'}</span>`;
+      <span class="dcard-cta">${done ? '<b class="ok" data-i18n="ml.dc_done_today">✓ Done today</b>' : '<span data-i18n="ml.dc_play_now">Play now →</span>'}</span>`;
     host.appendChild(a);
   }
   renderRing();

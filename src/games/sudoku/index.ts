@@ -16,6 +16,7 @@ import '../24-game/arena.css';
 import './sudoku.css';
 import { initI18n, mountHeader, toast } from '@tri-sites/design-system';
 import {
+  candidates,
   colOf,
   dailyPuzzle,
   duelDeal,
@@ -63,7 +64,7 @@ const TIMED_LIMIT = 45;
 const DUEL_PENALTY = 2.5; // 填错罚时（秒）
 const MAX_MISTAKES = 3; // 非 duel 模式累计 3 次错误即负
 
-const diffLabel = (d: Difficulty): string => ({ easy: 'Easy', standard: 'Medium', hard: 'Hard' })[d];
+const diffLabel = (d: Difficulty): string => ({ easy: 'Easy', standard: 'Standard', hard: 'Hard' })[d];
 
 /* ─── 状态 ─── */
 const st = {
@@ -84,6 +85,7 @@ const st = {
   mistakes: 0,
   flash: new Set<number>(), // 临时错误高亮
   notes: false,
+  undoStack: [] as UndoEntry[],
   // duel
   mineTotal: 0,
   botTotal: 0,
@@ -164,6 +166,7 @@ function stopAll(): void {
 /* ═══ 开局 ═══ */
 function startRound(): void {
   stopAll();
+  st.undoStack.length = 0;
   const m = st.mode;
   if (m === 'timed') {
     st.timedStartTs = Date.now();
@@ -172,7 +175,7 @@ function startRound(): void {
   if (m === 'daily') {
     const dk = shanghaiDateKey();
     st.puzzle = dailyPuzzle(dk);
-    banner(`<div class="banner daily"><div class="daily-top"><div class="daily-meta"><div class="b-title">🌐 ${i18nT('ml.mt_sd_daily')} #${dk}</div><div class="b-sub">One seeded puzzle worldwide · Medium · finish to log today</div></div></div></div>`);
+    banner(`<div class="banner daily"><div class="daily-top"><div class="daily-meta"><div class="b-title">🌐 ${i18nT('ml.mt_sd_daily')} #${dk}</div><div class="b-sub">One seeded puzzle worldwide · Standard · finish to log today</div></div></div></div>`);
   } else if (m === 'duel') {
     const rng = mulberry32((Date.now() ^ hashString(String(performance.now()))) >>> 0);
     st.puzzle = duelDeal(st.diff, rng) as Puzzle;
@@ -432,6 +435,42 @@ function nextClaimable(from: number): number {
   return -1;
 }
 
+/* ─── Undo：经典数独的高频功能，撤销当前格上一步 ─── */
+interface UndoEntry { i: number; grid: number; filledBy: number; marks: number[]; }
+
+function pushUndo(i: number): void {
+  st.undoStack.push({ i, grid: st.grid[i], filledBy: st.filledBy[i], marks: [...st.marks[i]] });
+  if (st.undoStack.length > 200) st.undoStack.shift(); // 防御性上限
+}
+
+function undo(): void {
+  if (!st.running) return;
+  const e = st.undoStack.pop();
+  if (!e) {
+    toast('↶ Nothing to undo');
+    return;
+  }
+  st.grid[e.i] = e.grid;
+  st.filledBy[e.i] = e.filledBy;
+  st.marks[e.i] = new Set(e.marks);
+  renderBoard();
+  checkWin();
+}
+
+/* ─── 自动候选：一键为所有空格填入铅笔标记 ─── */
+function autoMarks(): void {
+  if (!st.running || !st.puzzle) return;
+  let n = 0;
+  for (let i = 0; i < st.grid.length; i++) {
+    if (st.grid[i] || st.puzzle.puzzle[i]) continue;
+    pushUndo(i);
+    st.marks[i] = new Set(candidates(st.grid, i));
+    n++;
+  }
+  renderBoard();
+  toast(n ? `✨ Candidates filled · ${n} cells` : '✨ Every cell is committed');
+}
+
 function place(v: number): void {
   if (!st.running) return;
   if (st.sel < 0) {
@@ -450,6 +489,7 @@ function place(v: number): void {
   // 笔记模式：切换候选标记
   if (st.notes) {
     if (st.grid[i]) return;
+    pushUndo(i);
     const m = st.marks[i];
     if (m.has(v)) m.delete(v);
     else m.add(v);
@@ -461,6 +501,7 @@ function place(v: number): void {
   if (!correct) {
     st.mistakes++;
     st.penalty += st.mode === 'duel' ? DUEL_PENALTY : 0;
+    pushUndo(i);
     st.grid[i] = v;
     st.filledBy[i] = 1;
     st.flash.add(i);
@@ -485,6 +526,7 @@ function place(v: number): void {
     return;
   }
   // 正确
+  pushUndo(i);
   st.grid[i] = v;
   st.filledBy[i] = 1;
   st.marks[i].clear();
@@ -509,10 +551,12 @@ function erase(): void {
   const i = st.sel;
   if (st.puzzle!.puzzle[i] || st.filledBy[i] === 2) return;
   if (st.notes && !st.grid[i]) {
+    pushUndo(i);
     st.marks[i].clear();
     renderBoard();
     return;
   }
+  pushUndo(i);
   st.grid[i] = 0;
   st.filledBy[i] = 0;
   renderBoard();
@@ -776,7 +820,7 @@ function renderSide(): void {
     '<div class="panel"><h3>▦ Grid status</h3>' +
     `<div class="stat-row"><span>Cells filled</span><b id="statFilled">${filled}/81</b></div>` +
     `<div class="stat-row"><span>Empty (this puzzle)</span><b>${holes}</b></div>` +
-    (st.mode === 'duel' ? '' : `<div class="stat-row"><span>Difficulty</span><b>${st.mode === 'daily' ? 'Medium (fixed)' : diffLabel(st.diff)}</b></div>`) +
+    (st.mode === 'duel' ? '' : `<div class="stat-row"><span>Difficulty</span><b>${st.mode === 'daily' ? 'Standard (fixed)' : diffLabel(st.diff)}</b></div>`) +
     mistakesLine +
     '<div class="hint-step"><b>·</b><span>Click a cell, then tap a number — or type 1–9, arrows to move. Toggle Notes (✏) to pencil candidates; Backspace erases.</span></div></div>' +
     bestRow;
@@ -813,13 +857,15 @@ document.querySelectorAll<HTMLButtonElement>('#diffPick button').forEach((b) => 
 $('s9pad')!.addEventListener('click', (e) => {
   const b = (e.target as HTMLElement).closest<HTMLElement>('button');
   if (!b) return;
-  if (b.dataset.act === 'erase') erase();
+  if (b.dataset.act === 'undo') undo();
+  else if (b.dataset.act === 'erase') erase();
   else if (b.dataset.act === 'notes') toggleNotes();
   else if (b.dataset.v) place(Number(b.dataset.v));
 });
 
 $('backLobby')!.addEventListener('click', goLobby);
 $('newBtn')!.addEventListener('click', () => startRound());
+$('autoBtn')!.addEventListener('click', autoMarks);
 $('hintBtn')!.addEventListener('click', giveHint);
 
 /** 方向键在棋盘上移动选格（环绕；duel 跳过 bot 格） */

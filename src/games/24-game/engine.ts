@@ -200,3 +200,13 @@ export function dailyKeyStr(date = new Date()): string {
   const M = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   return '#' + M[date.getMonth()] + ' ' + date.getDate();
 }
+
+/**
+ * 上海日 YYYYMMDD（UTC+8）。
+ * 🔴 每日完成标记的唯一口径源：/daily/ 中心、24 Game 游戏页、lobby 三处必须
+ * 都用它，否则会出现「lobby 显示 Done 但中心显示 1/5」的跨页矛盾。
+ */
+export function shanghaiDateKey(d = new Date()): string {
+  const sh = new Date(d.getTime() + 8 * 3600000);
+  return `${sh.getUTCFullYear()}${String(sh.getUTCMonth() + 1).padStart(2, '0')}${String(sh.getUTCDate()).padStart(2, '0')}`;
+}

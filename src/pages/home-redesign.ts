@@ -139,11 +139,12 @@ const TAG_SOLO = { label: 'Solo', key: 'math_home.tag_solo' };
 const TAG_1V1 = { label: '1v1', key: 'math_home.tag_1v1' };
 const TAG_DAILY = { label: 'Daily', key: 'math_home.tag_daily' };
 const TAG_BEGINNER = { label: 'Beginner', key: 'math_home.tag_beginner' };
+const TAG_MID = { label: 'Mid logic', key: 'math_home.tag_mid' };
 const HOME_CARDS: HomeCard[] = [
   { href: '/games/24-game/lobby/',          cvId: 'cv-24',     name: '24 Game',          nameKey: 'nav.game_24',          tags: [TAG_SOLO, TAG_1V1, TAG_DAILY], live: true },
   { href: '/games/sudoku-4x4/lobby/',       cvId: 'cv-s4',     name: 'Sudoku 4×4',       nameKey: 'math_home.g_s4',       tags: [TAG_SOLO, TAG_BEGINNER],      live: true },
   { href: '/games/sudoku/lobby/',           cvId: 'cv-sudoku', name: 'Sudoku 9×9',       nameKey: 'math_home.g_s9',       tags: [TAG_SOLO, TAG_DAILY],         live: true },
-  { href: '/games/sudoku-6x6/lobby/',       cvId: 'cv-s6',     name: 'Sudoku 6×6',       nameKey: 'math_home.g_s6',       tags: [TAG_SOLO, TAG_BEGINNER],      live: true },
+  { href: '/games/sudoku-6x6/lobby/',       cvId: 'cv-s6',     name: 'Sudoku 6×6',       nameKey: 'math_home.g_s6',       tags: [TAG_SOLO, TAG_MID],           live: true },
   { href: '/games/equation-pyramid/lobby/', cvId: 'cv-pyr',    name: 'Equation Pyramid', nameKey: 'math_home.g_pyr',      tags: [TAG_SOLO, TAG_DAILY],         live: true },
 ];
 

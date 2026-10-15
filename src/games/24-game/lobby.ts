@@ -12,24 +12,19 @@ import '@tri-sites/design-system/styles';
 import '../../styles/home-redesign.css';
 import './lobby.css';
 import { wireLobbyChrome } from '../../pages/lobby-chrome';
-import { dailyKeyStr } from './engine';
+import { shanghaiDateKey } from './engine';
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T | null;
 const GAME_URL = '/games/24-game/';
 const DAILY_TOTAL = 5; // 后端 derivePuzzles(dateKey, 5)，全球榜固定 5 题
 
 /* ===================== 上海时区（与后端同一「今天」） ===================== */
-const SH_OFFSET = 8 * 3600000;
-
-function shanghaiDateKey(d = new Date()): string {
-  const sh = new Date(d.getTime() + SH_OFFSET);
-  return `${sh.getUTCFullYear()}${String(sh.getUTCMonth() + 1).padStart(2, '0')}${String(sh.getUTCDate()).padStart(2, '0')}`;
-}
 
 /* ===================== 今日完成标记 ===================== */
 function completedToday(): boolean {
   try {
-    return JSON.parse(localStorage.getItem('twentyfour_daily') || '{}')[dailyKeyStr()] === true;
+    // 与游戏页 /daily/ 中心同口径（上海日 YYYYMMDD）
+    return JSON.parse(localStorage.getItem('twentyfour_daily') || '{}')[shanghaiDateKey()] === true;
   } catch {
     return false;
   }

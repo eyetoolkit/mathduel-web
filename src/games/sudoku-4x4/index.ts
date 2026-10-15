@@ -75,6 +75,7 @@ const st = {
   mistakes: 0,
   flash: new Set<number>(), // 临时错误高亮
   notes: false,
+  undoStack: [] as UndoEntry[],
   // timed
   timedSolved: 0,
   timedDealt: 0,
@@ -136,6 +137,7 @@ function stopAll(): void {
 /* ═══ 开局 ═══ */
 function startRound(): void {
   stopAll();
+  st.undoStack.length = 0;
   if (st.mode === 'timed') {
     st.timedStartTs = Date.now();
     st.timedDealt = 1;
@@ -344,6 +346,28 @@ function flashCell(i: number, cls: string, ms: number): void {
   window.setTimeout(() => el.classList.remove(cls), ms);
 }
 
+/* ─── Undo：经典数独的高频功能，撤销当前格上一步 ─── */
+interface UndoEntry { i: number; grid: number; filledBy: number; marks: number[]; }
+
+function pushUndo(i: number): void {
+  st.undoStack.push({ i, grid: st.grid[i], filledBy: st.filledBy[i], marks: [...st.marks[i]] });
+  if (st.undoStack.length > 200) st.undoStack.shift(); // 防御性上限
+}
+
+function undo(): void {
+  if (!st.running) return;
+  const e = st.undoStack.pop();
+  if (!e) {
+    toast('↶ Nothing to undo');
+    return;
+  }
+  st.grid[e.i] = e.grid;
+  st.filledBy[e.i] = e.filledBy;
+  st.marks[e.i] = new Set(e.marks);
+  renderBoard();
+  checkWin();
+}
+
 function place(v: number): void {
   if (!st.running) return;
   if (st.sel < 0) {
@@ -355,6 +379,7 @@ function place(v: number): void {
   // 笔记模式：切换候选标记
   if (st.notes) {
     if (st.grid[i]) return;
+    pushUndo(i);
     const m = st.marks[i];
     if (m.has(v)) m.delete(v);
     else m.add(v);
@@ -365,6 +390,7 @@ function place(v: number): void {
   const correct = v === st.puzzle!.solution[i];
   if (!correct) {
     st.mistakes++;
+    pushUndo(i);
     st.grid[i] = v;
     st.filledBy[i] = 1;
     st.flash.add(i);
@@ -384,6 +410,7 @@ function place(v: number): void {
     return;
   }
   // 正确
+  pushUndo(i);
   st.grid[i] = v;
   st.filledBy[i] = 1;
   st.marks[i].clear();
@@ -410,10 +437,12 @@ function erase(): void {
   const i = st.sel;
   if (st.puzzle!.puzzle[i]) return;
   if (st.notes && !st.grid[i]) {
+    pushUndo(i);
     st.marks[i].clear();
     renderBoard();
     return;
   }
+  pushUndo(i);
   st.grid[i] = 0;
   st.filledBy[i] = 0;
   renderBoard();
@@ -574,7 +603,8 @@ document.querySelectorAll<HTMLButtonElement>('#tabs .tab').forEach((t) => {
 $('s4pad')!.addEventListener('click', (e) => {
   const b = (e.target as HTMLElement).closest<HTMLElement>('button');
   if (!b) return;
-  if (b.dataset.act === 'erase') erase();
+  if (b.dataset.act === 'undo') undo();
+  else if (b.dataset.act === 'erase') erase();
   else if (b.dataset.act === 'notes') toggleNotes();
   else if (b.dataset.v) place(Number(b.dataset.v));
 });

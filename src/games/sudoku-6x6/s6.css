@@ -137,7 +137,7 @@ body.arena:not(.skin-paper) .s6-board {
 .s6-pad .pk.notes.on { border-color: var(--brand); background: rgba(79,70,229,.1); color: var(--brand); }
 .s6-pad .pk:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
 .s6-pad .s6-padfoot { grid-column: 1 / -1; display: flex; gap: 8px; margin-top: 2px; }
-.s6-pad .s6-padfoot .pk { flex: 1; padding: 12px 6px; font-size: 0.95rem; aspect-ratio: auto; }
+.s6-pad .s6-padfoot .pk { flex: 1; padding: 12px 6px; font-size: 0.95rem; aspect-ratio: auto; color: var(--text-muted); }
 /* 剩余计数角标：该数字盘面还差几个；集齐 6 个整键置灰 */
 .s6-pad .pk .pk-left {
   position: absolute; right: 6px; bottom: 3px;

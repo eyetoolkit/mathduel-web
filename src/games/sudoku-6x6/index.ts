@@ -15,6 +15,7 @@ import '../24-game/arena.css';
 import './s6.css';
 import { initI18n, mountHeader, toast } from '@tri-sites/design-system';
 import {
+  candidates,
   colOf,
   dailyPuzzle,
   duelDeal,
@@ -98,6 +99,7 @@ const st = {
   // pencil marks (notes mode)
   marks: Array.from({ length: 36 }, () => new Set<number>()),
   notes: false,
+  undoStack: [] as UndoEntry[],
 };
 
 let conflictCache: Set<number> = new Set();
@@ -161,6 +163,7 @@ function stopAll(): void {
 /* ═══ 开局 ═══ */
 function startRound(): void {
   stopAll();
+  st.undoStack.length = 0;
   const m = st.mode;
   if (m === 'timed') {
     st.timedStartTs = Date.now();
@@ -449,6 +452,42 @@ function nextClaimable(from: number): number {
   return -1;
 }
 
+/* ─── Undo：经典数独的高频功能，撤销当前格上一步 ─── */
+interface UndoEntry { i: number; grid: number; filledBy: number; marks: number[]; }
+
+function pushUndo(i: number): void {
+  st.undoStack.push({ i, grid: st.grid[i], filledBy: st.filledBy[i], marks: [...st.marks[i]] });
+  if (st.undoStack.length > 200) st.undoStack.shift(); // 防御性上限
+}
+
+function undo(): void {
+  if (!st.running) return;
+  const e = st.undoStack.pop();
+  if (!e) {
+    toast('↶ Nothing to undo');
+    return;
+  }
+  st.grid[e.i] = e.grid;
+  st.filledBy[e.i] = e.filledBy;
+  st.marks[e.i] = new Set(e.marks);
+  renderBoard();
+  checkWin();
+}
+
+/* ─── 自动候选：一键为所有空格填入铅笔标记 ─── */
+function autoMarks(): void {
+  if (!st.running || !st.puzzle) return;
+  let n = 0;
+  for (let i = 0; i < st.grid.length; i++) {
+    if (st.grid[i] || st.puzzle.puzzle[i]) continue;
+    pushUndo(i);
+    st.marks[i] = new Set(candidates(st.grid, i));
+    n++;
+  }
+  renderBoard();
+  toast(n ? `✨ Candidates filled · ${n} cells` : '✨ Every cell is committed');
+}
+
 function place(v: number): void {
   if (!st.running) return;
   if (st.sel < 0) {
@@ -466,11 +505,13 @@ function place(v: number): void {
   }
   // notes 模式：仅 toggle 候选数字（不写入真实数字）
   if (st.notes && !st.grid[i]) {
+    pushUndo(i);
     if (st.marks[i].has(v)) st.marks[i].delete(v);
     else st.marks[i].add(v);
     renderBoard();
     return;
   }
+  pushUndo(i);
   st.grid[i] = v;
   st.filledBy[i] = 1;
   st.marks[i].clear(); // 写入真实数字时清空 marks
@@ -511,6 +552,7 @@ function erase(): void {
   const i = st.sel;
   if (st.puzzle!.puzzle[i] || st.filledBy[i] === 2) return;
   // 数字 + marks 全清；notes 模式下清空更彻底（玩家可能 toggle 错）
+  pushUndo(i);
   st.grid[i] = 0;
   st.filledBy[i] = 0;
   st.marks[i].clear();
@@ -778,7 +820,8 @@ document.querySelectorAll<HTMLButtonElement>('#diffPick button').forEach((b) => 
 $('s6pad')!.addEventListener('click', (e) => {
   const b = (e.target as HTMLElement).closest<HTMLElement>('button');
   if (!b) return;
-  if (b.dataset.act === 'erase') erase();
+  if (b.dataset.act === 'undo') undo();
+  else if (b.dataset.act === 'erase') erase();
   else if (b.dataset.act === 'notes') {
     st.notes = !st.notes;
     $('notesBtn')!.classList.toggle('on', st.notes);
@@ -818,6 +861,7 @@ window.addEventListener('keydown', (e) => {
 
 $('backLobby')!.addEventListener('click', () => exitMatchToLobby(MATCH_GUARD_OPTS));
 $('newBtn')!.addEventListener('click', () => startRound());
+$('autoBtn')!.addEventListener('click', autoMarks);
 $('hintBtn')!.addEventListener('click', giveHint);
 /* ═══ Hint（naked-single 逻辑提示，不直接泄答案位次序）═══ */
 /** 当前盘面下 i 格的候选数字（按可见盘面算，冲突格 650ms 内自清所以一般 ≥1） */
