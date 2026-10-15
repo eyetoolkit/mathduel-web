@@ -22,7 +22,11 @@ body.dhub {
   padding: 12px 20px; background: rgba(244,245,249,.92); border-bottom: 1px solid var(--line);
   backdrop-filter: blur(6px);
 }
-.dh-brand { font-family: var(--disp); font-weight: 800; font-size: 17px; color: var(--ink); text-decoration: none; }
+/* 🔴 触摸目标 ≥44px（生产 CDP 实测 22px 高）；inline-flex 撑开，字号视觉不变。 */
+.dh-brand {
+  font-family: var(--disp); font-weight: 800; font-size: 17px; color: var(--ink);
+  text-decoration: none; display: inline-flex; align-items: center; min-height: 44px;
+}
 .dh-brand b { color: var(--indigo); } .dh-brand i { font-style: normal; color: var(--amber); }
 .dh-sub { font-size: 12.5px; font-weight: 700; color: var(--mute); letter-spacing: .08em; text-transform: uppercase; }
 .dh-streak { margin-left: auto; display: flex; align-items: center; gap: 7px; background: var(--white);
@@ -77,6 +81,8 @@ body.dhub {
   border: 1.5px solid var(--line); background: var(--white); color: var(--ink);
   border-radius: 999px; padding: 7px 14px; font-weight: 700; font-size: .8rem; cursor: pointer;
   font-family: var(--ui);
+  /* 🔴 触摸目标 ≥44px（生产 CDP 实测 9 个 .rtab 均为 33px 高；只补 min-height） */
+  min-height: 44px;
 }
 .rtab:hover { border-color: var(--indigo); color: var(--indigo); }
 .rtab.on { background: var(--indigo); border-color: var(--indigo); color: #fff; }
@@ -128,6 +134,8 @@ body.dhub {
 .tour-cta {
   background: var(--indigo); color: #fff; text-decoration: none;
   font-weight: 800; font-size: .84rem; padding: 9px 18px; border-radius: 999px;
+  /* 🔴 触摸目标 ≥44px（生产实测 90×36；只补 min-height） */
+  min-height: 44px;
 }
 .tour-cta:hover { background: #2A2481; }
 .tour-me { font-size: .8rem; font-weight: 700; }
@@ -140,7 +148,15 @@ body.dhub {
   border-top: 1px solid var(--line); padding: 16px 20px 26px; display: flex; gap: 18px; flex-wrap: wrap;
   justify-content: center;
 }
-.dh-foot a { color: var(--mute); text-decoration: none; font-size: .82rem; font-weight: 700; }
+/* 🔴 触摸目标 ≥44px（生产实测页脚链接仅 17px 高）。
+   .dh-foot 是 flex-wrap 容器、每项独占一行，不是 WCAG 2.5.8 的 inline 文本豁免情形，
+   故用 inline-flex + min-height 撑到 44px，字号与配色不动。 */
+.dh-foot a {
+  color: var(--mute); text-decoration: none; font-size: .82rem; font-weight: 700;
+  display: inline-flex; align-items: center; min-height: 44px;
+  /* 🔴 中文短标签（游戏/隐私）宽度仅 26.3px < 44px，补 min-width 把点击面积撑到下限 */
+  min-width: 44px; justify-content: center;
+}
 .dh-foot a:hover { color: var(--indigo); }
 
 /* ─── 窄屏 ─── */

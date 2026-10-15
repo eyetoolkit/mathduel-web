@@ -255,11 +255,14 @@
       'font-size:1rem;font-weight:700;color:inherit}',
       '.idt-row{display:flex;gap:.5rem;margin:.6rem 0 .4rem}',
       '.idt-in{flex:1;min-width:0;padding:.5rem .7rem;border:1px solid var(--border,rgba(0,0,0,.18));',
-      'border-radius:.5rem;font:inherit;font-family:var(--font-sans,inherit);background:var(--bg,#fff);color:inherit}',
+      'border-radius:.5rem;font:inherit;font-family:var(--font-sans,inherit);background:var(--bg,#fff);color:inherit;',
+      /* 🔴 触摸目标 ≥44px（2026-10-15 生产 CDP 实测 34.2px 高）；
+         只补 min-height，字号与配色不动。本文件是 numeriduel 私有副本。 */
+      'min-height:44px}',
       '.idt-in:focus-visible{outline:2px solid var(--brand-600,#0066CC);outline-offset:1px;',
       'border-color:var(--brand-600,#0066CC)}',
       '.idt-go{flex:none;padding:.5rem .9rem;border:0;border-radius:.5rem;cursor:pointer;',
-      'background:var(--brand-600,#0066CC);color:#fff;font:inherit;font-weight:600}',
+      'background:var(--brand-600,#0066CC);color:#fff;font:inherit;font-weight:600;min-height:44px}',
       '.idt-go:disabled{opacity:.45;cursor:default}',
       '.idt-go:focus-visible{outline:2px solid var(--brand-600,#0066CC);outline-offset:2px}',
       '.idt-note{margin:0;font-size:.8rem;line-height:1.45;color:var(--muted,rgba(0,0,0,.55))}',

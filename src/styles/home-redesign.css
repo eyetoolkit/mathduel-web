@@ -81,7 +81,13 @@ body.home-v2 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden
   transition: width .22s ease, transform .22s ease;
 }
 .home-v2 .sb-top { display: flex; align-items: center; gap: 10px; padding: 2px 6px 14px; }
-.home-v2 .logo { font-family: var(--font-display); font-weight: 800; font-size: 1.3rem; line-height: 1; white-space: nowrap; color: var(--ink); }
+.home-v2 .logo {
+  font-family: var(--font-display); font-weight: 800; font-size: 1.3rem; line-height: 1;
+  white-space: nowrap; color: var(--ink);
+  /* 🔴 触摸目标 ≥44px（生产 CDP 实测 topbar 版 18.4px / sidebar 版 20.8px）；
+     用 inline-flex + 垂直内边距撑开，字号与视觉不变。 */
+  display: inline-flex; align-items: center; min-height: 44px;
+}
 .home-v2 .logo b { color: var(--indigo); font-weight: 800; }
 .home-v2 .sb-collapse {
   margin-left: auto; flex: none; width: 44px; height: 44px; border-radius: 8px;
@@ -95,6 +101,8 @@ body.home-v2 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden
   flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
   background: var(--indigo); color: #fff; border: 0; border-radius: 11px;
   font-weight: 700; font-size: .9rem; padding: 9px 0; white-space: nowrap;
+  /* 🔴 触摸目标 ≥44px（生产 CDP 实测 lobby topbar 版 93.6×39.8；只补 min-height） */
+  min-height: 44px;
 }
 .home-v2 .btn-login:hover { background: var(--indigo-bright); }
 .home-v2 .sb-theme {
@@ -267,6 +275,8 @@ body.rail .main { margin-left: var(--sb-rail); }
 .home-v2 .btn-exchange {
   width: 100%; border: 1.5px solid var(--line-2); background: #fff; color: var(--indigo);
   border-radius: 11px; padding: 9px 0; font-weight: 700; font-size: .88rem;
+  /* 🔴 触摸目标 ≥44px（生产实测 316×39；只补 min-height） */
+  min-height: 44px;
 }
 .home-v2 .btn-exchange:hover { border-color: var(--indigo-bright); background: #F6F7FE; }
 
@@ -373,6 +383,9 @@ body.rail .main { margin-left: var(--sb-rail); }
   align-items: center;
   touch-action: manipulation;
 }
+/* 🔴 2026-10-15 生产 CDP 复测：上面只兜住了高度，中文短标签（如「关于」两字）
+   宽度仍只有 26.9px < 44px。补 min-width 把点击面积撑到下限，字号与排版不动。 */
+.home-v2 .sf-links a { min-width: 44px; justify-content: center; }
 .home-v2 .sf-copy {
   font-size: .76rem; color: #8B8FC0; border-top: 1px solid rgba(255, 255, 255, .12);
   padding-top: 16px;

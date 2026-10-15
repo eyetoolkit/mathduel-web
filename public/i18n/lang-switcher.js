@@ -44,7 +44,9 @@
 
   var CSS = ''
     + '.lang-switcher{position:relative;display:inline-flex;flex:none;font-family:inherit}'
-    + '.lang-switcher .lsw-btn{width:38px;height:38px;padding:0;display:grid;place-items:center;'
+    /* 🔴 触摸目标 ≥44px（2026-10-15 生产 CDP 实测 38×38 低于 WCAG 2.5.5 下限；
+       SVG 图标仍保持 18px 视觉不变。本文件是 numeriduel 私有副本，不影响 boardduel/memoryduel） */
+    + '.lang-switcher .lsw-btn{width:44px;height:44px;padding:0;display:grid;place-items:center;'
     +   'background:var(--lsw-bg,#fff);border:1px solid var(--lsw-line,rgba(25,20,45,.16));'
     +   'border-radius:10px;color:var(--lsw-fg,#3b3552);cursor:pointer;'
     +   'transition:border-color .15s,color .15s,box-shadow .15s;font:inherit}'
@@ -60,7 +62,7 @@
     + '.lang-switcher.open .lsw-menu{display:block}'
     + '.lang-switcher .lsw-opt{display:flex;align-items:center;gap:10px;width:100%;'
     +   'padding:9px 11px;border:0;border-radius:9px;background:none;font:inherit;'
-    +   'font-size:.88rem;color:var(--lsw-fg,#3b3552);cursor:pointer;text-align:left}'
+    +   'font-size:.88rem;color:var(--lsw-fg,#3b3552);cursor:pointer;text-align:left;min-height:44px}'
     + '.lang-switcher .lsw-opt:hover{background:var(--lsw-hover,rgba(25,20,45,.06))}'
     + '.lang-switcher .lsw-flag{font-size:1rem;line-height:1}'
     + '.lang-switcher .lsw-check{margin-left:auto;font-weight:800;opacity:0;transition:opacity .1s}'

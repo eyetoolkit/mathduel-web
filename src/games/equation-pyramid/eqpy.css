@@ -45,6 +45,8 @@
   border: 1px solid var(--a-line); color: var(--a-mute);
   font-family: var(--a-ui); font-size: 0.8rem;
   padding: 7px 12px; border-radius: var(--a-r-pill, 999px);
+  /* 🔴 触摸目标 ≥44px（生产 CDP 实测 51.6×33 低于下限；只补 min-height，字号与配色不动） */
+  min-height: 44px;
 }
 .ep-back:hover { color: var(--a-paper); border-color: var(--a-ember); }
 
