@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en" data-site="numeriduel">
 <head>
-  <script>window.__I18N_CONFIG__={supported:["en","zh","ja","es","fr","de"],dictVersion:45,fallback:"en"};</script>
+  <script>window.__I18N_CONFIG__={supported:["en","zh","ja","es","fr","de"],dictVersion:58,fallback:"en"};</script>
   <script src="/i18n/i18n.js?v=39"></script>
   <meta charset="utf-8" />
   <script>
@@ -219,16 +219,16 @@
       <div id="modeBanner"></div>
 
       <div class="table-head">
-        <div class="target"><span class="lbl">Target</span><b>1–9</b></div>
+        <div class="target"><span class="lbl" data-i18n="mg.shared_lbl_target">Target</span><b>1–9</b></div>
         <div class="diff-pick" id="diffPick" role="group" aria-label="Difficulty">
-          <button data-d="easy">Easy</button>
-          <button data-d="standard" class="active">Standard</button>
-          <button data-d="hard">Hard</button>
+          <button data-d="easy" data-i18n="difficulty.easy">Easy</button>
+          <button data-d="standard" class="active" data-i18n="difficulty.standard">Standard</button>
+          <button data-d="hard" data-i18n="difficulty.hard">Hard</button>
         </div>
         <div class="diff-pick-hint" aria-hidden="true">
-          <span><b>Easy</b> · 40 givens</span>
-          <span><b>Standard</b> · 32 givens</span>
-          <span><b>Hard</b> · 26 givens</span>
+          <span><b data-i18n="difficulty.easy">Easy</b> · <span data-i18n="mg.givens" data-i18n-vars='{"n":40}'>40 givens</span></span>
+          <span><b data-i18n="difficulty.standard">Standard</b> · <span data-i18n="mg.givens" data-i18n-vars='{"n":32}'>32 givens</span></span>
+          <span><b data-i18n="difficulty.hard">Hard</b> · <span data-i18n="mg.givens" data-i18n-vars='{"n":26}'>26 givens</span></span>
         </div>
       </div>
 
@@ -283,13 +283,13 @@
   <div class="leavecard hidden" id="s9-leavecard" role="dialog" aria-modal="true" aria-labelledby="s9-leave-title">
     <div class="leave-panel">
       <div class="leave-h">
-        <b id="s9-leave-title">Leave the game?</b>
-        <button type="button" id="s9-leave-close" aria-label="Cancel">×</button>
+        <b id="s9-leave-title" data-i18n="mg.shared_leave_title">Leave the game?</b>
+        <button type="button" id="s9-leave-close" aria-label="Cancel" data-i18n-aria-label="mg.shared_cancel">×</button>
       </div>
-      <p class="leave-note">This game is still in progress — leaving now loses your streak and today's progress.</p>
+      <p class="leave-note" data-i18n="mg.shared_leave_note">This game is still in progress — leaving now loses your streak and today's progress.</p>
       <div class="leave-acts">
-        <button type="button" class="is-primary" id="s9-leave-stay">Keep playing</button>
-        <button type="button" class="is-danger" id="s9-leave-yes">Leave</button>
+        <button type="button" class="is-primary" id="s9-leave-stay" data-i18n="mg.shared_keep_playing">Keep playing</button>
+        <button type="button" class="is-danger" id="s9-leave-yes" data-i18n="mg.shared_leave">Leave</button>
       </div>
     </div>
   </div>

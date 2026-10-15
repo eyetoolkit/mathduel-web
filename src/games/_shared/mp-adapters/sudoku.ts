@@ -14,6 +14,7 @@ import { generatePuzzle as genSudoku6 } from '../../sudoku-6x6/engine';
 import { generatePuzzle as genSudoku4 } from '../../sudoku-4x4/engine';
 import { generateKiller } from '../../killer-sudoku/engine';
 import { isClassroom, reportRound } from '../teacher-track';
+import { i18nT } from '../i18n-t';
 
 export interface SudokuAdapterOpts {
   gameType: string;        // 'sudoku' | 'sudoku-6x6' | 'sudoku-4x4' | 'killer-sudoku'
@@ -116,7 +117,10 @@ export function createSudokuAdapter(opts: SudokuAdapterOpts): MpAdapter {
     boardEl.appendChild(wrap);
     const hint = document.createElement('p');
     hint.style.cssText = 'color:#6B7280;font-size:12px;margin-top:10px;text-align:center';
-    hint.textContent = shell.relay ? 'Tap an empty cell to cycle 1–' + max + ' · first to complete correctly wins' : 'Tap an empty cell to cycle 1–' + max + ' · first to fill the grid correctly wins';
+    hint.textContent = i18nT('mg.mp_sudoku_tap_hint', {
+      max,
+      rule: i18nT(shell.relay ? 'mg.mp_sudoku_relay_rule' : 'mg.mp_sudoku_grid_rule'),
+    });
     boardEl.appendChild(hint);
   };
 

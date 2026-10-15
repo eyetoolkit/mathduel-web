@@ -8,9 +8,10 @@
 import './me.css';
 import {
   getDailyStreak, getTodaysDones, getBadges, getGamesPlayedCount,
-  getTotalDailyDoneCount, todayKey, ALL_GAMES,
+  getTotalDailyDoneCount, todayKey, ALL_GAMES, GAME_NAME_KEYS,
   type GameId,
 } from '../games/cross-game';
+import { i18nT, onI18nChange } from '../games/_shared/i18n-t';
 
 const $ = (id: string): HTMLElement => document.getElementById(id) as HTMLElement;
 
@@ -31,17 +32,19 @@ function loadHistory(): History {
   }
 }
 
-const GAME_NAMES: Record<GameId, string> = {
-  '24-game': '24 Point',
-  'sudoku-4x4': 'Sudoku 4×4',
-  'sudoku': 'Sudoku 9×9',
-  'sudoku-6x6': 'Sudoku 6×6',
-  'equation-pyramid': 'Equation Pyramid',
-};
+/* 游戏名映射已上收到 games/cross-game.ts 的 GAME_NAME_KEYS（全站唯一出口）。
+ * 🔴 早这里是本文件私有的英文字面量表，切中文时「我的旅程」页仍显示
+ *    "Equation Pyramid" —— 静态扫描抓不到字典形式的硬编码，只有 CDP 才暴露。
+ *    现在与分享文案、Daily Elo 榜共用同一份映射。 */
 
-const MODE_LABELS: Record<string, string> = {
-  solo: 'Solo', daily: 'Daily', duel: 'Duel', timed: 'Timed',
-  practice: 'Practice', competition: 'Competition',
+/** 模式名同样走字典，键与 daily/lobby 的统计口径一致。 */
+const MODE_LABEL_KEYS: Record<string, string> = {
+  solo: 'mg.shared_tab_solo',
+  daily: 'mg.shared_tab_daily',
+  duel: 'mg.mp_me_mode_duel',
+  timed: 'mg.mp_me_mode_timed',
+  practice: 'mg.mp_me_mode_practice',
+  competition: 'mg.mp_me_mode_competition',
 };
 
 function esc(s: unknown): string {
@@ -55,17 +58,19 @@ try { dones = getTodaysDones(); } catch { /* private mode */ }
 
 /* ─── 顶部：streak + 总计 + 今日环 ─── */
 $('streakN').textContent = String(getDailyStreak());
-{
+function renderTotals(): void {
   const total = getTotalDailyDoneCount();
   const games = getGamesPlayedCount();
   $('totals').innerHTML =
-    `<b>${total}</b> daily${total === 1 ? '' : 's'} finished · <b>${games}</b> game${games === 1 ? '' : 's'} explored · ` +
-    `today <b>${dones.length}/${ALL_GAMES.length}</b>`;
+    `<b>${total}</b> ${i18nT('mp.mp_me_stat_daily')} · ` +
+    `<b>${games}</b> ${i18nT('mp.mp_me_stat_games')} · ` +
+    `${i18nT('mp.mp_me_stat_today')} <b>${dones.length}/${ALL_GAMES.length}</b>`;
   const pct = Math.round((dones.length / ALL_GAMES.length) * 100);
   $('ringTxt').textContent = `${dones.length}/${ALL_GAMES.length}`;
   $('ring').style.background = `conic-gradient(#F59E0B ${pct * 3.6}deg, #E3E6F0 0deg)`;
   $('ring').classList.toggle('full', dones.length === ALL_GAMES.length);
 }
+renderTotals();
 
 /* ─── 8 周日历热力格（过去的 56 天，与 GitHub 贡献格同语法）─── */
 function renderCalendar(): void {
@@ -92,15 +97,15 @@ function renderGames(): void {
   for (const g of ALL_GAMES) {
     const rec = hist.playedGames[g];
     const modes = rec && Array.isArray(rec.modes) ? rec.modes : [];
-    const modeTags = modes.map((m) => `<span class="mj-mode">${esc(MODE_LABELS[m] || m)}</span>`).join('');
+    const modeTags = modes.map((m) => `<span class="mj-mode">${esc(i18nT(MODE_LABEL_KEYS[m] || m))}</span>`).join('');
     const doneToday = dones.includes(g);
     const a = document.createElement('a');
     a.className = 'mj-game' + (rec ? '' : ' never');
     a.href = `/games/${g}/lobby/`;
     a.innerHTML = `
-      <span class="mj-gname">${esc(GAME_NAMES[g] || g)}</span>
-      <span class="mj-gmodes">${modeTags || '<span class="mj-never">not tried yet</span>'}</span>
-      <span class="mj-gtoday">${doneToday ? '<b class="ok">✓ daily today</b>' : '&nbsp;'}</span>`;
+      <span class="mj-gname">${esc(i18nT(GAME_NAME_KEYS[g] || g))}</span>
+      <span class="mj-gmodes">${modeTags || `<span class="mj-never">${i18nT('mp.mp_me_never')}</span>`}</span>
+      <span class="mj-gtoday">${doneToday ? `<b class="ok">${i18nT('mp.mp_me_daily_today')}</b>` : '&nbsp;'}</span>`;
     host.appendChild(a);
   }
 }
@@ -113,8 +118,23 @@ function renderBadges(): void {
   for (const b of getBadges()) {
     const el = document.createElement('div');
     el.className = 'mj-badge' + (b.unlocked ? '' : ' locked');
-    el.innerHTML = `<span class="mj-be">${b.emoji}</span><span class="mj-bn">${esc(b.name)}</span><span class="mj-bh">${esc(b.hint)}</span>`;
+    el.innerHTML = `<span class="mj-be">${b.emoji}</span><span class="mj-bn">${esc(i18nT(b.nameKey))}</span><span class="mj-bh">${esc(i18nT(b.hintKey, b.hintVars))}</span>`;
     host.appendChild(el);
   }
 }
 renderBadges();
+
+/* ─── 语言切换后重渲染 ───
+ * 🔴 上面这些渲染用了 i18nT()，但 i18n.js 是异步 fetch 字典后才 ready；
+ *   页面脚本往往先跑完，此时 i18nT会回落到 key 名，
+ *   于是徽章区/统计行会显示 mg.badge_* 这种原始键。
+ *   这里在 ready 后重跑一次，把文案换成目标语言。
+ *
+ *   同样必须监听 i18n:change —— 玩家在 /me/ 上切语言时，
+ *   静态骨架 i18n.js 会自动换，但用 i18nT() 写的这些节点它管不到。 */
+onI18nChange(() => {
+  renderCalendar();
+  renderTotals();
+  renderGames();
+  renderBadges();
+});

@@ -18,6 +18,7 @@ import '../../styles/home-redesign.css';  // papergames 骨架：sidebar / topba
 import '../24-game/lobby.css';            // .home-v2 下的模式卡 / panel / arb-row 榜行样式
 import './lobby.css';                     // 数独专属组件：hero 迷你网格 / 规则列表 / 难度行
 import { wireLobbyChrome } from '../../pages/lobby-chrome';
+import { i18nT, onI18nReady } from '../_shared/i18n-t';
 import { shanghaiDateKey } from './engine';
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T | null;
@@ -81,9 +82,9 @@ function renderBoard(): void {
 
   let html = '';
   if (today != null) {
-    html += rowHtml('✓', 'Today · you', fmt(today), 'me');
+    html += rowHtml('✓', i18nT('mg.lb_row_today_you'), fmt(today), 'me');
   } else {
-    html += rowHtml('–', 'Today', 'unsolved');
+    html += rowHtml('–', i18nT('mg.lb_row_today'), i18nT('mg.lb_unsolved'));
   }
 
   const past = Object.keys(done)
@@ -92,7 +93,7 @@ function renderBoard(): void {
     .reverse()
     .slice(0, 2);
   past.forEach((k) => {
-    html += rowHtml(`${k.slice(4, 6)}/${k.slice(6)}`, 'Daily grid', fmt(done[k] as number));
+    html += rowHtml(`${k.slice(4, 6)}/${k.slice(6)}`, i18nT('mg.lb_row_daily_grid'), fmt(done[k] as number));
   });
 
   const bestLine = ['easy', 'standard', 'hard']
@@ -100,8 +101,8 @@ function renderBoard(): void {
     .map((d) => `${d[0].toUpperCase()} ${fmt(best[d] as number)}`)
     .join(' · ');
   html += `<div class="arb-note board-note">${
-    bestLine ? `Solo bests · ${esc(bestLine)}<br />` : ''
-  }Local runs only — the global board lands with the live API.</div>`;
+    bestLine ? `${esc(i18nT('mg.lb_solo_bests', { v: bestLine }))}<br />` : ''
+  }${esc(i18nT('mg.lb_local_api'))}</div>`;
 
   host.innerHTML = html;
 }
@@ -168,8 +169,9 @@ function boot(): void {
   wireLobbyChrome();
   renderHeroGrid();
   markDailyDone();
-  renderBoard();
   wireDifficulty();
+  // 🔴 榜单里的文案走 i18nT()，必须等字典 ready，否则会渲染出原始 key
+  onI18nReady(renderBoard);
 }
 
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);

@@ -3,6 +3,7 @@
  * 二维码由同源 qrcode.min.js 生成，Canvas 成绩卡自绘，可下载图片 / 调用系统分享。
  */
 
+import { i18nT } from '../_shared/i18n-t';
 import { toast } from '@tri-sites/design-system';
 
 export interface ShareData {
@@ -90,15 +91,15 @@ export function renderShareCard(canvas: HTMLCanvasElement, d: ShareData, streak:
   const isComp = !!d.competition;
   const isDaily = !!d.daily;
   const big = isComp ? `#${d.rank || 0}` : `${d.solved} / ${d.total}`;
-  const bigLabel = isComp ? 'My Rank' : 'Solved';
+  const bigLabel = i18nT(isComp ? 'mg.g24_my_rank_lbl' : 'mg.g24_solved_lbl');
 
   x.fillStyle = '#BFDBFE';
   x.font = '700 38px "Space Grotesk", system-ui, sans-serif';
-  x.fillText(isComp ? '🏆 Competition' : '📅 Daily Challenge', W / 2, 92);
+  x.fillText(i18nT(isComp ? 'mg.g24_canvas_comp' : 'mg.g24_canvas_daily'), W / 2, 92);
 
   x.fillStyle = 'rgba(203,213,225,.72)';
   x.font = '500 20px "Sora", system-ui, sans-serif';
-  x.fillText(isComp ? `Up to ${d.total} players` : d.key, W / 2, 126);
+  x.fillText(isComp ? i18nT('mg.g24_canvas_upto', { n: d.total }) : d.key, W / 2, 126);
 
   x.fillStyle = '#4D97E6';
   x.font = '800 104px "Space Grotesk", system-ui, sans-serif';
@@ -177,12 +178,12 @@ export function openShareOverlay(d: ShareData, streak: number): void {
   if (urlInput) urlInput.value = url;
   if (title) {
     title.textContent = d.competition
-      ? '🏆 Competition Results'
+      ? i18nT('mg.g24_res_comp')
       : d.daily
         ? d.success || d.solved === d.total
-          ? '🎉 Daily Challenge Complete!'
-          : '📅 Daily Challenge Results'
-        : '🏆 My 24 Score';
+          ? i18nT('mg.g24_res_daily_done')
+          : i18nT('mg.g24_res_daily')
+        : i18nT('mg.g24_res_score');
   }
   if (qrImg) renderQR(qrImg, url);
   ov.classList.add('show');
@@ -208,10 +209,10 @@ export function initShareBindings(): void {
       i?.select();
       document.execCommand('copy');
     }
-    toast('Share link copied');
+    toast(i18nT('share.link_copied'));
     if (btn) {
-      btn.textContent = '✅ Copied';
-      window.setTimeout(() => (btn.textContent = '📋 Copy'), 1400);
+      btn.textContent = i18nT('mg.g24_copy_done');
+      window.setTimeout(() => (btn.textContent = i18nT('mg.shared_copy')), 1400);
     }
   });
 
@@ -222,7 +223,7 @@ export function initShareBindings(): void {
     a.download = `24-points-${lastShare?.key ? lastShare.key.replace('#', '') : Date.now()}.png`;
     a.href = c.toDataURL('image/png');
     a.click();
-    toast('Image saved');
+    toast(i18nT('share.image_saved'));
   });
 
   $('shareWechat')?.addEventListener('click', () => {
@@ -238,7 +239,7 @@ export function initShareBindings(): void {
     if (navigator.share) {
       navigator.share({ title: '24 · Card Table', text, url: v }).catch(() => {});
     } else {
-      toast('Tap ··· to share with friends');
+      toast(i18nT('share.tap_share'));
     }
   });
 }

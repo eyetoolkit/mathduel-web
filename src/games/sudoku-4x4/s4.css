@@ -107,6 +107,12 @@ body.arena:not(.skin-paper) .s4-board {
   50% { transform: translateX(3px); }
   75% { transform: translateX(-2px); }
 }
+/* 提示脉冲：Hint 现在只高亮不再落子，需要一个比 pop 更"停得住"的高亮动效 */
+.s4-board .c4cell.pulse { animation: s4pulse 0.9s ease; }
+@keyframes s4pulse {
+  0%, 100% { box-shadow: none; }
+  20%, 60% { box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.55), 0 0 14px rgba(79, 70, 229, 0.35); }
+}
 
 /* ─── pencil marks：cell 内的 2×2 候选微格 ─── */
 .s4-board .c4cell.marks { align-items: stretch; justify-content: stretch; padding: 0; }
@@ -145,7 +151,8 @@ body.arena:not(.skin-paper) .s4-board {
   font-size: 0.62rem; font-weight: 600; line-height: 1;
   color: var(--text-muted); font-variant-numeric: tabular-nums;
 }
-.s4-pad .pk.done { opacity: 0.32; cursor: default; }
+.s4-pad .pk.done,
+.s4-pad .pk:disabled { opacity: 0.32; cursor: default; }
 .s4-pad .pk.done:hover { border-color: var(--s4-line-cell); background: var(--s4-cell-bg); color: var(--s4-accent); }
 .s4-pad .pk:focus-visible { outline: 2px solid var(--s4-accent); outline-offset: 2px; }
 

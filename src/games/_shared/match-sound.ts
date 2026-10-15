@@ -22,6 +22,7 @@
  *   playSfx('place');
  */
 
+import { i18nT, onI18nChange } from './i18n-t';
 import { playSfx, sfxOn, setSfx, unlockSfx } from '../../shared/sfx';
 
 let aliveBound = false;
@@ -58,15 +59,33 @@ export function bindSoundButton(btnId: string): void {
   if (!btn) return;
   // 初始态：按 localStorage 设置 aria-pressed
   btn.setAttribute('aria-pressed', String(sfxOn()));
+  labelSoundButton(btn, sfxOn());
+  // 🔴 title/aria-label 不是 data-i18n* 属性，i18n.js 不会重写，
+  //   玩家中途切语言时必须手动重刷，否则按钮提示停在旧语言。
+  onI18nChange(() => labelSoundButton(btn, sfxOn()));
   btn.addEventListener('click', () => {
     const next = !sfxOn();
     setSfx(next);
     btn.setAttribute('aria-pressed', String(next));
-    btn.setAttribute('aria-label', next ? 'Sound on' : 'Sound off');
-    btn.setAttribute('title', next ? 'Sound' : 'Sound off');
+    labelSoundButton(btn, next);
     if (next) {
       unlockSfx();
       playSfx('place');   // 手动开声时立刻播一个证明解锁生效
     }
   });
+}
+
+/**
+ * 刷新音效按钮的 title / aria-label。
+ * ----------------------------------------------------------------
+ * 🔴 抽出来是因为同一个按钮有两份几乎一样的实现（24-game 内联的 + 本文件），
+ *   历史上它们各自硬编码英文，只有一份被修过 —— 于是「有的游戏切语言生效、
+ *   有的不生效」。同一个函数收口后不存在这种分叉。
+ *
+ *   aria-label 表达「点了会发生什么」，title 同理；
+ *   所以关→开显示 sound_on/on，开→关显示 sound_off。
+ */
+export function labelSoundButton(btn: HTMLElement, on: boolean): void {
+  btn.setAttribute('aria-label', i18nT(on ? 'common.sound_on' : 'common.sound_off'));
+  btn.setAttribute('title', i18nT(on ? 'common.sound' : 'common.sound_off'));
 }

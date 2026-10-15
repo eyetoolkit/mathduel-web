@@ -1,3 +1,5 @@
+import { i18nT } from './_shared/i18n-t';
+
 /**
  * 跨游戏进度追踪（F-210 Day 1/Day 2/Day 7 进度感）
  * ----------------------------------------------------------------
@@ -20,6 +22,41 @@ export type GameId = '24-game' | 'sudoku-4x4' | 'sudoku' | 'sudoku-6x6'| 'equati
 export type Mode = 'solo' | 'daily' | 'duel' | 'timed' | 'practice' | 'competition';
 
 const KEY = 'mathduel_progress_v1';
+
+/** 字典取值（cross-game 是最早期的模块，不能依赖 _shared/i18n-t 的加载时序，
+ *  所以这里走 window.i18n.t 兜底；字典未就绪时返回空串，由调用侧决定降级策略）。 */
+const dictT = (key: string, vars?: Record<string, string | number>): string => {
+  const i = (window as unknown as { i18n?: { t?: (k: string, v?: Record<string, string | number>) => string } }).i18n;
+  if (!i || !i.t) return '';
+  return i.t(key, vars);
+};
+
+/** 全部在架游戏的 id 顺序 —— 游戏数量的唯一真相源。
+ *  成就阈值 / 首页 daily 面板都必须读这里，不要再硬编码数字。 */
+export const ALL_GAMES: GameId[] = ['24-game', 'sudoku-4x4', 'sudoku', 'sudoku-6x6', 'equation-pyramid'];
+
+/** 🔴 gameId → i18n 键。**全站唯一的游戏名映射出口**。
+ *  键复用 ml.dc_*_name（六语齐全）。
+ *  背景：这里曾有三份各自为政的英文映射表（formatShareText / challengeText /
+ *  me.ts 的 GAME_NAME_KEYS），加上后端 Elo 榜直接吐英文 game 字段 ——
+ *  结果 es/fr 下「每日挑战」和「金字塔大厅」永远显示 "24 Game" / "Equation Pyramid"。
+ *  新增游戏时只改这一处。 */
+export const GAME_NAME_KEYS: Record<GameId, string> = {
+  '24-game': 'ml.dc_24_name',
+  'sudoku-4x4': 'ml.dc_s4_name',
+  'sudoku': 'ml.dc_s9_name',
+  'sudoku-6x6': 'ml.dc_s6_name',
+  'equation-pyramid': 'ml.dc_pyr_name',
+};
+
+/** 后端 game 字段（'24-game' / 'sudoku-4x4' …）→ 本地化游戏名。
+ *  📞 服务端返回的是稳定 id，不是展示名 —— 千万别直接渲染 e.game。 */
+export function gameName(gameId: string): string {
+  const k = GAME_NAME_KEYS[gameId as GameId];
+  if (!k) return gameId;
+  const i = (window as unknown as { i18n?: { t?: (k: string) => string } }).i18n;
+  return i && i.t ? i.t(k) : gameId;
+}
 
 interface Progress {
   dailyDone: Record<string, Partial<Record<GameId, true>>>; // dateKey → gameId
@@ -85,7 +122,7 @@ export function getTodaysDones(): GameId[] {
   return Object.keys(dones).filter((g) => dones[g as GameId]) as GameId[];
 }
 
-/** 7 款游戏中今天玩了几款 daily */
+/** 今天玩了几款 daily */
 export function getTodaysDailyDoneCount(): number {
   return getTodaysDones().length;
 }
@@ -105,20 +142,27 @@ export function getTotalDailyDoneCount(): number {
   return n;
 }
 
-/** 连续多少天至少完成 1 款 daily（从今天往前数） */
+/** 连续多少天至少完成 1 款 daily（从今天往前数）
+ *  注意：今天还没玩不算断链 —— 从昨天继续往前数。
+ *  旧实现从 i=0（今天）起，一旦今天为空日立刻 break，
+ *  导致用户「今天还没来得及玩」时 streak 直接归零。 */
 export function getDailyStreak(): number {
   const p = load();
-  let streak = 0;
   const d = new Date();
-  // walk back day by day in UTC+8
-  for (let i = 0; i < 365; i++) {
-    const utc8 = new Date(d.getTime() - i * 86_400_000 + (d.getTimezoneOffset() + 480) * 60_000);
+  const hasDone = (k: string): boolean => Object.keys(p.dailyDone[k] || {}).length > 0;
+  const keyAt = (back: number): string => {
+    // walk back day by day in UTC+8
+    const utc8 = new Date(d.getTime() - back * 86_400_000 + (d.getTimezoneOffset() + 480) * 60_000);
     const y = utc8.getFullYear();
     const m = String(utc8.getMonth() + 1).padStart(2, '0');
     const day = String(utc8.getDate()).padStart(2, '0');
-    const k = `${y}${m}${day}`;
-    const dones = p.dailyDone[k] || {};
-    if (Object.keys(dones).length === 0) break;
+    return `${y}${m}${day}`;
+  };
+  // 今天尚未完成 → 从昨天开始起算，别把「还没玩」当成断链
+  const start = hasDone(keyAt(0)) ? 0 : 1;
+  let streak = 0;
+  for (let i = start; i < 365; i++) {
+    if (!hasDone(keyAt(i))) break;
     streak++;
   }
   return streak;
@@ -126,13 +170,20 @@ export function getDailyStreak(): number {
 
 export interface Badge {
   id: string;
-  name: string;
+  /** i18n 键（`mg.badge_*`），渲染时用 i18nT 取值 —— 别再硬编码英文 */
+  nameKey: string;
+  /** i18n 键（`mg.badge_*_hint`） */
+  hintKey: string;
   emoji: string;
-  hint: string;
+  hintVars?: Record<string, string | number>;
   unlocked: boolean;
 }
 
-/** 解锁徽章清单（F-210 Day 1 / 2 / 7 进度感） */
+/**
+ * 解锁徽章清单（F-210 Day 1 / 2 / 7 进度感）
+ * 🔴 name / hint 只存 i18n 键：之前直接写死英文，导致 /me/ 徽章区
+ * 在中日文下永远显示英文，而静态扫描抓不到（值不是 UI 出口字面量）。
+ */
 export function getBadges(): Badge[] {
   const dailyDone = getTotalDailyDoneCount();
   const gamesPlayed = getGamesPlayedCount();
@@ -140,44 +191,44 @@ export function getBadges(): Badge[] {
   return [
     {
       id: 'first-daily',
-      name: 'First Daily',
+      nameKey: 'mg.badge_first_daily',
       emoji: '🌱',
-      hint: 'Complete your first Daily Challenge.',
+      hintKey: 'mg.badge_first_daily_hint',
       unlocked: dailyDone >= 1,
     },
     {
       id: 'three-games',
-      name: 'Math Veteran',
+      nameKey: 'mg.badge_math_veteran',
       emoji: '🎖️',
-      hint: 'Try 3 different games.',
+      hintKey: 'mg.badge_math_veteran_hint',
       unlocked: gamesPlayed >= 3,
     },
     {
       id: 'streak-5',
-      name: '5-Day Streak',
+      nameKey: 'mg.badge_streak5',
       emoji: '🔥',
-      hint: 'Complete any Daily for 5 days in a row.',
+      hintKey: 'mg.badge_streak5_hint',
       unlocked: streak >= 5,
     },
     {
       id: 'daily-5',
-      name: 'Numeri Duelist',
+      nameKey: 'mg.badge_duelist',
       emoji: '⚔️',
-      hint: 'Complete 5 Daily Challenges in total.',
+      hintKey: 'mg.badge_duelist_hint',
       unlocked: dailyDone >= 5,
     },
     {
       id: 'all-games',
-      name: 'Site Explorer',
+      nameKey: 'mg.badge_explorer',
       emoji: '🗺️',
-      hint: 'Try all 7 games at least once.',
-      unlocked: gamesPlayed >= 7,
+      // 阈值必须跟 ALL_GAMES 走。此前硬编码 7 而 ALL_GAMES 只有 5 个 id，
+      // 该成就永久不可达（线上 bundle 已确认：hint "Try all 7 games" + e>=7）。
+      hintKey: 'mg.badge_explorer_hint',
+      hintVars: { n: ALL_GAMES.length },
+      unlocked: gamesPlayed >= ALL_GAMES.length,
     },
   ];
 }
-
-/** 全部 7 款游戏的 id 顺序（用于首页 daily 面板遍历） */
-export const ALL_GAMES: GameId[] = ['24-game', 'sudoku-4x4', 'sudoku', 'sudoku-6x6', 'equation-pyramid'];
 
 const HINT_KEY = (gameId: GameId) => `md_hint_${gameId}_v1`;
 
@@ -266,17 +317,14 @@ export async function copyResultToClipboard(text: string): Promise<boolean> {
 
 /** F-206 (b): 格式化一段简洁的「成绩可分享文本」（≤200 字） */
 export function formatShareText(gameId: GameId, summary: { mode: string; duration?: number; extra?: string }): string {
-  const labels: Record<GameId, string> = {
-    '24-game': '24 Game',
-    'sudoku-4x4': 'Sudoku 4×4',
-    'sudoku': 'Sudoku 9×9',
-    'sudoku-6x6': 'Sudoku 6×6',
-      'equation-pyramid': 'Equation Pyramid',
-    };
-  const gameName = labels[gameId] || gameId;
-  const dur = summary.duration ? ` in ${summary.duration.toFixed(1)}s` : '';
+  const t = dictT;
+  const gameName = t(GAME_NAME_KEYS[gameId] || gameId);
+  const dur = summary.duration ? ` ${t('common.share_in_sec', { s: summary.duration.toFixed(1) })}` : '';
   const extra = summary.extra ? ` — ${summary.extra}` : '';
-  return `I just ${summary.mode} ${gameName}${dur}${extra} on NumeriDuel · numeriduel.com`;
+  return t('common.share_fmt', {
+    mode: summary.mode, game: gameName, dur, extra,
+    site: 'NumeriDuel', domain: 'numeriduel.com',
+  });
 }
 
 /* ═══ F1.3 挑战卡 + F1.2 修复：统一每日完赛记录 ═══
@@ -321,17 +369,13 @@ export interface DailyResult {
 }
 
 export function challengeText(gameId: GameId, result: DailyResult = {}): string {
-  const labels: Record<GameId, string> = {
-    '24-game': '24 Game',
-    'sudoku-4x4': 'Sudoku 4×4',
-    'sudoku': 'Sudoku 9×9',
-    'sudoku-6x6': 'Sudoku 6×6',
-    'equation-pyramid': 'Equation Pyramid',
-  };
-  const name = labels[gameId] || gameId;
-  const dur = result.durationSec ? ` in ${result.durationSec.toFixed(1)}s` : '';
+  const t = dictT;
+  const name = t(GAME_NAME_KEYS[gameId] || gameId);
+  const dur = result.durationSec ? ` ${t('common.share_in_sec', { s: result.durationSec.toFixed(1) })}` : '';
   const score = result.total ? ` (${result.solved ?? result.total}/${result.total})` : '';
-  return `⚔️ I solved today's ${name} Daily${dur}${score} on NumeriDuel — can you beat me? ${challengeLink(gameId)}`;
+  return t('common.share_daily_fmt', {
+    name, dur, score, domain: 'numeriduel.com', link: challengeLink(gameId),
+  });
 }
 
 /** 记录每日完赛（幂等）：更新 streak/进度数据；当天首次完成时弹挑战卡 */
@@ -368,8 +412,8 @@ export function showChallengeCard(gameId: GameId, result: DailyResult = {}): voi
   btn?.addEventListener('click', async () => {
     btn.disabled = true;
     const okFlag = await copyResultToClipboard(text);
-    btn.textContent = okFlag ? '✅ Copied — paste it anywhere!' : 'Copy failed — long-press the card';
+    btn.textContent = i18nT(okFlag ? 'mg.g24_copied_toast' : 'mg.g24_copy_failed');
     btn.disabled = false;
-    window.setTimeout(() => { btn.textContent = '📋 Copy challenge'; }, 2600);
+    window.setTimeout(() => { btn.textContent = i18nT('common.copy_challenge'); }, 2600);
   });
 }

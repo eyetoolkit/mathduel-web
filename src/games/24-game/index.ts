@@ -28,24 +28,18 @@ import {
 } from './engine';
 import { Competition, isProdEnv, type RaceEntry, type EloEntry, type ChatMsg } from './competition';
 import { initShareBindings, openShareOverlay, renderQR } from './share';
+import { normalizeRoomCode, isValidRoomCode } from '../_shared/room-code';
+import { i18nT, escHtml, onI18nChange } from '../_shared/i18n-t';
 import { playSfx, sfxOn, setSfx, unlockSfx } from '../../shared/sfx';
+import { labelSoundButton } from '../_shared/match-sound';
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T | null;
 
 initI18n();
-const i18nT = (key: string, vars?: Record<string, string | number>): string => {
-  try {
-    const w = window as unknown as { i18n?: { t: (k: string, v?: Record<string, string | number>) => string } };
-    if (w.i18n && typeof w.i18n.t === 'function') return w.i18n.t(key, vars);
-    const fallback = (window as unknown as { t?: (k: string) => string }).t;
-    if (typeof fallback === 'function') return fallback(key);
-  } catch { /* ignore */ }
-  return key;
-};
-
 mountHeader(($('header') as HTMLElement | null) ?? document.createElement('div'), {
   brandName: 'NumeriDuel',
   brandSub: '24 · Card Table',
+  brandSubKey: 'mg.brand_sub_24',
   mark: '24',
   nav: [
     { labelKey: 'nav.home', href: '/' },
@@ -206,12 +200,13 @@ $('g24-leave-yes')?.addEventListener('click', exitMatchToLobby);
 const soundBtn = $<HTMLButtonElement>('g24-sound');
 if (soundBtn) {
   soundBtn.setAttribute('aria-pressed', String(sfxOn()));
+  labelSoundButton(soundBtn, sfxOn());
+  onI18nChange(() => labelSoundButton(soundBtn, sfxOn()));
   soundBtn.addEventListener('click', () => {
     const next = !sfxOn();
     setSfx(next);
     soundBtn.setAttribute('aria-pressed', String(next));
-    soundBtn.setAttribute('aria-label', next ? 'Sound on' : 'Sound off');
-    soundBtn.setAttribute('title', next ? 'Sound' : 'Sound off');
+    labelSoundButton(soundBtn, next);
     // 手动开声时立刻解锁（iOS Safari 必须在手势里 resume）
     if (next) {
       unlockSfx();
@@ -252,7 +247,7 @@ function render(): void {
       const delay = dealing ? ` style="animation-delay:${i * 70}ms"` : '';
       return (
         `<div class="card ${used ? 'used' : ''} ${red ? 'red' : ''} ${dealCls} ${selCls}" data-i="${i}"` +
-        ` role="button" tabindex="0" aria-label="card ${n}"${delay}>` +
+        ` role="button" tabindex="0" aria-label="${i18nT('mg.g24_card_aria', { n })}"${delay}>` +
         `<div class="suit">${SUITS[i]}</div>` +
         `<div class="num">${n}</div>` +
         `<div class="suit br">${SUITS[i]}</div></div>`
@@ -276,7 +271,7 @@ function render(): void {
       .join('');
   } else {
     formulaEl.classList.remove('success');
-    formulaEl.innerHTML = '<span class="ph">Pick cards + operators to make 24</span>';
+    formulaEl.innerHTML = `<span class="ph">${i18nT('mg.g24_formula_ph')}</span>`;
   }
 
   document.querySelectorAll('#diffPick button').forEach((b) => {
@@ -461,7 +456,7 @@ function showResult(o: { win: boolean; sols?: number; answer?: string | null }):
 function giveHint(): void {
   const ans = solve(numbers.map((n) => ({ value: n, expr: String(n) })));
   if (!ans) {
-    toast('No hint for this one');
+    toast(i18nT('mg.gs_no_hint'));
     return;
   }
   // 去掉最外层括号，再按从左到右优先级拆出"算一步即可"的最小子表达式
@@ -483,7 +478,7 @@ function giveHint(): void {
 function showAnswer(): void {
   const ans = solve(numbers.map((n) => ({ value: n, expr: String(n) })));
   if (!ans) {
-    toast('No solution');
+    toast(i18nT('mg.gs_no_solution'));
     return;
   }
   let p = ans[1];
@@ -520,7 +515,15 @@ const DAILY_WINDOW = 60; // 与服务端 D24_WINDOW_SEC 一致
 // 必须与服务端 dailyHands 的分层计划对齐（T1,T1,T2,T2,T3）——标签要反映真实分层，否则误导玩家
 const DAILY_DIFFS: Difficulty[] = ['easy', 'easy', 'standard', 'standard', 'hard'];
 const diffForIndex = (i: number): Difficulty => DAILY_DIFFS[i % DAILY_DIFFS.length];
-const diffLabel = (d: Difficulty): string => (d === 'easy' ? 'Easy' : d === 'hard' ? 'Hard' : 'Medium');
+// 🔴 难度名一律走字典。英文直写会在切到 de/es/fr 时被 diff-chip、每日挑战副标题
+//    这些 innerHTML 拼接处漏出去（HTML 按钮有 data-i18n，但 JS 拼的不受管）。
+const DIFF_KEY: Record<string, string> = {
+  easy: 'difficulty.easy',
+  standard: 'difficulty.standard',
+  medium: 'difficulty.medium',
+  hard: 'difficulty.hard',
+};
+const diffLabel = (d: Difficulty): string => i18nT(DIFF_KEY[d] || `difficulty.${d}`);
 // 上海时间(UTC+8)的 YYYYMMDD：确保全球玩家"同一天"一致，不依赖浏览器本地时区
 function seedFromDateKey(dk: string): number {
   const y = parseInt(dk.slice(0, 4), 10);
@@ -714,13 +717,13 @@ async function beginDaily(): Promise<void> {
   const sb = $('dbStart') as HTMLButtonElement | null;
   if (sb) {
     sb.disabled = true;
-    sb.textContent = '⏳ Fetching puzzles…';
+    sb.textContent = i18nT('mg.gs_fetching');
   }
   const online = await loadDailyPuzzles();
   if (!online) buildLocalPuzzles();
   dailyFetching = false;
   if (!daily.active) return; // 取题期间用户切走了模式
-  if (!online) toast('Offline mode — not on the global leaderboard');
+  if (!online) toast(i18nT('mg.gs_offline_board'));
   daily.started = true;
   daily.startTs = Date.now();
   daily.qStartTs = Date.now(); // 与服务端「拉题即开 Q1」对齐（响应延迟百毫秒级，对 60s 窗口无感）
@@ -734,8 +737,8 @@ function renderDailyBanner(): void {
     '<div class="banner daily">' +
     '<div class="daily-top"><div class="daily-meta">' +
     `<div class="b-title">📅 Daily Challenge ${daily.key}</div>` +
-    `<div class="b-sub">Puzzle <b id="dbIdx">${daily.idx + 1}</b> / ${daily.total} · <b>${diffLabel(daily.curDiff)}</b> · Global same puzzle` +
-    (daily.canSubmit ? '' : ' · <b>Offline</b>') +
+    `<div class="b-sub">${i18nT('mg.g24_daily_puzzle_of', { n: daily.idx + 1, total: daily.total })} · <b>${diffLabel(daily.curDiff)}</b> · ${i18nT('mg.g24_daily_global_same')}` +
+    (daily.canSubmit ? '' : ` · <b>${i18nT('mg.g24_daily_offline')}</b>`) +
     '</div></div></div>' +
     '<div class="db-timer"><div class="db-timer-fill" id="dbTimerFill"></div></div>' +
     `<div class="db-clock" id="dbClock">${fmtClock(daily.timeLeft)}</div>`;
@@ -832,7 +835,7 @@ async function dailySolve(): Promise<void> {
       return;
     }
   }
-  resultEl.textContent = `🎉 Solved in ${elapsed.toFixed(1)}s!`;
+  resultEl.textContent = i18nT('mg.g24_solved_in', { seconds: elapsed.toFixed(1) });
   combo++;
   saveCombo();
   refreshTop();
@@ -850,7 +853,7 @@ async function dailyTimeUp(): Promise<void> {
   daily.times[q] = null;
   daily.submits[q] = { solved: false, solution: null, time: daily.limit };
   resultEl.className = 'result bad';
-  resultEl.textContent = '⏰ Time up — unsolved';
+  resultEl.textContent = i18nT('mg.gs_timeup_unsolved');
   const ans = solve(numbers.map((n) => ({ value: n, expr: String(n) })));
   if (ans) {
     let p = ans[1];
@@ -898,7 +901,7 @@ function finishDaily(): void {
     combo++;
     saveCombo();
     refreshTop();
-    toast(`✓ Daily complete — streak ${combo}`);
+    toast(i18nT('mg.g24_daily_streak', { n: combo }));
   }
   openShareOverlay(
     {
@@ -960,9 +963,9 @@ interface DailyRankRow {
 const dailySpeedBadge = (total: unknown): string => {
   const t = Number(total);
   if (!Number.isFinite(t) || t <= 0) return '';
-  if (t <= 30) return '<span class="rr-badge gold" title="Speedrun Gold · ≤30s">🥇</span>';
-  if (t <= 60) return '<span class="rr-badge silver" title="Speedrun Silver · ≤60s">🥈</span>';
-  if (t <= 120) return '<span class="rr-badge bronze" title="Speedrun Bronze · ≤120s">🥉</span>';
+  if (t <= 30) return `<span class="rr-badge gold" title="${i18nT('mg.gs_medal_gold')}">🥇</span>`;
+  if (t <= 60) return `<span class="rr-badge silver" title="${i18nT('mg.gs_medal_silver')}">🥈</span>`;
+  if (t <= 120) return `<span class="rr-badge bronze" title="${i18nT('mg.gs_medal_bronze')}">🥉</span>`;
   return '';
 };
 
@@ -970,7 +973,7 @@ const dailyRow = (rankLabel: string, name: string, score: string, extraCls = '',
   `<div class="race-row ${extraCls}">` +
   `<span class="rr-avatar md-av">${avatarGlyph}</span>` +
   `<span class="rr-rank">${rankLabel}</span>` +
-  `<span class="rr-name">${escapeHtml(name)}</span>` +
+  `<span class="rr-name">${escHtml(name)}</span>` +
   `<span class="rr-time">${score}${badgeHtml}</span></div>`;
 
 const dailyScoreText = (times: unknown, total: unknown): string => {
@@ -1103,7 +1106,10 @@ function timedSolve(): void {
   if (!timed.best || t < timed.best) timed.best = t;
   resultEl.className = 'result ok';
   // 用 toFixed(1) 保留 1 位小数让 "5.3s" 更有成就感
-  resultEl.textContent = `🎉 Solved in ${t.toFixed(1)}s · best ${timed.best.toFixed(1)}s — next…`;
+  resultEl.textContent = i18nT('mg.g24_solved_in_best', {
+    seconds: t.toFixed(1),
+    best: timed.best.toFixed(1),
+  });
   renderSide();
   window.setTimeout(() => {
     if (!timed.active) return;
@@ -1116,7 +1122,7 @@ function timedSolve(): void {
 /** 本题超时：揭晓答案 → 1700ms 后自动换题（让玩家看清答案 + 表情反馈） */
 function timedTimeUp(): void {
   resultEl.className = 'result bad';
-  resultEl.textContent = '⏰ Time up — answer revealed, next…';
+  resultEl.textContent = i18nT('mg.gs_timeup_reveal');
   scores.skipped++;
   saveScores();
   refreshTop();
@@ -1173,10 +1179,10 @@ const profile = {
 /** 玩家状态条：头像 + 昵称 + Elo + 段位（设计稿 Screen 1 顶栏元素） */
 function pstatHtml(o: { avatar?: string | null; name?: string | null; elo?: number | null; tier?: string | null }): string {
   const elo = o.elo != null ? `<span class="elo">${o.elo}</span>` : '';
-  const tier = o.tier ? `<span class="tier">${tierEmoji(o.tier)}${escapeHtml(o.tier)}</span>` : '';
+  const tier = o.tier ? `<span class="tier">${tierEmoji(o.tier)}${escHtml(o.tier)}</span>` : '';
   return (
     `<span class="pstat${tierClass(o.tier)}"><span class="md-av">${avatarIcon(o.avatar)}</span>` +
-    `<span>${escapeHtml(o.name || 'You')}</span>${elo}${tier}</span>`
+    `<span>${escHtml(o.name || 'You')}</span>${elo}${tier}</span>`
   );
 }
 
@@ -1241,7 +1247,7 @@ let chatMsgs: ChatMsg[] = [];
 function chatBubble(m: ChatMsg): string {
   return (
     `<div class="chat-bub ${m.self ? 'me' : 'opp'}">` +
-    `<span class="who">${escapeHtml(m.self ? 'You' : m.name)}</span>${escapeHtml(m.text)}</div>`
+    `<span class="who">${escHtml(m.self ? 'You' : m.name)}</span>${escHtml(m.text)}</div>`
   );
 }
 
@@ -1270,10 +1276,10 @@ function chatDockHtml(scope: string): string {
     `<div class="chat-dock" data-chat-dock="${scope}">` +
     '<div class="chat-hd"><b>💬 Room chat</b><span>only this room</span></div>' +
     '<div class="chat-log" data-chat-log></div>' +
-    `<div class="chat-rail">${CHAT_EMOJI.map((e) => `<button type="button" data-chat-emoji="${e}" aria-label="Send ${e}">${e}</button>`).join('')}</div>` +
+    `<div class="chat-rail">${CHAT_EMOJI.map((e) => `<button type="button" data-chat-emoji="${e}" aria-label="${escHtml(i18nT('mg.shared_aria_send_emoji', { e }))}">${e}</button>`).join('')}</div>` +
     '<div class="chat-input-row">' +
-    '<input type="text" maxlength="200" placeholder="Say something…" data-chat-input aria-label="Chat message" />' +
-    '<button type="button" class="send" data-chat-send>Send</button>' +
+    `<input type="text" maxlength="200" placeholder="${i18nT('mg.sg_chat_placeholder')}" data-chat-input aria-label="${i18nT('mg.sg_chat_aria')}" />` +
+    `<button type="button" class="send" data-chat-send>${escHtml(i18nT('mg.shared_send'))}</button>` +
     '</div></div>'
   );
 }
@@ -1337,7 +1343,7 @@ const comp = new Competition({
     // F-103: 开局后把 "Waiting to start…" 切到活跃状态，避免误导
     const cs = $('compStatus');
     if (cs) {
-      cs.textContent = `● Live · Round ${round}/${maxRounds}`;
+      cs.textContent = i18nT('mg.g24_room_live', { round, total: maxRounds });
       cs.setAttribute('data-live', '1');
     }
   },
@@ -1361,7 +1367,7 @@ const comp = new Competition({
   onChat: (m) => pushChat(m),
   onSpectator: ({ count }) => renderSpecBar(count),
   onSelfSpectator: () => {
-    toast('👀 Spectating — this room is full, you are watching');
+    toast(i18nT('mg.sg_spectating'));
     renderSpecBar(comp.spectatorCount);
   },
 });
@@ -1494,27 +1500,26 @@ function renderRoomPlayers(): void {
         const p = comp.players[name] || ({} as { avatar?: string | null });
         return (
           `<div class="rp-item${me ? ' me' : ''}"><span class="md-av">${avatarIcon(p.avatar)}</span>` +
-          `<span>${escapeHtml(name)}</span>` +
-          (me ? `<span class="rp-host">You${comp.isHost ? ' · Host' : ''}</span>` : '') +
+          `<span>${escHtml(name)}</span>` +
+          (me
+            ? `<span class="rp-host">${escHtml(
+                `${i18nT('mg.shared_lbl_you')}${comp.isHost ? ' · ' + i18nT('mg.shared_lbl_host') : ''}`,
+              )}</span>`
+            : '') +
           '</div>'
         );
       })
       .join('');
   }
   $('roomHint')!.textContent = comp.isHost
-    ? `⏳ ${n} joined — share the code, start when ready`
-    : `⏳ Joined — waiting for host… (${n} players)`;
+    ? i18nT('mg.g24_wait_host', { n })
+    : i18nT('mg.g24_waiting_host', { n });
   const sb = $<HTMLButtonElement>('startBtn')!;
   sb.disabled = !(comp.isHost && n >= 2);
-  sb.textContent = n < 2 ? '🚀 Start Competition (2+ players)' : '🚀 Start Competition';
+  sb.textContent = i18nT(n < 2 ? 'mg.shared_start_competition_2' : 'mg.shared_start_competition');
   highlightStartIfReady();
 }
 
-function escapeHtml(s: unknown): string {
-  const d = document.createElement('div');
-  d.textContent = s == null ? '' : String(s);
-  return d.innerHTML;
-}
 
 function renderRaceProgress(d: { doneCount?: number; total?: number; done?: RaceEntry[] }): void {
   const dn = $('raceDone');
@@ -1535,7 +1540,7 @@ function renderRaceProgress(d: { doneCount?: number; total?: number; done?: Race
     const cls = (i === 0 ? 'r1' : '') + (r.name === comp.myName ? ' me' : '');
     html +=
       `<div class="race-row ${cls}"><span class="rr-rank">${i + 1}</span>` +
-      `<span class="rr-name">${escapeHtml(r.name || '')}</span>` +
+      `<span class="rr-name">${escHtml(r.name || '')}</span>` +
       `<span class="rr-time">${useDone ? (r.time != null ? fmtTime(r.time) : '✓') : ''}</span></div>`;
   }
   if (rows.length > 10) html += `<div class="race-more">+${rows.length - 10} more players…</div>`;
@@ -1556,7 +1561,7 @@ function showRaceRoundResult(d: { round: number; ranking: RaceEntry[] }): void {
     const r = rk[i] || ({} as RaceEntry);
     html +=
       `<div class="final-row${r.name === comp.myName ? ' me' : ''}${i < 1 ? ' r1' : ''}">` +
-      `<span class="fr-rank">#${i + 1}</span><span class="fr-name">${escapeHtml(r.name || '')}</span>` +
+      `<span class="fr-rank">#${i + 1}</span><span class="fr-name">${escHtml(r.name || '')}</span>` +
       `<span class="fr-score">${r.ok ? fmtTime(r.time || 0) : '—'}</span></div>`;
   }
   html += '</div><p class="sub">Next round starting…</p>';
@@ -1568,12 +1573,29 @@ function showRaceRoundResult(d: { round: number; ranking: RaceEntry[] }): void {
   }, 2200);
 }
 
+/**
+ * DEMO / 离线练习模式的显式说明。
+ * 背景：isProdEnv() 只认 numeriduel.com / mathduel.games，一旦站点被镜像、
+ * 在本地下线运行或换域名部署，就会静默切到机器人对手 + 本地伪造 Elo，
+ * 用户看到的分数/段位与线上没有任何关系 —— 公平性与信任问题。
+ * 现在：伪造 Elo 一律不渲染，并在此处明确告知这是不计分的机器人练习。
+ */
+const DEMO_NOTICE_HTML =
+  '<p class="sub" style="margin:12px 0 6px">🤖 Practice vs bots</p>' +
+  '<div class="elo-grid"><div class="elo-row"><span class="n">Offline practice — bots, not players.</span></div>' +
+  '<div class="elo-row"><span class="n">No Elo or tier changes on this deployment.</span></div></div>';
+
 /** Elo 结算块（设计稿 result badge）：服务端 game_over.elo 产出，平局/无 uuid 时可能为空 */
 function eloBlockHtml(elo?: EloEntry[]): string {
   if (!elo || !elo.length) return '';
+  /* 🔴 DEMO（离线 / 非官方域名）下的 elo 来自 demoElo() 本地伪造，
+     既没有服务端背书也不该写进段位统计 —— 这类"评级"没有任何公平性可言。
+     直接不渲染，并换成一句明确的练习模式说明（见下方 demoNotice）。 */
+  const demo = comp.demo;
   // 无有效评级（未登录 uuid / skipped）的条目会渲染成 "null 0"——整块隐藏
   const ratedElo = elo.filter((e) => typeof e.elo === 'number');
   if (!ratedElo.length) return '';
+  if (demo) return DEMO_NOTICE_HTML;
   const mine = elo.find((e) => e.name === comp.myName);
   const rows = ratedElo
     .slice(0, 10)
@@ -1585,7 +1607,7 @@ function eloBlockHtml(elo?: EloEntry[]): string {
       const eloTxt = avg != null ? `<span class="v">${avg} → ${e.elo}</span>` : `<span class="v">${e.elo}</span>`;
       return (
         `<div class="elo-row${isMe ? ' me' : ''}"><span class="md-av">${avatarIcon(e.avatar)}</span>` +
-        `<span class="n">${escapeHtml(e.nickname || e.name)}</span>${eloTxt}` +
+        `<span class="n">${escHtml(e.nickname || e.name)}</span>${eloTxt}` +
         `<span class="d ${cls}">${dtxt}</span></div>`
       );
     })
@@ -1612,11 +1634,16 @@ function eloBlockHtml(elo?: EloEntry[]): string {
     }
     if (fromName && toName && fromName !== toName) {
       flash =
-        `<div class="tier-flash${promoted ? '' : ' demoted'}">${promoted ? '🎉 Promoted to' : '⬇ Demoted to'} ` +
-        `${tierEmoji(toName)} ${escapeHtml(toName)}</div>`;
+        `<div class="tier-flash${promoted ? '' : ' demoted'}">${escHtml(
+          i18nT(promoted ? 'mg.g24_promoted' : 'mg.g24_demoted'),
+        )} ` +
+        `${tierEmoji(toName)} ${escHtml(toName)}</div>`;
     }
   }
-  return `<p class="sub" style="margin:12px 0 6px">⚔️ Elo — rated match</p><div class="elo-grid">${rows}</div>${flash}`;
+  return (
+    `<p class="sub" style="margin:12px 0 6px">${escHtml(i18nT('mg.g24_elo_rated'))}</p>` +
+    `<div class="elo-grid">${rows}</div>${flash}`
+  );
 }
 
 function showRaceGameOver(d: { ranking: RaceEntry[]; elo?: EloEntry[] }): void {
@@ -1630,11 +1657,11 @@ function showRaceGameOver(d: { ranking: RaceEntry[]; elo?: EloEntry[] }): void {
   for (const r of rk) if (r.name === comp.myName) me = r;
   const heading = me
     ? me.rank === 1
-      ? '🏆 You won the competition!'
-      : `🏁 You ranked #${me.rank}`
-    : '🏁 Competition Over';
-  let html = `<h2 class="${me && me.rank === 1 ? 'win-c' : me ? 'draw-c' : 'lose-c'}">${heading}</h2>`;
-  html += `<p class="sub">${rk.length} players · cap ${comp.displayCap}</p>`;
+      ? i18nT('mg.g24_you_won_comp')
+      : i18nT('mg.g24_rank_you', { rank: me.rank ?? 0 })
+    : i18nT('mg.g24_comp_over');
+  let html = `<h2 class="${me && me.rank === 1 ? 'win-c' : me ? 'draw-c' : 'lose-c'}">${escHtml(heading)}</h2>`;
+  html += `<p class="sub">${escHtml(i18nT('mg.g24_cap_players', { n: rk.length, cap: comp.displayCap }))}</p>`;
   html += eloBlockHtml(d.elo);
   html += '<div class="final-list">';
   for (let i = 0; i < rk.length; i++) {
@@ -1642,7 +1669,7 @@ function showRaceGameOver(d: { ranking: RaceEntry[]; elo?: EloEntry[] }): void {
     const rank = r.rank || i + 1;
     html +=
       `<div class="final-row${r.name === comp.myName ? ' me' : ''}${i < 1 ? ' r1' : ''}">` +
-      `<span class="fr-rank">#${rank}</span><span class="fr-name">${escapeHtml(r.name || '')}</span>` +
+      `<span class="fr-rank">#${rank}</span><span class="fr-name">${escHtml(r.name || '')}</span>` +
       `<span class="fr-score">${r.solved != null ? r.solved + ' solved' : ''}${r.ok ? ' · ' + fmtTime(r.time || 0) : ''}</span></div>`;
   }
   html +=
@@ -1702,9 +1729,11 @@ function compEnterGame(): void {
   }
   renderChatLog();
   $('modeBanner')!.innerHTML =
-    `<div class="banner battle"><div><div class="b-title">🏆 Round ${comp.round} / ${comp.maxRounds}</div>` +
-    '<div class="b-sub">Same cards · race to 24</div></div></div>';
-  resultEl.textContent = `⚔️ Round ${comp.round} — make 24 first!`;
+    `<div class="banner battle"><div><div class="b-title">${escHtml(
+      i18nT('mg.g24_round_ban_title', { round: comp.round, max: comp.maxRounds }),
+    )}</div>` +
+    `<div class="b-sub">${escHtml(i18nT('mg.g24_round_ban_sub'))}</div></div></div>`;
+  resultEl.textContent = i18nT('mg.g24_round', { round: comp.round });
   resultEl.className = 'result';
   // 新一轮：清空上一轮的公式与选牌状态（竞赛不走 deal()，需手动重置）
   formula = '';
@@ -1746,7 +1775,9 @@ function updateCompTimer(left: number): void {
   }
   const st = $('compStatus');
   if (st) {
-    st.textContent = comp.spectator ? '👀 Spectating this round' : `Round timer ${secs}s`;
+    st.textContent = comp.spectator
+      ? i18nT('mg.g24_room_spectating')
+      : i18nT('mg.g24_room_timer', { s: secs });
     // F-103: 开局后保持 data-live=1，让 CSS 高亮（不与计时文字冲突）
     if (comp.started) st.setAttribute('data-live', '1');
   }
@@ -1787,46 +1818,46 @@ function renderSide(): void {
   if (!sideEl) return;
   if (mode === 'battle' && comp.active) {
     sideEl.innerHTML =
-      '<div class="panel"><h3>🏆 Live Leaderboard</h3>' +
-      '<div class="race-hd"><span class="rh-title">Live Standings</span>' +
-      `<span class="rh-count"><b id="raceDone">${comp.done}</b> / <b id="raceTotal">${comp.total}</b> solved</span></div>` +
-      (comp.spectatorCount > 0 ? `<div class="race-empty">👀 ${comp.spectatorCount} watching</div>` : '') +
-      '<div class="race-list" id="raceList"><div class="race-empty">No submissions yet — be first!</div></div></div>' +
-      '<div class="panel"><h3>🎮 How to Play</h3>' +
-      '<div class="hint-step"><b>1</b><span>Create or join a room, share the code with friends</span></div>' +
-      '<div class="hint-step"><b>2</b><span>Same cards for everyone — race to make 24 first</span></div>' +
-      '<div class="hint-step"><b>3</b><span>Ranked by solve time each round; accumulate over rounds</span></div></div>';
+      `<div class="panel"><h3>${i18nT('mg.g24_side_live_title')}</h3>` +
+      `<div class="race-hd"><span class="rh-title">${i18nT('mg.g24_side_live_standings')}</span>` +
+      `<span class="rh-count"><b id="raceDone">${comp.done}</b> / <b id="raceTotal">${comp.total}</b> ${escHtml(i18nT('mg.g24_side_solved_suffix'))}</span></div>` +
+      (comp.spectatorCount > 0 ? `<div class="race-empty">👀 ${i18nT('mg.g24_side_watching', { n: comp.spectatorCount })}</div>` : '') +
+      `<div class="race-list" id="raceList"><div class="race-empty">${escHtml(i18nT('mg.g24_side_no_sub'))}</div></div></div>` +
+      `<div class="panel"><h3>${i18nT('mg.g24_side_how_title')}</h3>` +
+      `<div class="hint-step"><b>1</b><span>${escHtml(i18nT('mg.g24_side_how_1'))}</span></div>` +
+      `<div class="hint-step"><b>2</b><span>${escHtml(i18nT('mg.g24_side_how_2'))}</span></div>` +
+      `<div class="hint-step"><b>3</b><span>${escHtml(i18nT('mg.g24_side_how_3'))}</span></div></div>`;
   } else if (mode === 'daily') {
     const myStats =
-      '<div class="panel"><h3>📈 My Stats</h3>' +
+      `<div class="panel"><h3>${i18nT('mg.g24_my_stats')}</h3>` +
       statRow(i18nT('mg.sg_st_solved'), scores.solved) +
       statRow(i18nT('mg.sg_st_skipped'), scores.skipped) +
       statRow(i18nT('mg.sg_st_streak'), combo) +
-      '<div class="hint-step" style="margin-top:10px"><b>·</b><span>Same puzzle worldwide — race the clock</span></div></div>';
+      `<div class="hint-step" style="margin-top:10px"><b>·</b><span>${escHtml(i18nT('mg.g24_side_daily_same'))}</span></div></div>`;
     if (!daily.started) {
       sideEl.innerHTML =
-        '<div class="panel"><h3>📅 Daily Challenge Rules</h3>' +
-        '<div class="hint-step"><b>1</b><span>Same 5 puzzles daily, worldwide</span></div>' +
-        '<div class="hint-step"><b>2</b><span>Increasing difficulty: Easy → Medium → Hard</span></div>' +
-        '<div class="hint-step"><b>3</b><span>60s per puzzle, answer auto-revealed on timeout</span></div>' +
-        '<div class="hint-step"><b>4</b><span>Solve all 5 in time = Challenge cleared</span></div>' +
-        '<div class="hint-step"><b>5</b><span>Server-authoritative timing · ranked by total time</span></div></div>' +
+        `<div class="panel"><h3>${i18nT('mg.g24_side_daily_rules')}</h3>` +
+        `<div class="hint-step"><b>1</b><span>${escHtml(i18nT('mg.g24_side_daily_1'))}</span></div>` +
+        `<div class="hint-step"><b>2</b><span>${escHtml(i18nT('mg.g24_side_daily_2'))}</span></div>` +
+        `<div class="hint-step"><b>3</b><span>${escHtml(i18nT('mg.g24_side_daily_3'))}</span></div>` +
+        `<div class="hint-step"><b>4</b><span>${escHtml(i18nT('mg.g24_side_daily_4'))}</span></div>` +
+        `<div class="hint-step"><b>5</b><span>${escHtml(i18nT('mg.g24_side_daily_5'))}</span></div></div>` +
         myStats;
     } else {
       sideEl.innerHTML =
-        '<div class="panel"><h3>🏆 Today’s Global Board</h3>' +
-        '<div class="race-hint">🥇 ≤30s · 🥈 ≤60s · 🥉 ≤120s</div>' +
-        '<div class="race-list" id="dailyBoard"><div class="race-empty">Loading…</div></div></div>' +
+        `<div class="panel"><h3>${i18nT('mg.g24_side_daily_board')}</h3>` +
+        `<div class="race-hint">${escHtml(i18nT('mg.g24_side_daily_medals'))}</div>` +
+        `<div class="race-list" id="dailyBoard"><div class="race-empty">${escHtml(i18nT('common.loading'))}</div></div></div>` +
         myStats;
       void loadDailyBoard();
     }
   } else if (mode === 'timed') {
     sideEl.innerHTML =
-      '<div class="panel"><h3>⏱ Timed Practice</h3>' +
-      '<div class="hint-step"><b>1</b><span>60 seconds per deal — solve it before the clock runs out</span></div>' +
-      '<div class="hint-step"><b>2</b><span>{__I18N_SG_HINT_NEXT__}</span></div>' +
-      '<div class="hint-step"><b>3</b><span>Time up reveals the answer, then deals again</span></div></div>' +
-      '<div class="panel"><h3>📈 This Session</h3>' +
+      `<div class="panel"><h3>${i18nT('mg.g24_side_timed_title')}</h3>` +
+      `<div class="hint-step"><b>1</b><span>${escHtml(i18nT('mg.g24_side_timed_1'))}</span></div>` +
+      `<div class="hint-step"><b>2</b><span>${escHtml(i18nT('mg.g24_side_timed_2'))}</span></div>` +
+      `<div class="hint-step"><b>3</b><span>${escHtml(i18nT('mg.g24_side_timed_3'))}</span></div></div>` +
+      `<div class="panel"><h3>${i18nT('mg.g24_side_this_session')}</h3>` +
       statRow(i18nT('mg.sg_st_solved'), timed.solved) +
       statRow(i18nT('mg.sg_st_best'), timed.best ? timed.best.toFixed(1) + 's' : '—') +
       statRow(i18nT('mg.sg_st_skipped'), scores.skipped) +
@@ -1834,12 +1865,12 @@ function renderSide(): void {
       '</div>';
   } else {
     sideEl.innerHTML =
-      '<div class="panel"><h3>🎯 Quick Start</h3>' +
-      '<div class="hint-step"><b>1</b><span><b>Deal</b>: 4 cards, values 1–13</span></div>' +
-      '<div class="hint-step"><b>2</b><span><b>Make 24</b>: use + − × ÷ and ( ), each card once</span></div>' +
-      '<div class="hint-step"><b>3</b><span><b>Score</b>: faster and correct = longer streak</span></div>' +
-      '<p class="brand-hint">A pocket puzzle born in the 1960s, now raced across continents. Five games, one Elo ladder — no login, no ads.</p></div>' +
-      '<div class="panel"><h3>📈 My Stats</h3>' +
+      `<div class="panel"><h3>${i18nT('mg.g24_qs_title')}</h3>` +
+      `<div class="hint-step"><b>1</b><span>${i18nT('mg.g24_qs_1')}</span></div>` +
+      `<div class="hint-step"><b>2</b><span>${i18nT('mg.g24_qs_2')}</span></div>` +
+      `<div class="hint-step"><b>3</b><span>${i18nT('mg.g24_qs_3')}</span></div>` +
+      `<p class="brand-hint">${i18nT('mg.g24_qs_brand')}</p></div>` +
+      `<div class="panel"><h3>${i18nT('mg.g24_my_stats')}</h3>` +
       statRow(i18nT('mg.sg_st_solved'), scores.solved) +
       statRow(i18nT('mg.sg_st_skipped'), scores.skipped) +
       statRow(i18nT('mg.sg_st_streak'), combo) +
@@ -1977,7 +2008,7 @@ $('sizeRow')!.addEventListener('click', (e) => {
 $('createBtn')!.onclick = () => {
   const name = ($<HTMLInputElement>('nameInput')?.value || '').trim();
   if (!name) {
-    $('lobbyErr')!.textContent = 'Enter a name';
+    $('lobbyErr')!.textContent = i18nT('mg.gs_enter_name');
     return;
   }
   comp.myName = name;
@@ -1998,8 +2029,8 @@ function joinWith(rawName: string, rawCode: string): boolean {
     $('lobbyErr')!.textContent = i18nT('mg.shared_enter_name');
     return false;
   }
-  const code = (rawCode || '').trim().toUpperCase();
-  if (!/^[A-Z0-9]{4,6}$/.test(code)) {
+  const code = normalizeRoomCode(rawCode);
+  if (!isValidRoomCode(code)) {
     $('lobbyErr')!.textContent = i18nT('mg.shared_invalid_code');
     return false;
   }
@@ -2036,7 +2067,7 @@ $('shareBtn')!.onclick = async () => {
   const url = roomInviteUrl();
   try {
     await navigator.clipboard.writeText(url);
-    toast('Invite link copied');
+    toast(i18nT('mg.gs_share_copied'));
   } catch {
     toast(url);
   }
@@ -2044,7 +2075,7 @@ $('shareBtn')!.onclick = async () => {
 $('copyCode')!.onclick = async () => {
   try {
     await navigator.clipboard.writeText(comp.room);
-    toast('Room code copied: ' + comp.room);
+    toast(i18nT('mg.gs_room_copied') + ' ' + comp.room);
   } catch {
     toast(comp.room);
   }
@@ -2091,6 +2122,15 @@ loadScores();
 loadCombo();
 refreshTop();
 
+/* 🔴 字典是 async fetch 的，init() 里 deal()/renderSide() 跑的时候
+ *   i18nT() 只能回落到 key 本身 → 侧栏和公式占位符整片显示 mg.g24_*。
+ *   i18n.js 只会重写 data-i18n* 静态骨架，管不到这里用 innerHTML 拼的节点。
+ *   所以字典就绪 / 玩家切语言时都要重渲一次。 */
+onI18nChange(() => {
+  render();
+  renderSide();
+});
+
 (function init(): void {
   const params = new URLSearchParams(location.search);
   const rc = (params.get('room') || '').trim().toUpperCase();
@@ -2128,8 +2168,25 @@ refreshTop();
   // 生产环境暴露竞赛入口（DEMO 也允许体验完整 99 人流程）
   $('enterBtn')?.classList.remove('hidden');
   if (!isProdEnv()) {
-    const badge = $('modeBadge');
-    if (badge) badge.style.display = 'inline-flex';
+    // 旧代码找 #modeBadge，但 HTML 里根本没有这个元素 → 角标从未显示过，
+    // 非官方域名下的机器人对战一直是"静默"的。改为动态插入可见横幅。
+    //
+    // 🔴 文案走 i18nT()，但本函数在 init() 里同步执行，此时字典还没 fetch 完 ——
+    //    横幅会永远显示 `mg.gs_demo_ribbon` 原键（i18n.js 只重写 data-i18n* 骨架，
+    //    不会回头改这个 JS 建出来的节点）。所以语言就绪/切换时都要重贴文本。
+    const ribbon = document.createElement('div');
+    ribbon.className = 'md-demo-ribbon';
+    ribbon.setAttribute('role', 'status');
+    const paintRibbon = (): void => { ribbon.textContent = i18nT('mg.gs_demo_ribbon'); };
+    paintRibbon();
+    onI18nChange(paintRibbon);
+    const style = document.createElement('style');
+    style.textContent =
+      '.md-demo-ribbon{position:fixed;left:0;right:0;top:0;z-index:9997;padding:7px 12px;' +
+      'background:#7C2D12;color:#FEF3C7;font:600 12px/1.35 system-ui,-apple-system,sans-serif;' +
+      'text-align:center;letter-spacing:.01em}';
+    document.head.appendChild(style);
+    document.body.appendChild(ribbon);
   }
 
   // 全局 Esc 关闭浮层（聊天/输入框不抢 Esc）

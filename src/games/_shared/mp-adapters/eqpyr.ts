@@ -13,6 +13,7 @@
  *    - 客户端本地解出 → shell.relaySubmit()（=submit_answer{result:true}，SV 仅计时不校验）
  *    - 终局 race_over 由 SV 广播，外壳统一处理
  */
+import { i18nT } from '../i18n-t';
 import type { MpAdapter, RoundCtx, MpShell } from '../mp-client';
 import { generateBoard } from '../../equation-pyramid/engine';
 
@@ -95,7 +96,7 @@ export function createEqpyrAdapter(opts: EqpyrAdapterOpts): MpAdapter {
     const expr = document.createElement('div');
     expr.id = 'mpEqpyrExpr';
     expr.style.cssText = 'min-height:24px;font-size:14px;color:#6B7280';
-    expr.textContent = 'Pick 3 cells to form aᵒᵖ bᵒᵖ c = target';
+    expr.textContent = i18nT('mg.ep_pick3');
     wrap.appendChild(expr);
 
     const actions = document.createElement('div');
@@ -169,13 +170,13 @@ export function createEqpyrAdapter(opts: EqpyrAdapterOpts): MpAdapter {
       });
       const exprEl = boardEl.querySelector('#mpEqpyrExpr') as HTMLElement;
       if (exprEl) {
-        if (!picks.length) exprEl.textContent = 'Pick 3 cells to form aᵒᵖ bᵒᵖ c = target';
+        if (!picks.length) exprEl.textContent = i18nT('mg.ep_pick3');
         else {
           const segs = picks.map((id) => {
             const c = cells.find((x) => x.id === id)!;
             return `${c.num}`;
           });
-          exprEl.innerHTML = `Selected: <b style="color:#B45309">${segs.join(' · ')}</b>`;
+          exprEl.innerHTML = `${i18nT('mg.ep_selected')} <b style="color:#B45309">${segs.join(' · ')}</b>`;
         }
       }
       submitBtn.disabled = picks.length !== 3;

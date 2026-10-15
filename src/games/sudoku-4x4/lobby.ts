@@ -15,6 +15,7 @@ import '../24-game/lobby.css';            // .home-v2 下的模式卡 / panel / 
 import '../sudoku/lobby.css';             // 数独专属组件：hero 迷你网格 / 规则列表 / 难度行
 import './lobby.css';                     // 4×4 专属：hero 2×2 大格
 import { wireLobbyChrome } from '../../pages/lobby-chrome';
+import { i18nT, onI18nReady } from '../_shared/i18n-t';
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T | null;
 
@@ -59,8 +60,8 @@ function rowHtml(rankLabel: string, name: string, score: string, cls = ''): stri
 }
 
 const BEST_MODES = [
-  { key: 'solo', label: 'Solo' },
-  { key: 'daily', label: 'Daily' },
+  { key: 'solo', label: 'mg.shared_tab_solo' },
+  { key: 'daily', label: 'mg.shared_tab_daily' },
 ];
 
 function renderBoard(): void {
@@ -71,15 +72,15 @@ function renderBoard(): void {
   const rows = BEST_MODES.filter((m) => best[m.key] != null);
 
   if (!rows.length) {
-    host.innerHTML = '<div class="arb-empty">Solve your first grid to set a record.</div>';
+    host.innerHTML = `<div class="arb-empty">${esc(i18nT('ml.s4_panel1_empty'))}</div>`;
     return;
   }
 
   let html = '';
   rows.forEach((m, i) => {
-    html += rowHtml(String(i + 1), m.label, fmt(best[m.key] as number), i === 0 ? 'me' : '');
+    html += rowHtml(String(i + 1), i18nT(m.label), fmt(best[m.key] as number), i === 0 ? 'me' : '');
   });
-  html += `<div class="arb-note board-note">Local runs only — saved on this device.</div>`;
+  html += `<div class="arb-note board-note">${esc(i18nT('mg.lb_local_device'))}</div>`;
 
   host.innerHTML = html;
 }
@@ -88,7 +89,8 @@ function renderBoard(): void {
 function boot(): void {
   wireLobbyChrome();
   renderHeroGrid();
-  renderBoard();
+  // 🔴 榜单里的文案走 i18nT()，必须等字典 ready，否则会渲染出原始 key
+  onI18nReady(renderBoard);
 }
 
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);

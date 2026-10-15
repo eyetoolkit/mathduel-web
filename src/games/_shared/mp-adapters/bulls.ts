@@ -11,6 +11,7 @@
  *   - 终局 game_over{ranking,elo}
  */
 import type { MpAdapter, RoundCtx, MpShell } from '../mp-client';
+import { i18nT } from '../i18n-t';
 import { isValidSecret, randomSecret } from '../../bulls/engine';
 
 export interface BullsAdapterOpts {
@@ -72,20 +73,24 @@ export function createBullsAdapter(opts: BullsAdapterOpts): MpAdapter {
 
       const lockBtn = document.createElement('button');
       lockBtn.type = 'button';
-      lockBtn.textContent = mySecret && readySet.includes(myName) ? '🔒 Submitted · waiting' : '🔒 Lock Secret';
+      lockBtn.textContent = mySecret && readySet.includes(myName)
+        ? i18nT('mg.mp_bulls_wait')
+        : i18nT('mg.shared_lbl_lock_secret');
       lockBtn.disabled = true;
       lockBtn.style.cssText = 'background:#F59E0B;color:#1a1305;border:none;border-radius:10px;padding:10px 22px;font-weight:700;cursor:pointer;font-size:14px;opacity:.5;pointer-events:none';
       lockBtn.addEventListener('click', () => {
-        if (!isValidSecret(mySecret)) { errEl.textContent = 'Need 4 unique digits 1-9'; return; }
+        if (!isValidSecret(mySecret)) { errEl.textContent = i18nT('mg.mp_bulls_digits'); return; }
         shell.sendAction({ type: 'bulls_set_secret', secret: mySecret });
         lockBtn.disabled = true;
-        lockBtn.textContent = '🔒 Submitted · waiting';
+        lockBtn.textContent = i18nT('mg.mp_bulls_wait');
       });
       wrap.appendChild(lockBtn);
 
       const tip = document.createElement('p');
       tip.style.cssText = 'color:#9CA3AF;font-size:12px;margin:4px 0 0';
-      tip.innerHTML = `Both players lock in to start guessing. You have ${Math.round((shell as any).timeLimit || 30)}s.`;
+      tip.textContent = i18nT('mg.mp_bulls_lock_hint', {
+        n: Math.round((shell as any).timeLimit || 30),
+      });
       wrap.appendChild(tip);
     } else if (currentPhase === 'guess') {
       const header = document.createElement('div');
@@ -152,7 +157,9 @@ export function createBullsAdapter(opts: BullsAdapterOpts): MpAdapter {
       wrap.appendChild(head);
       const reason = document.createElement('div');
       reason.style.cssText = 'font-size:12px;color:#9CA3AF';
-      reason.textContent = lastRoundReason === 'cracked' ? 'Code broken — next round in 3s' : 'Time up — next round in 3s';
+      reason.textContent = i18nT(
+        lastRoundReason === 'cracked' ? 'mg.mp_bulls_next_cracked' : 'mg.mp_bulls_next_timeup',
+      );
       wrap.appendChild(reason);
 
       if (oppSecret || mySecret) {

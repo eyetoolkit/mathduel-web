@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en" data-site="numeriduel" data-build="%VITE_SHOW_BETA%">
 <head>
-  <script>window.__I18N_CONFIG__={supported:["en","zh","ja","es","fr","de"],dictVersion:45,fallback:"en"};</script>
+  <script>window.__I18N_CONFIG__={supported:["en","zh","ja","es","fr","de"],dictVersion:58,fallback:"en"};</script>
   <script src="/i18n/i18n.js?v=39"></script>
   <script>(function(){try{var t=localStorage.getItem("md-theme");if(t!=="dark"&&t!=="light"){t=(window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches)?"dark":"light";}if(t==="dark"){document.documentElement.setAttribute("data-theme","dark");}}catch(e){}})();</script>
   <meta charset="utf-8" />
@@ -237,7 +237,7 @@
   <section class="g-hero">
     <div class="wrap">
       <span class="gcover" aria-hidden="true"><svg role="img" aria-label="Sudoku 9×9"><use href="#cv-sudoku"/></svg></span>
-      <h1 data-i18n-html="ml.sg_hero_h1">Nine digits. One rule. <em>Fill the grid.</em></h1>
+      <h1 data-i18n-html="ml.sg_hero_h1">Nine digits. One rule. <em data-i18n="ml.sg_hero_em">Fill the grid.</em></h1>
       <p class="sub" data-i18n="ml.sg_hero_sub">Every row, column and 3×3 box holds 1–9 exactly once. Pick how you want to play — the grid is the same, the pressure isn't.</p>
       <div class="chips">
         <span class="chip"><span class="dot"></span><span data-i18n="ml.sg_chips_1">Solo · Duel · Daily</span></span>
@@ -289,7 +289,7 @@
         <p class="pnote" data-i18n="ml.sg_panel1_note">One seeded grid per day — same puzzle for everyone, one shot.</p>
         <div id="boardRows" aria-live="polite">
           <div class="arb-empty" data-i18n="ml.loading">Loading today's board…</div>
-        <a class="btn btn-amber block" href="/games/sudoku/?mode=daily" id="boardPlay" style="margin-top:12px">Play today's grid</a>
+        <a class="btn btn-amber block" href="/games/sudoku/?mode=daily" id="boardPlay" style="margin-top:12px" data-i18n="ml.mt_sd_daily">Play today's grid</a>
       </section>
 
       <section class="panel" aria-labelledby="rulesTitle">

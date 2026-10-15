@@ -144,7 +144,8 @@ body.arena:not(.skin-paper) .s6-board {
   font-size: 0.62rem; font-weight: 700; line-height: 1;
   color: var(--text-muted); font-variant-numeric: tabular-nums;
 }
-.s6-pad .pk.done { opacity: 0.35; }
+.s6-pad .pk.done,
+.s6-pad .pk:disabled { opacity: 0.35; cursor: default; }
 .s6-pad .pk.done:hover { border-color: var(--border); color: var(--text-muted); }
 @media (max-width: 560px) {
   .s6-pad { gap: 6px; }

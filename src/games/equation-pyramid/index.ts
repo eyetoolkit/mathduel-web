@@ -33,17 +33,8 @@ import { bindSoundButton, keepAudioAlive } from '../_shared/match-sound';
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T | null;
 
+import { i18nT, escHtml, onI18nChange } from '../_shared/i18n-t';
 initI18n();
-const i18nT = (key: string, vars?: Record<string, string | number>): string => {
-  try {
-    const w = window as unknown as { i18n?: { t: (k: string, v?: Record<string, string | number>) => string } };
-    if (w.i18n && typeof w.i18n.t === 'function') return w.i18n.t(key, vars);
-    const fallback = (window as unknown as { t?: (k: string) => string }).t;
-    if (typeof fallback === 'function') return fallback(key);
-  } catch { /* ignore */ }
-  return key;
-};
-
 /* 🔴 修复 (2026-10-03 移动端 P0 兜底) 监听 i18n:ready 事件 —— enterMode() 在 dict 异步加载完成之前已跑过，
    resetBoard 里 i18nT('mg.pyr_pick_first') 拿到 fallback 原 key 直接写进 #result 文本，
    等字典就绪后不再 rerender，导致对局页 #result 一直显示裸 key（gomoku 第 12 轮同款坑）。
@@ -60,6 +51,7 @@ window.addEventListener('i18n:change', rerenderResult);
 mountHeader(($('header') as HTMLElement | null) ?? document.createElement('div'), {
   brandName: 'NumeriDuel',
   brandSub: 'Equation Pyramid',
+  brandSubKey: 'math_home.g_pyr',
   mark: '△',
   nav: [
     { labelKey: 'nav.home', href: '/' },
@@ -76,7 +68,8 @@ const BOT_PACE: Record<Tier, number> = { warmup: 6000, standard: 3400, tricky: 1
 /** 玩家无操作超过该时长 → 提示一次（#09 零操作保护） */
 const DUEL_IDLE_MS = 12000;
 
-const tierLabel = (t: Tier): string => ({ warmup: 'Warm-up', standard: 'Standard', tricky: 'Tricky' })[t];
+const TIER_KEY: Record<Tier, string> = { warmup: 'ml.diff_warmup', standard: 'ml.diff_standard', tricky: 'ml.diff_tricky' };
+const tierLabel = (t: Tier): string => i18nT(TIER_KEY[t]);
 
 /* ═══ 状态 ═══ */
 const st = {
@@ -181,6 +174,44 @@ function newRoundBoard(): Board {
 }
 
 /* ═══ 开局 ═══ */
+/* 🔴 横幅必须独立成函数，且必须能在「字典就绪 / 语言切换」后重画。
+   原因：enterMode() 在 i18n.js 异步加载字典之前就跑完了，i18nT() 只能回落到
+   key 本身，于是 `mg.pyr_tier_target_sets` 这种原始键名被写进 #modeBanner，
+   而 i18n.js 只重写 data-i18n* 静态骨架，不会回头修 JS 生成的节点
+   —— 玩家就永久看到裸键（与 RULES-FE-D.md #88/#133 同类）。
+   ⚠️ timed 的「已解/连对」是 tick() 每秒写入的活节点，标签与数值必须分开。 */
+function renderModeBanner(): void {
+  const b = st.board;
+  if (!b) return;
+  const m = st.mode;
+  if (m === 'daily') {
+    banner(
+      `<div class="ep-bn"><div class="ep-bt">${escHtml(i18nT('mg.pyr_daily_hunt', { date: shanghaiDateKey() }))}</div>`
+      + `<div class="ep-bs">${escHtml(i18nT('mg.pyr_daily_find_all', { target: b.target }))}</div></div>`,
+    );
+    return;
+  }
+  if (m === 'timed') {
+    banner(
+      `<div class="ep-bn"><div class="ep-bt">${escHtml(i18nT('mg.pyr_timed_banner', { limit: TIMED_LIMIT }))}</div>`
+      + `<div class="ep-bs">${escHtml(i18nT('mg.pyr_lbl_solved'))} <b id="tmSolved">${st.timedSolved}</b> · `
+      + `${escHtml(i18nT('mg.pyr_lbl_streak'))} <b id="tmStreak">${st.timedStreak}</b></div></div>`,
+    );
+    return;
+  }
+  // solo：gatePending（等玩家点第一格才起表）时副标题是「点这里开始」
+  const sub = st.gatePending
+    ? i18nT('mg.pyr_tap_to_start')
+    : i18nT('mg.pyr_tier_bank_all', { sets: b.solutions.length });
+  banner(
+    `<div class="ep-bn"><div class="ep-bt">${escHtml(i18nT('mg.pyr_tier_target_sets', {
+      tier: tierLabel(st.tier),
+      target: b.target,
+      sets: b.solutions.length,
+    }))}</div><div class="ep-bs">${escHtml(sub)}</div></div>`,
+  );
+}
+
 function startRound(): void {
   stopAll();
   const m = st.mode;
@@ -189,17 +220,11 @@ function startRound(): void {
     st.timedDealt++;
   }
   if (m === 'daily') {
-    const dk = shanghaiDateKey();
-    st.board = dailyBoard(dk);
-    banner(`<div class="ep-bn"><div class="ep-bt">🌐 Daily Hunt #${dk}</div><div class="ep-bs">Find every equation that lands on ${st.board.target}</div></div>`);
+    st.board = dailyBoard(shanghaiDateKey());
   } else {
     st.board = newRoundBoard();
-    banner(
-      m === 'timed'
-        ? `<div class="ep-bn"><div class="ep-bt">⏱ Timed · ${TIMED_LIMIT}s · exhaust as many as you can</div><div class="ep-bs">Found <b id="tmSolved">0</b> · Streak <b id="tmStreak">0</b></div></div>`
-        : `<div class="ep-bn"><div class="ep-bt">🎯 ${tierLabel(st.tier)} · target ${st.board.target} · ${st.board.solutions.length} sets in</div><div class="ep-bs">Bank all ${st.board.solutions.length} sets to clear — the same 3 numbers in any order count once.</div></div>`,
-    );
   }
+  renderModeBanner();
   resetBoard();
   renderBoard();
   renderTarget();
@@ -208,13 +233,25 @@ function startRound(): void {
   updateHud();
   // #14：首次进入 solo/timed 不立即计时，等玩家点第一格再启动（避免“秒表已经开始”）
   st.gatePending = !st.gateUsed && (m === 'solo' || m === 'timed');
-  if (st.gatePending) {
-    banner(`<div class="ep-bn"><div class="ep-bt">🎯 ${tierLabel(st.tier)} · target ${st.board!.target} · ${st.board!.solutions.length} sets in</div><div class="ep-bs">Tap any cell to start the clock — pick 3 cells in order to build the equation.</div></div>`);
-    return;
-  }
+  renderModeBanner(); // gatePending 变了，副标题要跟着换
+  if (st.gatePending) return;
   if (st.mode === 'duel') scheduleOpp();
   beginTimer();
 }
+
+/* 🔴 修裸键：字典就绪 / 玩家切语言时，横幅 + HUD + 计数条一起重画。
+   之前只有 rerenderResult() 管 #result，#modeBanner 与 #trayLabel 一直是旧语言。 */
+onI18nChange(() => {
+  renderModeBanner();
+  updateHud();
+  if (st.board) {
+    const lab = $('trayLabel');
+    if (lab) lab.textContent = st.board.solutions.length
+      ? i18nT('mg.pyr_found_of', { found: st.banked.size, total: st.board.solutions.length })
+      : '—';
+  }
+  rerenderResult();
+});
 
 function resetBoard(): void {
   st.picks = [];
@@ -377,7 +414,7 @@ function renderStrip(): void {
         sres.textContent = String(val);
         sres.classList.add('ok');
         strip.classList.add('ok');
-        toast('✓ Already found — the same 3 numbers in any order count once.');
+        toast(i18nT('mg.ep_already_found'));
       }
     } else if (val === null) {
       sres.textContent = '÷0!';
@@ -385,14 +422,18 @@ function renderStrip(): void {
       strip.classList.add('bad');
       st.misses++;
       st.penalty += st.mode === 'duel' ? DUEL_PENALTY : 0;
-      toast('⚠️ Can’t divide by zero');
+      toast(i18nT('mg.ep_div_zero'));
     } else {
       sres.textContent = String(val);
       sres.classList.add('bad');
       strip.classList.add('bad');
       st.misses++;
       st.penalty += st.mode === 'duel' ? DUEL_PENALTY : 0;
-      toast(`✗ ${describeSolution([a, b, c], t)} = ${val} (target ${t.target})`);
+      toast(i18nT('mg.pyr_target_note', {
+        eq: describeSolution([a, b, c], t),
+        val,
+        target: t.target,
+      }));
     }
     if (sres.classList.contains('bad')) {
       strip.classList.add('eshake');
@@ -410,7 +451,7 @@ function renderTray(): void {
   const total = t.solutions.length;
   // #11：复用页面里唯一的 #trayLabel，不再往 #trayList 里再插一个并列计数标签
   const lab = $('trayLabel');
-  if (lab) lab.textContent = total ? `Found ${found} of ${total}` : '—';
+  if (lab) lab.textContent = total ? i18nT('mg.pyr_found_of', { found, total }) : '—';
   const chips: string[] = [];
   for (const triple of t.solutions) {
     const k = tripleKey(triple);
@@ -423,9 +464,9 @@ function renderTray(): void {
   ].join('');
 }
 
-function escHtml(s: string): string {
-  return s.replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c] as string);
-}
+/* 🔴 escHtml 已统一到 ../_shared/i18n-t（本文件原本有一份私有实现）。
+   私有版本只转义 & < >，漏了引号 —— 译文里出现 " 或 ' 时会把属性截断。
+   共享版覆盖 & < > " '，且对 unknown 入参做了 String() 兜底。 */
 
 /* ═══ 单元格点击 ═══ */
 let lastJudgeNudge = 0;
@@ -433,7 +474,7 @@ function nudgeJudge(): void {
   const now = Date.now();
   if (now - lastJudgeNudge < 2000) return;
   lastJudgeNudge = now;
-  toast('⏳ Judging current pick — tap ↻ Clear to reset');
+  toast(i18nT('mg.ep_judging'));
 }
 
 function onCellClick(i: number): void {
@@ -484,10 +525,13 @@ function updateHud(): void {
   $('hudMiss')!.textContent = String(st.misses);
   $('hintLeft')!.textContent = `×${st.hintsLeft}`;
   if (st.mode === 'duel') {
-    $('youStatus')!.innerHTML = `<span class="d"></span>${st.myBanks} banks`;
-    $('oppStatus')!.innerHTML = `<span class="d"></span>${st.oppBanks} banks`;
+    $('youStatus')!.innerHTML = `<span class="d"></span>${escHtml(i18nT('mg.pyr_banks', { n: st.myBanks }))}`;
+    $('oppStatus')!.innerHTML = `<span class="d"></span>${escHtml(i18nT('mg.pyr_banks', { n: st.oppBanks }))}`;
   } else {
-    $('youStatus')!.innerHTML = `<span class="d"></span>${st.banked.size} of ${t.solutions.length}`;
+    $('youStatus')!.innerHTML = `<span class="d"></span>${escHtml(i18nT('mg.pyr_of_total', {
+      done: st.banked.size,
+      total: t.solutions.length,
+    }))}`;
   }
 }
 
@@ -513,10 +557,13 @@ function winBoard(): void {
         renderTray();
         updateHud();
         beginTimer();
-        $('result')!.innerHTML = `✅ Board cleared in <b>${fmt(st.elapsed)}</b> — next!`;
+        $('result')!.innerHTML = i18nT('mg.ep_board_cleared_html', { time: escHtml(fmt(st.elapsed)) });
       }
     }, 1500);
-    $('result')!.innerHTML = `✅ Cleared in <b>${fmt(st.elapsed)}</b> — ${st.timedStreak} streak`;
+    $('result')!.innerHTML = i18nT('mg.ep_cleared_streak_html', {
+    time: escHtml(fmt(st.elapsed)),
+    streak: st.timedStreak,
+  });
     return;
   }
   // solo / daily
@@ -539,17 +586,17 @@ function winBoard(): void {
     if (!b[k] || t < b[k]) {
       b[k] = Math.round(t * 10) / 10;
       writeJSON(LS_BEST, b);
-      extra = '<div class="ep-extra">🥇 New personal best!</div>';
+      extra = `<div class="ep-extra">${escHtml(i18nT('mg.sd_newbest'))}</div>`;
     }
   }
-  $('result')!.innerHTML = `✅ Exhausted in <b>${fmt(t)}</b>${extra}`;
+  $('result')!.innerHTML = `${i18nT('mg.pyr_exhausted_html', { time: escHtml(fmt(t)) })}${extra}`;
   showModal(
-    `<div class="ep-verdict">All equations banked 🎉</div>
-     <div class="ep-scores"><div class="ep-me num">${fmt(t)}<small>your time</small></div></div>
+    `<div class="ep-verdict">${escHtml(i18nT('mg.pyr_verdict_all_banked'))}</div>
+     <div class="ep-scores"><div class="ep-me num">${fmt(t)}<small>${escHtml(i18nT('mg.pyr_lbl_your_time'))}</small></div></div>
      ${extra}
      <div class="ep-acts">
-       <button class="ep-prim" id="mAgain">↻ New board</button>
-       <button id="mLobby">🏠 Lobby</button>
+       <button class="ep-prim" id="mAgain">${escHtml(i18nT('mg.pyr_btn_new_board'))}</button>
+       <button id="mLobby">${escHtml(i18nT('mg.shared_lobby'))}</button>
      </div>`,
     () => {
       ($('mAgain') as HTMLButtonElement).onclick = () => { hideModal(); startRound(); };
@@ -561,15 +608,15 @@ function winBoard(): void {
 function endTimed(): void {
   stopAll();
   showModal(
-    `<div class="ep-verdict">⏱ Time’s up</div>
+    `<div class="ep-verdict">${escHtml(i18nT('mg.pyr_verdict_timeup'))}</div>
      <div class="ep-scores">
-       <div class="ep-me num">${st.timedSolved}<small>boards cleared</small></div>
-       <div class="ep-op num">${st.timedStreak}<small>best streak</small></div>
-       <div class="ep-op num">${Math.max(0, st.timedDealt - st.timedSolved)}<small>unsolved</small></div>
+       <div class="ep-me num">${st.timedSolved}<small>${escHtml(i18nT('mg.pyr_lbl_boards_cleared'))}</small></div>
+       <div class="ep-op num">${st.timedStreak}<small>${escHtml(i18nT('mg.sd_lbl_best_streak'))}</small></div>
+       <div class="ep-op num">${Math.max(0, st.timedDealt - st.timedSolved)}<small>${escHtml(i18nT('mg.sd_lbl_unsolved'))}</small></div>
      </div>
      <div class="ep-acts">
-       <button class="ep-prim" id="mAgain">↻ Run it again</button>
-       <button id="mLobby">🏠 Lobby</button>
+       <button class="ep-prim" id="mAgain">${escHtml(i18nT('mg.sd_btn_run_again'))}</button>
+       <button id="mLobby">${escHtml(i18nT('mg.shared_lobby'))}</button>
      </div>`,
     () => {
       ($('mAgain') as HTMLButtonElement).onclick = () => {
@@ -593,13 +640,13 @@ function scheduleOpp(): void {
     // 零操作保护：玩家长时间无操作 → 提示一次，避免被误判“卡死/作弊”
     if (Date.now() - st.lastActTs > DUEL_IDLE_MS && !st.idleWarned) {
       st.idleWarned = true;
-      toast('⏳ Still there? The Bot keeps banking — tap the board to keep up.');
+      toast(i18nT('mg.ep_bot_banking'));
     }
     const triple = remaining[Math.floor(Math.random() * remaining.length)];
     st.banked.add(tripleKey(triple));
     st.oppBanks++;
     st.score = Math.max(0, st.score - 50);
-    toast(`🤖 Bot banked ${describeSolution(triple, t)}`);
+    toast(i18nT('mg.ep_bot_banked', { solution: escHtml(describeSolution(triple, t)) }));
     renderBoard();
     renderTray();
     updateHud();
@@ -624,19 +671,19 @@ function endDuel(): void {
   const playerWon = p > b;
   const tie = p === b;
   $('result')!.innerHTML = playerWon
-    ? `🏆 You banked more — <b>${p}</b> of <b>${total}</b>`
+    ? i18nT('mg.pyr_duel_you_bank_html', { n: p, total })
     : tie
-      ? `🤝 Draw — <b>${p}</b> banks each`
-      : `🤖 Bot banked more — <b>${b}</b> vs <b>${p}</b>`;
+      ? i18nT('mg.pyr_draw_banks_html', { n: p })
+      : i18nT('mg.pyr_duel_bot_bank_html', { b, p });
   showModal(
-    `<div class="ep-verdict">${playerWon ? 'You win 🏆' : tie ? 'Draw 🤝' : 'Bot wins 🤖'}</div>
+    `<div class="ep-verdict">${escHtml(playerWon ? i18nT('mg.pyr_verdict_you_win') : tie ? i18nT('mg.pyr_verdict_draw') : i18nT('mg.pyr_verdict_bot_wins'))}</div>
      <div class="ep-scores">
-       <div class="ep-me num">${p}<small>your banks</small></div>
-       <div class="ep-op num">${b}<small>Bot banks</small></div>
+       <div class="ep-me num">${p}<small>${escHtml(i18nT('mg.pyr_lbl_your_banks'))}</small></div>
+       <div class="ep-op num">${b}<small>${escHtml(i18nT('mg.pyr_lbl_bot_banks'))}</small></div>
      </div>
      <div class="ep-acts">
-       <button class="ep-prim" id="mAgain">⚔️ Rematch</button>
-       <button id="mLobby">🏠 Lobby</button>
+       <button class="ep-prim" id="mAgain">${escHtml(i18nT('mg.sd_btn_rematch'))}</button>
+       <button id="mLobby">${escHtml(i18nT('mg.shared_lobby'))}</button>
      </div>`,
     () => {
       ($('mAgain') as HTMLButtonElement).onclick = () => { hideModal(); startRound(); };
@@ -678,10 +725,10 @@ $('clearBtn')!.addEventListener('click', () => {
 $('newBtn')!.addEventListener('click', () => startRound());
 $('hintBtn')!.addEventListener('click', () => {
   if (!st.running || !st.board) return;
-  if (st.hintsLeft <= 0) return toast('🤔 No hints left');
+  if (st.hintsLeft <= 0) return toast(i18nT('mg.ep_no_hints'));
   const t = st.board;
   const remaining = t.solutions.filter((tri) => !st.banked.has(tripleKey(tri)));
-  if (!remaining.length) return toast('🤔 All banked');
+  if (!remaining.length) return toast(i18nT('mg.ep_all_banked'));
   // 随机挑一个解的三个 cell 标 hinted（半透明提示）
   const tri = remaining[Math.floor(Math.random() * remaining.length)];
   // 只点亮解中的一个格（原实现三格全标 + 泄整条等式，剧透太狠）
@@ -690,7 +737,7 @@ $('hintBtn')!.addEventListener('click', () => {
   renderBoard();
   st.hintsLeft--;
   updateHud();
-  toast('💡 One cell of an unbanked equation is glowing — build around it');
+  toast(i18nT('mg.ep_hint_glow'));
 });
 
 window.addEventListener('keydown', (e) => {

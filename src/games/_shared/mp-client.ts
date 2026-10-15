@@ -15,7 +15,9 @@
  * 非生产域名自动降级为本地 DEMO（模拟 99 人实时榜），便于预览验收。
  */
 
+import { i18nT } from './i18n-t';
 import { isClassroom, ensureStudentCode, reportRound } from './teacher-track';
+ import { genRoomCode, normalizeRoomCode, isValidRoomCode, ROOM_CODE_LEN } from './room-code';
 
 /** 数学站生产环境 host（数学站改名路线图 2026-09-30：mathduel.games → numeriduel.com）
  *  保留 mathduel.games 12 个月过渡期（CF Bulk Redirects）— 教师邀请码不中断 */
@@ -295,10 +297,7 @@ export class MpShell {
   setDifficulty(d: string): void { this.adapter.difficulty = d; }
 
   genRoomCode(): string {
-    const c = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
-    let s = '';
-    for (let i = 0; i < 5; i++) s += c[Math.floor(Math.random() * c.length)];
-    return s;
+    return genRoomCode();
   }
 
   /* ---- 注入 DOM ---- */
@@ -339,7 +338,7 @@ export class MpShell {
               <div class="hd"><b>💬 Room chat</b><span>only this room</span></div>
               <div class="log" id="mpChatLog"></div>
               <div class="rail">${['😂','🔥','😡','👍','💡','🎯'].map((e)=>`<button type="button" data-emoji="${e}">${e}</button>`).join('')}</div>
-              <div class="inrow"><input type="text" maxlength="200" placeholder="Say something…" id="mpChatInput"/><button type="button" id="mpChatSend">Send</button></div>
+              <div class="inrow"><input type="text" maxlength="200" placeholder="${i18nT('mg.sg_chat_placeholder')}" id="mpChatInput"/><button type="button" id="mpChatSend">Send</button></div>
             </div>
           </div>
         </div>
@@ -367,10 +366,10 @@ export class MpShell {
     el.className = 'mp-lobby';
     el.innerHTML = `
       <div class="box">
-        <button class="mp-x" id="mpLobbyClose" type="button" aria-label="Close">✕</button>
-        <h2>🏆 ${this.adapter.label} — Competition</h2>
-        <div class="hint">Create a room, share the code, race friends or the world.</div>
-        <div class="mp-field"><label>Your name</label><input class="mp-input" id="mpName" maxlength="18" placeholder="Player"/></div>
+        <button class="mp-x" id="mpLobbyClose" type="button" aria-label="${escapeHtml(i18nT('mg.shared_close'))}">✕</button>
+        <h2>${escapeHtml(i18nT('mg.mp_title_comp_html', { label: this.adapter.label }))}</h2>
+        <div class="hint">${escapeHtml(i18nT('mg.mp_room_intro'))}</div>
+        <div class="mp-field"><label>${escapeHtml(i18nT('mg.shared_your_name'))}</label><input class="mp-input" id="mpName" maxlength="18" placeholder="${escapeHtml(i18nT('mg.mp_ph_player'))}"/></div>
         <div class="mp-sizes" id="mpSizes">
           <div class="mp-size" data-max="2">2</div>
           <div class="mp-size" data-max="10">10</div>
@@ -380,14 +379,14 @@ export class MpShell {
         <div class="mp-err" id="mpLobbyErr"></div>
         <div class="mp-form" id="mpForm">
           <div class="mp-actions">
-            <button class="mp-btn primary" id="mpCreate">🚀 Create Room</button>
-            <button class="mp-btn" id="mpJoinToggle">Join with code</button>
+            <button class="mp-btn primary" id="mpCreate">${escapeHtml(i18nT('mg.mp_create_room'))}</button>
+            <button class="mp-btn" id="mpJoinToggle">${escapeHtml(i18nT('mg.mp_join_with_code'))}</button>
           </div>
           <div class="mp-field" id="mpJoinRow" style="display:none;margin-top:12px">
-            <input class="mp-input" id="mpJoinCode" maxlength="6" placeholder="ROOM CODE"/>
-            <button class="mp-btn primary" id="mpJoin">Join</button>
+            <input class="mp-input" id="mpJoinCode" maxlength="${ROOM_CODE_LEN}" placeholder="${i18nT('mg.sg_room_code_label')}"/>
+            <button class="mp-btn primary" id="mpJoin">${escapeHtml(i18nT('mg.shared_join_room'))}</button>
           </div>
-          <button class="mp-btn" id="mpRandom" style="width:100%;margin-top:12px">🎲 Find Random Opponent</button>
+          <button class="mp-btn" id="mpRandom" style="width:100%;margin-top:12px">${i18nT('mg.sg_find_random')}</button>
         </div>
         <div class="mp-room" id="mpRoom">
           <div class="hint">Room ready — share this code:</div>
@@ -422,9 +421,9 @@ export class MpShell {
     });
     el.querySelector('#mpJoin')!.addEventListener('click', () => {
       const name = (el.querySelector('#mpName') as HTMLInputElement).value.trim();
-      const code = (el.querySelector('#mpJoinCode') as HTMLInputElement).value.trim().toUpperCase();
+      const code = normalizeRoomCode((el.querySelector('#mpJoinCode') as HTMLInputElement).value);
       if (!name) { this.lobbyErr('Enter a name'); return; }
-      if (!/^[A-Z0-9]{4,6}$/.test(code)) { this.lobbyErr('Invalid code (4–6 chars)'); return; }
+      if (!isValidRoomCode(code)) { this.lobbyErr(`Invalid code (${ROOM_CODE_LEN} chars, no I/L/O/0/1)`); return; }
       this.rememberName(name);
       this.lobbyErr('');
       this.joinRoom(code, name);
@@ -515,7 +514,7 @@ export class MpShell {
     this.rememberName(name);
     this.lobbyErr('');
     const btn = this.lobbyEl.querySelector('#mpRandom') as HTMLButtonElement | null;
-    if (btn) { btn.disabled = true; btn.textContent = '🎲 Looking for an opponent…'; }
+    if (btn) { btn.disabled = true; btn.textContent = i18nT('mg.sg_finding'); }
     try {
       const r = await fetch('/api/match/join', {
         method: 'POST',
@@ -576,7 +575,7 @@ export class MpShell {
 
   private resetRandomBtn(): void {
     const btn = this.lobbyEl.querySelector('#mpRandom') as HTMLButtonElement | null;
-    if (btn) { btn.disabled = false; btn.textContent = '🎲 Find Random Opponent'; }
+    if (btn) { btn.disabled = false; btn.textContent = i18nT('mg.sg_find_random'); }
   }
 
   /* ===================== 建房 / 加入 ===================== */
@@ -880,7 +879,12 @@ export class MpShell {
       ring.setAttribute('stroke-dashoffset', String(C * (1 - frac)));
     }
     const st = this.root.querySelector('#mpStatus');
-    if (st) { st.textContent = this.spectator ? '👀 Spectating this round' : `Round timer ${secs}s`; st.setAttribute('data-live', '1'); }
+    if (st) {
+      st.textContent = this.spectator
+        ? i18nT('mg.mp_spectating_now')
+        : i18nT('mg.mp_round_timer', { n: secs });
+      st.setAttribute('data-live', '1');
+    }
   }
 
   renderSpecBar(): void {
@@ -912,7 +916,7 @@ export class MpShell {
     const sb = this.lobbyEl.querySelector('#mpStart') as HTMLButtonElement;
     const n = names.length;
     sb.disabled = !(this.isHost && n >= 2);
-    sb.textContent = n < 2 ? '🚀 Start (2+ players)' : '🚀 Start Competition';
+    sb.textContent = i18nT(n < 2 ? 'mg.mp_start_2plus' : 'mg.shared_start_competition');
   }
 
   private renderQR(): void {
@@ -950,10 +954,10 @@ export class MpShell {
 
   private copyInvite(): void {
     const url = this.inviteUrl();
-    try { navigator.clipboard.writeText(url); this.toast('Invite link copied'); } catch { this.toast(url); }
+    try { navigator.clipboard.writeText(url); this.toast(i18nT('mg.sg_invite_copied')); } catch { this.toast(url); }
   }
   private copyCode(): void {
-    try { navigator.clipboard.writeText(this.room); this.toast('Room code copied: ' + this.room); } catch { this.toast(this.room); }
+    try { navigator.clipboard.writeText(this.room); this.toast(i18nT('mg.sg_room_copied') + ' ' + this.room); } catch { this.toast(this.room); }
   }
 
   toast(m: string): void { this.cb.onError?.('ℹ️ ' + m); }
@@ -1133,9 +1137,15 @@ export class MpShell {
     const rk: RaceEntry[] = d.ranking || [];
     let me: RaceEntry | null = null;
     for (const r of rk) if (r.name === this.myName) me = r;
-    const heading = me ? (me.rank === 1 ? '🏆 You won!' : `🏁 You ranked #${me.rank}`) : '🏁 Competition Over';
-    let html = `<h2 class="${me && me.rank === 1 ? '' : me ? 'draw-c' : 'lose-c'}">${heading}</h2>`;
-    html += `<p class="sub">${rk.length} players · cap ${this.displayCap}</p>`;
+    const heading = me
+      ? me.rank === 1
+        ? i18nT('mg.mp_you_won_short')
+        : i18nT('mg.g24_rank_you', { rank: me.rank ?? 0 })
+      : i18nT('mg.g24_comp_over');
+    let html = `<h2 class="${me && me.rank === 1 ? '' : me ? 'draw-c' : 'lose-c'}">${escapeHtml(heading)}</h2>`;
+    html += `<p class="sub">${escapeHtml(
+      i18nT('mg.g24_cap_players', { n: rk.length, cap: this.displayCap }),
+    )}</p>`;
     if (Array.isArray(d.elo) && d.elo.length) html += this.eloBlockHtml(d.elo);
     html += '<div class="mp-list">';
     for (let i = 0; i < rk.length; i++) {

@@ -165,7 +165,8 @@ body.arena:not(.skin-paper) .s9-board {
   font-size: 0.6rem; font-weight: 600; line-height: 1;
   color: var(--text-muted); font-variant-numeric: tabular-nums;
 }
-.s9-pad .pk.done { opacity: 0.32; cursor: default; }
+.s9-pad .pk.done,
+.s9-pad .pk:disabled { opacity: 0.32; cursor: default; }
 .s9-pad .pk.done:hover { border-color: var(--s9-line-cell); background: var(--s9-cell-bg); color: var(--s9-accent); }
 /* 键盘可达性 */
 .s9-pad .pk:focus-visible { outline: 2px solid var(--s9-accent); outline-offset: 2px; }

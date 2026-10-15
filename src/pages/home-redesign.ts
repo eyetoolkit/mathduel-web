@@ -13,6 +13,7 @@
 import type { GameDef } from './home';
 import { wireLobbyChrome } from './lobby-chrome';
 import { getTodaysDones, getDailyStreak, getBadges } from '../games/cross-game';
+import { i18nT } from '../games/_shared/i18n-t';
 
 const SHOW_BETA = (import.meta.env.VITE_SHOW_BETA ?? '') === '1';
 
@@ -238,7 +239,7 @@ function sidebarHtml(): string {
         <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M20 13A8 8 0 1 1 11 4a6.5 6.5 0 0 0 9 9z"/></svg>
       </button>
     </div>
-    <nav class="sb-nav" aria-label="Site navigation">
+    <nav class="sb-nav" aria-label="Site navigation" data-i18n-aria-label="math_home.nav_aria">
       ${home}
       <a class="nav-item daily" href="/daily/">
         <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c1 3-2 4-2 7a4 4 0 0 0 8 0c0-1.5-.6-2.6-1.4-3.6C16 8.6 15 9.6 15 9.6 15.4 6.5 13.6 4.3 12 3z"/><path d="M8.5 13.5A4.5 4.5 0 0 0 12 21a4.5 4.5 0 0 0 3.5-7.5"/></svg>
@@ -268,7 +269,7 @@ function duoHtml(): string {
     streak = getDailyStreak();
     const unlocked = getBadges().filter((b) => b.unlocked);
     if (unlocked.length > 0) {
-      badgeSummary = unlocked.slice(0, 4).map((b) => '<span class="badge-mini" title="' + b.name + ': ' + b.hint + '">' + b.emoji + '</span>').join(' ');
+      badgeSummary = unlocked.slice(0, 4).map((b) => '<span class="badge-mini" title="' + i18nT(b.nameKey) + ': ' + i18nT(b.hintKey, b.hintVars) + '">' + b.emoji + '</span>').join(' ');
     }
   } catch (e) { /* private mode */ }
   const totalShown = 4;
@@ -426,7 +427,7 @@ export function renderHomeV2(): void {
     <!-- 主区 -->
     <main class="main">
       <!-- 游戏墙：6 张深靛卡 -->
-      <section class="wall" aria-label="All games">
+      <section class="wall" aria-label="All games" data-i18n-aria-label="math_home.group_all_games_plain">
         <div class="wrap">
           <div class="wall-grid">${HOME_CARDS.map(cardHtml).join('')}</div>
         </div>
@@ -451,13 +452,13 @@ export function renderHomeV2(): void {
       </section>
 
       <!-- 双列：每日 + 周赛 -->
-      <section class="duo wrap" aria-label="Daily activities">${duoHtml()}</section>
+      <section class="duo wrap" aria-label="Daily activities" data-i18n-aria-label="math_home.group_daily_acts">${duoHtml()}</section>
 
       <!-- 天梯 -->
-      <section class="ladder wrap" aria-label="Rank ladder">${ladderHtml()}</section>
+      <section class="ladder wrap" aria-label="Rank ladder" data-i18n-aria-label="math_home.group_ladder">${ladderHtml()}</section>
 
       <!-- F-206 (c): Why NumeriDuel? brand story -->
-      <section class="why wrap" aria-label="Why NumeriDuel">
+      <section class="why wrap" aria-label="Why NumeriDuel" data-i18n-aria-label="math_home.why_title">
         <div class="why-card">
           <div class="why-eyebrow" data-i18n="math_home.why_eyebrow">WHY MATHDUEL</div>
           <h2 class="why-title" data-i18n="math_home.why_title">Math is more fun when you can prove it.</h2>

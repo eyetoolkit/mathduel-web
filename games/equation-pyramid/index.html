@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en" data-site="numeriduel">
 <head>
-  <script>window.__I18N_CONFIG__={supported:["en","zh","ja","es","fr","de"],dictVersion:45,fallback:"en"};</script>
+  <script>window.__I18N_CONFIG__={supported:["en","zh","ja","es","fr","de"],dictVersion:58,fallback:"en"};</script>
   <script src="/i18n/i18n.js?v=40"></script>
   <meta charset="utf-8" />
   <script>
@@ -206,8 +206,8 @@
       <div class="ep-player">
         <div class="ep-av" aria-hidden="true"></div>
         <div>
-          <div class="ep-pn">Bot <span class="ep-side opp"><span class="d"></span>Opponent</span></div>
-          <div class="ep-ps" id="oppPace">— · random</div>
+          <div class="ep-pn"><span data-i18n="mg.shared_lbl_bot">Bot</span> <span class="ep-side opp"><span class="d"></span><span data-i18n="mg.shared_lbl_opponent">Opponent</span></span></div>
+          <div class="ep-ps" id="oppPace" data-i18n="mg.shared_opp_random">— · random</div>
         </div>
       </div>
       <div class="ep-status" id="oppStatus"><span class="d"></span>0 banks</div>
@@ -223,7 +223,7 @@
 
     <div class="ep-board" id="epboard" aria-label="Equation pyramid board">
       <div class="ep-target-card">
-        <small>Target</small>
+        <small data-i18n="mg.shared_lbl_target">Target</small>
         <b id="targetNum">—</b>
       </div>
       <div class="ep-grid" id="epgrid">
@@ -232,7 +232,7 @@
     </div>
 
     <div class="ep-strip" id="strip">
-      <span class="ep-slot anchor" id="slotA"><small>START</small><b id="slotANum">—</b></span>
+      <span class="ep-slot anchor" id="slotA"><small data-i18n="mg.shared_lbl_start">START</small><b id="slotANum">—</b></span>
       <span class="ep-sop" id="sop1">?</span>
       <span class="ep-slot" id="slotB"><b>—</b></span>
       <span class="ep-sop" id="sop2">?</span>
@@ -282,13 +282,13 @@
   <div class="leavecard hidden" id="ep-leavecard" role="dialog" aria-modal="true" aria-labelledby="ep-leave-title">
     <div class="leave-panel">
       <div class="leave-h">
-        <b id="ep-leave-title">Leave the game?</b>
-        <button type="button" id="ep-leave-close" aria-label="Cancel">×</button>
+        <b id="ep-leave-title" data-i18n="mg.shared_leave_title">Leave the game?</b>
+        <button type="button" id="ep-leave-close" aria-label="Cancel" data-i18n-aria-label="mg.shared_cancel">×</button>
       </div>
-      <p class="leave-note">This game is still in progress — leaving now loses your streak and today's progress.</p>
+      <p class="leave-note" data-i18n="mg.shared_leave_note">This game is still in progress — leaving now loses your streak and today's progress.</p>
       <div class="leave-acts">
-        <button type="button" class="is-primary" id="ep-leave-stay">Keep playing</button>
-        <button type="button" class="is-danger" id="ep-leave-yes">Leave</button>
+        <button type="button" class="is-primary" id="ep-leave-stay" data-i18n="mg.shared_keep_playing">Keep playing</button>
+        <button type="button" class="is-danger" id="ep-leave-yes" data-i18n="mg.shared_leave">Leave</button>
       </div>
     </div>
   </div>

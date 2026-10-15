@@ -14,6 +14,7 @@
  *    - 终局 race_over 由 SV 广播
  */
 import type { MpAdapter, RoundCtx, MpShell } from '../mp-client';
+import { i18nT } from '../i18n-t';
 import { generateTower } from '../../number-pyramid/engine';
 
 export interface NumberPyramidAdapterOpts {
@@ -116,7 +117,7 @@ inp.addEventListener('change', () => {
     }
     const hint = document.createElement('p');
     hint.style.cssText = 'color:#6B7280;font-size:12px;margin:6px 0 0;text-align:center';
-    hint.textContent = 'Each brick = sum of the two below · type a number and press Enter';
+    hint.textContent = i18nT('mg.mp_np_brick_help');
     wrap.appendChild(hint);
     boardEl.appendChild(wrap);
   };

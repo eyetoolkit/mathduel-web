@@ -33,20 +33,12 @@ import { bindSoundButton, keepAudioAlive } from '../_shared/match-sound';
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T | null;
 
+import { i18nT, escHtml, onI18nChange } from '../_shared/i18n-t';
 initI18n();
-const i18nT = (key: string, vars?: Record<string, string | number>): string => {
-  try {
-    const w = window as unknown as { i18n?: { t: (k: string, v?: Record<string, string | number>) => string } };
-    if (w.i18n && typeof w.i18n.t === 'function') return w.i18n.t(key, vars);
-    const fallback = (window as unknown as { t?: (k: string) => string }).t;
-    if (typeof fallback === 'function') return fallback(key);
-  } catch { /* ignore */ }
-  return key;
-};
-
 mountHeader(($('header') as HTMLElement | null) ?? document.createElement('div'), {
   brandName: 'NumeriDuel',
   brandSub: 'Sudoku 4×4',
+  brandSubKey: 'math_home.g_s4',
   mark: '▦',
   nav: [
     { labelKey: 'nav.home', href: '/' },
@@ -135,6 +127,29 @@ function stopAll(): void {
 }
 
 /* ═══ 开局 ═══ */
+/* 🔴 横幅必须独立成函数：enterMode() 发生在 dict 异步就绪之前，
+   直接把 i18nT() 的结果写进 DOM 会把裸 key 固化下来（RULES-FE-D.md #88/#133 同类）。
+   字典就绪或语言切换后用 renderModeBanner() 重画。
+   ⚠️ timed 的「已解/连对」由 tick() 每秒写入 #tmSolved/#tmStreak，
+      所以标签与数值必须分开成节点，不能把整句拍平成字符串。 */
+function renderModeBanner(): void {
+  const inner = (() => {
+    if (st.mode === 'timed') {
+      return `<div class="b-title">${escHtml(i18nT('mg.sd_banner_timed', { limit: TIMED_LIMIT }))}</div>`
+        + `<div class="b-sub">${escHtml(i18nT('mg.pyr_lbl_solved'))} <b id="tmSolved">${st.timedSolved}</b> · `
+        + `${escHtml(i18nT('mg.pyr_lbl_streak'))} <b id="tmStreak">${st.timedStreak}</b> · `
+        + `${escHtml(i18nT('mg.sd_mistakes_end', { max: MAX_MISTAKES }))}</div>`;
+    }
+    if (st.mode === 'daily') {
+      return `<div class="b-title">📅 ${escHtml(i18nT('ml.mt_s4_daily'))} · ${escHtml(shanghaiDateKey())}</div>`
+        + `<div class="b-sub">${escHtml(i18nT('mg.sd_banner_daily_sub'))}</div>`;
+    }
+    return `<div class="b-title">${escHtml(i18nT('mg.sd_banner_solo'))}</div>`
+      + `<div class="b-sub">${escHtml(i18nT('mg.sd_banner_solo_sub'))}</div>`;
+  })();
+  banner(`<div class="banner${st.mode === 'timed' ? ' daily timed' : ''}"><div class="daily-top"><div class="daily-meta">${inner}</div></div></div>`);
+}
+
 function startRound(): void {
   stopAll();
   st.undoStack.length = 0;
@@ -143,20 +158,21 @@ function startRound(): void {
     st.timedDealt = 1;
     st.timedSolved = 0;
     st.timedStreak = 0;
-    st.puzzle = newRoundPuzzle();
-    banner(`<div class="banner daily timed"><div class="daily-top"><div class="daily-meta"><div class="b-title">⏱ Timed · ${TIMED_LIMIT}s per grid</div><div class="b-sub">Solved <b id="tmSolved">0</b> · Streak <b id="tmStreak">0</b> · wrong digits just flash</div></div></div></div>`);
-  } else if (st.mode === 'daily') {
-    st.puzzle = newRoundPuzzle();
-    banner(`<div class="banner"><div class="daily-top"><div class="daily-meta"><div class="b-title">📅 ${i18nT('ml.mt_s4_daily')} · ${shanghaiDateKey()}</div><div class="b-sub">Same puzzle for everyone today · best time saved locally</div></div></div></div>`);
-  } else {
-    st.puzzle = newRoundPuzzle();
-    banner(`<div class="banner"><div class="daily-top"><div class="daily-meta"><div class="b-title">🎯 Solo</div><div class="b-sub">Unique solution · best time saved locally</div></div></div></div>`);
   }
+  st.puzzle = newRoundPuzzle();
+  renderModeBanner();
   resetBoard();
   renderBoard();
   renderSide();
   beginTimer();
 }
+
+/* 🔴 字典就绪前 enterMode() 已经把裸 key 写进 #modeBanner 了，
+   这里补一次重画（alsoReady 默认 true 会同时覆盖 ready 与 change）。 */
+onI18nChange(() => {
+  renderModeBanner();
+  renderSide();
+});
 
 let roundNonce = 0;
 function newRoundPuzzle(): Puzzle {
@@ -320,6 +336,8 @@ function updatePad(): void {
     const badge = b.querySelector('.pk-left');
     if (badge) badge.textContent = left > 0 ? String(left) : '';
     b.classList.toggle('done', left <= 0);
+    // 置灰必须真禁用：此前只加 .done 样式，click handler 仍会 place() → 白扣一命
+    b.disabled = left <= 0;
   });
 }
 
@@ -335,7 +353,7 @@ function nudgePick(): void {
   const now = Date.now();
   if (now - padNudgeAt < 2000) return;
   padNudgeAt = now;
-  toast('👆 Pick a cell first');
+  toast(i18nT('mg.sg_pick_cell'));
 }
 
 /** 落子/错误的一次性动效（直接挂 class，下一次 renderBoard 自然移除） */
@@ -358,7 +376,7 @@ function undo(): void {
   if (!st.running) return;
   const e = st.undoStack.pop();
   if (!e) {
-    toast('↶ Nothing to undo');
+    toast(i18nT('mg.sg_nothing_undo'));
     return;
   }
   st.grid[e.i] = e.grid;
@@ -472,15 +490,16 @@ function winSolo(): void {
   if (!b[k] || t < b[k]) {
     b[k] = Math.round(t * 10) / 10;
     writeJSON(LS_BEST, b);
-    extra = '<div class="s4-newbest">🥇 New personal best!</div>';
+    extra = `<div class="s4-newbest">${escHtml(i18nT('mg.sd_newbest'))}</div>`;
   }
   if (st.mode === 'daily') recordDaily('sudoku-4x4', { durationSec: t });
-  $('result')!.innerHTML = `✅ Solved in <b>${fmt(t)}</b>${extra}`;
+  $('result')!.innerHTML = `${i18nT('mg.sd_solved_in_html', { time: escHtml(fmt(t)) })}${extra}`;
   showModal(
-    '<div class="s4-verdict">Grid complete 🎉</div>' +
-      `<div class="s9-scores"><div class="me num">${fmt(t)}<small>your time</small></div></div>` +
+    `<div class="s4-verdict">${escHtml(i18nT('mg.sd_verdict_complete'))}</div>` +
+      `<div class="s9-scores"><div class="me num">${fmt(t)}<small>${escHtml(i18nT('mg.sd_lbl_your_time'))}</small></div></div>` +
       extra +
-      '<div class="s9-acts"><button class="btn primary" id="mAgain">↻ New grid</button><button class="btn ghost" id="mLobby">🏠 Lobby</button></div>',
+      `<div class="s9-acts"><button class="btn primary" id="mAgain">${escHtml(i18nT('mg.shared_new_grid'))}</button>`
+      + `<button class="btn ghost" id="mLobby">${escHtml(i18nT('mg.shared_lobby'))}</button></div>`,
     () => {
       $('mAgain')!.onclick = () => {
         hideModal();
@@ -497,11 +516,12 @@ function winSolo(): void {
 function endMistakes(): void {
   if (!st.running) return;
   stopAll();
-  $('stMain')!.innerHTML = '💥 Too many mistakes';
+  $('stMain')!.innerHTML = i18nT('mg.sg_too_many_mistakes');
   showModal(
-    '<div class="s4-verdict">Out of lives</div>' +
-      '<div class="s9-scores"><div class="op num">3<small>mistakes</small></div></div>' +
-      '<div class="s9-acts"><button class="btn primary" id="mAgain">↻ Try again</button><button class="btn ghost" id="mLobby">🏠 Lobby</button></div>',
+    `<div class="s4-verdict">${escHtml(i18nT('mg.sd_verdict_out_of_lives'))}</div>` +
+      `<div class="s9-scores"><div class="op num">${MAX_MISTAKES}<small>${escHtml(i18nT('mg.sd_lbl_mistakes'))}</small></div></div>` +
+      `<div class="s9-acts"><button class="btn primary" id="mAgain">${escHtml(i18nT('mg.sd_btn_try_again'))}</button>`
+      + `<button class="btn ghost" id="mLobby">${escHtml(i18nT('mg.shared_lobby'))}</button></div>`,
     () => {
       $('mAgain')!.onclick = () => {
         hideModal();
@@ -527,10 +547,13 @@ function winTimed(): void {
       renderBoard();
       renderSide();
       beginTimer();
-      $('result')!.innerHTML = `✅ #${st.timedSolved} · ${st.timedStreak} streak — next grid!`;
+      $('result')!.innerHTML = escHtml(i18nT('mg.sd_timed_next_streak', { n: st.timedSolved, streak: st.timedStreak }));
     }
   }, 1500); // 留足时间看清完成盘面
-  $('result')!.innerHTML = `✅ #${st.timedSolved} in <b>${fmt(st.elapsed)}</b> — next grid incoming…`;
+  $('result')!.innerHTML = i18nT('mg.sd_timed_next_incoming_html', {
+    n: st.timedSolved,
+    time: escHtml(fmt(st.elapsed)),
+  });
 }
 
 function endTimed(): void {
@@ -538,11 +561,12 @@ function endTimed(): void {
   $('stMain')!.innerHTML = i18nT('mg.sg_timeout');
   const unsolved = Math.max(0, st.timedDealt - st.timedSolved);
   showModal(
-    '<div class="s4-verdict">⏱ Time’s up</div>' +
-      `<div class="s9-scores"><div class="me num">${st.timedSolved}<small>solved</small></div>` +
-      `<div class="op num">${st.timedStreak}<small>best streak</small></div>` +
-      `<div class="op num">${unsolved}<small>unsolved</small></div></div>` +
-      '<div class="s9-acts"><button class="btn primary" id="mAgain">↻ Run it again</button><button class="btn ghost" id="mLobby">🏠 Lobby</button></div>',
+    `<div class="s4-verdict">${escHtml(i18nT('mg.sd_verdict_timeup'))}</div>` +
+      `<div class="s9-scores"><div class="me num">${st.timedSolved}<small>${escHtml(i18nT('mg.sd_lbl_solved'))}</small></div>` +
+      `<div class="op num">${st.timedStreak}<small>${escHtml(i18nT('mg.sd_lbl_best_streak'))}</small></div>` +
+      `<div class="op num">${unsolved}<small>${escHtml(i18nT('mg.sd_lbl_unsolved'))}</small></div></div>` +
+      `<div class="s9-acts"><button class="btn primary" id="mAgain">${escHtml(i18nT('mg.sd_btn_run_again'))}</button>`
+      + `<button class="btn ghost" id="mLobby">${escHtml(i18nT('mg.shared_lobby'))}</button></div>`,
     () => {
       $('mAgain')!.onclick = () => {
         hideModal();
@@ -565,18 +589,18 @@ function renderSide(): void {
   let bestRow = '';
   if (st.mode !== 'timed') {
     const b = readJSON<Record<string, number>>(LS_BEST, {});
-    const label = st.mode === 'daily' ? 'Daily' : 'Solo';
+    const label = st.mode === 'daily' ? i18nT('mg.sd_panel_daily') : i18nT('mg.sd_lbl_solo_short');
     bestRow =
-      '<div class="panel"><h3>🏅 Best time</h3>' +
-      `<div class="stat-row"><span>${label}</span><b>${b[st.mode] ? fmt(b[st.mode]) : '—'}</b></div>` +
+      `<div class="panel"><h3>${escHtml(i18nT('mg.sd_panel_best_time'))}</h3>` +
+      `<div class="stat-row"><span>${escHtml(label)}</span><b>${b[st.mode] ? escHtml(fmt(b[st.mode])) : '—'}</b></div>` +
       '</div>';
   }
   el.innerHTML =
-    '<div class="panel"><h3>▦ Grid status</h3>' +
-    `<div class="stat-row"><span>Cells filled</span><b id="statFilled">${filled}/16</b></div>` +
-    `<div class="stat-row"><span>Empty (this puzzle)</span><b>${holes}</b></div>` +
-    `<div class="stat-row"><span>Mistakes</span><span class="lives" id="sideLives"><i class="${st.mistakes < 1 ? '' : 'off'}"></i><i class="${st.mistakes < 2 ? '' : 'off'}"></i><i class="${st.mistakes < 3 ? '' : 'off'}"></i></span></div>` +
-    '<div class="hint-step"><b>·</b><span>Click a cell, then tap a number — or type 1–4, arrows to move. Toggle Notes (✏) to pencil candidates; Backspace erases.</span></div></div>' +
+    `<div class="panel"><h3>${escHtml(i18nT('mg.sd_panel_grid_status'))}</h3>` +
+    `<div class="stat-row"><span>${escHtml(i18nT('mg.sd_lbl_cells_filled'))}</span><b id="statFilled">${filled}/16</b></div>` +
+    `<div class="stat-row"><span>${escHtml(i18nT('mg.sd_lbl_empty'))}</span><b>${holes}</b></div>` +
+    `<div class="stat-row"><span>${escHtml(i18nT('mg.sd_lbl_mistakes'))}</span><span class="lives" id="sideLives"><i class="${st.mistakes < 1 ? '' : 'off'}"></i><i class="${st.mistakes < 2 ? '' : 'off'}"></i><i class="${st.mistakes < 3 ? '' : 'off'}"></i></span></div>` +
+    `<div class="hint-step"><b>·</b><span>${escHtml(i18nT('mg.sd_hint_click4'))}</span></div></div>` +
     bestRow;
 }
 
@@ -664,10 +688,10 @@ function nakedReason(i: number, n: number): string {
     }
     return true;
   };
-  if (onlyMissing(unitVals((j) => rowOf(j) === rowOf(i)))) return `only digit missing from row ${rowOf(i) + 1}`;
-  if (onlyMissing(unitVals((j) => colOf(j) === colOf(i)))) return `only digit missing from column ${colOf(i) + 1}`;
-  if (onlyMissing(unitVals((j) => boxOf(j) === boxOf(i)))) return 'only digit missing from its 2\u00d72 box';
-  return 'every other digit already sits nearby';
+  if (onlyMissing(unitVals((j) => rowOf(j) === rowOf(i)))) return i18nT('mg.sd_reason_row', { n: rowOf(i) + 1 });
+  if (onlyMissing(unitVals((j) => colOf(j) === colOf(i)))) return i18nT('mg.sd_reason_col', { n: colOf(i) + 1 });
+  if (onlyMissing(unitVals((j) => boxOf(j) === boxOf(i)))) return i18nT('mg.sd_reason_box2');
+  return i18nT('mg.sd_reason_nearby');
 }
 
 function giveHint(): void {
@@ -698,16 +722,30 @@ function giveHint(): void {
     }
   }
   if (best < 0 || !cands.length) return;
-  const n = cands[0];
-  st.grid[best] = n;
-  st.filledBy[best] = 1;
-  st.marks[best].clear();
+  // 兜底修正：候选与唯一解不符（玩家错格污染候选，极少见）时，改找一个
+  // 「单候选且等于解」的真格；找不到就退化为「单候选 = 解」缺失的格。
+  // 目的：提示永不指向错误数字（旧实现直接取 cands[0] 落盘，可能填错且不计 mistakes）。
+  if (cands[0] !== st.puzzle!.solution[best]) {
+    const honest = empties.find((i) => {
+      const c = candidatesOf(i);
+      return c.length === 1 && c[0] === st.puzzle!.solution[i];
+    });
+    if (honest !== undefined) {
+      best = honest;
+      cands = [st.puzzle!.solution[best]];
+    } else {
+      return; // 无可靠提示 → 宁可不提示，也不给可能错误的数字
+    }
+  }
+  // 只提示、不落子（与 6×6 / 9×9 语义一致）：4×4 此前直接写盘等于代打。
   st.sel = best;
   renderBoard();
-  flashCell(best, 'pop', 320);
-  const why = nakedReason(best, n);
-  $('result')!.innerHTML = `💡 Row ${rowOf(best) + 1}, Col ${colOf(best) + 1} takes <b>${n}</b> — ${why}`;
-  checkWin();
+  flashCell(best, 'pulse', 900);
+  const n = cands[0];
+  $('result')!.innerHTML =
+    cands.length === 1
+      ? `💡 Row ${rowOf(best) + 1}, Col ${colOf(best) + 1} must be <b>${n}</b> — ${nakedReason(best, n)}`
+      : `💡 Row ${rowOf(best) + 1}, Col ${colOf(best) + 1}: only ${cands.join(' or ')} fit there`;
 }
 
 /* ═══ boot：深链 ?mode= ═══ */

@@ -7,6 +7,7 @@
    答案页独立成页（break-before: page）。
    ═══════════════════════════════════════════════════════════════ */
 import './worksheets.css';
+import { i18nT, onI18nChange, i18nLocale } from '../games/_shared/i18n-t';
 import {
   mulberry32, N as N9,
   generatePuzzle as genS9,
@@ -35,9 +36,11 @@ type SPuzzle = { puzzle: number[]; solution: number[] };
 
 interface GameDef {
   key: GameKey;
-  label: string;
+  /** i18n key —— tab 与纸面标题都用它，切语言才同步（ml.dc_*_name） */
+  labelKey: string;
   blurb: string;
-  diffs: Array<[string, string]>;   // [value, label]
+  /** [value, i18n key] —— 难度下拉的文案也走字典，切语言才同步 */
+  diffs: Array<[string, string]>;
   counts: number[];                 // 可选题量
   defDiff: string;
   defCount: number;
@@ -45,27 +48,27 @@ interface GameDef {
 
 const GAMES: GameDef[] = [
   {
-    key: 's24', label: '24 Point', blurb: 'Make 24 using all four numbers — each exactly once.',
-    diffs: [['easy', 'Easy'], ['standard', 'Standard'], ['hard', 'Hard']],
+    key: 's24', labelKey: 'ml.dc_24_name', blurb: 'mp.mp_ws_blurb_s24',
+    diffs: [['easy', 'difficulty.easy'], ['standard', 'difficulty.standard'], ['hard', 'difficulty.hard']],
     counts: [4, 6, 8, 12], defDiff: 'standard', defCount: 6,
   },
   {
-    key: 'eqpyr', label: 'Equation Pyramid', blurb: 'Pick three cells in order to hit the target.',
-    diffs: [['warmup', 'Warm-up'], ['standard', 'Standard'], ['tricky', 'Tricky']],
+    key: 'eqpyr', labelKey: 'ml.dc_pyr_name', blurb: 'mp.mp_ws_blurb_eqpyr',
+    diffs: [['warmup', 'ml.diff_warmup'], ['standard', 'difficulty.standard'], ['tricky', 'ml.diff_tricky']],
     counts: [3, 4, 6], defDiff: 'standard', defCount: 4,
   },
   {
-    key: 's4', label: 'Sudoku 4×4', blurb: 'Fill 1–4 so every row, column and 2×2 box has each digit once.',
-    diffs: [['fixed', '—']], counts: [2, 4, 6], defDiff: 'fixed', defCount: 4,
+    key: 's4', labelKey: 'ml.dc_s4_name', blurb: 'mp.mp_ws_blurb_s4',
+    diffs: [['fixed', '']], counts: [2, 4, 6], defDiff: 'fixed', defCount: 4,
   },
   {
-    key: 's6', label: 'Sudoku 6×6', blurb: 'Fill 1–6 so every row, column and box has each digit once.',
-    diffs: [['easy', 'Easy'], ['standard', 'Standard'], ['hard', 'Hard']],
+    key: 's6', labelKey: 'ml.dc_s6_name', blurb: 'mp.mp_ws_blurb_s6',
+    diffs: [['easy', 'difficulty.easy'], ['standard', 'difficulty.standard'], ['hard', 'difficulty.hard']],
     counts: [1, 2, 3], defDiff: 'easy', defCount: 2,
   },
   {
-    key: 's9', label: 'Sudoku 9×9', blurb: 'The classic grid — rows, columns and 3×3 boxes.',
-    diffs: [['easy', 'Easy'], ['standard', 'Standard'], ['hard', 'Hard']],
+    key: 's9', labelKey: 'ml.dc_s9_name', blurb: 'mp.mp_ws_blurb_s9',
+    diffs: [['easy', 'difficulty.easy'], ['standard', 'difficulty.standard'], ['hard', 'difficulty.hard']],
     counts: [1, 2], defDiff: 'easy', defCount: 1,
   },
 ];
@@ -82,7 +85,6 @@ const emptyBox = byId('empty');
 
 let cur: GameDef = GAMES[0];
 let hasSet = false;
-let setNo = '';
 let pieceCounter = 0;
 
 function el<K extends keyof HTMLElementTagNameMap>(tag: K, cls?: string, text?: string): HTMLElementTagNameMap[K] {
@@ -114,7 +116,7 @@ function make24(rng: () => number, diff: string): Piece {
   // * 和 / 换成 × ÷，答案页更像算式而不是代码（ts lib es2020 无 replaceAll）
   const pretty = sol
     ? sol[1].split('*').join('\u00d7').split('/').join('\u00f7') + ' = 24'
-    : '(skip \u2014 no solution)';
+    : i18nT('mg.ws_no_solution');
   answer.appendChild(el('span', undefined, pretty));
   return { card, answer };
 }
@@ -126,7 +128,7 @@ function makeEqpyr(rng: () => number, tier: string): Piece {
   const card = el('div', 'pcard pceq');
   card.appendChild(el('div', 'pno', String(pieceCounter)));
   const meta = el('div', 'eq-meta');
-  meta.appendChild(el('span', 'eq-target', 'Target: ' + board.target));
+  meta.appendChild(el('span', 'eq-target', i18nT('mp.mp_ws_target', { n: board.target })));
   card.appendChild(meta);
   const grid = el('div', 'eq-grid');
   board.cells.forEach((c, i) => {
@@ -136,8 +138,7 @@ function makeEqpyr(rng: () => number, tier: string): Piece {
     grid.appendChild(cell);
   });
   card.appendChild(grid);
-  card.appendChild(el('div', 'eq-hint',
-    'Choose three cells in order: number · operator · number · operator · number.'));
+  card.appendChild(el('div', 'eq-hint', i18nT('mp.mp_ws_eqpyr_hint')));
 
   const answer = el('div', 'ans-line');
   answer.appendChild(el('b', undefined, String(pieceCounter) + '.'));
@@ -193,15 +194,26 @@ function makeSudoku(kind: 's4' | 's6' | 's9', diff: string, rng: () => number): 
 
 /* ══════════════ 集合渲染 ══════════════ */
 
-function renderSet(): void {
+/**
+ * 🔴 只跟「题目内容」有关的纯数据，跟语言无关。
+ * 拆出来是为了让切语言时只重贴标签、不重新出题 —— 否则玩家正在打印的
+ * 练习纸会因为切了个语言整份换掉，纸上编号和答案全变。
+ */
+interface SheetData {
+  setNo: string;
+  pieces: Piece[];
+}
+
+let lastData: SheetData | null = null;
+
+/** 生成一套题（语言无关），返回数据。 */
+function buildSet(): SheetData {
   pieceCounter = 1;
   const rng = mulberry32((Math.random() * 0xffffffff) >>> 0);
-  setNo = Math.random().toString(36).slice(2, 6).toUpperCase();
   const def = cur;
   const diff = diffSel.value;
   const count = parseInt(countSel.value, 10) || def.defCount;
 
-  sheet.textContent = '';
   const pieces: Piece[] = [];
   for (let k = 0; k < count; k++) {
     if (def.key === 's24') pieces.push(make24(rng, diff));
@@ -211,31 +223,47 @@ function renderSet(): void {
     else pieces.push(makeSudoku('s9', diff, rng));
     pieceCounter++;
   }
+  return { setNo: Math.random().toString(36).slice(2, 6).toUpperCase(), pieces };
+}
+
+/** 🔴 纸面上的日期/姓名/标题等标签一律走字典（切语言要跟着变）。 */
+function buildLabels(): { date: string; name: string } {
+  return {
+    // 日期格式跟随语言：中文下 "2026年10月15日" 比 "Oct 15, 2026" 更自然
+    date: new Date().toLocaleDateString(i18nLocale(), { year: 'numeric', month: 'short', day: 'numeric' }),
+    name: i18nT('mp.mp_ws_name'),
+  };
+}
+
+/** 把数据 + 标签贴到 DOM（纯渲染，可重复调用）。 */
+function paintSet(d: SheetData): void {
+  const def = cur;
+  const labels = buildLabels();
+  sheet.textContent = '';
 
   /* 页眉：标题 + 元信息 + 姓名栏（老师发纸必备） */
   const head = el('div', 'ws-head');
   const t = el('div', 'ws-title');
-  t.appendChild(el('b', undefined, 'NumeriDuel · ' + def.label));
-  const diffText = diff === 'fixed' ? '' : ' · ' + (diffSel.selectedOptions[0]?.textContent || diff);
+  t.appendChild(el('b', undefined, 'NumeriDuel · ' + i18nT(def.labelKey)));
+  const diffText = diffSel.value === 'fixed' ? '' : ' · ' + (diffSel.selectedOptions[0]?.textContent || diffSel.value);
   t.appendChild(el('span', 'ws-diff', diffText));
   head.appendChild(t);
   const meta = el('div', 'ws-meta');
-  meta.appendChild(el('span', undefined, 'Set #' + setNo));
-  meta.appendChild(el('span', undefined,
-    new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })));
-  meta.appendChild(el('span', 'ws-name', 'Name ________________'));
+  meta.appendChild(el('span', undefined, i18nT('mp.mp_ws_set_no', { n: d.setNo })));
+  meta.appendChild(el('span', undefined, labels.date));
+  meta.appendChild(el('span', 'ws-name', labels.name));
   head.appendChild(meta);
-  head.appendChild(el('div', 'ws-blurb', def.blurb));
+  head.appendChild(el('div', 'ws-blurb', i18nT(def.blurb)));
   sheet.appendChild(head);
 
   const grid = el('div', 'ws-grid');
-  for (const p of pieces) grid.appendChild(p.card);
+  for (const p of d.pieces) grid.appendChild(p.card);
   sheet.appendChild(grid);
 
   if (ansChk.checked) {
     const ansSec = el('section', 'ws-answers');
-    ansSec.appendChild(el('h2', undefined, 'Answer Key — Set #' + setNo));
-    for (const p of pieces) ansSec.appendChild(p.answer);
+    ansSec.appendChild(el('h2', undefined, i18nT('mp.mp_ws_answer_key', { n: d.setNo })));
+    for (const p of d.pieces) ansSec.appendChild(p.answer);
     sheet.appendChild(ansSec);
   }
 
@@ -243,18 +271,30 @@ function renderSet(): void {
   hasSet = true;
 }
 
+/** 出新题 + 渲染（点按钮 / 切游戏 / 改难度 / 改题量）。 */
+function renderSet(): void {
+  lastData = buildSet();
+  paintSet(lastData);
+}
+
+/** 🔴 只重新贴标签，不重新出题（语言切换时用）。 */
+function relabelSet(): void {
+  if (lastData) paintSet(lastData);
+}
+
 /* ══════════════ 控件 ══════════════ */
 
 function fillOptions(): void {
   diffSel.textContent = '';
-  for (const [v, label] of cur.diffs) {
-    const o = el('option', undefined, label) as HTMLOptionElement;
+  for (const [v, key] of cur.diffs) {
+    const o = el('option', undefined, key ? i18nT(key) : '—') as HTMLOptionElement;
     o.value = v;
     if (v === cur.defDiff) o.selected = true;
     diffSel.appendChild(o);
   }
   diffSel.disabled = cur.diffs.length <= 1;
-  diffLbl.textContent = cur.key === 'eqpyr' ? 'Tier' : 'Difficulty';
+  // 金字塔的档位叫「Tier」，其余叫「Difficulty」—— 两个都要本地化
+  diffLbl.textContent = i18nT(cur.key === 'eqpyr' ? 'mp.mp_ws_lbl_tier' : 'mp.mp_ws_lbl_diff');
 
   countSel.textContent = '';
   for (const c of cur.counts) {
@@ -267,7 +307,10 @@ function fillOptions(): void {
 
 function buildTabs(): void {
   for (const g of GAMES) {
-    const b = el('button', 'ws-tab' + (g === cur ? ' on' : ''), g.label) as HTMLButtonElement;
+    // 🔴 存 i18n key 而不是译文字符串：首屏可能还没字典，
+    //    onI18nChange 时按 key 重写一遍文本即可（见文件末尾）。
+    const b = el('button', 'ws-tab' + (g === cur ? ' on' : ''), i18nT(g.labelKey)) as HTMLButtonElement;
+    b.dataset.labelKey = g.labelKey;
     b.type = 'button';
     b.setAttribute('role', 'tab');
     b.addEventListener('click', () => {
@@ -286,7 +329,23 @@ byId('printBtn').addEventListener('click', () => {
   window.print();
 });
 ansChk.addEventListener('change', () => { if (hasSet) renderSet(); });
+diffSel.addEventListener('change', () => { if (hasSet) renderSet(); });
+countSel.addEventListener('change', () => { if (hasSet) renderSet(); });
 
 buildTabs();
 fillOptions();
 renderSet();
+
+// 🔴 字典是 async fetch 加载的：首屏 renderSet() 那会儿 i18nT() 只能回落成 key，
+//    纸面整片都是 `mp.mp_ws_*`。i18n.js 只会重写 data-i18n* 静态骨架，
+//    管不到我们用 textContent 写的纸面节点 → 必须 ready / change 时重贴。
+onI18nChange(() => {
+  // tab 文案按 key 重写（首屏没字典时它们就是原始 key）
+  for (const n of Array.from(tabsEl.children) as HTMLElement[]) {
+    if (n.dataset.labelKey) n.textContent = i18nT(n.dataset.labelKey);
+  }
+  const keep = diffSel.value;
+  fillOptions();
+  diffSel.value = keep;            // 重填下拉会回到默认项，把玩家选择还原回去
+  relabelSet();
+});

@@ -1,3 +1,5 @@
+import { i18nT } from './i18n-t';
+
 /* ═══════════════════════════════════════════════════════════════
    老师端 · 学生端归因（只有课堂作业链接会带 tid=1 才生效）
    ────────────────────────────────────────────────────────────────
@@ -128,7 +130,7 @@ export function ensureStudentCode(room: string): Promise<string | null> {
 
     const submit = async () => {
       const code = input.value.trim().toUpperCase();
-      if (!code) { errEl.textContent = 'Please enter your code.'; return; }
+      if (!code) { errEl.textContent = i18nT('common.code_prompt'); return; }
       okBtn.disabled = true;
       okBtn.textContent = 'Checking…';
       try {
@@ -141,25 +143,25 @@ export function ensureStudentCode(room: string): Promise<string | null> {
         const j = await res.json().catch(() => ({}));
         if (!res.ok) {
           errEl.textContent = (j && j.error === 'room_not_found')
-            ? 'This room has expired — ask your teacher for a new link.'
-            : 'Could not join. Please check the code.';
+            ? i18nT('mg.tt_room_expired')
+            : i18nT('mg.tt_join_failed');
           okBtn.disabled = false;
           okBtn.textContent = 'Start';
           return;
         }
         if (j && j.ok === false) {
           errEl.textContent = j.reason === 'not_on_roster'
-            ? 'This code is not on the class list — check with your teacher.'
+            ? i18nT('mg.tt_not_roster')
             : j.reason === 'expired'
-              ? 'This assignment has closed — ask your teacher.'
-              : 'Not accepted. Check with your teacher.';
+              ? i18nT('mg.tt_assignment_closed')
+              : i18nT('mg.tt_not_accepted');
           okBtn.disabled = false;
           okBtn.textContent = 'Start';
           return;
         }
         close(code);
       } catch {
-        errEl.textContent = 'Network error — try again.';
+        errEl.textContent = i18nT('common.net_retry');
         okBtn.disabled = false;
         okBtn.textContent = 'Start';
       }

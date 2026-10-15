@@ -13,6 +13,8 @@ import '../../styles/home-redesign.css';
 import './lobby.css';
 import { wireLobbyChrome } from '../../pages/lobby-chrome';
 import { shanghaiDateKey } from './engine';
+import { normalizeRoomCode, isValidRoomCode, ROOM_CODE_LEN } from '../_shared/room-code';
+import { i18nT, onI18nReady } from '../_shared/i18n-t';
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T | null;
 const GAME_URL = '/games/24-game/';
@@ -87,24 +89,26 @@ async function renderBoard(): Promise<void> {
 
     let html = '';
     if (!entries.length) {
-      html = '<div class="arb-empty">Nobody has finished today\u2019s challenge yet \u2014 take the first spot.</div>';
+      html = `<div class="arb-empty">${esc(i18nT('mg.l24_board_empty'))}</div>`;
     } else {
       html = entries
         .slice(0, 3)
-        .map((e, i) => rowHtml(String(i + 1), e.nickname || 'Player', scoreOf(e), `r${i + 1}`))
+        .map((e, i) =>
+          rowHtml(String(i + 1), e.nickname || i18nT('mg.l24_row_player'), scoreOf(e), `r${i + 1}`),
+        )
         .join('');
     }
 
     const me = data.me;
     if (me && (me.rank || Number.isFinite(me.duration))) {
-      html += rowHtml('you', 'You', scoreOf(me), 'me');
+      html += rowHtml(i18nT('mg.l24_row_you').toLowerCase(), i18nT('mg.l24_row_you'), scoreOf(me), 'me');
     } else {
       const mine = localDailyResult();
-      if (mine) html += rowHtml('you', 'You', `${mine.totalTime.toFixed(1)}s`, 'me');
+      if (mine) html += rowHtml(i18nT('mg.l24_row_you').toLowerCase(), i18nT('mg.l24_row_you'), `${mine.totalTime.toFixed(1)}s`, 'me');
     }
     host.innerHTML = html;
   } catch {
-    host.innerHTML = '<div class="arb-empty">\ud83c\udf10 The global board needs a live connection.</div>';
+    host.innerHTML = `<div class="arb-empty">${esc(i18nT('mg.l24_board_offline'))}</div>`;
   }
 }
 
@@ -121,8 +125,9 @@ function initRoom(): void {
   if (fromUrl && input) input.value = fromUrl;
 
   if (input) {
+    input.maxLength = ROOM_CODE_LEN;
     input.addEventListener('input', () => {
-      input.value = input.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+      input.value = normalizeRoomCode(input.value);
       say('');
     });
     input.addEventListener('keydown', (e) => {
@@ -131,9 +136,9 @@ function initRoom(): void {
   }
 
   $('joinRoom')?.addEventListener('click', () => {
-    const code = (input?.value || '').trim().toUpperCase();
-    if (!/^[A-Z0-9]{4,6}$/.test(code)) {
-      say('Enter the 4\u20136 character room code.');
+    const code = normalizeRoomCode(input?.value || '');
+    if (!isValidRoomCode(code)) {
+      say(i18nT('mg.lb_room_code_hint', { n: ROOM_CODE_LEN }));
       input?.focus();
       return;
     }
@@ -146,7 +151,8 @@ function boot(): void {
   wireLobbyChrome();
   markDailyDone();
   initRoom();
-  void renderBoard();
+  // 🔴 榜单里的文案走 i18nT()，必须等字典 ready，否则会渲染出原始 key
+  onI18nReady(() => void renderBoard());
 }
 
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);

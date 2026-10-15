@@ -3,3 +3,8 @@ dist
 *.log
 .DS_Store
 .env
+# i18n 真机验收产物（CDP 跑出来的结果快照，不入库）
+i18n-coldstart-result.json
+i18n-hotswitch-result.json
+# 构建历史备份目录
+dist_old_*/

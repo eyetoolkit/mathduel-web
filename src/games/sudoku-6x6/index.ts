@@ -36,20 +36,12 @@ import { bindSoundButton, keepAudioAlive } from '../_shared/match-sound';
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T | null;
 
+import { i18nT, escHtml, onI18nChange } from '../_shared/i18n-t';
 initI18n();
-const i18nT = (key: string, vars?: Record<string, string | number>): string => {
-  try {
-    const w = window as unknown as { i18n?: { t: (k: string, v?: Record<string, string | number>) => string } };
-    if (w.i18n && typeof w.i18n.t === 'function') return w.i18n.t(key, vars);
-    const fallback = (window as unknown as { t?: (k: string) => string }).t;
-    if (typeof fallback === 'function') return fallback(key);
-  } catch { /* ignore */ }
-  return key;
-};
-
 mountHeader(($('header') as HTMLElement | null) ?? document.createElement('div'), {
   brandName: 'NumeriDuel',
   brandSub: 'Sudoku 6×6',
+  brandSubKey: 'math_home.g_s6',
   mark: '▦',
   nav: [
     { labelKey: 'nav.home', href: '/' },
@@ -65,7 +57,8 @@ const DUEL_PAR = 34; // 速度环满环时间（秒）
 const RING_R = 20;
 const RING_C = 2 * Math.PI * RING_R;
 
-const diffLabel = (d: Difficulty): string => ({ easy: 'Easy', standard: 'Standard', hard: 'Hard' })[d];
+// 🔴 难度名走字典：原来硬编码英文，切 de/es/fr 时最佳成绩面板与每日横幅会漏英文
+const diffLabel = (d: Difficulty): string => i18nT(`difficulty.${d}`);
 
 /* ─── 状态 ─── */
 const st = {
@@ -161,36 +154,73 @@ function stopAll(): void {
 }
 
 /* ═══ 开局 ═══ */
+/* 🔴 横幅必须独立成函数：enterMode() 发生在 dict 异步就绪之前，
+   直接把 i18nT() 的结果写进 DOM 会把裸 key 固化下来（RULES-FE-D.md #88/#133 同类）。
+   ⚠️ timed 的「已解/连对」由 tick() 每秒写入 #tmSolved/#tmStreak，
+      标签与数值必须分开成节点，不能把整句拍平成字符串。 */
+function renderModeBanner(): void {
+  const m = st.mode;
+  const wrap = (inner: string, cls = 'banner daily'): void => {
+    banner(`<div class="${cls}"><div class="daily-top"><div class="daily-meta">${inner}</div></div></div>`);
+  };
+  if (m === 'daily') {
+    wrap(
+      `<div class="b-title">🌐 ${escHtml(i18nT('ml.mt_s6_daily'))} #${escHtml(shanghaiDateKey())}</div>`
+      + `<div class="b-sub">${escHtml(i18nT('mg.sd_banner_daily_world'))}</div>`,
+    );
+    return;
+  }
+  if (m === 'duel') {
+    wrap(
+      `<div class="b-title">${escHtml(i18nT('mg.sd_banner_duel'))}</div>`
+      + `<div class="b-sub">${escHtml(i18nT('mg.sd_banner_duel_sub', { penalty: DUEL_PENALTY }))}</div>`,
+    );
+    return;
+  }
+  if (m === 'timed') {
+    wrap(
+      `<div class="b-title">${escHtml(i18nT('mg.sd_banner_timed', { limit: TIMED_LIMIT }))}</div>`
+      + `<div class="b-sub">${escHtml(i18nT('mg.pyr_lbl_solved'))} <b id="tmSolved">${st.timedSolved}</b> · `
+      + `${escHtml(i18nT('mg.pyr_lbl_streak'))} <b id="tmStreak">${st.timedStreak}</b> · `
+      + `${escHtml(i18nT('mg.sd_mistakes_flash'))}</div>`,
+      'banner daily timed',
+    );
+    return;
+  }
+  wrap(
+    `<div class="b-title">${escHtml(i18nT('mg.sd_banner_solo_diff', { diff: diffLabel(st.diff) }))}</div>`
+    + `<div class="b-sub">${escHtml(i18nT('mg.sd_banner_solo_sub'))}</div>`,
+  );
+}
+
 function startRound(): void {
   stopAll();
   st.undoStack.length = 0;
-  const m = st.mode;
-  if (m === 'timed') {
+  if (st.mode === 'timed') {
     st.timedStartTs = Date.now();
     st.timedDealt = 1; // 首盘已发出
   }
-  if (m === 'daily') {
-    const dk = shanghaiDateKey();
-    st.puzzle = dailyPuzzle(dk);
-    banner(`<div class="banner daily"><div class="daily-top"><div class="daily-meta"><div class="b-title">🌐 ${i18nT('ml.mt_s6_daily')} #${dk}</div><div class="b-sub">One seeded puzzle worldwide · Standard · finish to log today</div></div></div></div>`);
-  } else if (m === 'duel') {
+  if (st.mode === 'daily') {
+    st.puzzle = dailyPuzzle(shanghaiDateKey());
+  } else if (st.mode === 'duel') {
     const rng = mulberry32((Date.now() ^ hashString(String(performance.now()))) >>> 0);
     st.puzzle = duelDeal(st.diff, rng) as Puzzle;
-    banner('<div class="banner daily"><div class="daily-top"><div class="daily-meta"><div class="b-title">🤖 Duel Bot · claim your half</div><div class="b-sub">Fill only the cells with an ember corner · wrong digits cost +2.5s</div></div></div></div>');
   } else {
     st.puzzle = newRoundPuzzle();
-    banner(
-      m === 'timed'
-        ? `<div class="banner daily timed"><div class="daily-top"><div class="daily-meta"><div class="b-title">⏱ Timed · ${TIMED_LIMIT}s per grid</div><div class="b-sub">Solved <b id="tmSolved">0</b> · Streak <b id="tmStreak">0</b> · wrong digits just flash</div></div></div></div>`
-        : `<div class="banner"><div class="daily-top"><div class="daily-meta"><div class="b-title">🎯 Solo · ${diffLabel(st.diff)}</div><div class="b-sub">Unique solution · best time saved locally</div></div></div></div>`,
-    );
   }
+  renderModeBanner();
   resetBoard();
   renderBoard();
   renderSide();
   beginTimer();
   if (st.mode === 'duel') scheduleBot();
 }
+
+/* 🔴 字典就绪前 startRound() 已经把裸 key 写进 #modeBanner 了，这里补一次重画。 */
+onI18nChange(() => {
+  renderModeBanner();
+  renderSide();
+});
 
 let roundNonce = 0;
 function newRoundPuzzle(): Puzzle {
@@ -209,10 +239,12 @@ function resetBoard(keepClock = false): void {
   $('notesBtn')?.classList.remove('on');
   st.sel = -1;
   st.penalty = 0;
+  // 错误计数必须无条件复位：限时连盘走 resetBoard(true)，
+  // 若跟着 keepClock 一起跳过，errors 会跨盘累加（4x4/9x9 早已放在 if 外面）。
+  st.mistakes = 0;
   if (!keepClock) {
     st.elapsed = 0;
     st.startTs = Date.now();
-    st.mistakes = 0;
   }
   st.running = true;
   conflictCache = findConflicts(st.grid);
@@ -224,15 +256,17 @@ function resetBoard(keepClock = false): void {
     for (const i of d.bots) st.owner[i] = 2;
     st.mineTotal = d.mine.size;
     st.botTotal = d.bots.size;
-    $('youSub')!.textContent = `your cells: ${st.mineTotal}`;
+    $('youSub')!.textContent = i18nT('mg.sg_duel_mycells', { n: st.mineTotal });
     $('oppSub')!.textContent = botPaceText();
     renderOppStatus();
   }
   $('result')!.textContent = st.mode === 'duel' ? i18nT('mg.sg_duel_first') : i18nT('mg.sg_pick_first');
 }
 
+/** 6×6：对手每格耗时（与难度绑定，随 st.diff 变化） */
+const BOT_PACE_SEC: Record<string, number> = { easy: 4.6, standard: 3.4, hard: 2.5 };
 const botPaceText = (): string =>
-  ({ easy: 'easy pace · ~4.6s per cell', standard: 'standard pace · ~3.4s per cell', hard: 'hard pace · ~2.5s per cell' })[st.diff];
+  i18nT(`mg.s6_pace_${st.diff}`, { s: BOT_PACE_SEC[st.diff] ?? 3.4 });
 
 /** 我负责的格子里已填对的个数（动态统计，erase/改数后仍准确） */
 function correctMine(): number {
@@ -406,13 +440,15 @@ function updatePad(): void {
     const badge = b.querySelector('.pk-left');
     if (badge) badge.textContent = left > 0 ? String(left) : '';
     b.classList.toggle('done', left <= 0);
+    // 置灰必须真禁用：此前只加 .done 样式，click handler 仍会 place() → 白扣一命
+    b.disabled = left <= 0;
   });
 }
 
 function selectCell(i: number): void {
   if (!st.running) return;
   if (st.mode === 'duel' && st.owner[i] === 2) {
-    toast('🤖 That cell is GridBot\u2019s to fill');
+    toast(i18nT('mg.sg_bot_cell'));
     return;
   }
   if (st.puzzle!.puzzle[i]) {
@@ -430,7 +466,7 @@ function nudgePick(): void {
   const now = Date.now();
   if (now - padNudgeAt < 2000) return; // 2s 节流，避免连点刷屏
   padNudgeAt = now;
-  toast('👆 Pick a cell first');
+  toast(i18nT('mg.sg_pick_cell'));
 }
 
 /** 落子/冲突的一次性动效（直接挂 class，下一次 renderBoard 自然移除） */
@@ -464,7 +500,7 @@ function undo(): void {
   if (!st.running) return;
   const e = st.undoStack.pop();
   if (!e) {
-    toast('↶ Nothing to undo');
+    toast(i18nT('mg.sg_nothing_undo'));
     return;
   }
   st.grid[e.i] = e.grid;
@@ -485,7 +521,7 @@ function autoMarks(): void {
     n++;
   }
   renderBoard();
-  toast(n ? `✨ Candidates filled · ${n} cells` : '✨ Every cell is committed');
+  toast(n ? i18nT('mg.sd_toast_candidates', { n }) : i18nT('mg.sd_toast_committed'));
 }
 
 function place(v: number): void {
@@ -496,11 +532,11 @@ function place(v: number): void {
   }
   const i = st.sel;
   if (st.puzzle!.puzzle[i]) {
-    toast('📌 That clue is fixed');
+    toast(i18nT('mg.sg_clue_fixed'));
     return;
   }
   if (st.mode === 'duel' && st.owner[i] !== 1) {
-    toast('🏁 Free cells unlock after duels — claim yours');
+    toast(i18nT('mg.sg_free_unlock'));
     return;
   }
   // notes 模式：仅 toggle 候选数字（不写入真实数字）
@@ -519,7 +555,7 @@ function place(v: number): void {
   if (conflicts.has(i)) {
     st.mistakes++;
     st.penalty += st.mode === 'duel' ? DUEL_PENALTY : 0;
-    if (st.mode === 'duel') toast(`⚔️ Conflict! +${DUEL_PENALTY}s penalty`);
+    if (st.mode === 'duel') toast(i18nT('mg.sd_toast_conflict', { penalty: DUEL_PENALTY }));
     st.sel = i;
     renderBoard();
     flashCell(i, 'shake', 400);
@@ -589,9 +625,9 @@ function winSoloDaily(): void {
       d[dk] = Math.round(t * 10) / 10;
       writeJSON(LS_DAILY, d);
       recordDaily('sudoku-6x6', { durationSec: t });
-      extra = '<div class="s6-newbest">🌐 Daily grid logged — see you tomorrow!</div>';
+      extra = `<div class="s6-newbest">${escHtml(i18nT('mg.sd_daily_logged'))}</div>`;
     } else {
-      extra = '<div class="s6-newbest">Already logged today — replay doesn\u2019t overwrite.</div>';
+      extra = `<div class="s6-newbest">${escHtml(i18nT('mg.sd_daily_already'))}</div>`;
     }
   } else {
     const b = readJSON<Record<string, number>>(LS_BEST, {});
@@ -599,15 +635,16 @@ function winSoloDaily(): void {
     if (!b[k] || t < b[k]) {
       b[k] = Math.round(t * 10) / 10;
       writeJSON(LS_BEST, b);
-      extra = '<div class="s6-newbest">🥇 New personal best!</div>';
+      extra = `<div class="s6-newbest">${escHtml(i18nT('mg.sd_newbest'))}</div>`;
     }
   }
-  $('result')!.innerHTML = `✅ Solved in <b>${fmt(t)}</b>${extra}`;
+  $('result')!.innerHTML = `${i18nT('mg.sd_solved_in_html', { time: escHtml(fmt(t)) })}${extra}`;
   showModal(
-    '<div class="s6-verdict">Grid complete 🎉</div>' +
-      `<div class="s6-scores"><div class="me num">${fmt(t)}<small>your time</small></div></div>` +
+    `<div class="s6-verdict">${escHtml(i18nT('mg.sd_verdict_complete'))}</div>` +
+      `<div class="s6-scores"><div class="me num">${fmt(t)}<small>${escHtml(i18nT('mg.sd_lbl_your_time'))}</small></div></div>` +
       extra +
-      '<div class="s6-acts"><button class="btn primary" id="mAgain">↻ New grid</button><button class="btn ghost" id="mLobby">🏠 Lobby</button></div>',
+      `<div class="s6-acts"><button class="btn primary" id="mAgain">${escHtml(i18nT('mg.shared_new_grid'))}</button>`
+      + `<button class="btn ghost" id="mLobby">${escHtml(i18nT('mg.shared_lobby'))}</button></div>`,
     () => {
       $('mAgain')!.onclick = () => {
         hideModal();
@@ -633,10 +670,13 @@ function winTimed(): void {
       resetBoard(true);
       renderBoard();
       beginTimer(); // checkWin 胜利时清了计时器，续盘需重建
-      $('result')!.innerHTML = `✅ #${st.timedSolved} · ${st.timedStreak} streak — next grid!`;
+      $('result')!.innerHTML = escHtml(i18nT('mg.sd_timed_next_streak', { n: st.timedSolved, streak: st.timedStreak }));
     }
   }, 1500); // 与 24 点 Timed 对齐：留足时间看清完成盘面
-  $('result')!.innerHTML = `✅ #${st.timedSolved} in <b>${fmt(st.elapsed)}</b> — next grid incoming…`;
+  $('result')!.innerHTML = i18nT('mg.sd_timed_next_incoming_html', {
+    n: st.timedSolved,
+    time: escHtml(fmt(st.elapsed)),
+  });
 }
 
 function endTimed(): void {
@@ -644,11 +684,12 @@ function endTimed(): void {
   $('stMain')!.innerHTML = i18nT('mg.sg_timeout');
   const unsolved = Math.max(0, st.timedDealt - st.timedSolved); // 发出 − 解出 = 没解完的
   showModal(
-    '<div class="s6-verdict">⏱ Time\u2019s up</div>' +
-      `<div class="s6-scores"><div class="me num">${st.timedSolved}<small>solved</small></div>` +
-      `<div class="op num">${st.timedStreak}<small>best streak</small></div>` +
-      `<div class="op num">${unsolved}<small>unsolved</small></div></div>` +
-      '<div class="s6-acts"><button class="btn primary" id="mAgain">↻ Run it again</button><button class="btn ghost" id="mLobby">🏠 Lobby</button></div>',
+    `<div class="s6-verdict">${escHtml(i18nT('mg.sd_verdict_timeup'))}</div>` +
+      `<div class="s6-scores"><div class="me num">${st.timedSolved}<small>${escHtml(i18nT('mg.sd_lbl_solved'))}</small></div>` +
+      `<div class="op num">${st.timedStreak}<small>${escHtml(i18nT('mg.sd_lbl_best_streak'))}</small></div>` +
+      `<div class="op num">${unsolved}<small>${escHtml(i18nT('mg.sd_lbl_unsolved'))}</small></div></div>` +
+      `<div class="s6-acts"><button class="btn primary" id="mAgain">${escHtml(i18nT('mg.sd_btn_run_again'))}</button>`
+      + `<button class="btn ghost" id="mLobby">${escHtml(i18nT('mg.shared_lobby'))}</button></div>`,
     () => {
       $('mAgain')!.onclick = () => {
         hideModal();
@@ -694,25 +735,27 @@ function scheduleBot(): void {
 
 function renderOppStatus(): void {
   const s = $('oppStatus')!;
-  s.innerHTML = `<span class="d"></span>Bot cells ${st.botDone}/${st.botTotal}`;
+  s.innerHTML = `<span class="d"></span>${escHtml(i18nT('mg.sd_bot_cells', { done: st.botDone, total: st.botTotal }))}`;
   s.classList.toggle('done', st.botDone >= st.botTotal);
   const you = $('youSub')!;
-  if (you) you.textContent = `your cells: ${correctMine()}/${st.mineTotal}`;
+  if (you) you.textContent = i18nT('mg.sg_duel_mycells', { n: `${correctMine()}/${st.mineTotal}` });
 }
 
 function finishDuel(playerWon: boolean): void {
   stopAll();
   const t = st.elapsed;
-  const verdict = playerWon ? 'You win 🏆' : 'GridBot wins 🤖';
+  const verdict = playerWon ? i18nT('mg.sd_verdict_you_win') : i18nT('mg.sd_verdict_bot_wins');
   const mine = playerWon ? fmt(t) : `${correctMine()}/${st.mineTotal}`;
   const bots = playerWon ? `${st.botDone}/${st.botTotal}` : fmt(t);
   $('result')!.innerHTML = playerWon
-    ? `🏆 You filled your half in <b>${fmt(t)}</b> — GridBot stalled at ${st.botDone}/${st.botTotal}`
-    : `🤖 GridBot finished first (${fmt(t)}) — you had ${correctMine()}/${st.mineTotal}`;
+    ? i18nT('mg.sd_duel_you_win_html', { time: escHtml(fmt(t)), done: st.botDone, total: st.botTotal })
+    : i18nT('mg.sd_duel_bot_win_html', { time: escHtml(fmt(t)), done: correctMine(), total: st.mineTotal });
   showModal(
-    `<div class="s6-verdict">${verdict}</div>` +
-      `<div class="s6-scores"><div class="me num">${mine}<small>you</small></div><div class="op num">${bots}<small>GridBot</small></div></div>` +
-      '<div class="s6-acts"><button class="btn primary" id="mAgain">⚔️ Rematch</button><button class="btn ghost" id="mLobby">🏠 Lobby</button></div>',
+    `<div class="s6-verdict">${escHtml(verdict)}</div>` +
+      `<div class="s6-scores"><div class="me num">${escHtml(mine)}<small>${escHtml(i18nT('mg.sd_lbl_you'))}</small></div>`
+      + `<div class="op num">${escHtml(bots)}<small>GridBot</small></div></div>` +
+      `<div class="s6-acts"><button class="btn primary" id="mAgain">${escHtml(i18nT('mg.sd_btn_rematch'))}</button>`
+      + `<button class="btn ghost" id="mLobby">${escHtml(i18nT('mg.shared_lobby'))}</button></div>`,
     () => {
       $('mAgain')!.onclick = () => {
         hideModal();
@@ -726,14 +769,32 @@ function finishDuel(playerWon: boolean): void {
   );
 }
 
-/* bot 聊天台词（DEMO） */
-const BOT_LINES = {
-  hello: ['Good luck — you\u2019ll need it.', 'Grid goes brrr.', 'I was compiled to win this.'],
-  playerFill: ['Nice one.', 'Hey, that was mine-ish.', 'Okay, warm-up over.'],
-  botFill: ['Claimed.', 'Mine.', 'Tick tock.', 'Beep.'],
-  losing: ['You\u2019re fast for a human…', 'Recalibrating…'],
-  winning: ['This is easy mode for me.', 'Almost there!'],
+/* bot 聊天台词（DEMO）—— 走字典，玩家在「对战聊天」里直接读得到 */
+const BOT_LINE_KEYS = {
+  hello: ['mg.sg_bot_hello_1', 'mg.sg_bot_hello_2', 'mg.sg_bot_hello_3'] as const,
+  playerFill: ['mg.sg_bot_playerfill_1', 'mg.sg_bot_playerfill_2', 'mg.sg_bot_playerfill_3'] as const,
+  botFill: ['mg.sg_bot_botfill_1', 'mg.sg_bot_botfill_2', 'mg.sg_bot_botfill_3', 'mg.sg_bot_botfill_4'] as const,
+  losing: ['mg.sg_bot_losing_1', 'mg.sg_bot_losing_2'] as const,
+  winning: ['mg.sg_bot_winning_1', 'mg.sg_bot_winning_2'] as const,
 } as const;
+
+/** 取当前语言下的台词表。字典未就绪时 i18nT() 回落到 key，botSay 会过滤掉。 */
+function botLines(): Record<BotLineEvent, readonly string[]> {
+  const out2 = {} as Record<BotLineEvent, readonly string[]>;
+  for (const k of Object.keys(BOT_LINE_KEYS) as BotLineEvent[]) {
+    out2[k] = BOT_LINE_KEYS[k].map((key) => i18nT(key));
+  }
+  return out2;
+}
+
+type BotLineEvent = keyof typeof BOT_LINE_KEYS;
+
+/** 随机取一条；过滤掉「还没拿到字典」的裸 key，保证聊天框不显示 mg.sg_bot_* */
+function pickBotLine(ev: BotLineEvent): string {
+  const arr = botLines()[ev].filter((s) => s && !/^mg\./.test(s));
+  if (!arr.length) return "";
+  return arr[Math.floor(Math.random() * arr.length)];
+}
 let lastLine = '';
 function botSay(text: string): void {
   if (text === lastLine) return;
@@ -742,7 +803,9 @@ function botSay(text: string): void {
   if (!dock.dataset.built) {
     dock.dataset.built = '1';
     dock.innerHTML =
-      '<div class="ctitle"><span>Match chat · GridBot</span><span>beta demo</span></div><div class="s6-chatlog" id="s6chat"></div>';
+      `<div class="ctitle"><span>${escHtml(i18nT('mg.sd_chat_title'))}</span>`
+      + `<span>${escHtml(i18nT('mg.sd_chat_beta'))}</span></div>`
+      + '<div class="s6-chatlog" id="s6chat"></div>';
   }
   const log = $('s6chat')!;
   const div = document.createElement('div');
@@ -754,10 +817,10 @@ function botSay(text: string): void {
 }
 
 let botTalkBudget = 0;
-function botTrashTalk(event: keyof typeof BOT_LINES): void {
+function botTrashTalk(event: BotLineEvent): void {
   botTalkBudget++;
   if (event !== 'hello' && Math.random() > 0.22 && botTalkBudget % 4 !== 0) return;
-  const lines = BOT_LINES[event];
+  const lines = botLines()[event].filter((s) => s && !/^mg\./.test(s));
   botSay(lines[Math.floor(Math.random() * lines.length)]);
 }
 
@@ -771,21 +834,22 @@ function renderSide(): void {
   if (st.mode === 'solo') {
     const b = readJSON<Record<string, number>>(LS_BEST, {});
     bestRow =
-      '<div class="panel"><h3>🏅 Best times</h3>' +
+      `<div class="panel"><h3>${escHtml(i18nT('mg.sd_panel_best_times'))}</h3>` +
       (['easy', 'standard', 'hard'] as Difficulty[])
-        .map((d) => `<div class="stat-row"><span>${diffLabel(d)}</span><b>${b[d] ? fmt(b[d]) : '—'}</b></div>`)
+        .map((d) => `<div class="stat-row"><span>${escHtml(diffLabel(d))}</span><b>${b[d] ? escHtml(fmt(b[d])) : '—'}</b></div>`)
         .join('') +
       '</div>';
   } else if (st.mode === 'daily') {
-    bestRow = '<div class="panel"><h3>🌐 Daily</h3><div class="hint-step"><b>·</b><span>One attempt logs your time; replays are free but won\u2019t overwrite.</span></div></div>';
+    bestRow = `<div class="panel"><h3>${escHtml(i18nT('mg.sd_panel_daily'))}</h3>`
+      + `<div class="hint-step"><b>·</b><span>${escHtml(i18nT('mg.sd_daily_note'))}</span></div></div>`;
   }
   el.innerHTML =
-    '<div class="panel"><h3>▦ Grid status</h3>' +
-    `<div class="stat-row"><span>Cells filled</span><b id="statFilled">${filled}/36</b></div>` +
-    `<div class="stat-row"><span>Mistakes</span><b id="statMistakes">${st.mistakes}</b></div>` +
-    `<div class="stat-row"><span>Empty (this puzzle)</span><b>${holes}</b></div>` +
-    `<div class="stat-row"><span>Difficulty</span><b>${st.mode === 'daily' ? 'Standard (fixed)' : diffLabel(st.diff)}</b></div>` +
-    '<div class="hint-step"><b>·</b><span>Click a cell, then tap a number — or type 1–6, arrows to move, Backspace to erase.</span></div></div>' +
+    `<div class="panel"><h3>${escHtml(i18nT('mg.sd_panel_grid_status'))}</h3>` +
+    `<div class="stat-row"><span>${escHtml(i18nT('mg.sd_lbl_cells_filled'))}</span><b id="statFilled">${filled}/36</b></div>` +
+    `<div class="stat-row"><span>${escHtml(i18nT('mg.sd_lbl_mistakes'))}</span><b id="statMistakes">${st.mistakes}</b></div>` +
+    `<div class="stat-row"><span>${escHtml(i18nT('mg.sd_lbl_empty'))}</span><b>${holes}</b></div>` +
+    `<div class="stat-row"><span>${escHtml(i18nT('mg.shared_lbl_difficulty'))}</span><b>${escHtml(st.mode === 'daily' ? i18nT('mg.shared_daily_fixed') : diffLabel(st.diff))}</b></div>` +
+    `<div class="hint-step"><b>·</b><span>${escHtml(i18nT('mg.sd_hint_click6'))}</span></div></div>` +
     bestRow;
 }
 
@@ -887,10 +951,10 @@ function nakedReason(i: number, n: number): string {
     }
     return true;
   };
-  if (onlyMissing(unitVals((j) => rowOf(j) === rowOf(i)))) return `only digit missing from row ${rowOf(i) + 1}`;
-  if (onlyMissing(unitVals((j) => colOf(j) === colOf(i)))) return `only digit missing from column ${colOf(i) + 1}`;
-  if (onlyMissing(unitVals((j) => boxOf(j) === boxOf(i)))) return 'only digit missing from its 2\u00d73 box';
-  return 'every other digit already sits nearby';
+  if (onlyMissing(unitVals((j) => rowOf(j) === rowOf(i)))) return i18nT('mg.sd_reason_row', { n: rowOf(i) + 1 });
+  if (onlyMissing(unitVals((j) => colOf(j) === colOf(i)))) return i18nT('mg.sd_reason_col', { n: colOf(i) + 1 });
+  if (onlyMissing(unitVals((j) => boxOf(j) === boxOf(i)))) return i18nT('mg.sd_reason_box2');
+  return i18nT('mg.sd_reason_nearby');
 }
 
 function giveHint(): void {
@@ -930,9 +994,18 @@ function giveHint(): void {
   st.sel = best;
   renderBoard();
   if (cands.length === 1) {
-    toast(`💡 r${rowOf(best) + 1}c${colOf(best) + 1} must be ${cands[0]} — ${nakedReason(best, cands[0])}`);
+    toast(i18nT('mg.sd_hint_must_be', {
+      row: rowOf(best) + 1,
+      col: colOf(best) + 1,
+      value: cands[0],
+      reason: nakedReason(best, cands[0]),
+    }));
   } else {
-    toast(`💡 r${rowOf(best) + 1}c${colOf(best) + 1}: only ${cands.join(' or ')} fit there`);
+    toast(i18nT('mg.sd_hint_only_fit', {
+      row: rowOf(best) + 1,
+      col: colOf(best) + 1,
+      cands: cands.join(' / '),
+    }));
   }
 }
 
@@ -959,4 +1032,4 @@ if (modeFromUrl === "battle" || modeFromUrl === "random" || (new URLSearchParams
 }
 
 renderSide();
-botSay(BOT_LINES.hello[Math.floor(Math.random() * BOT_LINES.hello.length)]);
+botSay(pickBotLine('hello'));

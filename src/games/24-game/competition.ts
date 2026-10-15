@@ -13,6 +13,7 @@
 
 import { generate24Puzzle, type Difficulty } from './engine';
 import { isClassroom, ensureStudentCode, reportRound, opsFromExpression, skillsFromExpression } from '../_shared/teacher-track';
+import { genRoomCode } from '../_shared/room-code';
 
 export interface RaceEntry {
   name: string;
@@ -142,10 +143,7 @@ export class Competition {
   }
 
   genRoomCode(): string {
-    const c = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
-    let s = '';
-    for (let i = 0; i < 5; i++) s += c[Math.floor(Math.random() * c.length)];
-    return s;
+    return genRoomCode();
   }
 
   /* ---------------- 建房 / 加入 ---------------- */

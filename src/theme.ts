@@ -11,6 +11,8 @@
  * 注意：游戏对局页（arena）本就不读 data-theme，保持深色对局区，不受影响。
  */
 
+import { i18nT, onI18nChange } from './games/_shared/i18n-t';
+
 const KEY = 'md-theme';
 type Theme = 'dark' | 'light';
 
@@ -59,8 +61,9 @@ export function applyTheme(t: Theme): void {
 
   document.querySelectorAll<HTMLElement>('.sb-theme').forEach((btn) => {
     btn.setAttribute('aria-pressed', String(t === 'dark'));
-    btn.setAttribute('title', t === 'dark' ? 'Switch to light' : 'Switch to dark');
-    btn.setAttribute('aria-label', t === 'dark' ? 'Switch to light' : 'Switch to dark');
+    const lbl = i18nT(t === 'dark' ? 'common.theme_to_light' : 'common.theme_to_dark');
+    btn.setAttribute('title', lbl);
+    btn.setAttribute('aria-label', lbl);
     btn.innerHTML = t === 'dark' ? ICON_SUN : ICON_MOON;
   });
 }
@@ -77,4 +80,8 @@ export function initTheme(): void {
     e.preventDefault();
     applyTheme(current() === 'dark' ? 'light' : 'dark');
   });
+
+  // 🔴 标题/aria-label 是 applyTheme() 里写进去的，切语言不会自动重写
+  //    （它们不是 data-i18n* 属性，i18n.js 管不到），必须整段重跑一次。
+  onI18nChange(() => applyTheme(current()));
 }

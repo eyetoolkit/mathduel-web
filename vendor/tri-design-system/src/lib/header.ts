@@ -14,6 +14,10 @@ export interface NavItem {
 export interface HeaderConfig {
   brandName: string;
   brandSub: string;
+  /** 🔴 brandSub 的 i18n key。给了就优先于 brandSub 明文，
+   *    并在 i18n:ready / i18n:change 时重贴（brandSub 写死英文会导致
+   *    西/法等语言下头部副标题永远是英文，静态扫描抓不到、只有 CDP 才暴露）。 */
+  brandSubKey?: string;
   mark: string;
   nav: NavItem[];
   /** 右侧额外内容（金币栏 / 登录按钮等）的挂载点 id */
@@ -26,6 +30,10 @@ export interface HeaderConfig {
  */
 export function mountHeader(host: HTMLElement, cfg: HeaderConfig): void {
   const activePath = location.pathname.replace(/index\.html$/, '');
+
+  /** brandSub 文案：优先走 key（可随语言切换），否则退回明文 */
+  const brandSubText = (): string =>
+    cfg.brandSubKey ? t(cfg.brandSubKey) : cfg.brandSub;
 
   const navHtml = cfg.nav
     .map((item) => {
@@ -48,7 +56,7 @@ export function mountHeader(host: HTMLElement, cfg: HeaderConfig): void {
         <span class="mark" aria-hidden="true">${escapeHtml(cfg.mark)}</span>
         <span class="stack">
           <span class="name">${escapeHtml(cfg.brandName)}</span>
-          <span class="sub">${escapeHtml(cfg.brandSub)}</span>
+          <span class="sub"${cfg.brandSubKey ? ` data-i18n="${cfg.brandSubKey}"` : ''}>${escapeHtml(brandSubText())}</span>
         </span>
       </a>
       <nav class="site-nav site-nav-desktop" aria-label="Main">${navHtml}</nav>
@@ -66,6 +74,18 @@ export function mountHeader(host: HTMLElement, cfg: HeaderConfig): void {
 
   const langHost = host.querySelector<HTMLElement>('#langHost');
   if (langHost) mountLangSwitcher(langHost);
+
+  /* 🔴 brandSub 显式重贴：data-i18n 靠 i18n.js 的 MutationObserver 兜底，
+     但那层在「字典异步到位前」不会回头补。这里直接挂 ready/change 双监听，
+     任何时序下都能拿到当前语言的译文（对应 RULES-FE.md 的异步字典时序坑）。 */
+  if (cfg.brandSubKey) {
+    const subEl = host.querySelector<HTMLElement>('.site-brand .sub');
+    const repaint = (): void => {
+      if (subEl) subEl.textContent = brandSubText();
+    };
+    window.addEventListener('i18n:ready', repaint);
+    window.addEventListener('i18n:change', repaint);
+  }
 
   const toggle = host.querySelector<HTMLButtonElement>('#navToggle')!;
   const drawer = host.querySelector<HTMLElement>('#navDrawer')!;
