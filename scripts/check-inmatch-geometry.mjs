@@ -128,21 +128,49 @@ async function withTimeout(p, ms, label) {
 // nWait：渲染就绪所需格子数
 // 场景挑选原则：覆盖 3 款数独 × solo/duel × 手机/桌面 + 金字塔 + 24 点回归 + 横屏回退，
 // 每个维度取最能复现历史 bug 的极端视口（最小手机 360 / 主流手机 390 / 矮桌面 900 / 大桌面 1080）。
+//
+// 🔴 2026-10-16 复盘后补（详见 _复盘-棋盘与按键事故-20261016.md 闸 2）：
+//   `.tabs` 是**跨 4 款游戏共用**的类（grep games/ 实测 24-game/sudoku/sudoku-4x4/sudoku-6x6
+//   都用 `class="g24-bar" + class="tabs"`），而它的 CSS 基础定义住在
+//   **24-game 自己**的 `src/games/24-game/styles.css:40-57`，覆盖修规则在共享的 game-shell.css。
+//   「定义在游戏文件 / 覆盖在共享文件」的错位 = 改一处静默影响 4 款（事故 ③ 的来源）。
+//   故凡新增**跨页共用**的选择器，必须在此表列出「共用类 × 全部使用方 × 最窄视口」，
+//   否则就是「只验了报障的那一款」。本次补：4×4/6×6 的 m360（此前只到 m390）、
+//   24 点的 m360（金字塔无 tabs，用 epBtn 判据覆盖）。
 const CASES = [
+  ['9x9-solo-m320',  '/games/sudoku/?mode=solo',            '.s9-board', '.c9cell', 9, 81, 320, 780, true],
   ['9x9-solo-m360',  '/games/sudoku/?mode=solo',            '.s9-board', '.c9cell', 9, 81, 360, 640, true],
   ['9x9-solo-m390',  '/games/sudoku/?mode=solo',            '.s9-board', '.c9cell', 9, 81, 390, 844, true],
+  ['9x9-duel-m360',  '/games/sudoku/?mode=duel',            '.s9-board', '.c9cell', 9, 81, 360, 640, true],
   ['9x9-duel-m390',  '/games/sudoku/?mode=duel',            '.s9-board', '.c9cell', 9, 81, 390, 844, true],
   ['9x9-solo-d900',  '/games/sudoku/?mode=solo',            '.s9-board', '.c9cell', 9, 81, 1280, 900, true],
   ['9x9-duel-d900',  '/games/sudoku/?mode=duel',            '.s9-board', '.c9cell', 9, 81, 1280, 900, true],
   ['9x9-solo-d1080', '/games/sudoku/?mode=solo',            '.s9-board', '.c9cell', 9, 81, 1920, 1080, true],
+  ['6x6-solo-m360',  '/games/sudoku-6x6/?mode=solo',        '.s6-board', '.c6cell', 6, 36, 360, 640, true],
   ['6x6-solo-m390',  '/games/sudoku-6x6/?mode=solo',        '.s6-board', '.c6cell', 6, 36, 390, 844, true],
   ['6x6-solo-d900',  '/games/sudoku-6x6/?mode=solo',        '.s6-board', '.c6cell', 6, 36, 1280, 900, true],
+  ['4x4-solo-m360',  '/games/sudoku-4x4/?mode=solo',        '.s4-board', '.c4cell', 4, 16, 360, 640, true],
   ['4x4-solo-m390',  '/games/sudoku-4x4/?mode=solo',        '.s4-board', '.c4cell', 4, 16, 390, 844, true],
   ['4x4-solo-d900',  '/games/sudoku-4x4/?mode=solo',        '.s4-board', '.c4cell', 4, 16, 1280, 900, true],
+  ['ep-solo-m360',   '/games/equation-pyramid/?mode=solo', '.ep-grid',  '.epc',    3, 9, 360, 640, true],
   ['ep-solo-m390',   '/games/equation-pyramid/?mode=solo', '.ep-grid',  '.epc',    3, 9, 390, 844, true],
   ['ep-solo-d900',   '/games/equation-pyramid/?mode=solo', '.ep-grid',  '.epc',    3, 9, 1280, 900, true],
+  ['g24-solo-m360',  '/games/24-game/?mode=solo',           '.cards',   '.card',   0, 4, 360, 640, true],
   ['g24-solo-d900',  '/games/24-game/?mode=solo',           '.cards',   '.card',   0, 4, 1280, 900, true],
   ['9x9-solo-land',  '/games/sudoku/?mode=solo',            '.s9-board', '.c9cell', 9, 81, 667, 375, false],
+];
+
+/**
+ * 「chrome 物理上放不下」的设计取舍白名单（只豁免 pgScroll 一项）。
+ * 白名单 = 已实测并记录在案的取舍，不是「让门禁变绿的后门」：
+ * 每条都必须写明为什么放不下、放行后哪些主判据仍必须成立。
+ * 新增条目前先答：①这是有意取舍还是没来得及修的 bug？②若是取舍，产品文档里有吗？
+ */
+const TALL_CHROME_TRADEOFFS = [
+  // 9×9 对战 @360×640：对手条 + 我方 2×2 HUD ≈ 736px > 640px。
+  // 取舍：保「棋盘完整 + 数字键盘在首屏」（实测 rows=9 / padB=593<640 / un=0），
+  // 放行「对手信息条需上滑才完整可见」。不改则键盘被挤掉，比上滑更伤可玩性。
+  '9x9-duel-m360',
 ];
 
 const Q = `(function(){
@@ -224,7 +252,29 @@ for (const [id, url, b, c, n, nw, w, h, immersive] of CASES) {
         else if (r.tabs.sw > r.tabs.cw + 1 && !/auto|scroll/.test(r.tabs.ovx)) errs.push(`tabUnscrollable=${r.tabs.sw}/${r.tabs.cw}`);
       }
       if (immersive) {
-        if (r.pgScroll !== 0) errs.push(`scroll=${r.pgScroll}`);
+        // 沉浸态要求零滚动，但对「360×640 极矮视口 + 对战双方条」有一个已记录的设计取舍：
+        // 双方条 + 2×2 HUD 合计 ~736px > 640px 屏，物理上放不下。此时棋盘与数字键盘
+        // **仍在首屏内**（实测 padB=593 < vh=640、rows=9、un=0），多出的 96px 是可滚的
+        // 对方信息条 —— 属「信息让位」的有意取舍，不是布局失效。
+        // 🔴 绝不能为了让门禁变绿而删掉 pgScroll 判据（红线 #156：永远绿的断言是装饰）。
+        // 判据是**主断言成立才豁免**：unreachable / 裁切 / 字体溢出 / rows 任一不过，照样 FAIL。
+        const tradeoff = TALL_CHROME_TRADEOFFS.includes(id);
+        if (r.pgScroll !== 0) {
+          // 逐项列出「严重项」，让白名单放行与否可复核（而不是一个空心的 true/false）
+          const severe = [];
+          if (r.un > 0) severe.push(`unreachable=${r.un}`);
+          if (r.over > 2) severe.push(`clip=${r.over}`);
+          if (r.fontOver > 0) severe.push(`fontOver=${r.fontOver}`);
+          if (n > 0 && r.rows !== n) severe.push(`rows=${r.rows}/${n}`);
+          if (r.padB > h + 2) severe.push(`padBelowFold=${r.padB}/${h}`);
+          if (tradeoff && !severe.length) {
+            console.warn(`  ! ${id} 已知取舍：chrome 超一屏 ${r.pgScroll}px，但棋盘与键盘均在首屏（pad=${r.padB}/${h}），按设计放行`);
+          } else if (tradeoff) {
+            errs.push(`scroll=${r.pgScroll}&严重项[${severe.join(', ')}]`);
+          } else {
+            errs.push(`scroll=${r.pgScroll}`);
+          }
+        }
         if (r.padB > h + 2) errs.push(`padBelowFold=${r.padB}/${h}`);
       } else if (r.un > 0) {
         errs.push('fallback-unreachable');
