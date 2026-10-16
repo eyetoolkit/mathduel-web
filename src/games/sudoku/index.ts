@@ -226,6 +226,7 @@ function startRound(): void {
 onI18nChange(() => {
   renderModeBanner();
   renderSide();
+  renderMatchChrome();
 });
 
 let roundNonce = 0;
@@ -258,6 +259,16 @@ function resetBoard(keepClock = false): void {
     for (const i of d.bots) st.owner[i] = 2;
     st.mineTotal = d.mine.size;
     st.botTotal = d.bots.size;
+    $('oppSub')!.textContent = botPaceText();
+    renderOppStatus();
+  }
+  $('result')!.textContent = st.mode === 'duel' ? i18nT('mg.sg_duel_first') : i18nT('mg.sg_pick_first');
+}
+
+/* 对局 chrome 的字典文案集中在此：字典就绪前 startRound() 会写入裸 key，
+   由 onI18nChange 整块重画（RULES-FE-E.md #136/#137 同族：接了 key ≠ 画对了）。 */
+function renderMatchChrome(): void {
+  if (st.mode === 'duel') {
     $('oppSub')!.textContent = botPaceText();
     renderOppStatus();
   }

@@ -232,29 +232,32 @@
         </div>
       </div>
 
+      <!-- 棋盘容器只包棋盘本身：immersive 布局下它要吃「剩余高度」并做尺寸容器，
+           数字键盘必须留在容器外（section.board 的直接子元素），否则键盘高度会
+           混进棋盘的可用空间计算，棋盘永远算不准该缩到多少。 -->
       <div class="s9-board-wrap">
         <div class="s9-board" id="s9board" role="grid" aria-label="9 by 9 sudoku grid"></div>
-        <div class="s9-pad" id="s9pad">
-          <button class="pk" data-v="1"><span>1</span><small class="pk-left"></small></button>
-          <button class="pk" data-v="2"><span>2</span><small class="pk-left"></small></button>
-          <button class="pk" data-v="3"><span>3</span><small class="pk-left"></small></button>
-          <button class="pk" data-v="4"><span>4</span><small class="pk-left"></small></button>
-          <button class="pk" data-v="5"><span>5</span><small class="pk-left"></small></button>
-          <button class="pk" data-v="6"><span>6</span><small class="pk-left"></small></button>
-          <button class="pk" data-v="7"><span>7</span><small class="pk-left"></small></button>
-          <button class="pk" data-v="8"><span>8</span><small class="pk-left"></small></button>
-          <button class="pk" data-v="9"><span>9</span><small class="pk-left"></small></button>
-          <div class="s9-padfoot">
-            <button class="pk undo" data-act="undo" id="undoBtn" data-i18n="mg.shared_undo">↶ Undo</button>
-            <button class="pk erase" data-act="erase" data-i18n="mg.shared_eraser">⌫ Erase</button>
-            <button class="pk notes" data-act="notes" id="notesBtn" data-i18n="mg.shared_notes">✏ Notes</button>
-          </div>
+      </div>
+      <div class="s9-pad" id="s9pad">
+        <button class="pk" data-v="1"><span>1</span><small class="pk-left"></small></button>
+        <button class="pk" data-v="2"><span>2</span><small class="pk-left"></small></button>
+        <button class="pk" data-v="3"><span>3</span><small class="pk-left"></small></button>
+        <button class="pk" data-v="4"><span>4</span><small class="pk-left"></small></button>
+        <button class="pk" data-v="5"><span>5</span><small class="pk-left"></small></button>
+        <button class="pk" data-v="6"><span>6</span><small class="pk-left"></small></button>
+        <button class="pk" data-v="7"><span>7</span><small class="pk-left"></small></button>
+        <button class="pk" data-v="8"><span>8</span><small class="pk-left"></small></button>
+        <button class="pk" data-v="9"><span>9</span><small class="pk-left"></small></button>
+        <div class="s9-padfoot">
+          <button class="pk undo" data-act="undo" id="undoBtn" data-i18n="mg.shared_undo">↶ Undo</button>
+          <button class="pk erase" data-act="erase" data-i18n="mg.shared_eraser">⌫ Erase</button>
+          <button class="pk notes" data-act="notes" id="notesBtn" data-i18n="mg.shared_notes">✏ Notes</button>
         </div>
-        <div class="s9-padtools hidden" id="padTools">
-          <button class="btn ghost" id="autoBtn" data-i18n="mg.shared_auto_marks">✨ Auto marks</button>
-          <button class="btn ghost" id="hintBtn" data-i18n="mg.shared_hint">💡 Hint</button>
-          <button class="btn ghost" id="newBtn" data-i18n="mg.shared_new_grid">↻ New Grid</button>
-        </div>
+      </div>
+      <div class="s9-padtools hidden" id="padTools">
+        <button class="btn ghost" id="autoBtn" data-i18n="mg.shared_auto_marks">✨ Auto marks</button>
+        <button class="btn ghost" id="hintBtn" data-i18n="mg.shared_hint">💡 Hint</button>
+        <button class="btn ghost" id="newBtn" data-i18n="mg.shared_new_grid">↻ New Grid</button>
       </div>
 
       <div class="result" id="result" role="status" data-i18n="mg.sg_pick_first">Pick a cell, then a number</div>

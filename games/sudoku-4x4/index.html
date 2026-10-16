@@ -212,23 +212,24 @@
         <div class="target"><span class="lbl" data-i18n="mg.shared_lbl_target">Target</span><b>1–4</b></div>
       </div>
 
+      <!-- 棋盘容器只包棋盘本身（同 9×9：键盘留在容器外做自适应空间计算） -->
       <div class="s4-board-wrap">
         <div class="s4-board" id="s4board" role="grid" aria-label="4 by 4 sudoku grid"></div>
-        <div class="s4-pad" id="s4pad">
-          <button class="pk" data-v="1"><span>1</span><small class="pk-left"></small></button>
-          <button class="pk" data-v="2"><span>2</span><small class="pk-left"></small></button>
-          <button class="pk" data-v="3"><span>3</span><small class="pk-left"></small></button>
-          <button class="pk" data-v="4"><span>4</span><small class="pk-left"></small></button>
-          <div class="s4-padfoot">
-            <button class="pk undo" data-act="undo" id="undoBtn" data-i18n="mg.shared_undo">↶ Undo</button>
-            <button class="pk erase" data-act="erase" data-i18n="mg.shared_eraser">⌫ Erase</button>
-            <button class="pk notes" data-act="notes" id="notesBtn" data-i18n="mg.shared_notes">✏ Notes</button>
-          </div>
+      </div>
+      <div class="s4-pad" id="s4pad">
+        <button class="pk" data-v="1"><span>1</span><small class="pk-left"></small></button>
+        <button class="pk" data-v="2"><span>2</span><small class="pk-left"></small></button>
+        <button class="pk" data-v="3"><span>3</span><small class="pk-left"></small></button>
+        <button class="pk" data-v="4"><span>4</span><small class="pk-left"></small></button>
+        <div class="s4-padfoot">
+          <button class="pk undo" data-act="undo" id="undoBtn" data-i18n="mg.shared_undo">↶ Undo</button>
+          <button class="pk erase" data-act="erase" data-i18n="mg.shared_eraser">⌫ Erase</button>
+          <button class="pk notes" data-act="notes" id="notesBtn" data-i18n="mg.shared_notes">✏ Notes</button>
         </div>
-        <div class="s9-padtools" id="padTools">
-          <button class="btn ghost" id="hintBtn" data-i18n="mg.shared_hint">💡 Hint</button>
-          <button class="btn ghost" id="newBtn" data-i18n="mg.shared_new_grid">↻ New Grid</button>
-        </div>
+      </div>
+      <div class="s9-padtools" id="padTools">
+        <button class="btn ghost" id="hintBtn" data-i18n="mg.shared_hint">💡 Hint</button>
+        <button class="btn ghost" id="newBtn" data-i18n="mg.shared_new_grid">↻ New Grid</button>
       </div>
 
       <div class="result" id="result" role="status" data-i18n="mg.sg_pick_first">Pick a cell, then a number</div>
