@@ -1,0 +1,237 @@
+{
+  "total_count": 2,
+  "jobs": [
+    {
+      "id": 116820259882,
+      "run_id": 38853674464,
+      "workflow_name": "build-gate",
+      "head_branch": "main",
+      "run_url": "https://api.github.com/repos/eyetoolkit/mathduel-web/actions/runs/38853674464",
+      "run_attempt": 1,
+      "node_id": "CR_kwDOUj8bFc8AAAAbMwe0Kg",
+      "head_sha": "06e37ab311e9075ee111e0c3ea9cf9d46ce49753",
+      "url": "https://api.github.com/repos/eyetoolkit/mathduel-web/actions/jobs/116820259882",
+      "html_url": "https://github.com/eyetoolkit/mathduel-web/actions/runs/38853674464/job/116820259882",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-10-16T05:02:10Z",
+      "started_at": "2026-10-16T05:02:12Z",
+      "completed_at": "2026-10-16T05:02:27Z",
+      "name": "build",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-10-16T05:02:13Z",
+          "completed_at": "2026-10-16T05:02:14Z"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-10-16T05:02:14Z",
+          "completed_at": "2026-10-16T05:02:15Z"
+        },
+        {
+          "name": "Run pnpm/action-setup@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-10-16T05:02:15Z",
+          "completed_at": "2026-10-16T05:02:16Z"
+        },
+        {
+          "name": "Run actions/setup-node@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-10-16T05:02:16Z",
+          "completed_at": "2026-10-16T05:02:18Z"
+        },
+        {
+          "name": "Install",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-10-16T05:02:18Z",
+          "completed_at": "2026-10-16T05:02:19Z"
+        },
+        {
+          "name": "Type check + build",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-10-16T05:02:19Z",
+          "completed_at": "2026-10-16T05:02:25Z"
+        },
+        {
+          "name": "Post Run actions/setup-node@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 10,
+          "started_at": "2026-10-16T05:02:25Z",
+          "completed_at": "2026-10-16T05:02:25Z"
+        },
+        {
+          "name": "Post Run pnpm/action-setup@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 11,
+          "started_at": "2026-10-16T05:02:25Z",
+          "completed_at": "2026-10-16T05:02:26Z"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 12,
+          "started_at": "2026-10-16T05:02:26Z",
+          "completed_at": "2026-10-16T05:02:26Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 13,
+          "started_at": "2026-10-16T05:02:26Z",
+          "completed_at": "2026-10-16T05:02:26Z"
+        }
+      ],
+      "check_run_url": "https://api.github.com/repos/eyetoolkit/mathduel-web/check-runs/116820259882",
+      "labels": [
+        "ubuntu-latest"
+      ],
+      "runner_id": 1000003171,
+      "runner_name": "GitHub Actions 1000003171",
+      "runner_group_id": 0,
+      "runner_group_name": "GitHub Actions"
+    },
+    {
+      "id": 116820338750,
+      "run_id": 38853674464,
+      "workflow_name": "build-gate",
+      "head_branch": "main",
+      "run_url": "https://api.github.com/repos/eyetoolkit/mathduel-web/actions/runs/38853674464",
+      "run_attempt": 1,
+      "node_id": "CR_kwDOUj8bFc8AAAAbMwjoPg",
+      "head_sha": "06e37ab311e9075ee111e0c3ea9cf9d46ce49753",
+      "url": "https://api.github.com/repos/eyetoolkit/mathduel-web/actions/jobs/116820338750",
+      "html_url": "https://github.com/eyetoolkit/mathduel-web/actions/runs/38853674464/job/116820338750",
+      "status": "completed",
+      "conclusion": "failure",
+      "created_at": "2026-10-16T05:02:28Z",
+      "started_at": "2026-10-16T05:02:29Z",
+      "completed_at": "2026-10-16T05:03:03Z",
+      "name": "inmatch-gate",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-10-16T05:02:30Z",
+          "completed_at": "2026-10-16T05:02:32Z"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-10-16T05:02:32Z",
+          "completed_at": "2026-10-16T05:02:33Z"
+        },
+        {
+          "name": "Run pnpm/action-setup@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-10-16T05:02:33Z",
+          "completed_at": "2026-10-16T05:02:34Z"
+        },
+        {
+          "name": "Run actions/setup-node@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-10-16T05:02:34Z",
+          "completed_at": "2026-10-16T05:02:39Z"
+        },
+        {
+          "name": "Install",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-10-16T05:02:39Z",
+          "completed_at": "2026-10-16T05:02:40Z"
+        },
+        {
+          "name": "Build (产物供 preview 使用)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-10-16T05:02:40Z",
+          "completed_at": "2026-10-16T05:02:43Z"
+        },
+        {
+          "name": "In-match geometry gate",
+          "status": "completed",
+          "conclusion": "failure",
+          "number": 7,
+          "started_at": "2026-10-16T05:02:43Z",
+          "completed_at": "2026-10-16T05:03:00Z"
+        },
+        {
+          "name": "Upload failure artifacts",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8,
+          "started_at": "2026-10-16T05:03:00Z",
+          "completed_at": "2026-10-16T05:03:00Z"
+        },
+        {
+          "name": "Post Run actions/setup-node@v4",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 14,
+          "started_at": "2026-10-16T05:03:00Z",
+          "completed_at": "2026-10-16T05:03:00Z"
+        },
+        {
+          "name": "Post Run pnpm/action-setup@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 15,
+          "started_at": "2026-10-16T05:03:00Z",
+          "completed_at": "2026-10-16T05:03:00Z"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 16,
+          "started_at": "2026-10-16T05:03:00Z",
+          "completed_at": "2026-10-16T05:03:00Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 17,
+          "started_at": "2026-10-16T05:03:00Z",
+          "completed_at": "2026-10-16T05:03:00Z"
+        }
+      ],
+      "check_run_url": "https://api.github.com/repos/eyetoolkit/mathduel-web/check-runs/116820338750",
+      "labels": [
+        "ubuntu-latest"
+      ],
+      "runner_id": 1000003172,
+      "runner_name": "GitHub Actions 1000003172",
+      "runner_group_id": 0,
+      "runner_group_name": "GitHub Actions"
+    }
+  ]
+}

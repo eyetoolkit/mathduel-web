@@ -378,6 +378,12 @@ body.arena :where([hidden]) { display: none !important; }
   :is(body.arena, body.has-papergames-shell).in-match :is(main.s9-play, main.s6-play, main.s4-play) .g24-bar { flex-wrap: nowrap; }
   :is(body.arena, body.has-papergames-shell).in-match :is(main.s9-play, main.s6-play, main.s4-play) .g24-bar .tabs { flex: 1 1 auto; min-width: 0; }
   :is(body.arena, body.has-papergames-shell).in-match :is(main.s9-play, main.s6-play, main.s4-play) .g24-bar .top-stats { flex: 0 0 auto; }
+  /* 🔴 2026-10-16：styles.css:56 在 @media(max-width:460px) 把 .tabs 改成 wrap
+     （lobby 页的取舍：360px 放不下 4 个 tab，宁可堆高也不横滑）。
+     对局期这个取舍反过来 —— tabs 垂直堆到 98~144px，一屏布局直接毁掉
+     （CI 实测 scroll=83、键盘掉出首屏；Linux 字体下 tab 文字更宽堆到 144px）。
+     .tabs 自带 overflow-x:auto + 隐藏滚动条，nowrap 后超出部分横滑即可。 */
+  :is(body.arena, body.has-papergames-shell).in-match .tabs { flex-wrap: nowrap; }
   /* ── 等式金字塔：main.ep-arena 也必须是「吃剩余高度」的 flex 项，
      否则它按内容自然高度生长，ep-grid 永远拿不到可收缩的空间 ── */
   :is(body.arena, body.has-papergames-shell).in-match main.ep-arena { flex: 1 1 auto; min-height: 0; gap: 10px; }
