@@ -171,7 +171,27 @@ const Q = `(function(){
     rows:(function(){var t={};cells.forEach(function(c){var r=c.getBoundingClientRect();t[Math.round(r.top)]=1;});return Object.keys(t).length;})(),
     over:Math.round(lastB-br.bottom), un:un, unList:unList, fontOver:fontOver,
     pgScroll:pm?Math.round(pm.scrollHeight-pm.clientHeight):-1,
-    padB:padB, vh:vh};
+    padB:padB, vh:vh,
+    tabs:(function(){
+      // ── 2026-10-16 「左上角模式按钮跑到屏幕外」判据 ──
+      // 起因：74896d5 把 .tabs 改成 nowrap 解掉了「wrap 堆高」，但 @media(max-width:460px)
+      // 同时带着 justify-content:center —— 「居中 + 横向溢出」时 flex 内容两侧都溢出，
+      // 且 scrollLeft 被钳在 0 拉不回来：首 tab 实测 x=-26（半个按钮露在容器左边界外，
+      // 点不中），末 tab 同样摸不到。tsc/i18n/几何全绿也照样上线。
+      // 判据：容器内所有可见 tab 的左边界都必须 >= 容器左边界；
+      // 若 scrollWidth > clientWidth，则容器必须 overflow-x 可滚（否则溢出即不可达）。
+      var tn=document.querySelector('.tabs'); if(!tn) return null;
+      var tr=tn.getBoundingClientRect(); var ts=getComputedStyle(tn);
+      var kids=Array.from(tn.children).filter(function(k){
+        var s=getComputedStyle(k); return s.display!=='none' && s.visibility!=='hidden' && k.getBoundingClientRect().height>=2; });
+      if(!kids.length) return null;
+      var offs=[];
+      kids.forEach(function(k){ var r=k.getBoundingClientRect();
+        if(r.left < tr.left-0.5) offs.push(((k.dataset&&k.dataset.mode)||'')+'@'+Math.round(r.left)); });
+      return {left:Math.round(tr.left), right:Math.round(tr.right), count:kids.length,
+        sw:tn.scrollWidth, cw:tn.clientWidth, ovx:ts.overflowX, offs:offs,
+        lastRight:Math.round(kids[kids.length-1].getBoundingClientRect().right)};
+    })()};
 })()`;
 
 const out = [];
@@ -198,6 +218,11 @@ for (const [id, url, b, c, n, nw, w, h, immersive] of CASES) {
       if (r.over > 2) errs.push(`clip=${r.over}`);
       if (r.un > 0) errs.push(`unreachable=${r.un}`);
       if (r.fontOver > 0) errs.push(`fontOver=${r.fontOver}`);
+      if (r.tabs) {
+        if (r.tabs.offs.length) errs.push(`tabOffscreen=${JSON.stringify(r.tabs.offs)}`);
+        // 溢出却不给滚 = 溢出部分永久不可达（隐藏滚动条，用户也不会意识到能滑）
+        else if (r.tabs.sw > r.tabs.cw + 1 && !/auto|scroll/.test(r.tabs.ovx)) errs.push(`tabUnscrollable=${r.tabs.sw}/${r.tabs.cw}`);
+      }
       if (immersive) {
         if (r.pgScroll !== 0) errs.push(`scroll=${r.pgScroll}`);
         if (r.padB > h + 2) errs.push(`padBelowFold=${r.padB}/${h}`);
@@ -213,7 +238,7 @@ for (const [id, url, b, c, n, nw, w, h, immersive] of CASES) {
         } catch { /* screenshot best-effort */ }
       } else {
         pass++;
-        console.log(`PASS ${id.padEnd(15)} board=${r.bw}x${r.bh} rows=${r.rows} pad=${r.padB}/${h} scroll=${r.pgScroll}`);
+        console.log(`PASS ${id.padEnd(15)} board=${r.bw}x${r.bh} rows=${r.rows} pad=${r.padB}/${h} scroll=${r.pgScroll}${r.tabs ? ` tabs=${r.tabs.count}@${r.tabs.left}..${r.tabs.right}${r.tabs.sw > r.tabs.cw + 1 ? ` (scroll ${r.tabs.sw}/${r.tabs.cw})` : ''}` : ''}`);
       }
       await cd.send('Page.close').catch(() => {});
       cd.close();

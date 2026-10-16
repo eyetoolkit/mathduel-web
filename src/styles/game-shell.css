@@ -382,8 +382,17 @@ body.arena :where([hidden]) { display: none !important; }
      （lobby 页的取舍：360px 放不下 4 个 tab，宁可堆高也不横滑）。
      对局期这个取舍反过来 —— tabs 垂直堆到 98~144px，一屏布局直接毁掉
      （CI 实测 scroll=83、键盘掉出首屏；Linux 字体下 tab 文字更宽堆到 144px）。
-     .tabs 自带 overflow-x:auto + 隐藏滚动条，nowrap 后超出部分横滑即可。 */
-  :is(body.arena, body.has-papergames-shell).in-match .tabs { flex-wrap: nowrap; }
+     .tabs 自带 overflow-x:auto + 隐藏滚动条，nowrap 后超出部分横滑即可。
+     ⚠️ 但 10-16 复查发现 nowrap 单独用会引入更隐蔽的缺陷：
+     @media(max-width:460px) 同时给了 .tabs{justify-content:center}，
+     「居中 + 横向溢出」时 flex 首元素两侧都不可达（内容右移，首 tab x=-26，
+     scrollLeft 被钳在 0 拉不回来；末尾同样摸不到）—— 表现为左上角「单人」按钮
+     半个身子露在容器左边、点不中。红线 RULES-FE-G.md #157。
+     修法是居中只在放得下时成立：overflow 时 justify-content 退回 flex-start。 */
+  :is(body.arena, body.has-papergames-shell).in-match .tabs {
+    flex-wrap: nowrap;
+    justify-content: safe center;
+  }
   /* ── 等式金字塔：main.ep-arena 也必须是「吃剩余高度」的 flex 项，
      否则它按内容自然高度生长，ep-grid 永远拿不到可收缩的空间 ── */
   :is(body.arena, body.has-papergames-shell).in-match main.ep-arena { flex: 1 1 auto; min-height: 0; gap: 10px; }
