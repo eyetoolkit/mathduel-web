@@ -11,3 +11,7 @@ dist_old_*/
 
 # 对局沉浸布局几何门禁产物（含失败场景截图，不入库）
 .inmatch-gate/
+# 本地取证用独立构建目录：dist 被 preview 进程锁住时用 --outDir .probe-dist 验证，
+# 同理 .probe-gate 存该次门禁产物（不入库）
+.probe-dist/
+.probe-gate/
