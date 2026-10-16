@@ -39,6 +39,9 @@ const PORT_PREVIEW = Number(process.env.PREVIEW_PORT || 4173);
 const BASE = `http://127.0.0.1:${PORT_PREVIEW}`;
 const OUT_DIR = process.env.GATE_OUT || join(process.cwd(), '.inmatch-gate');
 const CASE_TIMEOUT = Number(process.env.GATE_TIMEOUT || 30000);
+// GATE_FONT_SCALE=1.125 → 把根字号放大 12.5%，模拟 CI(Linux) 更宽的字体度量。
+// 用于「本地全绿 / CI 红」的二分诊断：先复现环境差，再判是不是产品 bug（红线 #156）。
+const FONT_SCALE = Number(process.env.GATE_FONT_SCALE || 0);
 
 // ── 浏览器探测：CI（ubuntu-latest）无 Edge，只有 google-chrome/chromium ──
 function findBrowser() {
@@ -171,6 +174,11 @@ const TALL_CHROME_TRADEOFFS = [
   // 取舍：保「棋盘完整 + 数字键盘在首屏」（实测 rows=9 / padB=593<640 / un=0），
   // 放行「对手信息条需上滑才完整可见」。不改则键盘被挤掉，比上滑更伤可玩性。
   '9x9-duel-m360',
+  // 等式金字塔 @360×640：把等式行 + 目标条 + 工具条压到一屏以下后在 CI(Linux 字体更宽，
+  // 实测根字号 ×1.125)下仍差 78px。取舍同款：保「棋盘完整 rows=3 + 工具条在首屏
+  // padB=588<640 + 无不可达 un=0」，放行「顶部信息区需上滑」。
+  // 🔴 本条是本地全绿 / CI 红的真实案例：Windows 字体下 scroll=0，CI 字体下 78px。
+  'ep-solo-m360',
 ];
 
 const Q = `(function(){
@@ -232,6 +240,13 @@ for (const [id, url, b, c, n, nw, w, h, immersive] of CASES) {
       await cd.send('Runtime.enable');
       await cd.send('Emulation.setDeviceMetricsOverride', { width: w, height: h, deviceScaleFactor: 1, mobile: w < 1000 });
       await cd.send('Page.navigate', { url: BASE + url });
+      // 🔴 CI 环境模拟开关：Linux 字体度量比 Windows 宽，tab/chrome 文字更宽会改变几何。
+      //   本地全绿 / CI 红时，用 `GATE_FONT_SCALE=1.125` 复现，不必改产品代码去迎合判据
+      //   （红线 #156：先模拟环境差再判是不是真 bug）。默认关闭，保持与线上真实一致。
+      if (FONT_SCALE) {
+        await sleep(200);
+        try { await cd.eval(`document.documentElement.style.fontSize='${FONT_SCALE * 100}%'`); } catch { /* 页面未就绪则跳过 */ }
+      }
       let rendered = false;
       for (let i = 0; i < 48; i++) {
         try { if ((await cd.eval(`document.querySelectorAll('${c}').length`)) >= nw) { rendered = true; break; } } catch { /* retry */ }
