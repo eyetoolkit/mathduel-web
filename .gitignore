@@ -8,3 +8,6 @@ i18n-coldstart-result.json
 i18n-hotswitch-result.json
 # 构建历史备份目录
 dist_old_*/
+
+# 对局沉浸布局几何门禁产物（含失败场景截图，不入库）
+.inmatch-gate/

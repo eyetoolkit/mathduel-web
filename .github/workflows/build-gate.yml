@@ -11,6 +11,12 @@
 #
 # 注意：本 workflow 不部署 —— Pages 由 push main 自动部署。
 # 它的价值是**在部署之前**把类型/构建错误挡住，避免坏包上线路。
+#
+# 2026-10-16 新增 inmatch-gate job：对局页沉浸布局几何门禁。
+# 起因：numeriduel 对局页连续两轮布局回归（棋盘被裁 / 棋盘不沉浸），
+# tsc / i18n / lang-leak / brand 全绿却照样上线 —— 门禁里没有任何几何断言。
+# 该 job 在 build 之后起 vite preview，用无头 Chrome 按同一套判据
+# （行数完整 / 无裁切 / 控件可达 / 字号不溢出 / 沉浸场景零滚动）跑 14 个场景。
 
 name: build-gate
 
@@ -67,3 +73,49 @@ jobs:
       # tsc --noEmit + vite build + 产物后处理，一步到位
       - name: Type check + build
         run: pnpm build
+
+  # 对局沉浸布局几何门禁：需要构建产物 + 无头浏览器，故独立 job（可单独重跑）
+  inmatch-gate:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Build (产物供 preview 使用)
+        run: pnpm build
+
+      # preview 与门禁必须在同一个 step：step 结束会回收后台进程。
+      # 端口探测就绪后再跑，避免「服务器还没起来」的假失败。
+      - name: In-match geometry gate
+        run: |
+          pnpm preview --port 4173 > /tmp/preview.log 2>&1 &
+          PV=$!
+          for i in $(seq 1 40); do
+            if curl -sf http://127.0.0.1:4173/games/sudoku/ > /dev/null 2>&1; then break; fi
+            if ! kill -0 $PV 2>/dev/null; then echo "preview died"; cat /tmp/preview.log; exit 2; fi
+            sleep 1
+          done
+          node scripts/check-inmatch-geometry.mjs
+          RC=$?
+          kill $PV 2>/dev/null || true
+          exit $RC
+
+      # 失败时把判据数据与截图带回来（.inmatch-gate/ 含 fail-*.png 与 result.json）
+      - name: Upload failure artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: inmatch-gate-failures
+          path: .inmatch-gate/
+          if-no-files-found: ignore

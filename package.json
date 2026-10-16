@@ -24,7 +24,8 @@
     "check:vendor": "node scripts/sync-vendor-design-system.cjs --check",
     "scan:leak": "node scripts/scan-lang-leak.mjs",
     "e2e:i18n:coldstart": "node scripts/e2e/i18n-coldstart.cjs",
-    "e2e:i18n:hotswitch": "node scripts/e2e/i18n-hotswitch.cjs"
+    "e2e:i18n:hotswitch": "node scripts/e2e/i18n-hotswitch.cjs",
+    "check:inmatch": "node scripts/check-inmatch-geometry.mjs"
   },
   "dependencies": {
     "@tri-sites/design-system": "file:./vendor/tri-design-system"
