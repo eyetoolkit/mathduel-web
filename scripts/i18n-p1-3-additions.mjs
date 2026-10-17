@@ -17,6 +17,9 @@
 export const ADDITIONS = {
   // 386 条
   en: {
+    // 2026-10-17 补：24-game 头部导航缺 nav.games；teacher.js 缺 tn.weak_ttl / tn.toast_invite_copied
+    nav: { games: "Games" },
+    tn: { weak_ttl: "Class weak spot", toast_invite_copied: "🔗 Invite copied to clipboard" },
     common: {
       sound_on: 'Sound on',
       code_prompt: 'Please enter your code.',
@@ -420,6 +423,9 @@ export const ADDITIONS = {
   },
   // 387 条
   zh: {
+    // 2026-10-17 补：24-game 头部导航缺 nav.games；teacher.js 缺 tn.weak_ttl / tn.toast_invite_copied
+    nav: { games: "游戏" },
+    tn: { weak_ttl: "班级薄弱点", toast_invite_copied: "🔗 邀请链接已复制" },
     common: {
       sound_on: '音效已开启',
       code_prompt: '请输入你的邀请码。',
@@ -824,6 +830,9 @@ export const ADDITIONS = {
   },
   // 392 条
   ja: {
+    // 2026-10-17 补：24-game 头部导航缺 nav.games；teacher.js 缺 tn.weak_ttl / tn.toast_invite_copied
+    nav: { games: "ゲーム" },
+    tn: { weak_ttl: "クラスの弱点", toast_invite_copied: "🔗 招待リンクをコピーしました" },
     footer: {
       slogan: 'ボードデュエル · 独立アカウント · 広告なし · 追跡なし',
       copy_math: '© 2026 算数デュエル · 静的サイト · 追跡なし · 広告なし',
@@ -1237,6 +1246,9 @@ export const ADDITIONS = {
   },
   // 393 条
   es: {
+    // 2026-10-17 补：24-game 头部导航缺 nav.games；teacher.js 缺 tn.weak_ttl / tn.toast_invite_copied
+    nav: { games: "Juegos" },
+    tn: { weak_ttl: "Punto débil de la clase", toast_invite_copied: "🔗 Invitación copiada al portapapeles" },
     common: {
       sound_on: 'Sonido activado',
       code_prompt: 'Introduce tu código.',
@@ -1647,6 +1659,9 @@ export const ADDITIONS = {
   },
   // 393 条
   fr: {
+    // 2026-10-17 补：24-game 头部导航缺 nav.games；teacher.js 缺 tn.weak_ttl / tn.toast_invite_copied
+    nav: { games: "Jeux" },
+    tn: { weak_ttl: "Point faible de la classe", toast_invite_copied: "🔗 Invitation copiée dans le presse-papiers" },
     common: {
       sound_on: 'Son activé',
       code_prompt: 'Veuillez saisir votre code.',
@@ -2057,6 +2072,9 @@ export const ADDITIONS = {
   },
   // 392 条
   de: {
+    // 2026-10-17 补：24-game 头部导航缺 nav.games；teacher.js 缺 tn.weak_ttl / tn.toast_invite_copied
+    nav: { games: "Spiele" },
+    tn: { weak_ttl: "Schwachstelle der Klasse", toast_invite_copied: "🔗 Einladung in die Zwischenablage kopiert" },
     common: {
       share_in_sec: 'in {s} s',
       share_fmt: 'Gerade {mode} {game}{dur}{extra} auf {site} gespielt · {domain}',

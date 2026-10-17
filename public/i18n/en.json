@@ -18,6 +18,7 @@
   },
   "nav": {
     "home": "Home",
+    "games": "Games",
     "rank": "Ranking",
     "about": "About",
     "contact": "Contact",
@@ -1294,6 +1295,7 @@
     "no_due": "📅 no due",
     "weak_no_attempts": "No attempts yet — students need to finish a round first.",
     "weak_not_24": "Operator breakdown applies to 24-Point assignments. Per-student accuracy is shown below.",
+    "weak_ttl": "Class weak spot",
     "glance_completion": "✅ Completion",
     "glance_acc": "🎯 Avg accuracy",
     "glance_time": "⏱ Avg solve time",
@@ -1320,6 +1322,7 @@
     "toast_pick_class": "Pick or create a class first",
     "toast_room_ready": "🚀 Room {code} ready — share with the class",
     "toast_gen_first": "Generate a room first",
+    "toast_invite_copied": "🔗 Invite copied to clipboard",
     "toast_qr_unavailable": "▦ QR unavailable — use the invite link instead",
     "toast_nothing_export": "Nothing to export yet",
     "toast_csv": "📊 CSV exported",

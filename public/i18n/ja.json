@@ -18,6 +18,7 @@
   },
   "nav": {
     "home": "ホーム",
+    "games": "ゲーム",
     "rank": "ランキング",
     "about": "について",
     "contact": "お問い合わせ",
@@ -1294,6 +1295,7 @@
     "no_due": "📅 締切なし",
     "weak_no_attempts": "まだ解答がありません—生徒がまず1ラウンド完了する必要があります。",
     "weak_not_24": "演算子の内訳は24点の課題に適用されます。生徒ごとの正答率は下表を参照。",
+    "weak_ttl": "クラスの弱点",
     "glance_completion": "✅ 完了率",
     "glance_acc": "🎯 平均正答率",
     "glance_time": "⏱ 平均解答時間",
@@ -1320,6 +1322,7 @@
     "toast_pick_class": "まずクラスを選択または作成してください",
     "toast_room_ready": "🚀 ルーム {code} 準備完了—クラスに共有しましょう",
     "toast_gen_first": "まずルームを生成してください",
+    "toast_invite_copied": "🔗 招待リンクをコピーしました",
     "toast_qr_unavailable": "▦ QRを利用できません—招待リンクをご利用ください",
     "toast_nothing_export": "まだエクスポートするデータがありません",
     "toast_csv": "📊 CSV をエクスポートしました",

@@ -18,6 +18,7 @@
   },
   "nav": {
     "home": "Accueil",
+    "games": "Jeux",
     "rank": "Classement",
     "about": "À propos",
     "contact": "Contact",
@@ -1294,6 +1295,7 @@
     "no_due": "📅 sans échéance",
     "weak_no_attempts": "Aucune tentative — les élèves doivent d’abord terminer une manche.",
     "weak_not_24": "La répartition par opérateur s’applique aux devoirs 24 points. La précision par élève est affichée ci-dessous.",
+    "weak_ttl": "Point faible de la classe",
     "glance_completion": "✅ Achèvement",
     "glance_acc": "🎯 Précision moyenne",
     "glance_time": "⏱ Temps moyen de résolution",
@@ -1320,6 +1322,7 @@
     "toast_pick_class": "Choisissez ou créez d’abord une classe",
     "toast_room_ready": "🚀 Salle {code} prête — partagez-la avec la classe",
     "toast_gen_first": "Générez d’abord une salle",
+    "toast_invite_copied": "🔗 Invitation copiée dans le presse-papiers",
     "toast_qr_unavailable": "▦ QR indisponible — utilisez le lien d’invitation",
     "toast_nothing_export": "Rien à exporter pour l’instant",
     "toast_csv": "📊 CSV exporté",

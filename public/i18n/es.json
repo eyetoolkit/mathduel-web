@@ -18,6 +18,7 @@
   },
   "nav": {
     "home": "Inicio",
+    "games": "Juegos",
     "rank": "Clasificación",
     "about": "Acerca de",
     "contact": "Contacto",
@@ -1294,6 +1295,7 @@
     "no_due": "📅 sin fecha límite",
     "weak_no_attempts": "Aún sin intentos — los estudiantes deben terminar una ronda primero.",
     "weak_not_24": "El desglose por operador aplica a tareas de 24. La precisión por estudiante se muestra abajo.",
+    "weak_ttl": "Punto débil de la clase",
     "glance_completion": "✅ Finalización",
     "glance_acc": "🎯 Precisión media",
     "glance_time": "⏱ Tiempo medio de resolución",
@@ -1320,6 +1322,7 @@
     "toast_pick_class": "Primero elige o crea una clase",
     "toast_room_ready": "🚀 Sala {code} lista — compártela con la clase",
     "toast_gen_first": "Primero genera una sala",
+    "toast_invite_copied": "🔗 Invitación copiada al portapapeles",
     "toast_qr_unavailable": "▦ QR no disponible — usa el enlace de invitación",
     "toast_nothing_export": "Nada que exportar aún",
     "toast_csv": "📊 CSV exportado",

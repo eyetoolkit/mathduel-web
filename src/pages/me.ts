@@ -37,14 +37,17 @@ function loadHistory(): History {
  *    "Equation Pyramid" —— 静态扫描抓不到字典形式的硬编码，只有 CDP 才暴露。
  *    现在与分享文案、Daily Elo 榜共用同一份映射。 */
 
-/** 模式名同样走字典，键与 daily/lobby 的统计口径一致。 */
+/** 模式名同样走字典，键与 daily/lobby 的统计口径一致。
+ *  🔴 2026-10-17：duel/timed/practice/competition 四个模式原先指向
+ *  mg.mp_me_mode_*（六本字典里都不存在 → /me/ 页这四个标签显示裸 key），
+ *  改为字典里早已建好的 mg.shared_tab_*（与 solo/daily 同源，六语齐全）。 */
 const MODE_LABEL_KEYS: Record<string, string> = {
   solo: 'mg.shared_tab_solo',
   daily: 'mg.shared_tab_daily',
-  duel: 'mg.mp_me_mode_duel',
-  timed: 'mg.mp_me_mode_timed',
-  practice: 'mg.mp_me_mode_practice',
-  competition: 'mg.mp_me_mode_competition',
+  duel: 'mg.shared_tab_duel',
+  timed: 'mg.shared_tab_timed',
+  practice: 'mg.shared_tab_practice',
+  competition: 'mg.shared_tab_competition',
 };
 
 function esc(s: unknown): string {

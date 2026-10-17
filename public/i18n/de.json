@@ -18,6 +18,7 @@
   },
   "nav": {
     "home": "Startseite",
+    "games": "Spiele",
     "rank": "Rangliste",
     "about": "Über uns",
     "contact": "Kontakt",
@@ -1249,6 +1250,7 @@
     "no_due": "📅 keine Frist",
     "weak_no_attempts": "Noch keine Versuche — Schüler müssen zuerst eine Runde abschließen.",
     "weak_not_24": "Die Operator-Aufschlüsselung gilt für 24-Punkte-Aufgaben. Die Genauigkeit pro Schüler siehe unten.",
+    "weak_ttl": "Schwachstelle der Klasse",
     "glance_completion": "✅ Fertigstellung",
     "glance_acc": "🎯 Ø Genauigkeit",
     "glance_time": "⏱ Ø Lösungszeit",
@@ -1275,6 +1277,7 @@
     "toast_pick_class": "Wählen oder erstellen Sie zuerst eine Klasse",
     "toast_room_ready": "🚀 Raum {code} bereit — mit der Klasse teilen",
     "toast_gen_first": "Zuerst einen Raum erzeugen",
+    "toast_invite_copied": "🔗 Einladung in die Zwischenablage kopiert",
     "toast_qr_unavailable": "▦ QR nicht verfügbar — nutze den Einladungslink",
     "toast_nothing_export": "Noch nichts zu exportieren",
     "toast_csv": "📊 CSV exportiert",
