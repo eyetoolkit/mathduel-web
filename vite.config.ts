@@ -5,7 +5,7 @@ import { resolve, dirname } from 'node:path';
 const here = dirname(fileURLToPath(import.meta.url));
 
 /**
- * MathDuel 前端构建
+ * NumeriDuel 前端构建
  * - 多页应用（MPA）：首页 + 每款游戏一个 HTML 入口，产出干净路径（/games/24-game/）
  * - 无运行时注入壳：所有样式/脚本在构建期确定，保证「线上 = 预览」
  */

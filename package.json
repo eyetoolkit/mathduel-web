@@ -1,9 +1,9 @@
 {
-  "name": "mathduel-web",
+  "name": "numeriduel-web",
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "description": "MathDuel 独立前端（Vite + TS + Tailwind + 设计系统）",
+  "description": "NumeriDuel 独立前端（Vite + TS + Tailwind + 设计系统）",
   "packageManager": "pnpm@10.11.1",
   "engines": {
     "node": ">=20.0.0 <23",

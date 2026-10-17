@@ -6,7 +6,7 @@
  *   - 全部 token 在 body.home-v2 作用域重映射（不污染其他页）
  *   - 字体沿用设计系统站内自托管（Space Grotesk / Sora），用 CSS 模拟 Baloo 2
  *     的圆润感（font-weight: 800 + 字距收紧 + display:balance）
- *   - 与 mathduel 站点已有品牌色（--brand-50..900, --text, --text-muted 等）共享
+ *   - 与 numeriduel 站点已有品牌色（--brand-50..900, --text, --text-muted 等）共享
  *     —— 不引入第 4 套品牌，只重映射背景到 --paper，封面到 --card
  * ============================================================ */
 

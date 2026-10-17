@@ -460,7 +460,7 @@ export function renderHomeV2(): void {
       <!-- F-206 (c): Why NumeriDuel? brand story -->
       <section class="why wrap" aria-label="Why NumeriDuel" data-i18n-aria-label="math_home.why_title">
         <div class="why-card">
-          <div class="why-eyebrow" data-i18n="math_home.why_eyebrow">WHY MATHDUEL</div>
+          <div class="why-eyebrow" data-i18n="math_home.why_eyebrow">WHY NUMERIDUEL</div>
           <h2 class="why-title" data-i18n="math_home.why_title">Math is more fun when you can prove it.</h2>
           <p class="why-lead" data-i18n-html="math_home.why_lead">
             Every game on this site ships with a <b>Daily Challenge</b> — the same puzzle for everyone, everywhere,
