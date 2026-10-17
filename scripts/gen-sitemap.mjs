@@ -122,10 +122,21 @@ if (check) {
   const newLocs = new Set([...next.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]));
   const added = [...newLocs].filter((x) => !oldLocs.has(x));
   const removed = [...oldLocs].filter((x) => !newLocs.has(x));
-  console.log('sitemap 有差异：');
+
+  // ⚠️ 2026-10-17：<lastmod> 是构建当天日期，<url> 顺序也随入口注册顺序漂移，
+  //    所以「URL 集合一致、只有 lastmod/顺序不同」是**正常状态**，不该判红。
+  //    早先版本对此也 exit 1，导致本门禁一旦接进 build 就会永远失败 ——
+  //    变成一个装饰性红灯（真正该抓的「入口漏注册」反而被淹没）。
+  //    现在只对 URL 集合的增删判红，这才是本脚本要守的不变量。
+  if (!added.length && !removed.length) {
+    console.log('sitemap URL 集合与入口一致（lastmod/顺序为构建期产物，不参与判定）');
+    process.exit(0);
+  }
+
+  console.log('sitemap URL 集合与 vite 入口不一致：');
   if (added.length) console.log('  新增:', added.join(', '));
   if (removed.length) console.log('  移除:', removed.join(', '));
-  if (!added.length && !removed.length) console.log('  （仅 lastmod/顺序变化）');
+  console.log('  → 若确认是有意增删入口，请执行 `node scripts/gen-sitemap.mjs` 重新生成后提交。');
   process.exit(1);
 }
 
