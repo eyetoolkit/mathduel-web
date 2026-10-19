@@ -136,7 +136,7 @@ console.log('\n=== 24 点游戏 ===');
   await page.waitForTimeout(500);
   ok(await page.locator('#roomView').isVisible(), '建房后进入房间等待视图');
   const roomCode = ((await page.locator('#roomCode').textContent()) || '').trim();
-  ok(/^[A-Z0-9]{5}$/.test(roomCode), `房间码生成：${roomCode}`);
+  ok(/^[A-Z2-9]{6}$/.test(roomCode), `房间码生成：${roomCode}`);
   const playerCount = await page.locator('#roomPlayers .rp-item').count();
   ok(playerCount === 99, `DEMO 满员 99 人（实际 ${playerCount}）`);
   await page.locator('#startBtn').click();

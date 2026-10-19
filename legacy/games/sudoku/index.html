@@ -2614,7 +2614,7 @@ if (window.GameKeyboard) {
     return s;
   }
   function isValidRoomCode(code) {
-    return typeof code === 'string' && /^[A-Z2-9]{5}$/.test(code);
+    return typeof code === 'string' && /^[A-Z2-9]{6}$/.test(code);
   }
   function copyRoomCode() {
     var code = $('battle-room-code-lobby').textContent;
@@ -2749,7 +2749,7 @@ if (window.GameKeyboard) {
       var code = ($('battle-code-input').value || '').trim().toUpperCase();
       if (!name) { $('battle-lobby-error').textContent = __('请输入昵称（1-20 字符）'); return; }
       if (!code) { $('battle-lobby-error').textContent = __('请输入房间号'); return; }
-      if (!isValidRoomCode(code)) { $('battle-lobby-error').textContent = __('房间号格式错误（5 位大写字母+数字）'); return; }
+      if (!isValidRoomCode(code)) { $('battle-lobby-error').textContent = __('房间号格式错误（6 位大写字母+数字）'); return; }
       battleMyName = name;
       localStorage.setItem('sudoku_battle_name', name);
       $('battle-name').value = name;

@@ -1147,7 +1147,7 @@ html.gc-pending .diff-stats,html.gc-pending .g24-diff{visibility:hidden!importan
     var code = battleJoinInput.value.trim().toUpperCase();
     if (!name) { showLobbyError(__('请输入昵称')); return; }
     if (!code) { showLobbyError(__('请输入房间号')); return; }
-    if (!isValidRoomCode(code)) { showLobbyError(__('房间号格式错误（5 位大写字母+数字）')); return; }
+    if (!isValidRoomCode(code)) { showLobbyError(__('房间号格式错误（6 位大写字母+数字）')); return; }
     myName = name;
     localStorage.setItem('s6_battle_name', name);
     showLobbyError('');
@@ -1157,7 +1157,7 @@ html.gc-pending .diff-stats,html.gc-pending .g24-diff{visibility:hidden!importan
   });
 
   function isValidRoomCode(code) {
-    return typeof code === 'string' && /^[A-Z0-9]{5}$/.test(code);
+    return typeof code === 'string' && /^[A-Z2-9]{6}$/.test(code);
   }
 
   /* ── 分享链接 ── */

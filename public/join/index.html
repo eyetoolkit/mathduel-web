@@ -54,7 +54,7 @@
     <div class="brand"><b>Math</b><i>Duel</i></div>
     <div class="sub">Enter the room code from your teacher or friend</div>
     <input id="codeInput" inputmode="latin" autocomplete="off" autocapitalize="characters"
-           maxlength="5" placeholder="ABCDE" aria-label="Room code" />
+           maxlength="6" placeholder="ABCDEF" aria-label="Room code" />
     <button id="goBtn" type="button">Join game →</button>
     <div id="msg" role="status"></div>
     <div class="hint">Scanned a QR code? You'll jump straight in.<br />No account, no download — just play.</div>
@@ -126,7 +126,7 @@
 
   function submit() {
     var code = (input.value || '').trim().toUpperCase();
-    if (!/^[A-Z0-9]{4,8}$/.test(code)) { say('Enter the 5-character room code.', 'err'); return; }
+    if (!/^[A-Z2-9]{6}$/.test(code)) { say('Enter the 6-character room code.', 'err'); return; }
     resolve(code);
   }
 

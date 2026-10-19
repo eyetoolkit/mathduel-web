@@ -121,9 +121,13 @@ export const ADDITIONS = {
       mp_daily_elo_empty: 'No rated duels yet — play a competition round to enter the ladder.',
     },
     ml: {
+      room_note: "Private room, 6-character code. Your code and QR appear once the room is open.",
+      room_ph: "K7Q2RM",
+      g24_panel1_note: "Private room, 6-character code. Your code and QR appear once the room is open.",
       sg_hero_em: 'Fill the grid.',
     },
     mg: {
+      shared_invalid_code: "Invalid code (6 chars)",
       sg_pick_cell: '👆 Pick a cell first',
       sg_nothing_undo: '↶ Nothing to undo',
       sg_clue_fixed: '📌 That clue is fixed',
@@ -528,9 +532,13 @@ export const ADDITIONS = {
       mp_daily_elo_empty: '还没有排位对战 —— 打完一轮竞赛即可上榜。',
     },
     ml: {
+      room_note: "私密房间，6 位房间码。打开房间后会出现你的码与二维码。",
+      room_ph: "K7Q2RM",
+      g24_panel1_note: "私密房间，6 位房间码。打开房间后会出现你的码与二维码。",
       sg_hero_em: '填满盘面。',
     },
     mg: {
+      shared_invalid_code: "房码无效（6 位）",
       sg_pick_cell: '👆 请先选一个格子',
       sg_nothing_undo: '↶ 没有可撤销的操作',
       sg_clue_fixed: '📌 这是题目给定的数字',
@@ -944,9 +952,13 @@ export const ADDITIONS = {
       mp_daily_elo_empty: 'まだレーティング対戦がありません — コンペ戦をクリアして>',
     },
     ml: {
+      room_note: "プライベートルーム、6 桁コード。部屋を開くとコードと QR が表示されます。",
+      room_ph: "K7Q2RM",
+      g24_panel1_note: "プライベートルーム、6 桁コード。部屋を開くとコードと QR が表示されます。",
       sg_hero_em: '盤面を埋めよう。',
     },
     mg: {
+      shared_invalid_code: "コードが正しくありません（6文字）",
       sg_pick_cell: '👆 まずマスを選んでください',
       sg_nothing_undo: '↶ 元に戻す操作がありません',
       sg_clue_fixed: '📌 この数字は問題で与えられたものです',
@@ -1353,6 +1365,9 @@ export const ADDITIONS = {
       mp_daily_elo_empty: 'Aún no hay duelos con clasificación — juega una ronda de competición para entrar.',
     },
     ml: {
+      room_note: "Sala privada, código de 6 caracteres. Tu código y QR aparecen al abrir la sala.",
+      room_ph: "K7Q2RM",
+      g24_panel1_note: "Sala privada, código de 6 caracteres. Tu código y QR aparecen al abrir.",
       diff_medium: 'Estándar',
       pyr_ladder_title: 'Escalera Elo de Pirámide de ecuaciones',
       pyr_seo_title: 'Pirámide de ecuaciones — Elige tu modo · NumeriDuel',
@@ -1360,6 +1375,7 @@ export const ADDITIONS = {
       sg_hero_em: 'Rellena la cuadrícula.',
     },
     mg: {
+      shared_invalid_code: "Código no válido (6 caracteres)",
       sg_pick_cell: '👆 Elige primero una casilla',
       sg_nothing_undo: '↶ Nada que deshacer',
       sg_clue_fixed: '📌 Esa pista es fija',
@@ -1766,12 +1782,16 @@ export const ADDITIONS = {
       mp_daily_elo_empty: 'Aucun duel classé pour l’instant — joue un tour de compétition pour y entrer.',
     },
     ml: {
+      room_note: "Salle privée, code de 6 caractères. Le code et le QR s’affichent à l’ouverture.",
+      room_ph: "K7Q2RM",
+      g24_panel1_note: "Salle privée, code de 6 caractères. Le code et le QR apparaissent à l’ouverture.",
       pyr_ladder_title: 'Échelle Elo Pyramide d\'équations',
       pyr_seo_title: 'Pyramide d\'équations — Choisissez un mode · NumeriDuel',
       pyr_seo_og_alt: 'Pyramide d\'équations — atteins la cible sur NumeriDuel',
       sg_hero_em: 'Remplissez la grille.',
     },
     mg: {
+      shared_invalid_code: "Code invalide (6 caractères)",
       ep_hud_score: 'Points',
       sg_pick_cell: '👆 Choisissez d’abord une case',
       sg_nothing_undo: '↶ Rien à annuler',
@@ -2138,12 +2158,16 @@ export const ADDITIONS = {
       mp_daily_elo_empty: 'Noch keine gewerteten Duelle — spiele eine Turnierrunde, um in die Rangliste zu kommen.',
     },
     ml: {
+      room_note: "Privater Raum, 6-Zeichen-Code. Code und QR erscheinen beim Öffnen.",
+      room_ph: "K7Q2RM",
+      g24_panel1_note: "Privater Raum, 6-Zeichen-Code. Code und QR erscheinen beim Öffnen.",
       diff_warmup_small: '8–12 Sätze',
       diff_standard_small_pyr: '4–7 Sätze',
       diff_tricky_small: 'genau 3 Sätze',
       sg_hero_em: 'Fülle das Raster.',
     },
     mg: {
+      shared_invalid_code: "Ungültiger Code (6 Zeichen)",
       brand_sub_24: '24 · Kartentisch',
       givens: '{n} Gegeben',
       sg_pick_cell: '👆 Wähle zuerst ein Feld',
