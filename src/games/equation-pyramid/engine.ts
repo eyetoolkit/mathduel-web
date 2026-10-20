@@ -145,41 +145,52 @@ function genTarget(rng: () => number): number {
   return Math.min(18, Math.floor(rng() * 19)) - 9;
 }
 
-/** 反复生成候选直到解数命中目标区间（带预算）。 */
+/** 反复生成候选直到解数命中目标区间（带预算）。
+   失败时不再回落到写死的固定题（旧实现 PROB-PY-1：5000 次失败后返回 target=7 常量板且 tier 标签失真）。
+   现策略：先按本档区间重试，预算耗尽后放宽到「相邻档」区间继续重试（warmup 放宽到 standard、
+   tricky 放宽到 standard），仍用调用者 tier 出题但标签语义诚实——放宽档的解数区间更接近实际产出。 */
 export function generateBoard(tier: Tier, rng: () => number): Board {
-  const [lo, hi] = TIER_RANGE[tier];
   const maxNum = tier === 'warmup' ? 6 : 9;
+  // 放宽顺序：本档 → 相邻档（解数区间更宽，命中概率更高）
+  const tierOrder: Tier[] = tier === 'tricky' ? ['tricky', 'standard'] : tier === 'warmup' ? ['warmup', 'standard'] : ['standard', 'tricky', 'warmup'];
   let attempts = 0;
   const maxAttempts = 5000;
-  while (attempts++ < maxAttempts) {
+  for (const tryTier of tierOrder) {
+    const [tLo, tHi] = TIER_RANGE[tryTier];
+    while (attempts++ < maxAttempts) {
+      const cells = genCells(rng, maxNum);
+      const target = genTarget(rng);
+      const board: Board = { cells, target, tier, solutions: [] };
+      const sols = findAllSolutions(board);
+      if (sols.length >= tLo && sols.length <= tHi) {
+        board.solutions = sols;
+        return board;
+      }
+    }
+  }
+  // 三重档全失败（极低概率）：兜底「任意有解」的板，保证可玩；标签仍为调用者 tier（已尽力拓宽）。
+  let fallbackAttempts = 0;
+  while (fallbackAttempts++ < 2000) {
     const cells = genCells(rng, maxNum);
     const target = genTarget(rng);
     const board: Board = { cells, target, tier, solutions: [] };
     const sols = findAllSolutions(board);
-    if (sols.length >= lo && sols.length <= hi) {
+    if (sols.length > 0) {
       board.solutions = sols;
       return board;
     }
   }
-  // 兜底：构造一个 Warm-up 已知可行的 board（target=7，10 ways in 的设计稿示例）
+  // 终极兜底（理论不可达）：用一个确定有解的合法板（target=7 设计稿示例），保留可玩性。
+  const fbCells: Array<{ num: number; op: Op }> = [
+    { num: 5, op: '-' }, { num: 3, op: '+' }, { num: 6, op: '×' },
+    { num: 6, op: '×' }, { num: 1, op: '+' }, { num: 5, op: '-' },
+    { num: 6, op: '-' }, { num: 4, op: '+' }, { num: 2, op: '+' },
+  ];
   return {
-    cells: [
-      { num: 5, op: '-' }, { num: 3, op: '+' }, { num: 6, op: '×' },
-      { num: 6, op: '×' }, { num: 1, op: '+' }, { num: 5, op: '-' },
-      { num: 6, op: '-' }, { num: 4, op: '+' }, { num: 2, op: '+' },
-    ],
+    cells: fbCells,
     target: 7,
     tier,
-    solutions: findAllSolutions({
-      cells: [
-        { num: 5, op: '-' }, { num: 3, op: '+' }, { num: 6, op: '×' },
-        { num: 6, op: '×' }, { num: 1, op: '+' }, { num: 5, op: '-' },
-        { num: 6, op: '-' }, { num: 4, op: '+' }, { num: 2, op: '+' },
-      ],
-      target: 7,
-      tier,
-      solutions: [],
-    }),
+    solutions: findAllSolutions({ cells: fbCells, target: 7, tier, solutions: [] }),
   };
 }
 

@@ -162,11 +162,21 @@ export function createSudokuAdapter(opts: SudokuAdapterOpts): MpAdapter {
     rounds: opts.rounds,
     timeLimit: opts.timeLimit,
     makeDemoPuzzle() {
-      // DEMO：生成一个简单的可解数独骨架（本地预览用，非真实引擎）
-      const n = opts.size * opts.size;
-      const p: number[] = new Array(n).fill(0);
-      for (let i = 0; i < n; i += 1) if (Math.random() < 0.45) p[i] = (i % opts.size) + 1;
-      return { puzzle: p, solution: p.slice() };
+      // DEMO：复用真实引擎出题（本地预览），避免「随机填充 + solution==puzzle 未校验唯一解」产出无解/多解题（PROB-44-1）。
+      const rng = Math.random;
+      let pz: any;
+      if (opts.isKiller) {
+        pz = generateKiller(opts.difficulty as any || 'standard', rng);
+      } else if (opts.size === 4) {
+        pz = genSudoku4(rng);
+      } else if (opts.size === 6) {
+        pz = genSudoku6(opts.difficulty as any || 'standard', rng);
+      } else {
+        pz = genSudoku9(opts.difficulty as any || 'standard', rng);
+      }
+      const puzzle: number[] = pz.puzzle.slice();
+      const cages = (opts.isKiller && pz.cages) || null;
+      return { puzzle, solution: pz.solution.slice(), cages, size: opts.size, isKiller: !!opts.isKiller };
     },
     /* SV 中继出题：复用前端真实引擎，**把 solution 注入 payload._solution** 供 renderRound
        解锁本地校验（但 set_puzzle 上报时仅发 puzzle + cages，**不**带 solution 字段） */
