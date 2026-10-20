@@ -66,6 +66,25 @@ body.mehub {
 .mj-privacy { font-size: .8rem; color: var(--muted); background: #EEF0FB; border: 1.5px solid #D9DCF5;
   border-radius: 12px; padding: 12px 16px; line-height: 1.6; }
 .mj-privacy a { color: var(--indigo); font-weight: 700; }
+
+/* ── 金币钱包区（P0 经济接线）── */
+.mj-coins { position: relative; }
+.mj-coins-h { font-size: .8rem; font-weight: 700; color: var(--muted); margin: 14px 0 8px; text-transform: uppercase; letter-spacing: .04em; }
+.mj-coins-balance { display: flex; align-items: baseline; gap: 10px; margin: 4px 0 2px; }
+.mj-coins-balance .num { font-size: 2rem; font-weight: 800; color: var(--indigo); font-variant-numeric: tabular-nums; }
+.mj-coins-balance span:last-child { font-size: .8rem; color: var(--muted); font-weight: 600; }
+.mj-coinrows { display: flex; flex-direction: column; gap: 6px; }
+.mj-coinrow { display: flex; align-items: center; gap: 10px; font-size: .84rem;
+  border: 1.5px solid var(--line); border-radius: 10px; padding: 8px 12px; }
+.mj-coinrow.earn { border-left: 3px solid #0E9F6E; }
+.mj-coinrow.spend { border-left: 3px solid #E5484D; }
+.mj-cr-src { flex: 1; font-weight: 600; color: var(--ink); }
+.mj-cr-amt { font-weight: 800; font-variant-numeric: tabular-nums; }
+.mj-coinrow.earn .mj-cr-amt { color: #0E9F6E; }
+.mj-coinrow.spend .mj-cr-amt { color: #E5484D; }
+.mj-cr-time { font-size: .72rem; color: var(--muted); }
+.mj-coins-empty, .mj-coins-anon, .mj-coins-offline { font-size: .82rem; color: var(--muted); font-style: italic; }
+.mj-coins-offline { color: #B45309; font-style: normal; }
 /* 页脚（与 Daily Hub 同构） */
 .dh-foot { display: flex; gap: 18px; justify-content: center; padding: 16px; font-size: .8rem; }
 .dh-foot a { color: var(--muted); text-decoration: none; font-weight: 600; }
@@ -81,3 +100,7 @@ html[data-theme='dark'] body.mehub {
 html[data-theme='dark'] body.mehub .mj-cal .l0 { background: #232747; }
 html[data-theme='dark'] body.mehub .mj-mode { background: #232747; color: #A5B4FC; }
 html[data-theme='dark'] body.mehub .mj-privacy { background: #1C1F3A; }
+/* 金币钱包区（暗色） */
+html[data-theme='dark'] body.mehub .mj-coins-balance .num { color: var(--amber); }
+html[data-theme='dark'] body.mehub .mj-coinrow { background: #1C1F3A; }
+html[data-theme='dark'] body.mehub .mj-cr-src { color: var(--ink); }

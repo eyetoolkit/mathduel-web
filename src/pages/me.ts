@@ -12,6 +12,11 @@ import {
   type GameId,
 } from '../games/cross-game';
 import { i18nT, onI18nChange } from '../games/_shared/i18n-t';
+import {
+  coinsMe, getHistory,
+  type CoinHistoryItem, type CoinsMe as CoinsMeData,
+  CoinsError,
+} from '../shared/coins';
 
 const $ = (id: string): HTMLElement => document.getElementById(id) as HTMLElement;
 
@@ -140,4 +145,94 @@ onI18nChange(() => {
   renderTotals();
   renderGames();
   renderBadges();
+  renderCoinsSection();
 });
+
+/* ─── 金币钱包区（P0 经济接线） ─────────────────────────────
+ * 余额 + 最近 20 条收支流水，全部走 src/shared/coins.ts 封装的已有 API。
+ * 服务端是单一真相源（coins.me / coins.history），本地只渲染。
+ * 匿名态降级为「登录解锁」提示（wallet_anon），不报错、不影响足迹页。 */
+
+/** source 字符串 → i18n 键（对齐服务端 member.history 的 source 取值） */
+const COIN_SRC_KEY: Record<string, string> = {
+  checkin: 'coins.src_checkin',
+  game: 'coins.src_game',
+  game_win: 'coins.src_game_win',
+  game_hard: 'coins.src_game_hard',
+  quest: 'coins.src_quest',
+  pvp: 'coins.src_pvp',
+  daily: 'coins.src_daily',
+  purchase: 'coins.src_purchase',
+  invite: 'coins.src_invite',
+};
+
+/** 取 source 的本地化标签：查映射表，未命中回落原 source 串（防御服务端新增 source） */
+function coinSrcLabel(src: string): string {
+  const key = COIN_SRC_KEY[src];
+  return key ? i18nT(key) : src;
+}
+
+function renderCoinsSection(): void {
+  const card = document.getElementById('coinsCard');
+  const numEl = document.getElementById('coinsNum');
+  const rowsEl = document.getElementById('coinRows') as HTMLElement | null;
+  if (!card || !numEl || !rowsEl) return;
+
+  void coinsMe()
+    .then((me: CoinsMeData) => {
+      if (me.authenticated && typeof me.coins === 'number') {
+        numEl.textContent = String(me.coins);
+        card.classList.add('authed');
+        return getHistory(20);
+      }
+      card.classList.remove('authed');
+      numEl.textContent = '—';
+      rowsEl!.textContent = '';
+      const hint = document.createElement('p');
+      hint.className = 'mj-coins-anon';
+      hint.textContent = i18nT('coins.wallet_anon');
+      rowsEl!.appendChild(hint);
+      return null;
+    })
+    .then((hist) => {
+      if (!hist) return;
+      rowsEl!.textContent = '';
+      if (!hist.history || hist.history.length === 0) {
+        const empty = document.createElement('p');
+        empty.className = 'mj-coins-empty';
+        empty.textContent = i18nT('coins.history_empty');
+        rowsEl!.appendChild(empty);
+        return;
+      }
+      for (const item of hist.history) {
+        rowsEl!.appendChild(coinRowHtml(item));
+      }
+    })
+    .catch((e) => {
+      // 网络/服务不可达 → 离线提示；匿名/业务错 → 保留降级
+      if (e instanceof CoinsError && e.code === 'network') {
+        const off = document.createElement('p');
+        off.className = 'mj-coins-offline';
+        off.textContent = i18nT('coins.err_offline');
+        rowsEl!.textContent = '';
+        rowsEl!.appendChild(off);
+      }
+    });
+}
+
+function coinRowHtml(item: CoinHistoryItem): HTMLElement {
+  const row = document.createElement('div');
+  row.className = 'mj-coinrow ' + (item.type === 'earn' ? 'earn' : 'spend');
+  const sign = item.type === 'earn' ? '+' : '−';
+  const time = new Date(item.ts).toLocaleString(undefined, {
+    month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit',
+  });
+  row.innerHTML =
+    `<span class="mj-cr-src">${esc(coinSrcLabel(item.source))}</span>` +
+    `<span class="mj-cr-amt num">${sign}${item.amount}</span>` +
+    `<span class="mj-cr-time">${esc(time)}</span>`;
+  return row;
+}
+
+/* 首次渲染（i18n 未就绪时也会先跑一次，ready 后由 onI18nChange 重渲） */
+renderCoinsSection();

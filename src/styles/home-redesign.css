@@ -280,6 +280,67 @@ body.rail .main { margin-left: var(--sb-rail); }
 }
 .home-v2 .btn-exchange:hover { border-color: var(--indigo-bright); background: #F6F7FE; }
 
+/* ============ 金币钱包面板（P0 经济接线） ============
+   右侧 panel-coins：余额大字 + 今日进度 + 签到 + 5 任务 + 领取。
+   白卡沿用 .panel，内部子块用 cw- 前缀，与 weekly-rows 视觉分账。 */
+.home-v2 .panel-coins::before {
+  content: ""; position: absolute; inset: 0 0 auto 0; height: 4px;
+  background: linear-gradient(90deg, var(--amber), var(--amber-2));
+}
+.home-v2 .cw-balance {
+  display: flex; align-items: baseline; gap: 10px; margin-bottom: 14px;
+}
+.home-v2 .cw-balance .cw-num {
+  font-family: var(--font-display); font-weight: 800; font-size: 2.2rem;
+  color: var(--indigo); line-height: 1; font-variant-numeric: tabular-nums;
+}
+.home-v2 .cw-balance .cw-lbl { font-size: .82rem; font-weight: 600; color: var(--mute); }
+.home-v2 .cw-budget { margin-bottom: 14px; }
+.home-v2 .cw-budget-head {
+  display: flex; justify-content: space-between; align-items: baseline;
+  font-size: .8rem; color: var(--mute); margin-bottom: 6px;
+}
+.home-v2 .cw-budget-nums b { color: var(--amber); font-weight: 800; }
+.home-v2 .cw-budget-cap-lbl { font-size: .68rem; color: var(--mute-2); margin-left: 4px; }
+.home-v2 .cw-checkin {
+  width: 100%; border: 0; background: var(--amber); color: var(--amber-ink);
+  border-radius: 11px; padding: 9px 0; font-weight: 800; font-size: .9rem;
+  margin-bottom: 16px; min-height: 44px; transition: transform .15s ease, box-shadow .15s ease;
+}
+.home-v2 .cw-checkin:hover { transform: translateY(-1px); box-shadow: 0 8px 18px rgba(245, 158, 11, .32); }
+.home-v2 .cw-checkin.done { background: var(--green-soft); color: #0E9F6E; box-shadow: none; }
+.home-v2 .cw-checkin:disabled { opacity: .6; cursor: wait; }
+.home-v2 .cw-quests { border-top: 1px dashed var(--line); padding-top: 14px; }
+.home-v2 .cw-quests-head {
+  display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;
+}
+.home-v2 .cw-quests-head span { font-family: var(--font-display); font-weight: 800; font-size: .92rem; }
+.home-v2 .cw-claim {
+  border: 1px solid var(--line-2); background: #fff; color: var(--indigo);
+  border-radius: 99px; padding: 4px 14px; font-weight: 700; font-size: .76rem;
+}
+.home-v2 .cw-claim:disabled { opacity: .4; cursor: default; }
+.home-v2 .cw-quest-list { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+.home-v2 .cw-qi {
+  display: flex; align-items: center; gap: 8px; font-size: .82rem;
+  padding: 7px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--paper);
+}
+.home-v2 .cw-qi .cw-qi-t { flex: 1; font-weight: 600; color: #3B3F58; }
+.home-v2 .cw-qi .cw-qi-r { font-family: var(--font-display); font-weight: 800; color: var(--amber); }
+.home-v2 .cw-qi .cw-qi-s { font-size: .7rem; font-weight: 700; color: var(--mute-2); min-width: 64px; text-align: right; }
+.home-v2 .cw-qi.ready { border-color: rgba(34, 197, 94, .55); background: var(--green-soft); }
+.home-v2 .cw-qi.ready .cw-qi-s { color: #0E9F6E; }
+.home-v2 .cw-qi.claimed { opacity: .55; }
+.home-v2 .cw-qi.claimed .cw-qi-s { color: var(--green); }
+.home-v2 .cw-anon, .home-v2 .cw-offline {
+  font-size: .82rem; color: var(--mute); line-height: 1.5; margin: 0;
+}
+.home-v2 .cw-toast {
+  position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%);
+  background: var(--card); color: #fff; padding: 10px 20px; border-radius: 99px;
+  font-weight: 700; font-size: .86rem; z-index: 80; box-shadow: 0 8px 24px rgba(30, 27, 75, .35);
+}
+
 /* ============ 天梯 ============ */
 .home-v2 .ladder { padding: 30px 0 8px; }
 .home-v2 .ladder-panel {
@@ -521,6 +582,15 @@ html[data-theme="dark"] body.home-v2 .dtile:hover { border-color: var(--line-2);
 html[data-theme="dark"] body.home-v2 .tier i { background: #2C2F52; }
 html[data-theme="dark"] body.home-v2 .wrow .rk { color: var(--indigo-bright); }
 html[data-theme="dark"] body.home-v2 .wrow.me { color: var(--indigo-bright); }
+
+/* 金币钱包面板（暗色）：白卡已由上方 .panel 规则接管，这里补内部 cw- 子块 */
+html[data-theme="dark"] body.home-v2 .cw-balance .cw-num { color: var(--amber-2); }
+html[data-theme="dark"] body.home-v2 .cw-qi { background: #14152A; color: #C7CAE6; }
+html[data-theme="dark"] body.home-v2 .cw-qi .cw-qi-t { color: #C7CAE6; }
+html[data-theme="dark"] body.home-v2 .cw-claim { background: #16172B; color: var(--indigo-bright); }
+html[data-theme="dark"] body.home-v2 .cw-claim:disabled { color: #6F739A; }
+html[data-theme="dark"] body.home-v2 .cw-checkin.done { background: #14282A; color: #4ADE80; }
+html[data-theme="dark"] body.home-v2 .cw-toast { background: #1B1942; }
 
 /* lobby 模式卡 / 步骤卡 / SOON */
 html[data-theme="dark"] body.home-v2 .mode { border-color: var(--line); }

@@ -13,7 +13,13 @@
 import type { GameDef } from './home';
 import { wireLobbyChrome } from './lobby-chrome';
 import { getTodaysDones, getDailyStreak, getBadges } from '../games/cross-game';
-import { i18nT } from '../games/_shared/i18n-t';
+import { i18nT, escHtml } from '../games/_shared/i18n-t';
+import {
+  coinsMe, checkin, getQuests, claimQuests, QUEST_KEY_MAP,
+  type CoinsMe as CoinsMeData, type Quest as CoinsQuest,
+  CoinsError,
+} from '../shared/coins';
+import { playSfx } from '../shared/sfx';
 
 const SHOW_BETA = (import.meta.env.VITE_SHOW_BETA ?? '') === '1';
 
@@ -206,9 +212,10 @@ function sidebarHtml(): string {
   `;
 
   // 与各游戏页/lobby 页的静态壳保持同一份导航：
-  // Home → Coin Shop（未上线灰态）→ All games · 5 → Help
+  // Home → Coin wallet（P0 实链，指向 /me/ 的金币流水区）→ All games · 5 → Help
+  // P0 前这里是 is-disabled 灰态 + "Coming soon" pill；现在点亮为真实入口。
   const coinShop = `
-    <span class="nav-item is-disabled" aria-disabled="true" style="opacity:.5;cursor:default" title="Coming soon" data-i18n-title="math_home.coming_soon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M12 7v5l3 2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg><label style="cursor:inherit"><span data-i18n="math_home.nav_coin_shop">Coin Shop</span><span class="pill-soon" data-i18n="math_home.pill_soon">soon</span></label></span>
+    <a class="nav-item" href="/me/"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M12 7v5l3 2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg><label style="cursor:inherit" data-i18n="mp.coin_shop">Coin wallet 🪙</label></a>
   `;
 
   const helpGroup = `
@@ -304,6 +311,43 @@ function duoHtml(): string {
         : '<b>All ' + totalShown + '</b> done today — streak extended to <b>' + streak + ' day' + (streak === 1 ? '' : 's') + '</b>!';
   const dailyMsg =
     '<span data-i18n-html="' + msgKey + '" data-i18n-vars=\'' + JSON.stringify(msgVars) + '\'>' + dailyMsgEn + '</span>';
+  // 右侧面板 = 金币钱包（P0 经济接线）：余额 / 今日已赚 / 签到 / 5 任务 / 领取
+  // 全部走 src/shared/coins.ts 封装的已有 API，匿名态降级为「登录解锁」引导。
+  // 静态骨架渲染占位结构，loadCoinsPanel() 异步填充真实数据（i18n ready 后重渲）。
+  const walletPanel = `
+    <div class="panel panel-coins" data-coins-panel aria-busy="true">
+      <div class="panel-head">
+        <span class="panel-title"><span class="cal">🪙</span> <span data-i18n="coins.panel_title">Coin wallet</span></span>
+        <span class="panel-meta"><span data-i18n="coins.budget_hint">Resets at UTC midnight</span></span>
+      </div>
+      <div class="cw-balance" data-cw-balance>
+        <span class="cw-num" data-cw-num>—</span>
+        <span class="cw-lbl" data-i18n="coins.balance">Balance</span>
+      </div>
+      <div class="cw-budget" data-cw-budget>
+        <div class="cw-budget-head">
+          <span data-i18n="coins.today">Earned today</span>
+          <span class="cw-budget-nums"><b data-cw-used>0</b>/<span data-cw-cap>250</span>
+          <span class="cw-budget-cap-lbl" data-i18n="coins.cap">Daily cap</span></span>
+        </div>
+        <div class="progress"><i data-cw-bar style="width:0%"></i></div>
+      </div>
+      <button type="button" class="cw-checkin btn-amber" data-cw-checkin>
+        <span data-i18n="coins.checkin_do">Check in</span>
+      </button>
+      <div class="cw-quests" data-cw-quests>
+        <div class="cw-quests-head">
+          <span data-i18n="coins.quests">Daily quests</span>
+          <button type="button" class="cw-claim" data-cw-claim disabled>
+            <span data-i18n="coins.quest_claim">Claim</span>
+          </button>
+        </div>
+        <ul class="cw-quest-list" data-cw-quest-list></ul>
+      </div>
+      <p class="cw-anon" data-cw-anon hidden data-i18n="coins.wallet_anon">Sign in to sync coins across devices.</p>
+      <p class="cw-offline" data-cw-offline hidden data-i18n="coins.err_offline">Coin service unreachable — your game still works.</p>
+    </div>
+  `;
   return `
     <div class="panel panel-daily">
       <div class="panel-head">
@@ -319,20 +363,7 @@ function duoHtml(): string {
       <p class="daily-msg">${dailyMsg} · <span class="cd" id="cd">--:--:--</span> <span data-i18n="math_home.until_reset">until the global reset</span></p>
     </div>
 
-    <div class="panel">
-      <div class="panel-head">
-        <span class="panel-title"><span data-i18n="math_home.panel_weekly">🏆 Weekly Tournament</span> <small style="font-size:.78rem;color:var(--mute);font-weight:600">W38</small></span>
-        <span class="panel-meta"><span style="background:#EEF0FB;color:var(--indigo);border-radius:99px;padding:2px 10px;font-weight:700;font-size:.74rem" data-i18n="math_home.weekly_live">Live</span></span>
-      </div>
-      <p class="daily-msg" style="margin:-6px 0 10px" data-i18n="math_home.weekly_meta" data-i18n-vars='{"start":"Sep 21","end":"Sep 27","players":128,"p1":50,"p2":25,"p3":10}'>Sep 21 → Sep 27 · 128 players · prizes 🥇50🪙 🥈25🪙 🥉10🪙</p>
-      <div class="weekly-rows">
-        <div class="wrow"><span class="rk">1</span><span class="nm">Mira</span><span class="pt num">3120</span></div>
-        <div class="wrow"><span class="rk">2</span><span class="nm">Ken</span><span class="pt num">2840</span></div>
-        <div class="wrow"><span class="rk">3</span><span class="nm">Ade</span><span class="pt num">2610</span></div>
-        <div class="wrow me"><span class="rk">57</span><span class="nm" data-i18n="math_home.weekly_you">You</span><span class="pt num">890</span></div>
-      </div>
-      <button class="btn-exchange" type="button" data-i18n="math_home.btn_exchange">🪙 Exchange coins for ad-free</button>
-    </div>
+    ${walletPanel}
   `;
 }
 
@@ -489,6 +520,213 @@ export function renderHomeV2(): void {
   // 抽屉 / 遮罩 / 侧栏收窄统一走 pages/lobby-chrome（首页壳的收窄按钮 id 是 sbCollapse，
   // 该模块两个 id 都认）。此前这里另有一份同名实现，与 lobby 页那份容易漂移。
   wireLobbyChrome();
+  // 3. 金币钱包面板（P0 经济接线）：异步填充余额/签到/任务，i18n ready 后重渲
+  initCoinsPanel();
+}
+
+/* ───────── 金币钱包面板（P0 经济接线） ─────────
+ * 右侧 panel-coins 的异步填充：余额 / 今日已赚 / 签到 / 5 任务 / 领取。
+ * 全部走 src/shared/coins.ts 封装的已有 API（不新增服务端点）。
+ *
+ * 渲染纪律（RULES-FE-D #88 / #90 延伸）：
+ *   - 所有动态节点用 i18nT() 取值，挂 onI18nChange() 重渲（切语言时静态骨架
+ *     i18n.js 管不到 JS 生成的节点，必须自己重画）
+ *   - 异步 IIFE 必须把结果存出来，不能靠 return（暗色审计教训 #90 的 async IIFE 吞返回值）
+ *   - 匿名态降级为「登录解锁」引导条，不报错；离线态显示 err_offline
+ */
+async function initCoinsPanel(): Promise<void> {
+  const root = document.querySelector<HTMLElement>('[data-coins-panel]');
+  if (!root) return;
+
+  root.setAttribute('aria-busy', 'true');
+
+  // 拉余额 + 今日状态
+  let me: CoinsMeData;
+  try {
+    me = await coinsMe();
+  } catch (e) {
+    if (e instanceof CoinsError && e.code === 'network') {
+      showOffline(root);
+      return;
+    }
+    // not_authenticated / 其它 → 走匿名分支
+    me = { authenticated: false };
+  }
+
+  if (!me.authenticated) {
+    // 匿名：余额不可见，显示「登录解锁」引导（站点无登录流，仅提示跨端同步）
+    renderAnon(root);
+    return;
+  }
+
+  // 登录态：填充余额 + 今日已赚 + 进度条
+  renderBalance(root, me);
+  await loadQuests(root);
+
+  // 绑定签到 / 领取
+  wireCheckin(root);
+  wireClaim(root);
+
+  root.setAttribute('aria-busy', 'false');
+}
+
+function showOffline(root: HTMLElement): void {
+  const off = root.querySelector<HTMLElement>('[data-cw-offline]');
+  if (off) off.hidden = false;
+  // 隐藏余额 / 任务区，避免占位骨架误导
+  for (const sel of ['[data-cw-balance]', '[data-cw-budget]', '[data-cw-checkin]', '[data-cw-quests]']) {
+    const el = root.querySelector<HTMLElement>(sel);
+    if (el) el.hidden = true;
+  }
+}
+
+function renderAnon(root: HTMLElement): void {
+  const anon = root.querySelector<HTMLElement>('[data-cw-anon]');
+  if (anon) anon.hidden = false;
+  for (const sel of ['[data-cw-balance]', '[data-cw-budget]', '[data-cw-checkin]', '[data-cw-quests]']) {
+    const el = root.querySelector<HTMLElement>(sel);
+    if (el) el.hidden = true;
+  }
+}
+
+function renderBalance(root: HTMLElement, me: CoinsMeData): void {
+  const num = root.querySelector<HTMLElement>('[data-cw-num]');
+  if (num) num.textContent = String(me.coins ?? 0);
+  const used = root.querySelector<HTMLElement>('[data-cw-used]');
+  if (used) used.textContent = String(me.daily_budget?.used ?? me.daily?.earned_today ?? 0);
+  const cap = root.querySelector<HTMLElement>('[data-cw-cap]');
+  if (cap) cap.textContent = String(me.daily_budget?.cap ?? 250);
+  const bar = root.querySelector<HTMLElement>('[data-cw-bar]');
+  const capN = me.daily_budget?.cap ?? 250;
+  const usedN = me.daily_budget?.used ?? me.daily?.earned_today ?? 0;
+  if (bar) bar.style.width = `${Math.min(100, Math.round((usedN / Math.max(1, capN)) * 100))}%`;
+}
+
+async function loadQuests(root: HTMLElement): Promise<void> {
+  let quests: CoinsQuest[];
+  try {
+    quests = (await getQuests()).quests;
+  } catch (e) {
+    if (e instanceof CoinsError && e.code === 'not_authenticated') {
+      renderAnon(root);
+      return;
+    }
+    // 任务拉取失败（网络）不阻塞余额展示，只隐藏任务区
+    const list = root.querySelector<HTMLElement>('[data-cw-quest-list]');
+    if (list) list.innerHTML = '';
+    return;
+  }
+
+  const list = root.querySelector<HTMLElement>('[data-cw-quest-list]');
+  if (!list) return;
+  list.textContent = '';
+
+  const claimable = quests.filter((x) => x.can_claim);
+  for (const quest of quests) {
+    const li = document.createElement('li');
+    li.className = 'cw-qi' + (quest.claimed ? ' claimed' : quest.completed ? ' ready' : '');
+    li.dataset.questId = quest.id;
+    const titleKey = QUEST_KEY_MAP[quest.id];
+    const title = titleKey ? i18nT(titleKey) : i18nT(`coins.quest_${quest.id}`);
+    const state = quest.claimed
+      ? i18nT('coins.quest_claimed')
+      : quest.completed
+        ? i18nT('coins.quest_done')
+        : i18nT('coins.quest_todo');
+    li.innerHTML =
+      `<span class="cw-qi-t">${escHtml(title)}</span>` +
+      `<span class="cw-qi-r">+${quest.reward}</span>` +
+      `<span class="cw-qi-s">${escHtml(state)}</span>`;
+    list.appendChild(li);
+  }
+
+  // 领取按钮：有可领任务才激活
+  const claimBtn = root.querySelector<HTMLButtonElement>('[data-cw-claim]');
+  if (claimBtn) {
+    claimBtn.disabled = claimable.length === 0;
+    if (claimable.length > 0) {
+      claimBtn.dataset.reward = String(claimable.reduce((s, x) => s + x.reward, 0));
+    }
+  }
+}
+
+function wireCheckin(root: HTMLElement): void {
+  const btn = root.querySelector<HTMLButtonElement>('[data-cw-checkin]');
+  if (!btn) return;
+  btn.addEventListener('click', async () => {
+    btn.disabled = true;
+    try {
+      const r = await checkin();
+      playSfx('win');
+      // 本地即时刷新余额区（服务端 total_coins 为真相源）
+      const num = root.querySelector<HTMLElement>('[data-cw-num]');
+      if (num) num.textContent = String(r.total_coins);
+      toast(i18nT('coins.toast_checkin', { n: r.earned }));
+      // 签到后任务 checkin 项会变为可完成 → 重拉任务
+      await loadQuests(root);
+    } catch (e) {
+      if (e instanceof CoinsError && e.code === 'already_checked_in') {
+        // 已签到：按钮切到「今日已签」态
+        const lbl = btn.querySelector<HTMLElement>('[data-i18n]') || btn;
+        lbl.textContent = i18nT('coins.checkin_done');
+        btn.classList.add('done');
+        return;
+      }
+      if (e instanceof CoinsError && e.code === 'network') {
+        toast(i18nT('coins.err_offline'));
+        btn.disabled = false;
+        return;
+      }
+      // not_authenticated 等 → 降级匿名
+      renderAnon(root);
+      return;
+    }
+  });
+}
+
+function wireClaim(root: HTMLElement): void {
+  const btn = root.querySelector<HTMLButtonElement>('[data-cw-claim]');
+  if (!btn) return;
+  btn.addEventListener('click', async () => {
+    const list = root.querySelector<HTMLElement>('[data-cw-quest-list]');
+    if (!list) return;
+    const ids = Array.from(list.querySelectorAll<HTMLElement>('li.ready'))
+      .map((li) => li.dataset.questId)
+      .filter((id): id is string => !!id);
+    if (ids.length === 0) return;
+    btn.disabled = true;
+    try {
+      const r = await claimQuests(ids);
+      playSfx('win');
+      toast(i18nT('coins.toast_quest', { n: r.coins_earned }));
+      // 领取后余额增加 → 刷新余额 + 重拉任务（claimed 态更新）
+      const num = root.querySelector<HTMLElement>('[data-cw-num]');
+      if (num) num.textContent = String(r.total_coins);
+      await loadQuests(root);
+    } catch (e) {
+      if (e instanceof CoinsError && e.code === 'network') {
+        toast(i18nT('coins.err_offline'));
+        btn.disabled = false;
+      } else if (e instanceof CoinsError && e.code === 'not_authenticated') {
+        renderAnon(root);
+      }
+    }
+  });
+}
+
+/* 轻量 toast：复用页面已有的提示节奏（无则降级为状态行） */
+function toast(msg: string): void {
+  let box = document.querySelector<HTMLElement>('[data-cw-toast]');
+  if (!box) {
+    box = document.createElement('div');
+    box.dataset.cwToast = '';
+    box.className = 'cw-toast';
+    document.body.appendChild(box);
+  }
+  box.textContent = msg;
+  box.hidden = false;
+  window.clearTimeout((box as unknown as { _t?: number })._t);
+  (box as unknown as { _t?: number })._t = window.setTimeout(() => { box!.hidden = true; }, 2600);
 }
 
 /* 每日倒计时（到下一个 UTC 零点，与服务端 daily 一致） */
