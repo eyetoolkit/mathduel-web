@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en" data-site="numeriduel">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#F4F5F9" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="NumeriDuel" />
+  <title>Coin Shop — unlock avatars &amp; reactions | NumeriDuel</title>
+  <meta name="description" content="Spend your NumeriDuel coins on avatars and reactions. Earn coins by playing, checking in daily and finishing quests. Prices come from the server — nothing is hard-coded here." />
+  <meta name="robots" content="noindex" />
+  <script>window.__I18N_CONFIG__={supported:["en","zh","ja","es","fr","de"],dictVersion:61,fallback:"en"}</script>
+  <script src="/i18n/i18n.js?v=42"></script>
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-startup-image" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3)" href="/splash-1170x2532.png">
+  <link rel="apple-touch-startup-image" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3)" href="/splash-1290x2796.png">
+  <link rel="apple-touch-startup-image" media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3)" href="/splash-1284x2778.png">
+  <link rel="apple-touch-startup-image" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2)" href="/splash-750x1334.png">
+</head>
+<body class="shop-hub">
+  <header class="dh-top">
+    <a class="dh-brand" href="/"><b>Math</b><i>Duel</i></a>
+    <span class="dh-sub" data-i18n="mp.mp_me_brand_sub">Coin Shop</span>
+    <span class="dh-coins" id="shopCoins" data-i18n-title="mp.mp_shop_title" title="Coin Shop">
+      <span class="flame">🪙</span><b id="shopBal">—</b>
+    </span>
+  </header>
+
+  <main class="dh-main">
+    <section class="hero">
+      <div class="hero-l">
+        <h1 data-i18n="mp.mp_shop_h1">Coin Shop</h1>
+        <p class="mj-sub" data-i18n="mp.mp_shop_sub">Spend coins on avatars &amp; reactions. Earn more by playing, checking in daily and finishing quests.</p>
+      </div>
+    </section>
+
+    <!-- 未登录引导（catalog 匿名安全：余额 0 时显示，购买/激活降级为登录解锁） -->
+    <section class="mj-card shop-anon" id="shopAnon" hidden>
+      <p data-i18n="mp.mp_shop_anon">Sign in to buy items and sync your collection across devices. Anonymous visitors can browse the catalog.</p>
+      <a class="shop-cta" href="/join/" data-i18n="mp.mp_shop_anon_cta">Create a free account</a>
+    </section>
+
+    <!-- 离线降级（网络/服务不可达） -->
+    <section class="mj-card shop-offline" id="shopOffline" hidden>
+      <p data-i18n="mp.mp_shop_offline">Coin service unreachable — your games still work. Try again in a moment.</p>
+    </section>
+
+    <!-- 商品目录（按 kind 分区，JS 渲染） -->
+    <section class="mj-card" id="shopCard" hidden>
+      <div class="shop-kind" id="shopAvatars">
+        <h2 data-i18n="mp.mp_shop_kind_avatar">Avatars</h2>
+        <div class="shop-grid" id="gridAvatars"></div>
+      </div>
+      <div class="shop-kind" id="shopEmojis">
+        <h2 data-i18n="mp.mp_shop_kind_emoji">Reactions</h2>
+        <div class="shop-grid" id="gridEmojis"></div>
+      </div>
+    </section>
+
+    <section class="mj-privacy">
+      <span data-i18n="mp.mp_shop_privacy_note">Prices and ownership come from the server — the single source of truth. Coins earned only, no real-money refunds. 4×4 kids pages can't buy decorations.</span>
+    </section>
+  </main>
+
+  <footer class="dh-foot">
+    <a href="/daily/" data-i18n="mp.mp_me_foot_daily">🔥 Daily Hub</a>
+    <a href="/worksheets/" data-i18n="mp.mp_me_foot_worksheets">🖨 Worksheets</a>
+    <a href="/games/24-game/lobby/" data-i18n="mp.mp_me_foot_games">Games</a>
+    <a href="/teacher/" data-i18n="mp.mp_me_foot_teachers">Teachers</a>
+    <a href="/" data-i18n="mp.mp_me_foot_home">numeriduel.com</a>
+  </footer>
+
+  <script type="module" src="/src/pages/shop.ts"></script>
+</body>
+</html>
