@@ -1150,6 +1150,8 @@ const AVATAR_ICON: Record<string, string> = {
   'a-tiger': '🐯', 'a-bear': '🐻', 'a-penguin': '🐧', 'a-unicorn': '🦄',
   'a-robot': '🤖', 'a-ghost': '👻', 'a-turtle': '🐢', 'a-rabbit': '🐰',
   'a-fox': '🦊', 'a-panda': '🐼', 'a-lion': '🦁', 'a-octo': '🐙',
+  /* P1-b 新增 4 头像（高档）—— 同步自 worker mathduel CATALOG，漏同步会渲染兜底 🎭（#86） */
+  'a-dragon': '🐲', 'a-unicorn-s': '🦄', 'a-robot-s': '🤖', 'a-galaxy': '🌌',
 };
 const avatarIcon = (id?: string | null): string => (id && AVATAR_ICON[id]) || '🎭';
 
