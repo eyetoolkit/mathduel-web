@@ -1,4 +1,18 @@
 /**
+ * ⚠️ 状态说明（2026-10-22 架构审查）
+ * 本文件与 src/games/_shared/mp-adapters/number-pyramid.ts 目前**零引用**：
+ * 无页面入口（games/ 下只有 24-game/equation-pyramid/sudoku*）、未注册进
+ * vite rollupOptions.input、全仓无任何 import。
+ *
+ * 之所以**没有同批删除**（同批的 bulls 链已删），是因为服务端仍完整支持：
+ * tri-sites worker/src/sites/mathduel/durable/game-room.js 有 np_place 处理
+ * 与 np_new_game / np_placed / np_round_over / np_timeout 四类推送。
+ * 即：服务端已就绪、前端引擎与适配器已写完但未接线（缺页面 + vite 注册 +
+ * i18n 词条）。属于「半成品」而非「死代码」。
+ *
+ * 处置待定：要么接线接入（参照 equation-pyramid 的接入方式），要么连同
+ * 服务端协议一起下线。在拍板前保留，勿当死代码清理。
+ *
  * 数字金字塔引擎（纯函数，无 DOM 依赖）
  * ------------------------------------------------------------
  * 塔形：每层 level k 有 k 个格子，第 k 层第 i 格 = 第 k+1 层 i 格 + 第 k+1 层 i+1 格。
