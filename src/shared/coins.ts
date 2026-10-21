@@ -104,6 +104,50 @@ export interface HistoryResult {
   history: CoinHistoryItem[];
 }
 
+/* ─── 商店契约（P1：目录 / 购买 / 激活；服务端单一真相源，本 SDK 只读 + 触发写） ───
+ * 端点契约来源：worker/src/sites/mathduel/routes/social.js
+ *   GET  /api/shop/catalog      → { catalog: ShopItem[], balance, owned: string[], active }（匿名安全：无 uuid 时 balance:0 owned:[]）
+ *   POST /api/shop/purchase     body { item }  → { ok, item, balance }；400 no_such_item / already_owned / insufficient_coins
+ *   POST /api/wallet/active     body { kind:'avatar'|'emoji', id } → { ok, ...wallet, balance }
+ * 🔴 item 字段名是 item（不是 item_id）；owned 是字符串 id 数组（walletState 已映射，非 {id,ts}）。 */
+
+/** 商品项（与服务端 CATALOG 条目逐字段对齐） */
+export interface ShopItem {
+  id: string;
+  kind: 'avatar' | 'emoji' | string;
+  icon: string;
+  name: string;
+  cost: number;
+}
+
+/** GET /api/shop/catalog 的响应（匿名态 balance:0 / owned:[]，不抛 401） */
+export interface ShopCatalogData {
+  catalog: ShopItem[];
+  balance: number;
+  owned: string[];
+  active: { avatar: string | null; emoji: string | null } | null;
+}
+
+/** 共享：服务端 400 业务错误体（apiFetch 已归一抛 CoinsError，此字段防御性保留） */
+interface ShopErrorBody {
+  error?: string;
+  required?: number;
+  current?: number;
+}
+
+/** POST /api/shop/purchase 的响应（成功 200；业务错误 400 走 CoinsError） */
+export interface ShopPurchaseResult extends ShopErrorBody {
+  ok?: boolean;
+  item?: string;
+  balance?: number;
+}
+
+/** 激活成功 200 响应 */
+export interface ShopActivateResult extends ShopErrorBody {
+  ok?: boolean;
+  balance?: number;
+}
+
 /**
  * SDK 层统一错误。
  * code 取值：
@@ -223,6 +267,60 @@ export async function claimQuests(questIds: string[]): Promise<ClaimResult> {
 export async function getHistory(limit = 20): Promise<HistoryResult> {
   const data = await apiFetch(`/api/coins/history?limit=${limit}&page=1`);
   return data as unknown as HistoryResult;
+}
+
+/* ─── 商店端点（P1：catalog 匿名安全；purchase / active 需登录，匿名抛 not_authenticated） ─── */
+
+/**
+ * 拉商店目录 + 余额 + 已拥有 + 当前激活。
+ * 服务端对匿名返回 200（balance:0, owned:[]）而非 401，因此本函数不抛
+ * not_authenticated —— 由调用方按 balance/catalog 渲染，匿名用户把「购买/激活」降级为「登录解锁」。
+ */
+export async function shopCatalog(): Promise<ShopCatalogData> {
+  const data = await apiFetch('/api/shop/catalog');
+  const out = data as unknown as ShopCatalogData;
+  // 防御：服务端 catalog 缺失（ep.itemById 未注入）时返回空数组而非 undefined，调用方不至于崩
+  if (!Array.isArray(out.catalog)) out.catalog = [];
+  if (!Array.isArray(out.owned)) out.owned = [];
+  return out;
+}
+
+/**
+ * 购买商品。body 字段名是 `item`（服务端 String(body.item)），不是 item_id。
+ * 幂等：已拥有 → CoinsError('already_owned')；余额不足 → 'http_400'（message 含 insufficient_coins）；
+ * 匿名 → 'not_authenticated'（401）。成功返回新余额。
+ */
+export async function shopBuy(item: string): Promise<ShopPurchaseResult> {
+  const data = await apiFetch('/api/shop/purchase', {
+    method: 'POST',
+    body: { item },
+  });
+  const out = data as unknown as ShopPurchaseResult;
+  if (out.error === 'already_owned') {
+    throw new CoinsError('already_owned', 'already_owned', 400);
+  }
+  if (out.error === 'insufficient_coins') {
+    throw new CoinsError('insufficient_coins', `insufficient_coins:${out.required ?? ''}`, 400);
+  }
+  if (out.error === 'no_such_item') {
+    throw new CoinsError('no_such_item', 'no_such_item', 400);
+  }
+  return out;
+}
+
+/**
+ * 激活已拥有物品为当前头像 / emoji。body { kind, id }（kind 仅 'avatar'|'emoji'）。
+ * 未拥有 → 'not_owned'（http_400）；匿名 → 'not_authenticated'。
+ */
+export async function shopActivate(kind: 'avatar' | 'emoji', id: string | null): Promise<ShopActivateResult> {
+  const data = await apiFetch('/api/wallet/active', {
+    method: 'POST',
+    body: { kind, id: id ?? null },
+  });
+  const out = data as unknown as ShopActivateResult;
+  if (out.error === 'not_owned') throw new CoinsError('not_owned', 'not_owned', 400);
+  if (out.error === 'kind_mismatch') throw new CoinsError('kind_mismatch', 'kind_mismatch', 400);
+  return out;
 }
 
 /* ─── 任务文案键映射（UI 层用） ───
