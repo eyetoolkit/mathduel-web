@@ -102,6 +102,19 @@ git checkout main && git merge beta && git push
 
 ---
 
+## 五点五、静态法务页位置约定（public/ 优先）
+
+**`privacy/` `terms/` `about/` `contact/` 等静态法务/联系页的唯一真相源是 `public/` 目录下的副本**
+（如 `public/privacy/index.html`），它们不在 `vite.config.ts` 的 `rollupOptions.input` 里，
+由 Vite 原样拷贝进 `dist/` 上线。
+
+⚠️ 2026-10-21 架构审计发现并已修复：根目录曾存在第二份 `privacy/index.html`（被 git 跟踪、
+不在 vite input、不参与构建），与 `public/privacy/` 内容分叉——按本仓"页面 HTML 在根目录"的
+惯例修改隐私政策的人会自然地去改根目录那份，**改完构建上线后线上毫无变化**。
+该死副本已删除。新增静态法务页时直接放 `public/`，不要在根目录建副本。
+
+---
+
 ## 六、实战案例：bulls（猜数字 1A2B）全流程
 
 已完整跑通一次，可作为后续 4 款游戏的模板。
