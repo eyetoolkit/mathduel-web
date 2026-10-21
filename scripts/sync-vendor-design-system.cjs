@@ -14,8 +14,8 @@
  *   node scripts/sync-vendor-design-system.cjs          # 同步并报告
  *   node scripts/sync-vendor-design-system.cjs --check  # 只检查差异（CI 用，有差异则退出码 1）
  */
-const { readFileSync, writeFileSync, readdirSync, statSync } = require('node:fs');
-const { join, relative } = require('node:path');
+const { readFileSync, writeFileSync, readdirSync, statSync, mkdirSync } = require('node:fs');
+const { join, relative, dirname } = require('node:path');
 
 const ROOT = join(__dirname, '..');
 const SRC = join(ROOT, 'vendor', 'tri-design-system');
@@ -73,6 +73,9 @@ for (const rel of missing) {
   const s = join(SRC, 'src', rel);
   const d = join(DST, 'src', rel);
   try {
+    // vendor 可能新增嵌套目录（如 i18n/runtime/），副本里该目录尚不存在，
+    // writeFileSync 不会自动建父目录 → ENOENT。先 mkdir -p 再写。
+    mkdirSync(dirname(d), { recursive: true });
     writeFileSync(d, readFileSync(s, 'utf8'));
     console.log(`  + 写入 ${rel}`);
   } catch (e) {
