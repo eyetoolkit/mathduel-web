@@ -15,3 +15,4 @@ dist_old_*/
 # 同理 .probe-gate 存该次门禁产物（不入库）
 .probe-dist/
 .probe-gate/
+.smoke-gate/

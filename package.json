@@ -25,7 +25,8 @@
     "scan:leak": "node scripts/scan-lang-leak.mjs",
     "e2e:i18n:coldstart": "node scripts/e2e/i18n-coldstart.cjs",
     "e2e:i18n:hotswitch": "node scripts/e2e/i18n-hotswitch.cjs",
-    "check:inmatch": "node scripts/check-inmatch-geometry.mjs"
+    "check:inmatch": "node scripts/check-inmatch-geometry.mjs",
+    "test:smoke": "node tests/smoke-cdp.mjs"
   },
   "dependencies": {
     "@tri-sites/design-system": "file:./vendor/tri-design-system"

@@ -141,3 +141,51 @@ jobs:
           name: inmatch-gate-failures
           path: .inmatch-gate/
           if-no-files-found: ignore
+
+  # 页面 smoke 门禁（2026-10-21）：首页 home-v2 + 5 lobby + daily/me/worksheets/shop
+  # 的 DOM 渲染回归。起因：tests/ 原有三个文件全部不可执行（playwright 未装 /
+  # 他人机器路径 / 断言改版前首页），本仓对首页与主页面渲染零机器防线。
+  # 零依赖 CDP 范式（同 inmatch），不断言 console/pageerror（preview 无后端，
+  # API 失败噪音会假红）。
+  smoke-gate:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Build (产物供 preview 使用)
+        run: pnpm build
+
+      # preview 与门禁必须在同一个 step：step 结束会回收后台进程。
+      - name: Page smoke gate
+        run: |
+          pnpm preview --port 4173 > /tmp/preview.log 2>&1 &
+          PV=$!
+          for i in $(seq 1 40); do
+            if curl -sf http://127.0.0.1:4173/ > /dev/null 2>&1; then break; fi
+            if ! kill -0 $PV 2>/dev/null; then echo "preview died"; cat /tmp/preview.log; exit 2; fi
+            sleep 1
+          done
+          pnpm test:smoke
+          RC=$?
+          kill $PV 2>/dev/null || true
+          exit $RC
+
+      - name: Upload failure artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-gate-failures
+          path: .smoke-gate/
+          if-no-files-found: ignore
