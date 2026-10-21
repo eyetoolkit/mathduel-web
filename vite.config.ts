@@ -51,6 +51,7 @@ export default defineConfig({
         'worksheets': resolve(here, 'worksheets/index.html'),
         'daily': resolve(here, 'daily/index.html'),
         'me': resolve(here, 'me/index.html'),
+        'shop': resolve(here, 'shop/index.html'),
       },
     },
   },

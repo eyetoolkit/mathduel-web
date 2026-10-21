@@ -212,10 +212,11 @@ function sidebarHtml(): string {
   `;
 
   // 与各游戏页/lobby 页的静态壳保持同一份导航：
-  // Home → Coin wallet（P0 实链，指向 /me/ 的金币流水区）→ All games · 5 → Help
-  // P0 前这里是 is-disabled 灰态 + "Coming soon" pill；现在点亮为真实入口。
+  // Home → Coin Shop（P1 实链，指向独立商店页 /shop/）→ All games · 5 → Help
+  // P0 前这里是 is-disabled 灰态 + "Coming soon" pill；P0 先指向 /me/ 金币流水区，
+  // P1 商店页上线后改指 /shop/（真正的消耗口：头像/表情 购买 + 激活）。
   const coinShop = `
-    <a class="nav-item" href="/me/"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M12 7v5l3 2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg><label style="cursor:inherit" data-i18n="mp.coin_shop">Coin wallet 🪙</label></a>
+    <a class="nav-item" href="/shop/"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M12 7v5l3 2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg><label style="cursor:inherit" data-i18n="mp.coin_shop">Coin Shop 🪙</label></a>
   `;
 
   const helpGroup = `
