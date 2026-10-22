@@ -1,6 +1,6 @@
 /**
  * 等式金字塔 · Lobby 模式选择页
- * 与 24 点 / 6×6 / 9×9 / killer / number-pyramid 同构（arb-* 骨架 + --a-* 皮肤）。
+ * 与 24 点 / 6×6 / 9×9 / killer 同构（arb-* 骨架 + --a-* 皮肤）。
  */
 
 import '@tri-sites/design-system/styles';
