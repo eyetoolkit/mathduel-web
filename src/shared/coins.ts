@@ -323,6 +323,91 @@ export async function shopActivate(kind: 'avatar' | 'emoji', id: string | null):
   return out;
 }
 
+/* ─── Booster 端点（P0-2：2026-10-22 接线后 booster 倍率真正作用于金币） ───
+ * 端点契约来源：worker/src/sites/mathduel/routes/social.js
+ *   GET  /api/boosters/me        → { balance, inventory: BoosterInv[], active: BoosterActive|null, boosters: BoosterCat[] }
+ *   POST /api/boosters/purchase  body { item }  → { ok, ...boosterGet }；400 no_such_item / insufficient_coins
+ *   POST /api/boosters/activate  body { item }  → { ok, ...boosterGet }；400 no_such_item / not_owned
+ * 🔴 item 字段名同样是 item（与服务端 String(body.item) 对齐）。 */
+
+/** 单个已拥有的 booster（库存条目） */
+export interface BoosterInv {
+  id: string;
+  mult: number;
+  purchasedAt: number;
+}
+
+/** 当前激活中的 booster（含到期戳，前端据此倒计时） */
+export interface BoosterActive {
+  id: string;
+  mult: number;
+  activatedAt: number;
+  expiresAt: number;
+}
+
+/** 商店里的 booster 目录项 */
+export interface BoosterCat {
+  id: string;
+  name: string;
+  icon: string;
+  mult: number;
+  cost: number;
+  durationMin: number;
+}
+
+/** GET /api/boosters/me 的响应 */
+export interface BoosterMeData {
+  balance: number;
+  inventory: BoosterInv[];
+  active: BoosterActive | null;
+  boosters: BoosterCat[];
+}
+
+/** POST /api/boosters/purchase 的响应（成功 200；400 走 CoinsError） */
+export interface BoosterBuyResult extends ShopErrorBody {
+  ok?: boolean;
+  balance?: number;
+  inventory?: BoosterInv[];
+  active?: BoosterActive | null;
+  boosters?: BoosterCat[];
+}
+
+/** POST /api/boosters/activate 的响应 */
+export interface BoosterActivateResult extends ShopErrorBody {
+  ok?: boolean;
+  balance?: number;
+  inventory?: BoosterInv[];
+  active?: BoosterActive | null;
+  boosters?: BoosterCat[];
+}
+
+/** 取当前 booster 库存 + 激活态 + 目录。匿名返回 balance:0 / inventory:[] / active:null。 */
+export async function boosterMe(): Promise<BoosterMeData> {
+  const data = await apiFetch('/api/boosters/me');
+  const out = data as unknown as BoosterMeData;
+  if (!Array.isArray(out.inventory)) out.inventory = [];
+  if (!Array.isArray(out.boosters)) out.boosters = [];
+  return out;
+}
+
+/** 购买 booster。body { item }；余额不足 → 'http_400'(insufficient_coins)；匿名 → 'not_authenticated'。 */
+export async function boosterBuy(item: string): Promise<BoosterBuyResult> {
+  const data = await apiFetch('/api/boosters/purchase', { method: 'POST', body: { item } });
+  const out = data as unknown as BoosterBuyResult;
+  if (out.error === 'insufficient_coins') throw new CoinsError('insufficient_coins', `insufficient_coins:${out.required ?? ''}`, 400);
+  if (out.error === 'no_such_item') throw new CoinsError('no_such_item', 'no_such_item', 400);
+  return out;
+}
+
+/** 激活已拥有的 booster（30 分钟窗口，到期由服务端结算时按 expiresAt 判定）。 */
+export async function boosterActivate(item: string): Promise<BoosterActivateResult> {
+  const data = await apiFetch('/api/boosters/activate', { method: 'POST', body: { item } });
+  const out = data as unknown as BoosterActivateResult;
+  if (out.error === 'not_owned') throw new CoinsError('not_owned', 'not_owned', 400);
+  if (out.error === 'no_such_item') throw new CoinsError('no_such_item', 'no_such_item', 400);
+  return out;
+}
+
 /* ─── 任务文案键映射（UI 层用） ───
  * 服务端 DAILY_QUESTS 的 id 是固定集合。每个 id 对应一个 i18n 键
  * `coins.quest_<id>`，六语字典已建好。调用方渲染任务标题时查这张表，

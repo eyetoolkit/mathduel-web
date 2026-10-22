@@ -11,7 +11,8 @@ import './shop.css';
 import { i18nT, onI18nChange } from '../games/_shared/i18n-t';
 import {
   shopCatalog, shopBuy, shopActivate,
-  type ShopItem, type ShopCatalogData,
+  boosterMe, boosterBuy, boosterActivate,
+  type ShopItem, type ShopCatalogData, type BoosterMeData, type BoosterCat,
   CoinsError,
 } from '../shared/coins';
 
@@ -26,6 +27,8 @@ function esc(s: unknown): string {
  * catalog 为 null 前，购买/激活按钮一律 disabled（避免匿名误点打到 401）。
  * authed：catalog.balance>0 或服务端返回了非空 active → 视为登录态可操作。 */
 let catalog: ShopCatalogData | null = null;
+let boosterData: BoosterMeData | null = null;
+let boosterTimerId: number | null = null;
 let busyId: string | null = null;
 
 function isAuthed(): boolean {
@@ -117,6 +120,7 @@ async function loadCatalog(): Promise<void> {
     }
     renderGrids();
     applyI18nGrids();
+    await loadBoosters();
   } catch (e) {
     catalog = null;
     off.hidden = false;
@@ -131,6 +135,103 @@ async function loadCatalog(): Promise<void> {
 function applyI18nGrids(): void {
   if (!catalog) return;
   renderGrids();
+  renderBoosterGrid();
+}
+
+/* ─── Booster 渲染（P0-2：2026-10-22 接线后 booster 倍率真正作用于金币） ─── */
+function boosterCard(item: BoosterCat): HTMLElement {
+  const inv = boosterData?.inventory ?? [];
+  const active = boosterData?.active;
+  const isActive = !!active && active.id === item.id;
+  const owned = inv.some((b) => b.id === item.id);
+  const authed = isAuthed();
+  const gap = Math.max(0, item.cost - (catalog?.balance ?? 0));
+
+  let action: string;
+  if (isActive) {
+    action = `<button type="button" class="sh-act is-active" data-booster="${esc(item.id)}" disabled>${esc(i18nT('mp.mp_shop_booster_active'))}</button>`;
+  } else if (owned) {
+    action = `<button type="button" class="sh-act" data-booster="${esc(item.id)}" data-act="activate" ${authed ? '' : 'disabled'}>${esc(i18nT('mp.mp_shop_activate'))}</button>`;
+  } else {
+    const affordHint = gap > 0 ? `<small class="sh-gap">${esc(i18nT('mp.mp_shop_gap', { n: gap }))}</small>` : '';
+    action = `<button type="button" class="sh-act" data-booster="${esc(item.id)}" data-act="buy" ${authed ? '' : 'disabled'}><span class="sh-price num">🪙 ${esc(item.cost)}</span>${affordHint}</button>`;
+  }
+
+  const el = document.createElement('div');
+  el.className = 'sh-item' + (owned ? ' owned' : '') + (isActive ? ' active' : '');
+  el.innerHTML =
+    `<span class="sh-icon">${esc(item.icon)}</span>` +
+    `<span class="sh-name">${esc(item.name)}</span>` +
+    action;
+  return el;
+}
+
+function renderBoosterGrid(): void {
+  const grid = $('gridBoosters') as HTMLElement;
+  const kind = $('shopBoosters') as HTMLElement;
+  if (!grid || !boosterData) return;
+  grid.textContent = '';
+  for (const it of boosterData.boosters) grid.appendChild(boosterCard(it));
+  kind.hidden = boosterData.boosters.length === 0;
+  updateBoosterTimer();
+}
+
+async function loadBoosters(): Promise<void> {
+  try {
+    boosterData = await boosterMe();
+  } catch {
+    boosterData = { balance: 0, inventory: [], active: null, boosters: [] };
+  }
+  renderBoosterGrid();
+}
+
+/* 30 分钟窗口倒计时（到期由服务端结算时按 expiresAt 判定，前端只做展示） */
+function updateBoosterTimer(): void {
+  const timerEl = $('boosterTimer') as HTMLElement;
+  const active = boosterData?.active;
+  if (!timerEl) return;
+  if (!active || active.expiresAt <= Date.now()) {
+    timerEl.hidden = true;
+    if (boosterTimerId !== null) { clearInterval(boosterTimerId); boosterTimerId = null; }
+    return;
+  }
+  const tick = () => {
+    const rem = Math.max(0, active.expiresAt - Date.now());
+    const mm = Math.floor(rem / 60000);
+    const ss = Math.floor((rem % 60000) / 1000);
+    timerEl.textContent = `⚡ ${i18nT('mp.mp_shop_booster_active')} · ${String(mm).padStart(2, '0')}:${String(ss).padStart(2, '0')}`;
+    timerEl.hidden = false;
+    if (rem <= 0) updateBoosterTimer();
+  };
+  tick();
+  if (boosterTimerId === null) boosterTimerId = window.setInterval(tick, 1000);
+}
+
+/* ─── 购买 / 激活 booster（事件委托，独立的 [data-booster] 分支） ─── */
+function bindBoosterActions(): void {
+  const card = $('shopCard') as HTMLElement;
+  card.addEventListener('click', (ev) => {
+    const btn = (ev.target as HTMLElement).closest<HTMLButtonElement>('[data-booster]');
+    if (!btn || btn.disabled || busyId) return;
+    const id = btn.getAttribute('data-booster');
+    const act = btn.getAttribute('data-act') || 'buy';
+    if (!id || !boosterData) return;
+
+    busyId = id;
+    btn.classList.add('is-busy');
+    void (async () => {
+      try {
+        if (act === 'activate') await boosterActivate(id);
+        else await boosterBuy(id);
+        await loadBoosters();
+        await loadCatalog();
+      } catch {
+        await loadBoosters();
+      } finally {
+        busyId = null;
+      }
+    })();
+  });
 }
 
 /* ─── 购买 / 激活（事件委托） ─── */
@@ -196,6 +297,7 @@ function bindActions(): void {
 
 /* ─── 启动 ─── */
 bindActions();
+bindBoosterActions();
 void loadCatalog();
 onI18nChange(() => {
   applyI18nGrids();

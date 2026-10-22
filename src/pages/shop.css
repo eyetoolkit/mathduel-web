@@ -67,6 +67,10 @@ body.shop-hub {
 .sh-act.is-busy { opacity: .6; pointer-events: none; }
 .sh-act.is-free { background: #0E9F6E; color: #fff; border-color: #0E9F6E; }
 .sh-act.is-free:disabled { opacity: .55; }
+/* Booster 节（P0-2：2026-10-22） */
+.shop-kind-sub { font-size: .82rem; color: var(--muted); margin: 4px 0 12px; line-height: 1.5; }
+.booster-timer { margin-top: 12px; font-weight: 800; color: #B45309; font-size: .95rem; font-variant-numeric: tabular-nums; text-align: center; }
+.sh-item.owned .sh-act[data-act='activate'] { border-color: #0E9F6E; color: #0E9F6E; }
 /* 隐私说明（复用 Me 范式） */
 .mj-privacy { font-size: .8rem; color: var(--muted); background: #EEF0FB; border: 1.5px solid #D9DCF5;
   border-radius: 12px; padding: 12px 16px; line-height: 1.6; }
