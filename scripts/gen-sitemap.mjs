@@ -1,16 +1,23 @@
 /**
- * 从 vite.config.ts 的 rollupOptions.input 派生 sitemap.xml。
+ * 从两个真源派生 sitemap.xml：
+ *   ① vite.config.ts 的 rollupOptions.input（构建型页面）
+ *   ② public 目录下的手写静态页 index.html（about/contact/terms/privacy）
  *
  * 为什么要有这个脚本：
  * public/sitemap.xml 此前是手写的，于是 /daily/ /me/ /worksheets/ 三个页面
  * 建好了、上线了，却从来没进过 sitemap —— 尤其是 /daily/，那是刚做完的
  * 每日赛入口，功能、入口、倒计时都有，就是没告诉 Google 这页存在。
- * 手写清单一定会漏，所以改成从唯一的真源（vite input）自动派生。
+ * 手写清单一定会漏，所以改成从真源自动派生。
+ *
+ * 2026-10-22 补第二个真源：about/contact/terms/privacy 是 public/ 下的静态页，
+ * 不在 vite input 里，因此从未进过 sitemap —— 可索引、有 canonical、有正文，
+ * 却对搜索引擎隐身。同理 /shop/ 是 noindex 页，却一直在 sitemap 里，
+ * 「别收录我」和「这是重要页面」两个信号互相矛盾，一并列正。
  *
  * 用法：node scripts/gen-sitemap.mjs [--check]
  *   --check  只比对不写文件，CI 或人工核对用（进程退出码 1 表示有差异）
  */
-import { readFileSync, writeFileSync, statSync } from 'node:fs';
+import { readFileSync, writeFileSync, statSync, readdirSync, existsSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -27,10 +34,19 @@ const ORIGIN = 'https://numeriduel.com';
  * （比游戏主页本身还多）且有 canonical，是有效的可索引页。
  * 「名字听起来像入口页」不是排除理由 —— 要看真实正文。
  */
-const EXCLUDE = new Set(['me']);
+const EXCLUDE = new Set(['me', 'shop']);
+// shop：页面自身 noindex（金币商店属登录后功能），进 sitemap 是矛盾信号；
+// 若日后改为可索引，删掉这个 key 即可自动回归。
 
 /* ── 各页的抓取频率与权重 ──────────────────────────────────────────── */
 function metaFor(key, urlPath) {
+  const staticMeta = {
+    '/about/': { changefreq: 'monthly', priority: '0.6' },
+    '/contact/': { changefreq: 'monthly', priority: '0.4' },
+    '/terms/': { changefreq: 'monthly', priority: '0.3' },
+    '/privacy/': { changefreq: 'monthly', priority: '0.3' },
+  };
+  if (staticMeta[urlPath]) return staticMeta[urlPath];
   if (urlPath === '/') return { changefreq: 'daily', priority: '1.0' };
   if (key === 'daily') return { changefreq: 'daily', priority: '0.9' };  // 每日五题+赛事榜每天变
   if (key === 'worksheets') return { changefreq: 'weekly', priority: '0.7' };
@@ -61,6 +77,27 @@ function toUrlPath(file) {
   return '/' + dir;
 }
 
+/* 静态页来源：public/<dir>/index.html。
+ * 收录标准不是「页面存在」，而是「页面准备好了被收录」：
+ *   - 有 noindex robots meta → 跳过（与页面自身意愿一致，防矛盾信号；
+ *     teacher 页就是这样被自动排除的，无需手工维护清单）
+ *   - 没有 canonical → 跳过（join 房码入口页属功能性跳板，薄内容）
+ */
+function readStaticPages() {
+  const base = resolve(root, 'public');
+  const out = [];
+  for (const entry of readdirSync(base, { withFileTypes: true })) {
+    if (!entry.isDirectory()) continue;
+    const file = `${entry.name}/index.html`;
+    if (!existsSync(resolve(root, 'public', file))) continue;
+    const html = readFileSync(resolve(root, 'public', file), 'utf8');
+    if (/name="robots"[^>]*noindex/.test(html)) continue;
+    if (!/rel="canonical"/.test(html)) continue;
+    out.push({ key: entry.name, file });
+  }
+  return out;
+}
+
 function lastmod(file) {
   try {
     return statSync(resolve(root, file)).mtime.toISOString().slice(0, 10);
@@ -73,13 +110,21 @@ function build() {
   const inputs = readViteInputs();
   if (!inputs.length) throw new Error('vite.config.ts 里没解析到任何 input —— 正则可能失配了');
 
-  const urls = inputs
+  const candidates = [
+    ...inputs.map((i) => ({ ...i })),
+    ...readStaticPages().map((i) => ({ ...i })),
+  ];
+
+  const seen = new Set();
+  const urls = candidates
     .filter((i) => !EXCLUDE.has(i.key))
     .map((i) => {
       const p = toUrlPath(i.file);
       const meta = metaFor(i.key, p);
       return { key: i.key, loc: ORIGIN + p, lastmod: lastmod(i.file), ...meta };
     })
+    // 静态页与 vite input 理论上不重叠；万一重叠，以先出现的 vite input 为准
+    .filter((u) => (seen.has(u.loc) ? false : (seen.add(u.loc), true)))
     .sort((a, b) => (a.loc < b.loc ? -1 : 1));
 
   const body = urls
@@ -133,7 +178,7 @@ if (check) {
     process.exit(0);
   }
 
-  console.log('sitemap URL 集合与 vite 入口不一致：');
+  console.log('sitemap URL 集合与页面真源（vite input + public 静态页）不一致：');
   if (added.length) console.log('  新增:', added.join(', '));
   if (removed.length) console.log('  移除:', removed.join(', '));
   console.log('  → 若确认是有意增删入口，请执行 `node scripts/gen-sitemap.mjs` 重新生成后提交。');
