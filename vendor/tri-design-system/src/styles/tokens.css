@@ -124,27 +124,29 @@ img { max-width: 100%; display: block; }
   --bp-sm: 640px; --bp-md: 768px; --bp-lg: 1024px;
 }
 
-/* ============ MathDuel Blue ============ */
+/* ============ MathDuel Indigo (unified 2026-10-23) ============ */
 /* numeriduel 是 mathduel 品牌更名后的新 data-site 值（2026-10-15 统一），
-   令牌完全一致 —— 用选择器列表别名，避免两套值漂移。 */
+   令牌完全一致 —— 用选择器列表别名，避免两套值漂移。
+   2026-10-23 三站统一品牌 UI：MathDuel Blue #0066CC → 靛蓝 #4F46E5，
+   与 boardduel / memoryduel / fe-shared shared/tokens.css 同值。 */
 html[data-site="mathduel"],
 html[data-site="numeriduel"] {
-  --brand-50:  #EFF5FD;
-  --brand-100: #DCEBFB;
-  --brand-200: #B9D6F6;
-  --brand-400: #4D97E6;
-  --brand-500: #1F7FE0;
-  --brand-600: #0066CC;
-  --brand-700: #00529C;
-  --brand-800: #003E7A;
-  --brand-900: #002B57;
+  --brand-50:  #EEF1FB;
+  --brand-100: #E0E5FA;
+  --brand-200: #C2CBF2;
+  --brand-400: #7B82E0;
+  --brand-500: #5B63D6;
+  --brand-600: #4F46E5;
+  --brand-700: #4338CA;
+  --brand-800: #3730A3;
+  --brand-900: #2E2588;
   --brand:        var(--brand-600);
-  --brand-hover:  #0071E3;
+  --brand-hover:  #4338CA;
   --brand-active: var(--brand-800);
   --brand-subtle: var(--brand-100);
-  --brand-ring:   rgba(0, 102, 204, 0.35);
-  --brand-text:   #00529C;
-  --hero-g:       linear-gradient(135deg, #0071E3 0%, #0052A3 100%);
+  --brand-ring:   rgba(79, 70, 229, 0.35);
+  --brand-text:   #4338CA;
+  --hero-g:       linear-gradient(135deg, #4338CA 0%, #312E81 100%);
 }
 
 /* ============ BoardDuel Indigo ============ */
