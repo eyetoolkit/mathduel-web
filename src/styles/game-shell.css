@@ -324,7 +324,15 @@ body.arena :where([hidden]) { display: none !important; }
     aspect-ratio: 1; grid-template-rows: repeat(4, 1fr);
   }
   /* 对局 chrome 一律不参与收缩：空间不足时由棋盘区吸收，保底才滚动 */
-  :is(body.arena, body.has-papergames-shell).in-match :is(.g24-bar, #oppHead, #modeBanner, .table-head, .result, #youHead, #chatDock, .s9-pad, .s6-pad, .s4-pad, .s9-padtools, .s6-padtools, .ep-top, #strip, #hud, .ep-tools, #tray, #diffPick, .ep-target-card) {
+  :is(body.arena, body.has-papergames-shell).in-match :is(.g24-bar, #oppHead, #modeBanner, .table-head, .result, #youHead, #chatDock, .s9-pad, .s6-pad, .s4-pad, .s9-padtools, .s6-padtools, .ep-top, #strip, #hud, .ep-tools, #tray, .ep-target-card) {
+    flex: none;
+  }
+  /* 🔴 2026-10-24：#diffPick（难度行）从「仅 flex:none」升级为「display:none + flex:none」。
+     难度选择属于开局前操作（lobby 已可重选），对局期隐藏后各模式 chrome 高度归一，
+     .ep-grid 容器剩余高度稳定 → --ep-cell 的 100cqb 高基准不再随模式漂移
+     （消除 solo 54px / daily 75px / duel 33px 的格宽不一致 + duel 非正方形塌缩）。 */
+  :is(body.arena, body.has-papergames-shell).in-match #diffPick {
+    display: none !important;
     flex: none;
   }
   /* 格子：min-height:0 让 1fr 行高说了算（否则字号内容会把行撑高）；
@@ -404,22 +412,39 @@ body.arena :where([hidden]) { display: none !important; }
   :is(body.arena, body.has-papergames-shell).in-match .ep-tools { gap: 6px; }
   :is(body.arena, body.has-papergames-shell).in-match .ep-tool { min-height: 38px; padding: 0 12px; }
   :is(body.arena, body.has-papergames-shell).in-match :is(.ep-opp, .ep-you) { padding: 8px 12px; }
-  /* 金字塔：ep-board 吃剩余高度；.ep-grid 做 size 容器 */
-  :is(body.arena, body.has-papergames-shell).in-match .ep-board { flex: 1 1 auto; min-height: 120px; }
+  /* 金字塔：ep-board 吃剩余高度；.ep-grid 做 size 容器。
+     🔴 2026-10-24 修复：原字号 min(clamp, calc(var(--ep-cell)*0.42)) 中 --ep-cell 是无单位
+     像素数值，calc 产出无单位数字，font-size 不接受 → 整条声明无效 → 数字字号塌缩为 0
+     （9 格数字全部不可见）。第一次误修成 calc(var(--s9-size)/4*.45) 仍塌缩为 1.8px：
+     自定义属性 --s9-size 存的是字面量 min(440px,100%)，在 font-size 的 calc() 里 100%
+     相对未定父字号不可解析 → 整条 calc 再次无效。
+     最终修法：字号彻底不依赖百分比/cqb 容器基准，用纯 vw+px clamp——
+     4.5vw 在 1280 桌面=57px（被 1.7rem≈27px 上限截住），在 390 移动=17.5px
+     （被 1.4rem≈22px 下限抬住）→ 各模式字体恒定，且 40~100px 格宽都放得下。
+     🔴 min-height 提到 250px：3 行棋盘最小合理高度（3 格 + 2 间隙），
+     duel 等 chrome 较高的模式把容器压到 120px 时，--ep-cell 的 100cqb 高基准
+     会把格宽压到 33px（非正方形塌缩）。160px 保底后高基准 ≥ 40px，
+     格宽与宽度基准（~54px）不再冲突，棋盘保持正方形。 */
+  :is(body.arena, body.has-papergames-shell).in-match .ep-board { flex: 1 1 auto; min-height: 160px; }
   :is(body.arena, body.has-papergames-shell).in-match .ep-grid {
-    flex: 1 1 auto; min-height: 120px;
+    flex: 1 1 auto; min-height: 160px;
     container-type: size;
     justify-content: center;
   }
-  /* 金字塔格子：宽驱动（原规则）与高驱动（3 行吃满网格高）取较小值 → 永不溢出。
-     算式精确：3 格 + 2 间隙 = 100cqb，无魔法常数。 */
+  /* 格宽：宽度基准（底行 4 格铺满 ep-board）为主，再用 100cqb 高基准封顶防裁切。
+     🔴 2026-10-24 修复「各模式棋盘大小不一致」：根因是 #diffPick 难度行只在 daily
+     被 JS 隐藏、其余模式 CSS 未隐藏 → 各模式 .ep-grid 剩余高度不同 → 100cqb 高基准
+     不同 → 格宽随模式漂移（solo 54 / daily 75 / duel 33，且 duel 高基准把格压成非正方形）。
+     修法：对局期 #diffPick 全模式 display:none（见上），chrome 高度归一 → 100cqb 高基准
+     各模式恒定，重新加回 min() 高基准封顶既消除漂移又防末行裁切（纯宽度驱动时
+     格被撑高、3 行总高超出容器剩余高度 → clip，d900 实测 41px）。
+     两基准：宽度 (100%-3g)/4；高度 3 行装进容器 → 单格 ≈ (100cqb - 2g)/3。 */
   :is(body.arena, body.has-papergames-shell).in-match .epc {
-    --ep-cell: min(calc((100% - 3 * var(--ep-gap)) / 4), calc((100cqb - 2 * var(--ep-gap)) / 3));
-    width: var(--ep-cell);
+    width: min(calc((100% - 3 * var(--ep-gap)) / 4), calc((100cqb - 2 * var(--ep-gap)) / 3));
   }
-  /* 金字塔格内文字随格子缩放（原 vw 字号在格子缩小后会溢出） */
-  :is(body.arena, body.has-papergames-shell).in-match .epc .ep-num { font-size: min(clamp(1.4rem, 4.5vw, 1.7rem), calc(var(--ep-cell) * 0.42)); }
-  :is(body.arena, body.has-papergames-shell).in-match .epc .ep-op { font-size: min(1.08rem, calc(var(--ep-cell) * 0.24)); }
+  /* 金字塔格内文字：纯 vw+px clamp，不随容器/模式漂移，且与 40~100px 格宽兼容 */
+  :is(body.arena, body.has-papergames-shell).in-match .epc .ep-num { font-size: clamp(1.4rem, 4.5vw, 1.7rem); }
+  :is(body.arena, body.has-papergames-shell).in-match .epc .ep-op { font-size: clamp(0.9rem, 3vw, 1.08rem); }
 }
 
 /* ── 桌面（≥1120px）：9×9 键盘改单行 9 键、4×4 改单行 4 键，
@@ -484,7 +509,12 @@ body.arena :where([hidden]) { display: none !important; }
   /* section.board 的弹性命中共用块；这里只补移动端内距 */
   body.has-papergames-shell.in-match section.board { padding: 4px !important; }
 
-  /* 难度选择器属于开局前操作，对局期隐藏（lobby 可重选） */
+  /* 难度选择器属于开局前操作，对局期一律隐藏（lobby 可重选）。
+     🔴 2026-10-24：原 `.ep-diff` 选择器在等式金字塔页匹配不到实际 DOM（难度行是
+     .ep-diff#diffPick，按钮 .ep-pk），隐藏恒失效 → solo/duel/timed 难度行在对局期
+     一直可见、只有 daily 隐藏（JS 控制），各模式 chrome 高度不同 → 容器剩余高度不同
+     → --ep-cell 的 100cqb 高基准漂移 → 各模式棋盘大小不一致。改为 #diffPick 全模式隐藏。 */
+  body.has-papergames-shell.in-match #diffPick,
   body.has-papergames-shell.in-match .ep-diff { display: none !important; }
   /* 收掉 arena 的 28px 底部留白，否则数字托盘会被裁掉 */
   body.has-papergames-shell.in-match .ep-arena { padding: 4px !important; }
