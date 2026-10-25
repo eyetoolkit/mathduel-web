@@ -2134,6 +2134,14 @@ refreshTop();
 onI18nChange(() => {
   render();
   renderSide();
+  // 🔴 2026-10-25：每日挑战 banner 同样是 innerHTML 拼接（diff-chip/diffLabel），
+  // 首渲若早于字典 async fetch 完成，diffLabel 回落 key 本身且无人重渲——
+  // 实测线上「difficulty.easy/standard/hard」裸 key 常驻面板（report: daily24.png）。
+  // 注意 renderDailyPreStart 会重建 #dbStart 并绑 onclick，与初始渲染路径一致，安全。
+  if (daily.active) {
+    if (daily.started) renderDailyBanner();
+    else renderDailyPreStart();
+  }
 });
 
 (function init(): void {

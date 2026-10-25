@@ -551,6 +551,10 @@ export class MpShell {
         const d = await r.json().catch(() => ({}));
         if (d && d.status === 'matched' && d.code) {
           this.stopRandomMatch(false);
+          // 清除「Searching — this stays open for 30s…」残留：进房后该文案
+          // 仍挂在 #mpLobbyErr 上，切回 lobby 视图时玩家会看到自相矛盾的提示
+          // （2026-10-25 实测复现；超时分支本就覆盖文案，唯独成功分支漏了）。
+          this.lobbyErr('');
           this.isHost = false;
           this.connectWS(d.code);
           return;
