@@ -135,6 +135,9 @@ export interface MpCallbacks {
   onMount?: (root: HTMLElement) => void;
 }
 
+/** 断线自动重连次数上限（超过后停止重试并明确告知玩家，避免无限静默重试） */
+const MP_RECONNECT_MAX = 5;
+
 const BOT_NAMES = ['Nova','Pixel','Luna','Echo','Kai','Vega','Milo','Zero','Iris','Leo','Hugo','Rin','Aki','Yuki','Cleo','Finn','Theo','Nori','Zoe','Mira','Eden','Wren','Ozzy','Lux','Ben','Sol','Remy','Sage','Otto','Nyx','Vex','Cy','Jun','Tao','Rue','Pia','Bao','Nim','Ace','Sky','Rex','Max','Zara','Kira','Jett','Nico','Aria','Dex','Ivy','Ash','Blaze','Cole','Drew','Felix','Gia','Hale','Ike','Jade','Knox','Maya','Neo','Orin','Pax','Quinn','Rory','Soren','Toby','Uma','Vance','Wade','Xan','Yara','Zane'];
 const DEMO_CHAT = ['Almost got it!', 'Hurry up 😂', '🔥', 'Nice one', 'Wait, that works?', 'gg'];
 
@@ -162,6 +165,9 @@ const SHELL_CSS = `
 .mp-ring-txt{font-size:13px;font-weight:700;text-align:center}
 .mp-banner{font-size:13px;color:#6B7280}
 .mp-banner b{color:#1A1B2E}
+.mp-recon{display:none;padding:8px 12px;font-size:13px;font-weight:600;text-align:center;background:#FEF3C7;color:#92400E;border-bottom:1px solid #FDE68A}
+.mp-recon[data-show="1"]{display:block}
+.mp-recon[data-fail="1"]{background:#FEE2E2;color:#991B1B;border-bottom-color:#FECACA}
 .mp-status{display:inline-block;margin-top:4px;font-size:12px;color:#16A34A}
 .mp-status[data-live="1"]::before{content:"● ";color:#16A34A}
 .mp-race-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
@@ -273,6 +279,19 @@ export class MpShell {
   private players: Record<string, { score: number; avatar?: string | null; nickname?: string | null }> = {};
   private ws: WebSocket | null = null;
   private ping: number | null = null;
+  /* ── 断线重连（2026-10-25）──
+     此前 ws.onclose 只清 ping 定时器、onerror 是空函数：手机切后台 / WiFi 闪断后
+     WS 静默断开，界面毫无变化，玩家继续答题而 send() 在 readyState!==1 时静默丢弃
+     ——所有动作石沉大海，对手端只看到对方"卡住"，直到有人退出才暴露。
+     服务端其实早已支持重连（game-room.js handleConnect 按「同名 + 旧连接 readyState
+     2/3」放行本人重连，连上后自动补发 room_info / round_resume），缺的只是客户端
+     发起重连这一步。故本轮只改前端：断线后按退避重连 + 显式提示。 */
+  private reconnectTimer: number | null = null;
+  private reconnectAttempts = 0;
+  /** 用户主动离开（Leave / ✕）：不再重连 */
+  private manualClose = false;
+  /** 处于重连握手期：抑制 room_joined / room_info 的「弹回房间视图」 */
+  private reconnecting = false;
   private raceMax = 99;
   private demoBots: number[] = [];
   private demoChatTimers: number[] = [];
@@ -317,6 +336,7 @@ export class MpShell {
           <span class="mp-code" id="mpCode">—</span>
           <button class="mp-leave" id="mpLeave">Leave</button>
         </div>
+        <div class="mp-recon" id="mpRecon" data-show="0" data-fail="0"></div>
         <div class="mp-specbar" id="mpSpec">👀 Spectating</div>
         <div class="mp-grid">
           <div class="mp-card">
@@ -617,15 +637,28 @@ export class MpShell {
     this.connectWS(code);
   }
 
-  private connectWS(code?: string): void {
+  private connectWS(code?: string, isReconnect = false): void {
     if (code) this.room = code;
+    if (!isReconnect) { this.manualClose = false; this.reconnecting = false; }   // 主动建房/加入 → 允许后续自动重连
     // 数学站改名（2026-09-30）：用 location.host 派生 WS URL,支持 numeriduel.com 与 mathduel.games 双域并存
     const wsProto = location.protocol === 'https:' ? 'wss:' : 'ws:';
     const url = `${wsProto}//${location.host}/ws?code=${encodeURIComponent(this.room)}&name=${encodeURIComponent(this.myName)}`;
     try { this.ws = new WebSocket(url); }
-    catch { this.lobbyErr('Cannot reach server'); return; }
+    catch {
+      if (isReconnect) this.scheduleReconnect();
+      else this.lobbyErr('Cannot reach server');
+      return;
+    }
     this.ws.onopen = () => {
-      this.onRoomReady(this.room);
+      this.reconnectAttempts = 0;
+      this.setReconnectUI(false);
+      /* 兜底：若服务端因房已清等原因没回 room_info，reconnecting 会一直挂着，
+         之后所有 showRoomView() 都会被误抑制。5s 后无条件解除。 */
+      if (isReconnect) window.setTimeout(() => { this.reconnecting = false; }, 5000);
+      /* 重连时不走 onRoomReady()：它会再次 showRoomView()，把正在进行的对局
+         弹回「房间码 + 二维码」视图。服务端在连接建立后本就会补发 room_info /
+         round_resume，客户端已有对应处理，无需前端再动。 */
+      if (!isReconnect) this.onRoomReady(this.room);
       this.send({ type: 'get_info' });
       if (this.ping) window.clearInterval(this.ping);
       this.ping = window.setInterval(() => this.send({ type: 'ping' }), 25000);
@@ -635,8 +668,47 @@ export class MpShell {
       if (d && d.type === 'pong') return;
       this.handleMsg(d);
     };
-    this.ws.onclose = () => { if (this.ping) { window.clearInterval(this.ping); this.ping = null; } };
-    this.ws.onerror = () => {};
+    this.ws.onclose = () => {
+      if (this.ping) { window.clearInterval(this.ping); this.ping = null; }
+      if (isReconnect) this.reconnectAttempts++;   // 连上又断：下次退避更久
+      if (!this.manualClose && this.room && !this.demo) this.scheduleReconnect();
+    };
+    // 不空吞：error 后浏览器必定再触发 close，重连统一在 onclose 里调度，这里只留取证线索
+    this.ws.onerror = () => { console.warn('[mp] ws error, room=' + this.room); };
+  }
+
+  /** 断线重连调度：退避 1s→2s→4s→8s（上限 5 次）。demo 模式与主动离开不重连。 */
+  private scheduleReconnect(): void {
+    if (this.manualClose || !this.room || this.demo) return;
+    if (this.reconnectTimer) return;
+    if (this.reconnectAttempts >= MP_RECONNECT_MAX) {
+      this.setReconnectUI(true, true);   // 放弃重连：明确告知，让玩家自己决定退出
+      return;
+    }
+    const delay = 1000 * Math.pow(2, Math.min(this.reconnectAttempts, 3));
+    this.reconnecting = true;
+    this.setReconnectUI(true, false, delay);
+    this.reconnectTimer = window.setTimeout(() => {
+      this.reconnectTimer = null;
+      this.connectWS(this.room, true);
+    }, delay);
+  }
+
+  /** 重连提示条。failed=true 表示已放弃，提示玩家自行退出。 */
+  private setReconnectUI(show: boolean, failed = false, delayMs = 0): void {
+    const el = this.root && this.root.querySelector('#mpRecon') as HTMLElement | null;
+    if (!el) return;
+    if (!show) {
+      el.dataset.show = '0';
+      el.dataset.fail = '0';
+      el.textContent = '';
+      return;
+    }
+    el.dataset.show = '1';
+    el.dataset.fail = failed ? '1' : '0';
+    el.textContent = failed
+      ? i18nT('mg.mp_reconnect_failed')
+      : i18nT('mg.mp_reconnecting', { n: Math.max(1, Math.round(delayMs / 1000)) });
   }
 
   private send(obj: unknown): void {
@@ -682,7 +754,10 @@ export class MpShell {
         this.relayDone = false;
         if (d.players) d.players.forEach((n: string) => (this.players[n] = { score: 0 }));
         this.players[this.myName] = { score: 0 };
-        this.onRoomReady(this.room);
+        /* 重连握手期：服务端照常发 room_joined，但走 onRoomReady() → showRoomView()
+           会把正在进行中的对局弹回「房间码 + 二维码」视图。重连只更新数据，
+           界面交给随后的 round_resume 恢复。 */
+        if (!this.reconnecting) this.onRoomReady(this.room);
         this.cb.onPlayersChanged?.(this.players, this.isHost, this.room);
         break;
       case 'player_joined':
@@ -693,7 +768,10 @@ export class MpShell {
         if (typeof d.spectatorCount === 'number') { this.spectatorCount = d.spectatorCount; this.cb.onSpectator?.({ count: this.spectatorCount }); }
         this.isHost = this.isHost || d.hostName === this.myName;
         this.cb.onPlayersChanged?.(this.players, this.isHost, this.room);
-        this.showRoomView();
+        /* 同上：重连握手期不弹房间视图，并在此收尾复位（服务端连发
+           room_joined → room_info，之后的 round_resume 才是恢复对局的信号）。 */
+        if (this.reconnecting) this.reconnecting = false;
+        else this.showRoomView();
         break;
       case 'spectator_joined':
         this.spectator = true;
@@ -1014,6 +1092,12 @@ export class MpShell {
     this.stopRandomMatch(true);
     this.resetRandomBtn();
     if (this.ping) { window.clearInterval(this.ping); this.ping = null; }
+    /* 主动离开：取消待执行的重连并复位计数，避免"退出后又被自动拉回房间" */
+    this.manualClose = true;
+    this.reconnecting = false;
+    if (this.reconnectTimer) { window.clearTimeout(this.reconnectTimer); this.reconnectTimer = null; }
+    this.reconnectAttempts = 0;
+    this.setReconnectUI(false);
     this.demoBots.forEach((id) => window.clearTimeout(id)); this.demoBots = [];
     this.demoChatTimers.forEach((id) => window.clearTimeout(id)); this.demoChatTimers = [];
     if (this.ws) { try { this.ws.close(); } catch {} this.ws = null; }

@@ -841,6 +841,8 @@
     "shared_start_competition": "🚀 開始",
     "shared_start_competition_2": "🚀 開始（2名以上）",
     "shared_close": "閉じる",
+    "mp_reconnecting": "接続が切断されました — {n} 秒後に再接続します…",
+    "mp_reconnect_failed": "切断されました — ルームコードで再参加するか、「退出」をタップしてください。",
     "shared_share_link": "共有リンク",
     "shared_copy": "📋 コピー",
     "shared_save_image": "⬇ 画像を保存",

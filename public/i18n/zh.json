@@ -841,6 +841,8 @@
     "shared_start_competition": "🚀 开始竞赛",
     "shared_start_competition_2": "🚀 开始竞赛（2+ 玩家）",
     "shared_close": "关闭",
+    "mp_reconnecting": "连接中断 — 将在 {n} 秒后重连…",
+    "mp_reconnect_failed": "已断开连接 — 请用房间码重新加入，或点「离开」。",
     "shared_share_link": "分享链接",
     "shared_copy": "📋 复制",
     "shared_save_image": "⬇ 保存图片",

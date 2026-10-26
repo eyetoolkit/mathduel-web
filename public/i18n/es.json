@@ -841,6 +841,8 @@
     "shared_start_competition": "🚀 Empezar",
     "shared_start_competition_2": "🚀 Empezar (2+ jugadores)",
     "shared_close": "Cerrar",
+    "mp_reconnecting": "Conexión perdida — reconectando en {n}s…",
+    "mp_reconnect_failed": "Desconectado — vuelve a entrar con el código de sala o pulsa Salir.",
     "shared_share_link": "Enlace para compartir",
     "shared_copy": "📋 Copiar",
     "shared_save_image": "⬇ Guardar imagen",

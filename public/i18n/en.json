@@ -841,6 +841,8 @@
     "shared_start_competition": "🚀 Start Competition",
     "shared_start_competition_2": "🚀 Start Competition (2+ players)",
     "shared_close": "Close",
+    "mp_reconnecting": "Connection lost — reconnecting in {n}s…",
+    "mp_reconnect_failed": "Disconnected — rejoin with the room code, or tap Leave.",
     "shared_share_link": "Share link",
     "shared_copy": "📋 Copy",
     "shared_save_image": "⬇ Save Image",

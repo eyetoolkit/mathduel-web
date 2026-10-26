@@ -796,6 +796,8 @@
     "shared_start_competition": "🚀 Starten",
     "shared_start_competition_2": "🚀 Starten (2+ Spieler)",
     "shared_close": "Schließen",
+    "mp_reconnecting": "Verbindung verloren — Wiederverbindung in {n}s…",
+    "mp_reconnect_failed": "Getrennt — mit dem Raumcode erneut beitreten oder „Verlassen“ tippen.",
     "shared_share_link": "Teil-Link",
     "shared_copy": "📋 Kopieren",
     "shared_save_image": "⬇ Bild speichern",
