@@ -119,9 +119,58 @@ if (!/fmtNum\(streak\)/.test(CANVAS_REGION)) fail('连胜数必须走 fmtNum()')
 const canvas = CSS.match(/\.share-canvas-wrap canvas\s*\{[^}]*max-width:\s*(\d+)px/);
 if (!canvas) fail('未找到 .share-canvas-wrap canvas 的 max-width');
 else if (Number(canvas[1]) < 600) fail(`预览宽度应 ≥600px（原 300px），实际 ${canvas[1]}px`);
-const card = CSS.match(/\.share-card\s*\{[^}]*max-width:\s*(\d+)px/);
-if (!card) fail('未找到 .share-card 的 max-width');
-else if (Number(card[1]) < 620) fail(`弹窗容器应 ≥620px（画布 600px + 内边距），实际 ${card[1]}px`);
+
+/* 🔴 容器宽度必须按**盒模型倒推**，不能拍脑袋给个数。
+ *   画布真要显示成 600px（原生尺寸），容器得放下：
+ *     画布 600 + 卡片左右 padding + border + wrap 左右 padding
+ *   2026-10-26 在 boardduel 上踩过这个坑：容器写 640px → 线上实测画布
+ *   只有 582px（漏算了 wrap 的 10px×2 padding），等于没放大到位。 */
+const TOKENS = (() => {
+  for (const f of [
+    'vendor/tri-design-system/src/styles/tokens.css',
+    'legacy/css/shared/tokens.css',
+  ]) {
+    try { return readFileSync(join(ROOT, f), 'utf8'); } catch (e) { /* 继续找 */ }
+  }
+  return '';
+})();
+function pxOf(v) {
+  v = (v || '').trim();
+  let m = v.match(/^([\d.]+)px$/);
+  if (m) return parseFloat(m[1]);
+  m = v.match(/^var\(\s*(--[\w-]+)\s*\)$/);
+  if (m && TOKENS) {
+    const t = TOKENS.match(new RegExp(m[1].replace(/[-]/g, '\\-') + ':\\s*([\\d.]+)px'));
+    if (t) return parseFloat(t[1]);
+  }
+  return 0;
+}
+function padX(padStr) {
+  const parts = (padStr || '').trim().split(/\s+/).filter(Boolean);
+  if (parts.length >= 3) return pxOf(parts[1]) * 2;
+  if (parts.length === 2) return pxOf(parts[0]) + pxOf(parts[1]);
+  return pxOf(parts[0]) * 2;
+}
+const cardBlock = CSS.match(/\.share-card\s*\{([^}]*)\}/);
+if (!cardBlock) fail('未找到 .share-card 规则');
+else {
+  const cardMaxM = cardBlock[1].match(/max-width:\s*(\d+)px/);
+  if (!cardMaxM) fail('未找到 .share-card 的 max-width');
+  else {
+    const cardMax = Number(cardMaxM[1]);
+    const cardPadM = cardBlock[1].match(/padding:\s*([^;]+);/);
+    const cardPadX = cardPadM ? padX(cardPadM[1]) : 0;
+    const borderM = cardBlock[1].match(/border:\s*(\d+)px/);
+    const borderX = borderM ? Number(borderM[1]) * 2 : 0;
+    const wrapBlock = CSS.match(/\.share-canvas-wrap\s*\{([^}]*)\}/);
+    const wrapPadM = wrapBlock && wrapBlock[1].match(/padding:\s*([^;]+);/);
+    const wrapPadX = wrapPadM ? padX(wrapPadM[1]) : 0;
+    const need = 600 + cardPadX + borderX + wrapPadX;
+    if (cardMax < need) {
+      fail(`弹窗容器应 ≥${need}px（600 画布 + 卡片 padding ${cardPadX} + border ${borderX} + wrap padding ${wrapPadX}），实际 ${cardMax}px`);
+    }
+  }
+}
 
 /* ── E. 字典键覆盖 ───────────────────────────────────────────── */
 const used = new Set();
