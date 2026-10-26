@@ -1215,7 +1215,10 @@
     "mp_room_intro": "Crea una sala, comparte el código y compite con amigos o con el mundo.",
     "mp_title_comp_html": "🏆 {label} — Competición",
     "mp_create_room": "🚀 Crear sala",
-    "mp_join_with_code": "Unirse con código"
+    "mp_join_with_code": "Unirse con código",
+    "mp_chat_only_here": "solo esta sala",
+    "mp_no_submissions": "Aún no hay envíos — ¡sé el primero!",
+    "mp_copy_code": "⧉ Copiar código"
   },
   "tn": {
     "title": "NumeriDuel · Panel del docente",

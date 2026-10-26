@@ -1215,7 +1215,10 @@
     "mp_room_intro": "Create a room, share the code, race friends or the world.",
     "mp_title_comp_html": "🏆 {label} — Competition",
     "mp_create_room": "🚀 Create Room",
-    "mp_join_with_code": "Join with code"
+    "mp_join_with_code": "Join with code",
+    "mp_chat_only_here": "only this room",
+    "mp_no_submissions": "No submissions yet — be first!",
+    "mp_copy_code": "⧉ Copy code"
   },
   "tn": {
     "title": "NumeriDuel · Teacher dashboard",

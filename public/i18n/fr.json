@@ -1215,7 +1215,10 @@
     "mp_room_intro": "Créez un salon, partagez le code, affrontez vos amis ou le monde entier.",
     "mp_title_comp_html": "🏆 {label} — Compétition",
     "mp_create_room": "🚀 Créer un salon",
-    "mp_join_with_code": "Rejoindre avec un code"
+    "mp_join_with_code": "Rejoindre avec un code",
+    "mp_chat_only_here": "cette salle uniquement",
+    "mp_no_submissions": "Aucune soumission — soyez le premier !",
+    "mp_copy_code": "⧉ Copier le code"
   },
   "tn": {
     "title": "NumeriDuel · Tableau de bord enseignant",

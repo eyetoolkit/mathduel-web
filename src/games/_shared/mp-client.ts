@@ -15,7 +15,7 @@
  * 非生产域名自动降级为本地 DEMO（模拟 99 人实时榜），便于预览验收。
  */
 
-import { i18nT } from './i18n-t';
+import { i18nT, onI18nChange } from './i18n-t';
 import { isClassroom, ensureStudentCode, reportRound } from './teacher-track';
  import { genRoomCode, normalizeRoomCode, isValidRoomCode, ROOM_CODE_LEN } from './room-code';
 
@@ -332,9 +332,9 @@ export class MpShell {
     root.innerHTML = `
       <div class="mp-wrap">
         <div class="mp-top">
-          <span class="mp-logo">Math<b>Duel</b> · ${this.adapter.label}</span>
+          <span class="mp-logo">Numeri<b>Duel</b> · ${this.adapter.label}</span>
           <span class="mp-code" id="mpCode">—</span>
-          <button class="mp-leave" id="mpLeave">Leave</button>
+          <button class="mp-leave" id="mpLeave" data-i18n="mg.shared_leave">Leave</button>
         </div>
         <div class="mp-recon" id="mpRecon" data-show="0" data-fail="0"></div>
         <div class="mp-specbar" id="mpSpec">👀 Spectating</div>
@@ -351,14 +351,14 @@ export class MpShell {
           </div>
           <div>
             <div class="mp-card">
-              <div class="mp-race-hd"><span>🏆 Live Standings</span><span class="mp-race-count"><b id="mpDone">0</b>/<b id="mpTotal">0</b> solved</span></div>
-              <div class="mp-list" id="mpList"><div class="mp-empty">No submissions yet — be first!</div></div>
+              <div class="mp-race-hd"><span>🏆 <span data-i18n="mg.g24_side_live_standings">Live Standings</span></span><span class="mp-race-count"><b id="mpDone">0</b>/<b id="mpTotal">0</b> <span data-i18n="mg.g24_side_solved_suffix">solved</span></span></div>
+              <div class="mp-list" id="mpList"><div class="mp-empty" data-i18n="mg.mp_no_submissions">No submissions yet — be first!</div></div>
             </div>
             <div class="mp-chat" id="mpChat">
-              <div class="hd"><b>💬 Room chat</b><span>only this room</span></div>
+              <div class="hd"><b>💬 <span data-i18n="mg.shared_chat">Chat</span></b><span data-i18n="mg.mp_chat_only_here">only this room</span></div>
               <div class="log" id="mpChatLog"></div>
               <div class="rail">${['😂','🔥','😡','👍','💡','🎯'].map((e)=>`<button type="button" data-emoji="${e}">${e}</button>`).join('')}</div>
-              <div class="inrow"><input type="text" maxlength="200" placeholder="${i18nT('mg.sg_chat_placeholder')}" id="mpChatInput"/><button type="button" id="mpChatSend">Send</button></div>
+              <div class="inrow"><input type="text" maxlength="200" data-i18n-placeholder="mg.sg_chat_placeholder" placeholder="${i18nT('mg.sg_chat_placeholder')}" id="mpChatInput"/><button type="button" id="mpChatSend" data-i18n="mg.shared_send">Send</button></div>
             </div>
           </div>
         </div>
@@ -377,19 +377,54 @@ export class MpShell {
 
     root.querySelector('#mpLeave')!.addEventListener('click', () => this.close());
     this.wireChat();
+    /* i18n 双保险：
+       ① 立即主动扫一次 —— 字典若已就绪就当场替换，避开 i18n.js MutationObserver
+          的 60ms 防抖窗口（否则玩家会看到一瞬裸 key）；
+       ② 订阅 ready/change —— 覆盖「字典晚于 mount 到达」与「玩家中途切语言」。 */
+    this.refreshI18n();
+    onI18nChange(() => this.refreshI18n());
     this.cb.onMount?.(root);
     return root;
+  }
+
+  /**
+   * 重放本地化文案。幂等，可反复调用（mount / 字典就绪 / 玩家切语言）。
+   *
+   * 分工：静态骨架（按钮、标题、placeholder）由 i18n.js 按 `data-i18n*`
+   * 接管；本方法只负责它管不到的部分 —— 用 JS 写 `textContent` 的动态节点。
+   * 若给这些节点也挂 `data-i18n`，每次 applyToDOM 都会把它们重置回静态文案
+   * （例如计时进行中切语言，`#mpStatus` 会被冲回 "Waiting to start…"）。
+   */
+  private refreshI18n(): void {
+    if (!this.root) return;
+    try {
+      (window as unknown as { i18n?: { applyToDOM?: (r?: ParentNode) => void } })
+        .i18n?.applyToDOM?.(document);
+    } catch { /* 旧版 i18n.js 没有该 API → 交给其 MutationObserver 兜底 */ }
+    const st = this.root.querySelector('#mpStatus');
+    if (st && st.getAttribute('data-live') !== '1') st.textContent = i18nT('mg.shared_waiting_to_start');
+    this.renderSpecBar();
+    this.renderProgress();
+    const room = this.lobbyEl?.querySelector('#mpRoom');
+    if (room && room.classList.contains('show')) this.renderRoomPlayers();
   }
 
   private buildLobby(): HTMLElement {
     const el = document.createElement('div');
     el.className = 'mp-lobby';
+    /* 🔴 P1（2026-10-26）：这里原先全部用 i18nT() 拼 innerHTML。字典是 async fetch 的，
+       而 mount() 常在 fetch 完成前就跑（?mode=battle 直接开弹窗），于是 i18nT() 一路
+       fallback 到 key 本身 —— 玩家看到整屏 `mg.mp_create_room` / `MG.SHARED_YOUR_NAME`，
+       且 innerHTML 已定型，i18n.js 之后只处理 data-i18n* 属性、不会回头修这些节点，
+       于是永久残留。现在静态文案一律交给 data-i18n* 属性，由 i18n.js 在
+       ready / change / MutationObserver 三条路径上统一替换，顺带支持中途切语言。 */
+    const titleVars = escapeAttr(JSON.stringify({ label: this.adapter.label }));
     el.innerHTML = `
       <div class="box">
-        <button class="mp-x" id="mpLobbyClose" type="button" aria-label="${escapeHtml(i18nT('mg.shared_close'))}">✕</button>
-        <h2>${escapeHtml(i18nT('mg.mp_title_comp_html', { label: this.adapter.label }))}</h2>
-        <div class="hint">${escapeHtml(i18nT('mg.mp_room_intro'))}</div>
-        <div class="mp-field"><label>${escapeHtml(i18nT('mg.shared_your_name'))}</label><input class="mp-input" id="mpName" maxlength="18" placeholder="${escapeHtml(i18nT('mg.mp_ph_player'))}"/></div>
+        <button class="mp-x" id="mpLobbyClose" type="button" data-i18n-aria-label="mg.shared_close" aria-label="${escapeHtml(i18nT('mg.shared_close'))}">✕</button>
+        <h2 data-i18n="mg.mp_title_comp_html" data-i18n-vars='${titleVars}'>${escapeHtml(i18nT('mg.mp_title_comp_html', { label: this.adapter.label }))}</h2>
+        <div class="hint" data-i18n="mg.mp_room_intro">${escapeHtml(i18nT('mg.mp_room_intro'))}</div>
+        <div class="mp-field"><label data-i18n="mg.shared_your_name">${escapeHtml(i18nT('mg.shared_your_name'))}</label><input class="mp-input" id="mpName" maxlength="18" data-i18n-placeholder="mg.mp_ph_player" placeholder="${escapeHtml(i18nT('mg.mp_ph_player'))}"/></div>
         <div class="mp-sizes" id="mpSizes">
           <div class="mp-size" data-max="2">2</div>
           <div class="mp-size" data-max="10">10</div>
@@ -399,25 +434,25 @@ export class MpShell {
         <div class="mp-err" id="mpLobbyErr"></div>
         <div class="mp-form" id="mpForm">
           <div class="mp-actions">
-            <button class="mp-btn primary" id="mpCreate">${escapeHtml(i18nT('mg.mp_create_room'))}</button>
-            <button class="mp-btn" id="mpJoinToggle">${escapeHtml(i18nT('mg.mp_join_with_code'))}</button>
+            <button class="mp-btn primary" id="mpCreate" data-i18n="mg.mp_create_room">${escapeHtml(i18nT('mg.mp_create_room'))}</button>
+            <button class="mp-btn" id="mpJoinToggle" data-i18n="mg.mp_join_with_code">${escapeHtml(i18nT('mg.mp_join_with_code'))}</button>
           </div>
           <div class="mp-field" id="mpJoinRow" style="display:none;margin-top:12px">
-            <input class="mp-input" id="mpJoinCode" maxlength="${ROOM_CODE_LEN}" placeholder="${i18nT('mg.sg_room_code_label')}"/>
-            <button class="mp-btn primary" id="mpJoin">${escapeHtml(i18nT('mg.shared_join_room'))}</button>
+            <input class="mp-input" id="mpJoinCode" maxlength="${ROOM_CODE_LEN}" data-i18n-placeholder="mg.sg_room_code_label" placeholder="${i18nT('mg.sg_room_code_label')}"/>
+            <button class="mp-btn primary" id="mpJoin" data-i18n="mg.shared_join_room">${escapeHtml(i18nT('mg.shared_join_room'))}</button>
           </div>
-          <button class="mp-btn" id="mpRandom" style="width:100%;margin-top:12px">${i18nT('mg.sg_find_random')}</button>
+          <button class="mp-btn" id="mpRandom" style="width:100%;margin-top:12px" data-i18n="mg.sg_find_random">${i18nT('mg.sg_find_random')}</button>
         </div>
         <div class="mp-room" id="mpRoom">
-          <div class="hint">Room ready — share this code:</div>
+          <div class="hint" data-i18n="mg.g24_room_share_lbl">Room ready — share this code:</div>
           <div class="code-big" id="mpRoomCode">—</div>
           <canvas class="mp-qr" id="mpQr" width="130" height="130"></canvas>
           <div class="mp-pwrap">
-            <button class="mp-btn ghost" id="mpShare">🔗 Copy invite</button>
-            <button class="mp-btn ghost" id="mpCopy">⧉ Copy code</button>
+            <button class="mp-btn ghost" id="mpShare" data-i18n="mg.shared_copy_invite">🔗 Copy invite</button>
+            <button class="mp-btn ghost" id="mpCopy" data-i18n="mg.mp_copy_code">⧉ Copy code</button>
           </div>
           <div class="mp-players" id="mpPlayers"></div>
-          <button class="mp-btn primary" id="mpStart" disabled>🚀 Start (2+ players)</button>
+          <button class="mp-btn primary" id="mpStart" disabled data-i18n="mg.mp_start_2plus">🚀 Start (2+ players)</button>
         </div>
       </div>`;
     const sizes = el.querySelector('#mpSizes')!;
@@ -944,7 +979,7 @@ export class MpShell {
     const list = this.root.querySelector('#mpList'); if (!list) return;
     const rows = (this.cbRound ? [] : []);
     void rows;
-    if (!this.doneList.length) { list.innerHTML = '<div class="mp-empty">No submissions yet — be first!</div>'; return; }
+    if (!this.doneList.length) { list.innerHTML = `<div class="mp-empty" data-i18n="mg.mp_no_submissions">${escapeHtml(i18nT('mg.mp_no_submissions'))}</div>`; return; }
     list.innerHTML = this.doneList.slice(0, 10).map((r, i) => {
       const cls = (i === 0 ? 'r1' : '') + (r.name === this.myName ? ' me' : '');
       return `<div class="mp-row ${cls}"><span class="mp-rank">${i + 1}</span><span class="mp-av">🙂</span><span class="mp-name">${escapeHtml(r.name || '')}</span><span class="mp-time">${r.time != null ? fmtTime(r.time) : '✓'}</span></div>`;
@@ -973,7 +1008,10 @@ export class MpShell {
     const el = this.root.querySelector('#mpSpec');
     if (!el) return;
     el.classList.toggle('show', this.spectator);
-    el.innerHTML = this.spectator ? `👀 <b>Spectating</b> — read-only view${this.spectatorCount > 1 ? ` · ${this.spectatorCount} watchers` : ''}` : '';
+    el.innerHTML = this.spectator
+      ? i18nT('mg.mp_spectating_bar_html')
+        + (this.spectatorCount > 1 ? i18nT('mg.mp_watchers', { n: this.spectatorCount }) : '')
+      : '';
   }
 
   /* ===================== 房间视图 ===================== */
@@ -983,6 +1021,11 @@ export class MpShell {
     form.style.display = 'none';
     room.classList.add('show');
     (this.lobbyEl.querySelector('#mpRoomCode') as HTMLElement).textContent = this.room;
+    /* P2（2026-10-26）：对局视图左上角的 #mpCode 此前**从未被赋值**，玩家进了对局
+       就再也看不到房码（想再拉一个人只能退出重来）。这里随房间视图一起写入，
+       建房 / 加入 / 邀请链接 / demo 路径都会经过本方法。 */
+    const badge = this.root.querySelector('#mpCode');
+    if (badge && this.room) badge.textContent = this.room;
     this.renderRoomPlayers();
     this.renderQR();
   }
@@ -993,7 +1036,7 @@ export class MpShell {
     const names = Object.keys(this.players);
     list.innerHTML = names.map((name) => {
       const me = name === this.myName;
-      return `<div class="mp-rp${me ? ' me' : ''}"><span class="mp-av">🙂</span><span>${escapeHtml(name)}</span>${this.isHost && me ? '<span class="host">You · Host</span>' : ''}</div>`;
+      return `<div class="mp-rp${me ? ' me' : ''}"><span class="mp-av">🙂</span><span>${escapeHtml(name)}</span>${this.isHost && me ? `<span class="host">${escapeHtml(i18nT('mg.mp_you_host'))}</span>` : ''}</div>`;
     }).join('');
     const sb = this.lobbyEl.querySelector('#mpStart') as HTMLButtonElement;
     const n = names.length;
@@ -1272,6 +1315,20 @@ export function escapeHtml(s: unknown): string {
   d.textContent = s == null ? '' : String(s);
   return d.innerHTML;
 }
+
+/**
+ * 属性值转义 —— escapeHtml() 走 textContent→innerHTML，**不转义单引号**
+ * （不在属性上下文时需要），而 `data-i18n-vars='{"label":"…"}'` 是用单引号
+ * 包裹整段 JSON 的属性，label 里一旦出现 `'`（如某个游戏名带撇号）就会
+ * 提前截断属性。这里统一把 5 个字符都转掉；浏览器 getAttribute 会自动解码回来，
+ * JSON.parse 拿到的仍是原始字符串。
+ */
+function escapeAttr(s: unknown): string {
+  return String(s ?? '').replace(/[&<>"']/g, (ch) => (
+    { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch] as string
+  ));
+}
+
 function fmtTime(ms: number): string {
   const s = (Number(ms) || 0) / 1000;
   return s >= 60 ? Math.floor(s / 60) + ':' + (s % 60 < 10 ? '0' : '') + (s % 60).toFixed(1) : s.toFixed(1) + 's';

@@ -1170,7 +1170,10 @@
     "mp_room_intro": "Raum erstellen, Code teilen, gegen Freunde oder die Welt antreten.",
     "mp_title_comp_html": "🏆 {label} — Wettbewerb",
     "mp_create_room": "🚀 Raum erstellen",
-    "mp_join_with_code": "Mit Code beitreten"
+    "mp_join_with_code": "Mit Code beitreten",
+    "mp_chat_only_here": "nur dieser Raum",
+    "mp_no_submissions": "Noch keine Abgabe — sei der Erste!",
+    "mp_copy_code": "⧉ Code kopieren"
   },
   "tn": {
     "title": "NumeriDuel · Lehrer-Dashboard",

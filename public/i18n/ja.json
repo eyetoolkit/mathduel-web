@@ -1215,7 +1215,10 @@
     "mp_room_intro": "ルームを作ってコードを共有し、好友や世界と競いましょう。",
     "mp_title_comp_html": "🏆 {label} —— 競技",
     "mp_create_room": "🚀 ルームを作成",
-    "mp_join_with_code": "コードで参加"
+    "mp_join_with_code": "コードで参加",
+    "mp_chat_only_here": "このルーム限定",
+    "mp_no_submissions": "まだ提出なし — 一番乗りしよう！",
+    "mp_copy_code": "⧉ コードをコピー"
   },
   "tn": {
     "title": "NumeriDuel · 教師ダッシュボード",

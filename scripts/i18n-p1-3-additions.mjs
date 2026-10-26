@@ -129,6 +129,9 @@ export const ADDITIONS = {
     mg: {
       mp_reconnecting: 'Connection lost — reconnecting in {n}s…',
       mp_reconnect_failed: 'Disconnected — rejoin with the room code, or tap Leave.',
+      mp_chat_only_here: 'only this room',
+      mp_no_submissions: 'No submissions yet — be first!',
+      mp_copy_code: '⧉ Copy code',
       shared_invalid_code: "Invalid code (6 chars)",
       sg_pick_cell: '👆 Pick a cell first',
       sg_nothing_undo: '↶ Nothing to undo',
@@ -542,6 +545,9 @@ export const ADDITIONS = {
     mg: {
       mp_reconnecting: '连接中断 — 将在 {n} 秒后重连…',
       mp_reconnect_failed: '已断开连接 — 请用房间码重新加入，或点「离开」。',
+      mp_chat_only_here: '仅本房间可见',
+      mp_no_submissions: '还没有人提交 — 抢先一步！',
+      mp_copy_code: '⧉ 复制房码',
       shared_invalid_code: "房码无效（6 位）",
       sg_pick_cell: '👆 请先选一个格子',
       sg_nothing_undo: '↶ 没有可撤销的操作',
@@ -964,6 +970,9 @@ export const ADDITIONS = {
     mg: {
       mp_reconnecting: '接続が切断されました — {n} 秒後に再接続します…',
       mp_reconnect_failed: '切断されました — ルームコードで再参加するか、「退出」をタップしてください。',
+      mp_chat_only_here: 'このルーム限定',
+      mp_no_submissions: 'まだ提出なし — 一番乗りしよう！',
+      mp_copy_code: '⧉ コードをコピー',
       shared_invalid_code: "コードが正しくありません（6文字）",
       sg_pick_cell: '👆 まずマスを選んでください',
       sg_nothing_undo: '↶ 元に戻す操作がありません',
@@ -1383,6 +1392,9 @@ export const ADDITIONS = {
     mg: {
       mp_reconnecting: 'Conexión perdida — reconectando en {n}s…',
       mp_reconnect_failed: 'Desconectado — vuelve a entrar con el código de sala o pulsa Salir.',
+      mp_chat_only_here: 'solo esta sala',
+      mp_no_submissions: 'Aún no hay envíos — ¡sé el primero!',
+      mp_copy_code: '⧉ Copiar código',
       shared_invalid_code: "Código no válido (6 caracteres)",
       sg_pick_cell: '👆 Elige primero una casilla',
       sg_nothing_undo: '↶ Nada que deshacer',
@@ -1801,6 +1813,9 @@ export const ADDITIONS = {
     mg: {
       mp_reconnecting: 'Connexion perdue — reconnexion dans {n}s…',
       mp_reconnect_failed: 'Déconnecté — rejoignez avec le code de la salle ou touchez Quitter.',
+      mp_chat_only_here: 'cette salle uniquement',
+      mp_no_submissions: 'Aucune soumission — soyez le premier !',
+      mp_copy_code: '⧉ Copier le code',
       shared_invalid_code: "Code invalide (6 caractères)",
       ep_hud_score: 'Points',
       sg_pick_cell: '👆 Choisissez d’abord une case',
@@ -2179,6 +2194,9 @@ export const ADDITIONS = {
     mg: {
       mp_reconnecting: 'Verbindung verloren — Wiederverbindung in {n}s…',
       mp_reconnect_failed: 'Getrennt — mit dem Raumcode erneut beitreten oder „Verlassen“ tippen.',
+      mp_chat_only_here: 'nur dieser Raum',
+      mp_no_submissions: 'Noch keine Abgabe — sei der Erste!',
+      mp_copy_code: '⧉ Code kopieren',
       shared_invalid_code: "Ungültiger Code (6 Zeichen)",
       brand_sub_24: '24 · Kartentisch',
       givens: '{n} Gegeben',

@@ -1215,7 +1215,10 @@
     "mp_room_intro": "创建房间、分享房间码，与好友或全世界同场竞速。",
     "mp_title_comp_html": "🏆 {label} —— 比赛",
     "mp_create_room": "🚀 创建房间",
-    "mp_join_with_code": "用房间码加入"
+    "mp_join_with_code": "用房间码加入",
+    "mp_chat_only_here": "仅本房间可见",
+    "mp_no_submissions": "还没有人提交 — 抢先一步！",
+    "mp_copy_code": "⧉ 复制房码"
   },
   "tn": {
     "title": "NumeriDuel · 教师端",
