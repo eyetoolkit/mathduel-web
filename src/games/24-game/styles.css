@@ -539,7 +539,13 @@ body.arena.answer-revealed .formula { opacity: 0.5; font-style: italic; }
 }
 .share-overlay.show { display: flex; }
 .share-card {
-  width: 100%; max-width: 420px; max-height: 92vh; overflow-y: auto;
+  /* 🔴 2026-10-26 卡片第 2 批：容器从 420px 放宽到 660px —— 画布放大到
+     600px 后会被原来的容器裁掉。
+     ⚠️ 660 而不是 640：容器内边距 var(--s-5) 左右各 21px，
+        640 - 42 = 598 < 600，画布仍会被压到 598（差 2px 就是不到原生尺寸，
+        等于「放大」白做）。660 - 42 = 618 → 画布按原生 600px 1:1 显示。
+     窄屏靠 width:100% 自适应回落到视口宽。 */
+  width: 100%; max-width: 660px; max-height: 92vh; overflow-y: auto;
   background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-xl);
   padding: var(--s-5); box-shadow: var(--shadow-xl);
   animation: ds-modal-in var(--dur-slow) var(--ease-spring) both;
@@ -549,7 +555,9 @@ body.arena.answer-revealed .formula { opacity: 0.5; font-style: italic; }
 .share-close { border: 0; background: var(--bg-subtle); color: var(--text-muted); width: var(--tap); height: var(--tap); border-radius: var(--r-sm); font-size: 1rem; }
 .share-close:hover { background: var(--border); color: var(--text); }
 .share-canvas-wrap { display: flex; justify-content: center; margin-bottom: var(--s-4); }
-.share-canvas-wrap canvas { width: 100%; max-width: 300px; height: auto; border-radius: var(--r-lg); box-shadow: var(--shadow-lg); }
+/* 🔴 2026-10-26 卡片第 2 批：预览从 300px 放大到 600px。
+   竖版 600×760 的成绩卡缩到 300px 后字都看不清了；width:100% 保证窄屏自适应。 */
+.share-canvas-wrap canvas { width: 100%; max-width: 600px; height: auto; border-radius: var(--r-lg); box-shadow: var(--shadow-lg); }
 .share-qr-row { display: flex; gap: var(--s-4); align-items: center; background: var(--bg-subtle); border: 1px solid var(--border); border-radius: var(--r-lg); padding: var(--s-3); margin-bottom: var(--s-4); }
 .share-qr { border-radius: var(--r-sm); background: #fff; padding: 6px; flex: none; image-rendering: pixelated; width: 92px; height: 92px; }
 .share-qr-txt { font-size: 0.8125rem; color: var(--text-muted); line-height: 1.5; }
