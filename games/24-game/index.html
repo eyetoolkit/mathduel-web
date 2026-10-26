@@ -52,6 +52,10 @@
 <link rel="apple-touch-startup-image" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3)" href="/splash-1290x2796.png">
 <link rel="apple-touch-startup-image" media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3)" href="/splash-1284x2778.png">
 <link rel="apple-touch-startup-image" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2)" href="/splash-750x1334.png">
+<!-- analytics-bootstrap (Phase0) -->
+<link rel="stylesheet" href="/shared/consent.css?v=ph0-1">
+<script>window.__GA4_ID__="G-NUMERIDUEL_PLACEHOLDER";</script>
+<script src="/shared/analytics.js?v=ph0-1" defer></script>
 </head>
 <body data-mode="practice" class="arena has-papergames-shell skin-paper">
   <!-- ═══════════ 6 个游戏封面 SVG symbol（与首页同源） ═══════════ -->
@@ -227,7 +231,10 @@
             <div class="sr-txt" id="speedRingTxt">--</div>
           </div>
           <div class="comp-timer" id="compTimer"><i></i></div>
-          <div class="comp-status" id="compStatus" data-i18n="mg.g24_room_idle">Room idle — start or join to go live</div>
+          <!-- 🔴 #compStatus 由 index.ts 的 onRoundStart / updateCompTimer 写 textContent，
+               同理禁止挂 data-i18n（否则竞赛中被冲回 Room idle，同 mp 弹窗 8fb2c89 教训）。
+               初始文案由 index.ts 的 onI18nChange 补写，保证多语言。 -->
+          <div class="comp-status" id="compStatus">Room idle — start or join to go live</div>
         </div>
         <button class="icon-btn" id="leaveBtn" title="Leave competition">🚪 Leave</button>
       </div>
@@ -247,7 +254,10 @@
 
       <div class="cards" id="cards"></div>
       <div class="formula" id="formula" aria-live="polite"><span class="ph" data-i18n="mg.g24_formula_ph">Pick cards + operators to make 24</span></div>
-      <div class="result" id="result" role="status" data-i18n="mg.g24_pick_first">Use each card once — make 24</div>
+      <!-- 🔴 #result 由 index.ts 全程用 i18nT() 写 textContent（checkAnswer/onWin/dailySolve 等八处），
+           绝不能挂 data-i18n：i18n.js applyToDOM 会每 ~65ms 把它冲回静态文案，
+           解题成功的「🎉 Solved!」与「= 6 — 18 to go」提示只存活一瞬（2026-10-26 线上实测） -->
+      <div class="result" id="result" role="status">Use each card once — make 24</div>
 
       <div class="pad" id="pad">
         <button class="op-btn op" data-v="+">+</button>

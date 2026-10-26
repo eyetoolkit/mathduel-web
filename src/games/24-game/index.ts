@@ -2134,6 +2134,12 @@ refreshTop();
 onI18nChange(() => {
   render();
   renderSide();
+  // #compStatus 不挂 data-i18n（JS 写 textContent 会被 applyToDOM 冲回，见 index.html 注释）。
+  // 空闲态初值在这里补写保证多语言；对局中由 onRoundStart/updateCompTimer 接管，不覆盖。
+  const csIdle = $('compStatus');
+  if (csIdle && !csIdle.getAttribute('data-live')) {
+    csIdle.textContent = i18nT('mg.g24_room_idle');
+  }
   // 🔴 2026-10-25：每日挑战 banner 同样是 innerHTML 拼接（diff-chip/diffLabel），
   // 首渲若早于字典 async fetch 完成，diffLabel 回落 key 本身且无人重渲——
   // 实测线上「difficulty.easy/standard/hard」裸 key 常驻面板（report: daily24.png）。
