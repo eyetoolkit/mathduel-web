@@ -58,7 +58,17 @@ export interface CompCallbacks {
   onSpectator: (payload: { count: number }) => void;
   /** 自己成为观战者（duel 第 3+ 人） */
   onSelfSpectator: () => void;
+  /**
+   * 断线重连提示（可选）。show=false 表示已恢复、收起提示；
+   * failed=true 表示已放弃重连（超过上限），由 UI 明确告知玩家自行退出。
+   * 2026-10-26 P0：24 点走自己的 competition.ts，共享 mp-client 的
+   * mp_reconnect_* 提示条覆盖不到本页，故在此把状态抛给 index.ts。
+   */
+  onReconnect?: (state: { show: boolean; failed: boolean; seconds: number }) => void;
 }
+
+/** 断线重连上限（与共享 mp-client 的 MP_RECONNECT_MAX 对齐）：退避 1→2→4→8s，共 5 次 */
+const COMP_RECONNECT_MAX = 5;
 
 /** 数学站生产环境 host（数学站改名路线图 2026-09-30：mathduel.games → numeriduel.com）
  *  保留 mathduel.games 12 个月过渡期（CF Bulk Redirects）— 教师邀请码不中断 */
@@ -110,6 +120,12 @@ export class Competition {
 
   private ws: WebSocket | null = null;
   private ping: number | null = null;
+  /** 主动退房/离开：抑制自动重连，避免「退出后又被自动拉回房间」 */
+  private manualClose = false;
+  private reconnectTimer: number | null = null;
+  private reconnectAttempts = 0;
+  /** 重连握手期：抑制 onRoomReady()，防止把进行中的对局弹回「房间码 + 二维码」视图 */
+  private reconnecting = false;
   private demoBots: number[] = [];
   private demoChatTimers: number[] = [];
   private doneList: RaceEntry[] = [];
@@ -196,19 +212,33 @@ export class Competition {
     this.connectWS(code);
   }
 
-  private connectWS(code?: string): void {
+  private connectWS(code?: string, isReconnect = false): void {
     if (code) this.room = code;
+    // 主动建房/加入 → 允许后续自动重连（复位退房标志与握手态）
+    if (!isReconnect) {
+      this.manualClose = false;
+      this.reconnecting = false;
+    }
     // 数学站改名（2026-09-30）：用 location.host 派生 WS URL,支持 numeriduel.com 与 mathduel.games 双域并存
     const wsProto = location.protocol === 'https:' ? 'wss:' : 'ws:';
     const url = `${wsProto}//${location.host}/ws?code=${encodeURIComponent(this.room)}&name=${encodeURIComponent(this.myName)}`;
     try {
       this.ws = new WebSocket(url);
     } catch {
-      this.cb.onError('Cannot reach server');
+      if (isReconnect) this.scheduleReconnect();
+      else this.cb.onError('Cannot reach server');
       return;
     }
     this.ws.onopen = () => {
-      this.cb.onRoomReady(this.room);
+      this.reconnectAttempts = 0;
+      this.setReconnectUI(false);
+      /* 兜底：若服务端因房已清等原因没回 room_info，reconnecting 会一直挂着，
+         之后所有 onRoomReady() 都会被误抑制。5s 后无条件解除。 */
+      if (isReconnect) window.setTimeout(() => { this.reconnecting = false; }, 5000);
+      /* 重连时不走 onRoomReady()：它会再次 showRoomView()，把正在进行的对局
+         弹回「房间码 + 二维码」视图。服务端在连接建立后本就会补发 room_info /
+         round_resume（competition 模式带 mode:'competition'），客户端已有对应处理。 */
+      if (!isReconnect) this.cb.onRoomReady(this.room);
       this.send({ type: 'get_info' });
       if (this.ping) window.clearInterval(this.ping);
       this.ping = window.setInterval(() => this.send({ type: 'ping' }), 25000);
@@ -228,8 +258,37 @@ export class Competition {
         window.clearInterval(this.ping);
         this.ping = null;
       }
+      if (isReconnect) this.reconnectAttempts++; // 连上又断：下次退避更久
+      if (!this.manualClose && this.room && !this.demo) this.scheduleReconnect();
     };
-    this.ws.onerror = () => {};
+    // 不空吞：error 后浏览器必定再触发 close，重连统一在 onclose 里调度，这里只留取证线索
+    this.ws.onerror = () => { console.warn('[24-comp] ws error, room=' + this.room); };
+  }
+
+  /** 断线重连调度：退避 1s→2s→4s→8s（上限 5 次）。demo 模式与主动离开不重连。 */
+  private scheduleReconnect(): void {
+    if (this.manualClose || !this.room || this.demo) return;
+    if (this.reconnectTimer) return;
+    if (this.reconnectAttempts >= COMP_RECONNECT_MAX) {
+      this.setReconnectUI(true, true); // 放弃重连：明确告知，让玩家自己决定退出
+      return;
+    }
+    const delay = 1000 * Math.pow(2, Math.min(this.reconnectAttempts, 3));
+    this.reconnecting = true;
+    this.setReconnectUI(true, false, delay);
+    this.reconnectTimer = window.setTimeout(() => {
+      this.reconnectTimer = null;
+      this.connectWS(this.room, true);
+    }, delay);
+  }
+
+  /** 重连提示条状态抛给 UI（index.ts 写 #compStatus）。failed=true 表示已放弃。 */
+  private setReconnectUI(show: boolean, failed = false, delayMs = 0): void {
+    this.cb.onReconnect?.({
+      show,
+      failed,
+      seconds: Math.max(1, Math.round(delayMs / 1000)),
+    });
   }
 
   private send(obj: unknown): void {
@@ -265,7 +324,10 @@ export class Competition {
         this.players[this.myName] = { score: 0 };
         /* 老师端课堂作业（链接带 tid=1）：入房后一次性绑定班级代号 */
         if (isClassroom()) ensureStudentCode(this.room).catch(() => { /* 跳过归因不影响游戏 */ });
-        this.cb.onRoomReady(this.room);
+        /* 重连握手期：服务端照常发 room_joined，但走 onRoomReady() → showRoomView()
+           会把正在进行中的对局弹回「房间码 + 二维码」视图。重连只更新数据，
+           界面交给随后的 round_resume 恢复。 */
+        if (!this.reconnecting) this.cb.onRoomReady(this.room);
         this.cb.onPlayersChanged(this.players, this.isHost, this.room);
         break;
       case 'player_joined':
@@ -280,6 +342,9 @@ export class Competition {
         }
         this.isHost = this.isHost || d.hostName === this.myName;
         this.cb.onPlayersChanged(this.players, this.isHost, this.room);
+        /* 同上：重连握手期不弹房间视图，并在此收尾复位（服务端连发
+           room_joined → room_info，之后的 round_resume 才是恢复对局的信号）。 */
+        if (this.reconnecting) this.reconnecting = false;
         break;
       case 'spectator_joined': {
         // 自己被分到观战槽位：只读观看，不做题
@@ -292,6 +357,11 @@ export class Competition {
       }
       case 'new_round':
       case 'round_resume': {
+        /* P0（2026-10-26）：真实（非 demo）模式下 waiting 只在 submit() 里置 true，
+           此前没有任何地方复位 —— 玩家答完第 1 轮后，第 2 轮起所有点击都被
+           submit() 首行 `if (… || this.waiting …) return` 静默吞掉，一局只能答一题。
+           例外：断线重连回同一轮且本轮已交卷时，必须保持 waiting=true 禁止重复提交。 */
+        const keepSubmitted = d.type === 'round_resume' && this.mySubmitted;
         this.active = true;
         this.started = true;
         this.round = d.round || 1;
@@ -299,11 +369,12 @@ export class Competition {
         this.timeLimit = d.timeLimit || 30;
         this.players = d.players ? this.absorbPlayers(d.players) : {};
         const cards: number[] = d.cards ? d.cards.slice() : generate24Puzzle(undefined, this.diff);
+        if (!keepSubmitted) this.waiting = false;
         if (d.mode === 'competition') {
           this.total = (d.players && d.players.length) || this.total || 1;
           this.done = 0;
           this.doneList = [];
-          this.mySubmitted = false;
+          this.mySubmitted = keepSubmitted;
         }
         this.cb.onRoundStart({ cards, round: this.round, maxRounds: this.maxRounds, timeLimit: this.timeLimit, players: d.players || [] });
         if (d.mode === 'competition') this.cb.onProgress({ doneCount: 0, total: this.total, done: [] });
@@ -388,6 +459,15 @@ export class Competition {
     this.waiting = false;
     this.spectator = false;
     this.spectatorCount = 0;
+    /* 主动离开：取消待执行的重连并复位计数，避免「退出后又被自动拉回房间」 */
+    this.manualClose = true;
+    this.reconnecting = false;
+    if (this.reconnectTimer) {
+      window.clearTimeout(this.reconnectTimer);
+      this.reconnectTimer = null;
+    }
+    this.reconnectAttempts = 0;
+    this.setReconnectUI(false);
     if (this.ping) {
       window.clearInterval(this.ping);
       this.ping = null;

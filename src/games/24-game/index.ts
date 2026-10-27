@@ -1325,6 +1325,38 @@ const RING_R = 20;
 const RING_C = 2 * Math.PI * RING_R;
 
 /* ===================== 竞赛 ===================== */
+/**
+ * 断线重连提示态（2026-10-26 P0）。非空 = 正在重连 / 已放弃，此时 #compStatus
+ * 由本状态独占 —— updateCompTimer() 每秒写的计时文案不得覆盖它。
+ * 提示条文案复用共享 mp-client 的 mg.mp_reconnect_* 键（6 语言已齐）。
+ */
+let compRecon: { failed: boolean; seconds: number } | null = null;
+
+function setCompRecon(state: { show: boolean; failed: boolean; seconds: number }): void {
+  const st = $('compStatus');
+  if (!state.show) {
+    compRecon = null;
+    if (st) {
+      // 恢复：文案交回对局态/空闲态（空闲时清 data-live，让 onI18nChange 能补写多语言初值）
+      if (comp.active) {
+        st.setAttribute('data-live', '1');
+        st.textContent = i18nT('mg.g24_room_live', { round: comp.round, total: comp.maxRounds });
+      } else {
+        st.removeAttribute('data-live');
+        st.textContent = i18nT('mg.g24_room_idle');
+      }
+    }
+    return;
+  }
+  compRecon = { failed: state.failed, seconds: state.seconds };
+  if (!st) return;
+  // 独占期间挂 data-live=1：既能上高亮，也防止 onI18nChange 把提示冲回空闲文案
+  st.setAttribute('data-live', '1');
+  st.textContent = state.failed
+    ? i18nT('mg.mp_reconnect_failed')
+    : i18nT('mg.mp_reconnecting', { n: state.seconds });
+}
+
 const comp = new Competition({
   onRoomReady: () => {
     showRoomView();
@@ -1342,6 +1374,8 @@ const comp = new Competition({
     comp.timeLimit = timeLimit;
     compEnterGame();
     closeLobby();
+    // 新一轮（或重连后的 round_resume）到达 = 连接已恢复，收起重连提示
+    compRecon = null;
     // F-103: 开局后把 "Waiting to start…" 切到活跃状态，避免误导
     const cs = $('compStatus');
     if (cs) {
@@ -1372,6 +1406,7 @@ const comp = new Competition({
     toast(i18nT('mg.sg_spectating'));
     renderSpecBar(comp.spectatorCount);
   },
+  onReconnect: (s) => setCompRecon(s),
 });
 
 /** 观战条：仅观战者可见（服务端把 duel 第 3+ 人放进 spectator 槽位） */
@@ -1776,7 +1811,8 @@ function updateCompTimer(left: number): void {
     bar.classList.toggle('low', frac < 0.3);
   }
   const st = $('compStatus');
-  if (st) {
+  // 重连提示独占期：不写计时文案，否则每秒把「正在重连…」冲掉
+  if (st && !compRecon) {
     st.textContent = comp.spectator
       ? i18nT('mg.g24_room_spectating')
       : i18nT('mg.g24_room_timer', { s: secs });
