@@ -142,7 +142,9 @@ tr:last-child td{border-bottom:0}
   .addc{width:auto;flex:none;padding:9px 14px}
   .grid2{grid-template-columns:1fr}
   .form{grid-template-columns:1fr}
-  .hd{padding:11px 14px;gap:8px}
+  .hd{padding:11px 14px;gap:8px;flex-wrap:wrap}
+  .role{display:none} /* 移动端隐藏角色 pill，避免顶栏按钮被挤出视口 */
+  .hd .ghost,.newc{flex:1 1 auto;justify-content:center}
 }
 
 /* ═══════════ 2026-09-26 老师端落地补充 ═══════════ */

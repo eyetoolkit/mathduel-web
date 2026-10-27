@@ -166,6 +166,7 @@ body.dhub {
   .dh-grid { grid-template-columns: 1fr; }
   .rhead, .rrow { grid-template-columns: 44px 1fr 90px 70px; font-size: .8rem; }
   .dh-sub { display: none; }
+  .dh-me { display: none; } /* 移动端隐藏 identity 注入的 compact 邀请卡，避免 sticky 头部溢出 */
   .tour-clock { font-size: 1.3rem; }
   .tour-prize { margin-left: 0; }
 }
