@@ -412,46 +412,13 @@ body.arena :where([hidden]) { display: none !important; }
   :is(body.arena, body.has-papergames-shell).in-match .ep-tools { gap: 6px; }
   :is(body.arena, body.has-papergames-shell).in-match .ep-tool { min-height: 38px; padding: 0 12px; }
   :is(body.arena, body.has-papergames-shell).in-match :is(.ep-opp, .ep-you) { padding: 8px 12px; }
-  /* 金字塔：ep-board 吃剩余高度。
-     🔴 2026-10-27 再修（手机端格子塌缩成「数字叠罗汉」，用户实机截图复现）：
-     原方案 .ep-grid 用 container-type:size + .epc 用 100cqb 高基准，在部分
-     国产壳/旧内核（ArkWeb 类）上 min-height 保底失效 → 容器高度解析≈0 →
-     格宽≈0 → 数字溢出叠罗汉。容器查询在此处自 10-24 起已连续烧三轮修复，
-     彻底移除 cq 依赖：格宽 = var(--ep-cell-px, 宽基准)。--ep-cell-px 由
-     eqpyr index.ts 的 ResizeObserver 实测 .ep-board 可用宽高后写入
-     （= min(宽基准, 高基准)，与原 cq 语义等价），规范浏览器视觉不变、
-     旧内核按构造正确。CSS 侧保留宽基准作无 JS 兜底。
-     —— 以下保留 2026-10-24 的字号修复史，字号本就不依赖容器基准：
-     原字号 min(clamp, calc(var(--ep-cell)*0.42)) 中 --ep-cell 是无单位
-     像素数值，calc 产出无单位数字，font-size 不接受 → 整条声明无效 → 数字字号塌缩为 0
-     （9 格数字全部不可见）。第一次误修成 calc(var(--s9-size)/4*.45) 仍塌缩为 1.8px：
-     自定义属性 --s9-size 存的是字面量 min(440px,100%)，在 font-size 的 calc() 里 100%
-     相对未定父字号不可解析 → 整条 calc 再次无效。
-     最终修法：字号彻底不依赖百分比/cqb 容器基准，用纯 vw+px clamp——
-     4.5vw 在 1280 桌面=57px（被 1.7rem≈27px 上限截住），在 390 移动=17.5px
-     （被 1.4rem≈22px 下限抬住）→ 各模式字体恒定，且 40~100px 格宽都放得下。
-     🔴 min-height 提到 250px：3 行棋盘最小合理高度（3 格 + 2 间隙），
-     duel 等 chrome 较高的模式把容器压到 120px 时，--ep-cell 的 100cqb 高基准
-     会把格宽压到 33px（非正方形塌缩）。160px 保底后高基准 ≥ 40px，
-     格宽与宽度基准（~54px）不再冲突，棋盘保持正方形。 */
-  :is(body.arena, body.has-papergames-shell).in-match .ep-board { flex: 1 1 auto; min-height: 160px; }
-  /* 不设 grid min-height：格子尺寸已由 JS 按实测份额分配（见 index.ts sizeBoardCells），
-     盲目保底会让 grid 盒子高于内容 → 操作条顶进末行（360×640/桌面实测复现）。 */
-  :is(body.arena, body.has-papergames-shell).in-match .ep-grid {
-    flex: 1 1 auto;
-    justify-content: center;
-  }
-  /* 格宽：宽度基准（底行 4 格铺满 ep-board）为主，再用 100cqb 高基准封顶防裁切。
-     🔴 2026-10-24 修复「各模式棋盘大小不一致」：根因是 #diffPick 难度行只在 daily
-     被 JS 隐藏、其余模式 CSS 未隐藏 → 各模式 .ep-grid 剩余高度不同 → 100cqb 高基准
-     不同 → 格宽随模式漂移（solo 54 / daily 75 / duel 33，且 duel 高基准把格压成非正方形）。
-     修法：对局期 #diffPick 全模式 display:none（见上），chrome 高度归一 → 100cqb 高基准
-     各模式恒定，重新加回 min() 高基准封顶既消除漂移又防末行裁切（纯宽度驱动时
-     格被撑高、3 行总高超出容器剩余高度 → clip，d900 实测 41px）。
-     两基准：宽度 (100%-3g)/4；高度 3 行装进容器 → 单格 ≈ (100cqb - 2g)/3。 */
-  :is(body.arena, body.has-papergames-shell).in-match .epc {
-    width: var(--ep-cell-px, calc((100% - 3 * var(--ep-gap)) / 4));
-  }
+  /* ── 等式金字塔：格子尺寸回滚（2026-10-27 刘哥实机两轮反馈，最终拍板）──
+     10-24 起的 container-type:size + 100cqb 方案与同日 JS 实测方案，在真机上
+     都把格子压小（高度基准被 chrome 吃掉）、运算符压在数字上（用户截图两次：
+     第一次数字叠罗汉、第二次小圆片挤在一起）。本区对 .ep-board/.ep-grid/.epc
+     的全部尺寸覆盖撤场：格子一律回到基础版纯宽度驱动 (100%-3g)/4
+     （390px 手机 ≈85px），大而清晰；短屏极端情况页面自然滚动兜底。
+     仅保留对局 chrome 紧凑化与字号 clamp（下方两条，10-24 的字号修复史见 git）。 */
   /* 金字塔格内文字：纯 vw+px clamp，不随容器/模式漂移，且与 40~100px 格宽兼容 */
   :is(body.arena, body.has-papergames-shell).in-match .epc .ep-num { font-size: clamp(1.4rem, 4.5vw, 1.7rem); }
   :is(body.arena, body.has-papergames-shell).in-match .epc .ep-op { font-size: clamp(0.9rem, 3vw, 1.08rem); }
