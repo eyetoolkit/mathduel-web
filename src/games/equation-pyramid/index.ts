@@ -43,7 +43,7 @@ function rerenderResult(): void {
   const result = $('result');
   if (!result || !st.board || !st.running) return;
   if (result.classList.contains('win') || result.classList.contains('lose')) return; // 结算文案不动
-  result.textContent = st.mode === 'duel' ? i18nT('mg.pyr_duel_first') : i18nT('mg.pyr_pick_first');
+  result.textContent = i18nT('mg.pyr_pick_first');
 }
 window.addEventListener('i18n:ready', rerenderResult);
 window.addEventListener('i18n:change', rerenderResult);
@@ -59,14 +59,12 @@ mountHeader(($('header') as HTMLElement | null) ?? document.createElement('div')
     ],
 });
 
-type Mode = 'solo' | 'daily' | 'timed' | 'duel';
+type Mode = 'solo' | 'daily' | 'timed';
 const TIMED_LIMIT = 60;
-const DUEL_PENALTY = 2.5;
 const HINT_BUDGET = 3;
-/** Bot 每解节奏（ms）· 按难度档递减 → 给人类留可胜区间（#09） */
-const BOT_PACE: Record<Tier, number> = { warmup: 6000, standard: 3400, tricky: 1800 };
-/** 玩家无操作超过该时长 → 提示一次（#09 零操作保护） */
-const DUEL_IDLE_MS = 12000;
+/* 🔴 2026-10-27 用户拍板：Duel Bot（本地机器人对战）已整体删除
+   （BOT_PACE / DUEL_PENALTY / DUEL_IDLE_MS / scheduleOpp / endDuel）。
+   对战需求由 ?mode=battle 在线好友竞赛（mp-client）承接。 */
 
 const TIER_KEY: Record<Tier, string> = { warmup: 'ml.diff_warmup', standard: 'ml.diff_standard', tricky: 'ml.diff_tricky' };
 const tierLabel = (t: Tier): string => i18nT(TIER_KEY[t]);
@@ -81,7 +79,6 @@ const st = {
   running: false,
   startTs: 0,
   elapsed: 0,
-  penalty: 0,
   timer: null as number | null,
   score: 0,
   misses: 0,
@@ -91,12 +88,6 @@ const st = {
   timedDealt: 0,
   timedStreak: 0,
   timedStartTs: 0,
-  // duel
-  myBanks: 0, // 玩家本人的 bank 数（st.banked 是共享池，含 bot 的）
-  oppBanks: 0,
-  oppTimer: null as number | null,
-  lastActTs: 0, // 玩家上次操作时刻（#09 零操作保护）
-  idleWarned: false,
   timedLeft: TIMED_LIMIT, // Timed 剩余秒数（#12 倒计时）
   gatePending: false, // #14：等待玩家首点才开始计时
   gateUsed: false,
@@ -150,8 +141,6 @@ function enterMode(m: Mode): void {
   stopAll();
   st.mode = m;
   document.querySelectorAll<HTMLButtonElement>('#tabs .ep-tab').forEach((t) => t.classList.toggle('active', t.dataset.mode === m));
-  const duel = m === 'duel';
-  $('oppHead')!.hidden = !duel;
   $('diffPick')!.style.display = m === 'daily' ? 'none' : '';
   startRound();
   // 进对局统一入口（24-game 范式 · 2026-10-03 接入）
@@ -166,9 +155,7 @@ function enterMode(m: Mode): void {
 
 function stopAll(): void {
   if (st.timer) window.clearInterval(st.timer);
-  if (st.oppTimer) window.clearTimeout(st.oppTimer);
   st.timer = null;
-  st.oppTimer = null;
   st.running = false;
 }
 
@@ -240,7 +227,6 @@ function startRound(): void {
   st.gatePending = !st.gateUsed && (m === 'solo' || m === 'timed');
   renderModeBanner(); // gatePending 变了，副标题要跟着换
   if (st.gatePending) return;
-  if (st.mode === 'duel') scheduleOpp();
   beginTimer();
 }
 
@@ -264,18 +250,13 @@ function resetBoard(): void {
   st.score = 0;
   st.misses = 0;
   st.hintsLeft = HINT_BUDGET;
-  st.myBanks = 0;
-  st.oppBanks = 0;
   // 清掉上一局的 hint 残留（dataset.hinted 挂在复用的 cell DOM 上，不删会跨局发光）
   document.querySelectorAll<HTMLElement>('#epgrid .epc').forEach((c) => { delete c.dataset.hinted; });
   st.elapsed = 0;
-  st.penalty = 0;
   st.startTs = Date.now();
   st.running = true;
-  st.lastActTs = Date.now();
-  st.idleWarned = false;
   st.timedLeft = TIMED_LIMIT;
-  $('result')!.textContent = st.mode === 'duel' ? i18nT('mg.pyr_duel_first') : i18nT('mg.pyr_pick_first');
+  $('result')!.textContent = i18nT('mg.pyr_pick_first');
 }
 
 /* ═══ 计时 ═══ */
@@ -284,7 +265,7 @@ function beginTimer(): void {
   st.timer = window.setInterval(tick, 100);
   tick();
 }
-function effElapsed(): number { return (Date.now() - st.startTs) / 1000 + st.penalty; }
+function effElapsed(): number { return (Date.now() - st.startTs) / 1000; }
 function tick(): void {
   if (!st.running) return;
   st.elapsed = effElapsed();
@@ -402,7 +383,6 @@ function renderStrip(): void {
       const key = tripleKey([a, b, c]);
       if (!st.banked.has(key)) {
         st.banked.add(key);
-        st.myBanks++;
         st.score += 100;
         sres.textContent = String(val);
         sres.classList.add('ok');
@@ -431,14 +411,12 @@ function renderStrip(): void {
       sres.classList.add('bad');
       strip.classList.add('bad');
       st.misses++;
-      st.penalty += st.mode === 'duel' ? DUEL_PENALTY : 0;
       toast(i18nT('mg.ep_div_zero'));
     } else {
       sres.textContent = String(val);
       sres.classList.add('bad');
       strip.classList.add('bad');
       st.misses++;
-      st.penalty += st.mode === 'duel' ? DUEL_PENALTY : 0;
       toast(i18nT('mg.pyr_target_note', {
         eq: describeSolution([a, b, c], t),
         val,
@@ -498,7 +476,6 @@ function onCellClick(i: number): void {
     if (st.mode === 'timed') st.timedStartTs = Date.now();
     beginTimer();
   }
-  st.lastActTs = Date.now();
   // 同格重复点 → 取消该格（移除）
   const idx = st.picks.indexOf(i);
   if (idx >= 0) {
@@ -536,25 +513,16 @@ function updateHud(): void {
   $('hudLeft')!.textContent = String(Math.max(0, t.solutions.length - st.banked.size));
   $('hudMiss')!.textContent = String(st.misses);
   $('hintLeft')!.textContent = `×${st.hintsLeft}`;
-  if (st.mode === 'duel') {
-    $('youStatus')!.innerHTML = `<span class="d"></span>${escHtml(i18nT('mg.pyr_banks', { n: st.myBanks }))}`;
-    $('oppStatus')!.innerHTML = `<span class="d"></span>${escHtml(i18nT('mg.pyr_banks', { n: st.oppBanks }))}`;
-  } else {
-    $('youStatus')!.innerHTML = `<span class="d"></span>${escHtml(i18nT('mg.pyr_of_total', {
-      done: st.banked.size,
-      total: t.solutions.length,
-    }))}`;
-  }
+  $('youStatus')!.innerHTML = `<span class="d"></span>${escHtml(i18nT('mg.pyr_of_total', {
+    done: st.banked.size,
+    total: t.solutions.length,
+  }))}`;
 }
 
 /* ═══ 胜负 ═══ */
 function winBoard(): void {
   st.running = false;
   if (st.timer) window.clearInterval(st.timer);
-  if (st.mode === 'duel') {
-    endDuel();
-    return;
-  }
   if (st.mode === 'timed') {
     st.timedSolved++;
     st.timedStreak++;
@@ -641,71 +609,6 @@ function endTimed(): void {
   );
 }
 
-function scheduleOpp(): void {
-  // Bot：按难度档 pace 从剩余解中随机 bank 一个（#09 可胜区间 + 零操作保护）
-  const pace = BOT_PACE[st.tier] ?? 3400;
-  const step = (): void => {
-    if (!st.running || st.mode !== 'duel') return;
-    const t = st.board;
-    if (!t) return; // P1 guard
-    const remaining = t.solutions.filter((tri) => !st.banked.has(tripleKey(tri)));
-    if (!remaining.length) return;
-    // 零操作保护：玩家长时间无操作 → 提示一次，避免被误判“卡死/作弊”
-    if (Date.now() - st.lastActTs > DUEL_IDLE_MS && !st.idleWarned) {
-      st.idleWarned = true;
-      toast(i18nT('mg.ep_bot_banking'));
-    }
-    const triple = remaining[Math.floor(Math.random() * remaining.length)];
-    st.banked.add(tripleKey(triple));
-    st.oppBanks++;
-    st.score = Math.max(0, st.score - 50);
-    toast(i18nT('mg.ep_bot_banked', { solution: escHtml(describeSolution(triple, t)) }));
-    renderBoard();
-    renderTray();
-    updateHud();
-    if (st.banked.size >= t.solutions.length) {
-      // 池子被清空 → 按 banks 计数统一结算（#09）
-      endDuel();
-      return;
-    }
-    // 每解节奏：难度档 pace + ±30% 抖动
-    st.oppTimer = window.setTimeout(step, Math.round(pace * (0.7 + Math.random() * 0.6)));
-  };
-  st.oppTimer = window.setTimeout(step, Math.round(pace * 0.6));
-}
-
-/** 对局结算：统一以「bank 数」判定胜负与展示（#09） */
-function endDuel(): void {
-  stopAll();
-  const t = st.board;
-  if (!t) return; // P1 guard
-  const total = t.solutions.length;
-  const p = st.myBanks;
-  const b = st.oppBanks;
-  const playerWon = p > b;
-  const tie = p === b;
-  $('result')!.innerHTML = playerWon
-    ? i18nT('mg.pyr_duel_you_bank_html', { n: p, total })
-    : tie
-      ? i18nT('mg.pyr_draw_banks_html', { n: p })
-      : i18nT('mg.pyr_duel_bot_bank_html', { b, p });
-  showModal(
-    `<div class="ep-verdict">${escHtml(playerWon ? i18nT('mg.pyr_verdict_you_win') : tie ? i18nT('mg.pyr_verdict_draw') : i18nT('mg.pyr_verdict_bot_wins'))}</div>
-     <div class="ep-scores">
-       <div class="ep-me num">${p}<small>${escHtml(i18nT('mg.pyr_lbl_your_banks'))}</small></div>
-       <div class="ep-op num">${b}<small>${escHtml(i18nT('mg.pyr_lbl_bot_banks'))}</small></div>
-     </div>
-     <div class="ep-acts">
-       <button class="ep-prim" id="mAgain">${escHtml(i18nT('mg.sd_btn_rematch'))}</button>
-       <button id="mLobby">${escHtml(i18nT('mg.shared_lobby'))}</button>
-     </div>`,
-    () => {
-      ($('mAgain') as HTMLButtonElement).onclick = () => { hideModal(); startRound(); };
-      ($('mLobby') as HTMLButtonElement).onclick = () => { hideModal(); goLobby(); };
-    },
-  );
-}
-
 /* ═══ banner / modal / toast ═══ */
 function banner(html: string): void { $('modeBanner')!.innerHTML = html; }
 function showModal(html: string, bind: () => void): void {
@@ -725,7 +628,7 @@ document.querySelectorAll<HTMLButtonElement>('#diffPick button').forEach((b) =>
     st.tier = b.dataset.t as Tier;
     document.querySelectorAll<HTMLButtonElement>('#diffPick button').forEach((x) => x.classList.toggle('active', x === b));
     try { localStorage.setItem(LS_TIER, st.tier); } catch { /* ignore */ }
-    if (st.mode === 'solo' || st.mode === 'duel') startRound();
+    if (st.mode === 'solo') startRound();
   }),
 );
 
@@ -771,7 +674,7 @@ $('backLobby')!.addEventListener('click', () => exitMatchToLobby(MATCH_GUARD_OPT
 $('overlay')!.addEventListener('click', (e) => { if (e.target === $('overlay')!) hideModal(); });
 
 /* ═══ init ═══ */
-const isMode = (m: string): m is Mode => m === 'solo' || m === 'daily' || m === 'timed' || m === 'duel';
+const isMode = (m: string): m is Mode => m === 'solo' || m === 'daily' || m === 'timed';
 const isT = (x: string): x is Tier => x === 'warmup' || x === 'standard' || x === 'tricky';
 const qs = new URLSearchParams(location.search);
 const modeFromUrl = qs.get('mode') || '';

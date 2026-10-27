@@ -125,6 +125,13 @@ export const ADDITIONS = {
       room_ph: "K7Q2RM",
       g24_panel1_note: "Private room, 6-character code. Your code and QR appear once the room is open.",
       sg_hero_em: 'Fill the grid.',
+      // 🔴 2026-10-27 Duel Bot 删除后的文案修订（ml 段）
+      pyr_chips_1: 'Solo · Daily · Timed',
+      pyr_steps_4_title: 'Challenge friends',
+      pyr_steps_4_body: 'Friend Duel: share a room code and race to the target in real time.',
+      pyr_seo_desc: 'Pick three cells in click order — the click order is the formula. Daily hunt, friend duels, timed runs and solo practice.',
+      pyr_seo_og_desc: 'Pick three cells in click order — the click order is the formula. Daily hunt, friend duels, timed runs and solo practice.',
+      pyr_seo_tw_desc: 'Pick three cells in click order — the click order is the formula. Daily hunt, friend duels, timed runs and solo practice.',
     },
     mg: {
       g24_hint_try: "Try first:",
@@ -573,6 +580,13 @@ export const ADDITIONS = {
       room_ph: "K7Q2RM",
       g24_panel1_note: "私密房间，6 位房间码。打开房间后会出现你的码与二维码。",
       sg_hero_em: '填满盘面。',
+      // 🔴 2026-10-27 Duel Bot 删除后的文案修订（ml 段）
+      pyr_chips_1: '单人 · 每日 · 计时',
+      pyr_steps_4_title: '挑战好友',
+      pyr_steps_4_body: '好友对战：分享房间码，与好友实时竞速抢目标。',
+      pyr_seo_desc: '按点击顺序选三格——点击顺序就是公式。每日猎题、好友对战、计时挑战、单人练习。',
+      pyr_seo_og_desc: '按点击顺序选三格——点击顺序就是公式。每日猎题、好友对战、计时挑战、单人练习。',
+      pyr_seo_tw_desc: '按点击顺序选三格——点击顺序就是公式。每日猎题、好友对战、计时挑战、单人练习。',
     },
     mg: {
       g24_hint_try: "先试试：",
@@ -1029,6 +1043,13 @@ export const ADDITIONS = {
       room_ph: "K7Q2RM",
       g24_panel1_note: "プライベートルーム、6 桁コード。部屋を開くとコードと QR が表示されます。",
       sg_hero_em: '盤面を埋めよう。',
+      // 🔴 2026-10-27 Duel Bot 削除に伴う文言改訂（ml 段）
+      pyr_chips_1: 'ソロ · デイリー · タイム',
+      pyr_steps_4_title: '友達と対戦',
+      pyr_steps_4_body: 'フレンドデュエル：ルームコードを共有してリアルタイム対戦。',
+      pyr_seo_desc: 'クリック順で 3 マスを選ぶ—順序が式。デイリーハント、フレンド対戦、タイムラン、ソロ練習。',
+      pyr_seo_og_desc: 'クリック順で 3 マスを選ぶ—順序が式。デイリーハント、フレンド対戦、タイムラン、ソロ練習。',
+      pyr_seo_tw_desc: 'クリック順で 3 マスを選ぶ—順序が式。デイリーハント、フレンド対戦、タイムラン、ソロ練習。',
     },
     mg: {
       g24_hint_try: "まずは：",
@@ -1482,6 +1503,13 @@ export const ADDITIONS = {
       pyr_seo_title: 'Pirámide de ecuaciones — Elige tu modo · NumeriDuel',
       pyr_seo_og_alt: 'Pirámide de ecuaciones — alcanza el objetivo en NumeriDuel',
       sg_hero_em: 'Rellena la cuadrícula.',
+      // 🔴 2026-10-27 revisión tras eliminar Duel Bot (sección ml)
+      pyr_chips_1: 'Solo · Diario · Contrarreloj',
+      pyr_steps_4_title: 'Reta a tus amigos',
+      pyr_steps_4_body: 'Duelo de amigos: comparte el código de sala y compite en tiempo real.',
+      pyr_seo_desc: 'Elige tres celdas en orden de clic — el orden es la fórmula. Caza diaria, duelos con amigos, carreras cronometradas y práctica en solitario.',
+      pyr_seo_og_desc: 'Elige tres celdas en orden de clic — el orden es la fórmula. Caza diaria, duelos con amigos, carreras cronometradas y práctica en solitario.',
+      pyr_seo_tw_desc: 'Elige tres celdas en orden de clic — el orden es la fórmula. Caza diaria, duelos con amigos, carreras cronometradas y práctica en solitario.',
     },
     mg: {
       g24_hint_try: "Prueba primero:",
@@ -1934,6 +1962,13 @@ export const ADDITIONS = {
       pyr_seo_title: 'Pyramide d\'équations — Choisissez un mode · NumeriDuel',
       pyr_seo_og_alt: 'Pyramide d\'équations — atteins la cible sur NumeriDuel',
       sg_hero_em: 'Remplissez la grille.',
+      // 🔴 2026-10-27 révision après suppression du Duel Bot (section ml)
+      pyr_chips_1: 'Solo · Quotidien · Chrono',
+      pyr_steps_4_title: 'Défie tes amis',
+      pyr_steps_4_body: 'Duel entre amis : partage le code de la salle et cours vers la cible en temps réel.',
+      pyr_seo_desc: 'Choisis trois cases dans l’ordre — l’ordre est la formule. Chasse du jour, duels entre amis, courses chronométrées et entraînement solo.',
+      pyr_seo_og_desc: 'Choisis trois cases dans l’ordre — l’ordre est la formule. Chasse du jour, duels entre amis, courses chronométrées et entraînement solo.',
+      pyr_seo_tw_desc: 'Choisis trois cases dans l’ordre — l’ordre est la formule. Chasse du jour, duels entre amis, courses chronométrées et entraînement solo.',
     },
     mg: {
       g24_hint_try: "Essayez d'abord :",
@@ -2346,6 +2381,13 @@ export const ADDITIONS = {
       diff_standard_small_pyr: '4–7 Sätze',
       diff_tricky_small: 'genau 3 Sätze',
       sg_hero_em: 'Fülle das Raster.',
+      // 🔴 2026-10-27 Überarbeitung nach Entfernung des Duel-Bot (ml-Abschnitt)
+      pyr_chips_1: 'Solo · Täglich · Zeitlauf',
+      pyr_steps_4_title: 'Fordere Freunde heraus',
+      pyr_steps_4_body: 'Freundschaftsduell: Raumcode teilen und in Echtzeit um die Zielzahl wetteifern.',
+      pyr_seo_desc: 'Wähle drei Zellen in Klickreihenfolge – die Reihenfolge ist die Formel. Tagesjagd, Freundschaftsduelle, Zeitläufe und Solo-Übung.',
+      pyr_seo_og_desc: 'Wähle drei Zellen in Klickreihenfolge – die Reihenfolge ist die Formel. Tagesjagd, Freundschaftsduelle, Zeitläufe und Solo-Übung.',
+      pyr_seo_tw_desc: 'Wähle drei Zellen in Klickreihenfolge – die Reihenfolge ist die Formel. Tagesjagd, Freundschaftsduelle, Zeitläufe und Solo-Übung.',
     },
     mg: {
       g24_hint_try: "Versuch zuerst:",
