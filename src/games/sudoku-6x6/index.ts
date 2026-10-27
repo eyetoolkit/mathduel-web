@@ -1034,7 +1034,7 @@ if (modeFromUrl === "battle" || modeFromUrl === "random" || (new URLSearchParams
   mountCompetition({
     adapter: createSudokuAdapter({ gameType: 'sudoku-6x6', label: 'Sudoku 6x6', size: 6, difficulty: st.diff, rounds: 3, timeLimit: 240 }),
     tabsEl: document.querySelector("#tabs") as HTMLElement | null,
-    tabLabel: "Competition",
+    tabLabelKey: 'mg.shared_tab_competition',
     hideOnOpen: ['#playView'],
   });
 } else if (isMode(modeFromUrl)) {

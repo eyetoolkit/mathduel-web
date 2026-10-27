@@ -1241,7 +1241,15 @@
     "g24_board_failed": "全球排行榜加载失败",
     "g24_copy_code_title": "复制房间码",
     "g24_leave_comp_title": "退出竞赛",
-    "g24_room_chat_aria": "房间聊天"
+    "g24_room_chat_aria": "房间聊天",
+    "shared_clear": "清除",
+    "ep_daily_logged": "🌐 今日狩猎已记录 — 明天见！",
+    "ep_daily_already": "今天已记录过 — 重玩不会覆盖。",
+    "ep_mp_waiting": "等待题目…",
+    "ep_mp_sol_count": "· 解数：{n}",
+    "ep_mp_submit": "🚀 提交",
+    "ep_hint_title": "点亮一组剩余解中的一格",
+    "ep_pace_local": "— 本地"
   },
   "tn": {
     "title": "NumeriDuel · 教师端",

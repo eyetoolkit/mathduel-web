@@ -1241,7 +1241,15 @@
     "g24_board_failed": "グローバルランキングの読み込みに失敗しました",
     "g24_copy_code_title": "ルームコードをコピー",
     "g24_leave_comp_title": "競技を退出",
-    "g24_room_chat_aria": "ルームチャット"
+    "g24_room_chat_aria": "ルームチャット",
+    "shared_clear": "クリア",
+    "ep_daily_logged": "🌐 デイリー調査を記録しました — また明日！",
+    "ep_daily_already": "本日は記録済みです — 再プレイは上書きされません。",
+    "ep_mp_waiting": "問題を待っています…",
+    "ep_mp_sol_count": "· 解の数: {n}",
+    "ep_mp_submit": "🚀 送信",
+    "ep_hint_title": "残りの解の1マスを表示します",
+    "ep_pace_local": "— ローカル"
   },
   "tn": {
     "title": "NumeriDuel · 教師ダッシュボード",

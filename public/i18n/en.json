@@ -1048,7 +1048,7 @@
     "shared_lbl_difficulty": "Difficulty",
     "shared_daily_fixed": "Standard (fixed)",
     "brand_sub_24": "24 · Card Table",
-    "pyr_tier_target_sets": "🎯 {tier} · target {target} · {sets} sets in",
+    "pyr_tier_target_sets": "🎯 {tier} · target {target} · {sets} sets to find",
     "pyr_tier_bank_all": "Bank all {sets} sets to clear — the same 3 numbers in any order count once.",
     "pyr_tap_to_start": "Tap any cell to start the clock — pick 3 cells in order to build the equation.",
     "pyr_daily_hunt": "🌐 Daily Hunt #{date}",
@@ -1241,7 +1241,15 @@
     "g24_board_failed": "Global leaderboard failed to load",
     "g24_copy_code_title": "Copy room code",
     "g24_leave_comp_title": "Leave competition",
-    "g24_room_chat_aria": "Room chat"
+    "g24_room_chat_aria": "Room chat",
+    "shared_clear": "Clear",
+    "ep_daily_logged": "🌐 Daily hunt logged — see you tomorrow!",
+    "ep_daily_already": "Already logged today — replay doesn't overwrite.",
+    "ep_mp_waiting": "Waiting for puzzle…",
+    "ep_mp_sol_count": "· Solutions: {n}",
+    "ep_mp_submit": "🚀 Submit",
+    "ep_hint_title": "Reveal a cell of a remaining solution",
+    "ep_pace_local": "— local"
   },
   "tn": {
     "title": "NumeriDuel · Teacher dashboard",

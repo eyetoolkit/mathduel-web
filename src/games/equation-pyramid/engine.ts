@@ -91,11 +91,15 @@ export function evalTriple(a: number, op1: Op, b: number, op2: Op, c: number): n
   return Number.isInteger(acc) ? acc : null;
 }
 
-/** 解去重：把 (a, b, c) 视为 unordered set 与 sorted [a,b,c] + 排序后的运算序列一起唯一。 */
-function solutionKey(triple: number[], board: Board): string {
-  const sorted = [...triple].sort((a, b) => a - b);
-  const opsSeq = [board.cells[triple[1]].op, board.cells[triple[2]].op].sort();
-  return sorted.join(',') + '|' + opsSeq.join(',');
+/** 解去重：同 3 格（任意点击顺序）视为同一解。
+ *  🔴 P0 修复（2026-10-27 审计）：原键含「排序算子序列」→ 同一格集以不同算子组合
+ *  命中 target 时被记成多个解，而 UI 的 tripleKey 只按下标、只能 bank 一次
+ *  → banked.size 永远追不上 solutions.length（实测 400 板 8% 中招），
+ *  winBoard 永不触发：solo/daily 卡死在「还剩 1 个」、duel bot 无限出手。
+ *  现与 UI tripleKey、banner 文案 "the same 3 numbers in any order count once"
+ *  三方口径统一：只按排序下标。 */
+function solutionKey(triple: number[]): string {
+  return [...triple].sort((a, b) => a - b).join(',');
 }
 
 /** 列举 board 的全部解（unordered set 去重）。 */
@@ -115,7 +119,7 @@ export function findAllSolutions(board: Board): number[][] {
         const op2 = board.cells[k].op; // k 的 op 连接 j 与 k
         const val = evalTriple(a, op1, b, op2, c);
         if (val === board.target) {
-          const k2 = solutionKey([i, j, k], board);
+          const k2 = solutionKey([i, j, k]);
           if (!seen.has(k2)) {
             seen.add(k2);
             out.push([i, j, k]);
@@ -194,12 +198,14 @@ export function generateBoard(tier: Tier, rng: () => number): Board {
   };
 }
 
-/** 把解数组变成可读的「9 - 4 × 4」字符串（用于 tray chip） */
+/** 把解数组变成可读的完整方程「9 - 4 × 4」（三个数，用于 tray chip / toast）。
+ *  🔴 P1 修复（2026-10-27 审计）：原实现漏掉中间操作数 num_j，显示成 "5 ÷ 3"
+ *  （真实方程 5 ÷ 5 − 3）→ chip/bank toast/miss toast 三处等式全错。
+ *  注意：board.cells 上的 op 是引擎用 String.fromCharCode 构造的，已是正确 × ÷；
+ *  不要在这里写 '×'/'÷' 字面量（会被 esbuild minify 替换为 '?'）。 */
 export function describeSolution(triple: number[], board: Board): string {
   const [i, j, k] = triple;
-  // 注意：board.cells 上的 op 是引擎用 String.fromCharCode 构造的，已是正确 × ÷；
-  // 不要在这里写 '×'/'÷' 字面量（会被 esbuild minify 替换为 '?'）
-  return `${board.cells[i].num} ${board.cells[j].op} ${board.cells[k].num}`;
+  return `${board.cells[i].num} ${board.cells[j].op} ${board.cells[j].num} ${board.cells[k].op} ${board.cells[k].num}`;
 }
 
 /** 每日题（确定性种子；固定 Standard） */

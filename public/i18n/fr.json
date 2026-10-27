@@ -1241,7 +1241,15 @@
     "g24_board_failed": "Échec du chargement du classement mondial",
     "g24_copy_code_title": "Copier le code de salle",
     "g24_leave_comp_title": "Quitter la compétition",
-    "g24_room_chat_aria": "Chat de salle"
+    "g24_room_chat_aria": "Chat de salle",
+    "shared_clear": "Effacer",
+    "ep_daily_logged": "🌐 Chasse quotidienne enregistrée — à demain !",
+    "ep_daily_already": "Déjà enregistré aujourd'hui — rejouer n'écrase pas.",
+    "ep_mp_waiting": "En attente du puzzle…",
+    "ep_mp_sol_count": "· Solutions : {n}",
+    "ep_mp_submit": "🚀 Valider",
+    "ep_hint_title": "Révèle une case d'une solution restante",
+    "ep_pace_local": "— local"
   },
   "tn": {
     "title": "NumeriDuel · Tableau de bord enseignant",

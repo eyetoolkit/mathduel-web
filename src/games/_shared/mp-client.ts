@@ -1360,6 +1360,10 @@ export interface MountConfig {
   adapter: MpAdapter;
   tabsEl?: HTMLElement | null;
   tabLabel?: string;
+  /** 🔴 i18n（2026-10-27）：tab 文案的 i18n 键。优先于 tabLabel；
+   *  字典就绪/切语言时自动重设（tab.textContent 是一次写入，
+   *  顶层传 i18nT(tabLabel) 会在字典未就绪时固化裸 key，永不修复）。 */
+  tabLabelKey?: string;
   mountPoint?: HTMLElement;
   callbacks?: MpCallbacks;
   /** 进入竞赛视图时要隐藏的页面元素（如游戏自带 playView），传选择器数组 */
@@ -1393,7 +1397,9 @@ export function mountCompetition(cfg: MountConfig): MpShell {
     const tab = document.createElement('button');
     tab.className = 'tab';
     tab.dataset.mode = tabMode;
-    tab.textContent = tabLabel;
+    const applyTabLabel = (): void => { tab.textContent = cfg.tabLabelKey ? i18nT(cfg.tabLabelKey) : tabLabel; };
+    applyTabLabel();
+    if (cfg.tabLabelKey) onI18nChange(applyTabLabel);
     tab.addEventListener('click', () => {
       hidePage();
       shell.open();

@@ -15,7 +15,7 @@
  */
 import { i18nT } from '../i18n-t';
 import type { MpAdapter, RoundCtx, MpShell } from '../mp-client';
-import { generateBoard } from '../../equation-pyramid/engine';
+import { generateBoard, evalTriple, type Op } from '../../equation-pyramid/engine';
 
 export interface EqpyrAdapterOpts {
   label: string;
@@ -41,7 +41,14 @@ export function createEqpyrAdapter(opts: EqpyrAdapterOpts): MpAdapter {
   };
 
   const render = (boardEl: HTMLElement, shell: MpShell) => {
-    if (!last) { boardEl.innerHTML = '<p style="color:#6B7280">Waiting for puzzle…</p>'; return; }
+    if (!last) {
+      boardEl.innerHTML = '';
+      const p = document.createElement('p');
+      p.style.cssText = 'color:#6B7280';
+      p.textContent = i18nT('mg.ep_mp_waiting');
+      boardEl.appendChild(p);
+      return;
+    }
     const { target, cells, solutionsCount } = last;
     picks = [];
     boardEl.innerHTML = '';
@@ -55,7 +62,7 @@ export function createEqpyrAdapter(opts: EqpyrAdapterOpts): MpAdapter {
        页面执行任意脚本（存储型 XSS）。改为用 DOM 节点 + textContent 写值。 */
     const topLabel = document.createElement('span');
     topLabel.style.cssText = 'font-size:12px;letter-spacing:.5px;text-transform:uppercase';
-    topLabel.textContent = 'Target';
+    topLabel.textContent = i18nT('mg.shared_lbl_target');
     const topVal = document.createElement('b');
     topVal.style.cssText = 'font-size:30px;color:#B45309;letter-spacing:1px';
     topVal.textContent = String(target);
@@ -64,7 +71,7 @@ export function createEqpyrAdapter(opts: EqpyrAdapterOpts): MpAdapter {
     if (solutionsCount != null) {
       const sol = document.createElement('span');
       sol.style.cssText = 'margin-left:8px;font-size:12px;color:#9CA3AF';
-      sol.textContent = `· ${solutionsCount} solution${solutionsCount === 1 ? '' : 's'}`;
+      sol.textContent = i18nT('mg.ep_mp_sol_count', { n: solutionsCount });
       top.appendChild(sol);
     }
     wrap.appendChild(top);
@@ -103,7 +110,7 @@ export function createEqpyrAdapter(opts: EqpyrAdapterOpts): MpAdapter {
     actions.style.cssText = 'display:flex;gap:8px';
     const submitBtn = document.createElement('button');
     submitBtn.type = 'button';
-    submitBtn.textContent = '🚀 Submit';
+    submitBtn.textContent = i18nT('mg.ep_mp_submit');
     submitBtn.style.cssText = 'background:#F59E0B;color:#1a1305;border:none;border-radius:9px;padding:9px 18px;font-weight:700;cursor:pointer;font-size:14px;opacity:.5;pointer-events:none';
     submitBtn.disabled = true;
     submitBtn.addEventListener('click', () => {
@@ -116,23 +123,16 @@ export function createEqpyrAdapter(opts: EqpyrAdapterOpts): MpAdapter {
       });
       const ok = (() => {
         if (!shell.relay) return null;          // DO 路径不本地判
-        /* 安全（2026-10-06）：符号映射此前只认 ×/÷，其余字符原样拼进 eval()。
-         而 op 来自**房主**广播的 relay payload —— 房主发 op:"+alert(document.cookie)+"
-         就会在每个参与者页面执行任意脚本。改为：op 白名单化 + 纯算术求值，彻底不用 eval。 */
+        /* 🔴 P1 修复（2026-10-27 审计）：本地判题原先自拼 apply(apply(a,b,o1),c,o2)
+           —— 用 picks[0].op 当第一个运算符（单人规则里第 1 格 op 是锚点不参与）、
+           丢 picks[2].op、且从左到右无 ×÷ 优先级，与单人/教学规则错位一格。
+           现直接调引擎 evalTriple（同一权威实现）：op₁=picks[1].op、op₂=picks[2].op、
+           ×÷ 优先、除零/非整数返回 null。安全：op 已白名单化，evalTriple 纯算术。 */
         const a = Number(triple[0].num), b = Number(triple[1].num), c = Number(triple[2].num);
-        const o1 = sanitizeOp(triple[0].op), o2 = sanitizeOp(triple[1].op);
+        const o1 = sanitizeOp(triple[1].op), o2 = sanitizeOp(triple[2].op);
         if (!Number.isFinite(a) || !Number.isFinite(b) || !Number.isFinite(c) || !o1 || !o2) return false;
-        const apply = (x: number, y: number, op: string): number => {
-          switch (op) {
-            case '+': return x + y;
-            case '-': return x - y;
-            case '×': return x * y;
-            case '÷': return y === 0 ? NaN : x / y;
-            default: return NaN;
-          }
-        };
-        const r = Math.round(apply(apply(a, b, o1), c, o2));
-        return Number.isFinite(r) && r === Number(target);
+        const val = evalTriple(a, o1 as Op, b, o2 as Op, c);
+        return val !== null && val === Number(target);
       })();
       if (ok === true) {
         shell.relaySubmit();
@@ -144,7 +144,7 @@ export function createEqpyrAdapter(opts: EqpyrAdapterOpts): MpAdapter {
     });
     const clearBtn = document.createElement('button');
     clearBtn.type = 'button';
-    clearBtn.textContent = 'Clear';
+    clearBtn.textContent = i18nT('mg.shared_clear');
     clearBtn.style.cssText = 'background:#F3F4F6;color:#1A1B2E;border:1px solid #E5E7EB;border-radius:9px;padding:9px 14px;font-weight:600;cursor:pointer;font-size:13px';
     clearBtn.addEventListener('click', () => { picks = []; refresh(); });
     actions.appendChild(submitBtn);

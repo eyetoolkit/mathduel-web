@@ -1241,7 +1241,15 @@
     "g24_board_failed": "No se pudo cargar la clasificación global",
     "g24_copy_code_title": "Copiar código de sala",
     "g24_leave_comp_title": "Salir de la competición",
-    "g24_room_chat_aria": "Chat de sala"
+    "g24_room_chat_aria": "Chat de sala",
+    "shared_clear": "Limpiar",
+    "ep_daily_logged": "🌐 Caza diaria registrada — ¡hasta mañana!",
+    "ep_daily_already": "Ya registrado hoy — repetir no sobrescribe.",
+    "ep_mp_waiting": "Esperando el puzzle…",
+    "ep_mp_sol_count": "· Soluciones: {n}",
+    "ep_mp_submit": "🚀 Enviar",
+    "ep_hint_title": "Revela una celda de una solución restante",
+    "ep_pace_local": "— local"
   },
   "tn": {
     "title": "NumeriDuel · Panel del docente",

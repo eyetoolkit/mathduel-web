@@ -1196,7 +1196,15 @@
     "g24_board_failed": "Globales Leaderboard konnte nicht geladen werden",
     "g24_copy_code_title": "Raumcode kopieren",
     "g24_leave_comp_title": "Wettbewerb verlassen",
-    "g24_room_chat_aria": "Raum-Chat"
+    "g24_room_chat_aria": "Raum-Chat",
+    "shared_clear": "Löschen",
+    "ep_daily_logged": "🌐 Daily-Jagd erfasst — bis morgen!",
+    "ep_daily_already": "Heute bereits erfasst — erneutes Spielen überschreibt nicht.",
+    "ep_mp_waiting": "Warte auf Rätsel…",
+    "ep_mp_sol_count": "· Lösungen: {n}",
+    "ep_mp_submit": "🚀 Absenden",
+    "ep_hint_title": "Zeigt eine Zelle einer verbleibenden Lösung",
+    "ep_pace_local": "— lokal"
   },
   "tn": {
     "title": "NumeriDuel · Lehrer-Dashboard",

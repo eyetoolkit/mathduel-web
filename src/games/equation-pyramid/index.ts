@@ -583,9 +583,9 @@ function winBoard(): void {
       d[dk] = Math.round(t * 10) / 10;
       writeJSON(LS_DAILY, d);
       recordDaily('equation-pyramid', { durationSec: t });
-      extra = '<div class="ep-extra">🌐 Daily hunt logged — see you tomorrow!</div>';
+      extra = `<div class="ep-extra">${escHtml(i18nT('mg.ep_daily_logged'))}</div>`;
     } else {
-      extra = '<div class="ep-extra">Already logged today — replay doesn’t overwrite.</div>';
+      extra = `<div class="ep-extra">${escHtml(i18nT('mg.ep_daily_already'))}</div>`;
     }
   } else {
     const b = readJSON<Record<string, number>>(LS_BEST, {});
@@ -781,7 +781,7 @@ if (modeFromUrl === "battle" || modeFromUrl === "random" || (new URLSearchParams
   mountCompetition({
     adapter: createEqpyrAdapter({ label: 'Equation Pyramid', tier: st.tier, rounds: 3, timeLimit: 60 }),
     tabsEl: document.querySelector("#tabs") as HTMLElement | null,
-    tabLabel: "Competition",
+    tabLabelKey: 'mg.shared_tab_competition',
     hideOnOpen: [],
   });
 } else if (isMode(modeFromUrl)) {
