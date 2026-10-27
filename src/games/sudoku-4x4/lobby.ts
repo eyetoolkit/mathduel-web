@@ -16,10 +16,12 @@ import '../sudoku/lobby.css';             // 数独专属组件：hero 迷你网
 import './lobby.css';                     // 4×4 专属：hero 2×2 大格
 import { wireLobbyChrome } from '../../pages/lobby-chrome';
 import { i18nT, onI18nReady } from '../_shared/i18n-t';
+import { shanghaiDateKey } from '../sudoku/engine';
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T | null;
 
 const LS_BEST = 's4_best_v1';
+const LS_DAILY = 's4_daily_v1';
 
 const readJSON = <T>(k: string, fb: T): T => {
   try {
@@ -69,16 +71,22 @@ function renderBoard(): void {
   if (!host) return;
 
   const best = readJSON<Record<string, number>>(LS_BEST, {});
+  const done = readJSON<Record<string, number>>(LS_DAILY, {});
+  const dk = shanghaiDateKey();
   const rows = BEST_MODES.filter((m) => best[m.key] != null);
 
-  if (!rows.length) {
+  if (!rows.length && done[dk] == null) {
     host.innerHTML = `<div class="arb-empty">${esc(i18nT('ml.s4_panel1_empty'))}</div>`;
     return;
   }
 
   let html = '';
+  // 今日 daily 已完成 → 置顶打勾行（与 6×6/9×9 lobby 同款）
+  if (done[dk] != null) {
+    html += rowHtml('✓', i18nT('mg.lb_row_today_you'), fmt(done[dk] as number), 'me');
+  }
   rows.forEach((m, i) => {
-    html += rowHtml(String(i + 1), i18nT(m.label), fmt(best[m.key] as number), i === 0 ? 'me' : '');
+    html += rowHtml(String(i + 1), i18nT(m.label), fmt(best[m.key] as number), done[dk] == null && i === 0 ? 'me' : '');
   });
   html += `<div class="arb-note board-note">${esc(i18nT('mg.lb_local_device'))}</div>`;
 

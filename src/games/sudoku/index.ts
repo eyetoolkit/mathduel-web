@@ -84,6 +84,8 @@ const st = {
 };
 
 let conflictCache: Set<number> = new Set();
+/** 「选格」初始文案跟踪（P2-5）：resetBoard 写入，renderMatchChrome 判定是否重写 */
+let pickFirstText = '';
 
 const LS_BEST = 's9_best_v1';
 const LS_DAILY = 's9_daily_v1';
@@ -221,13 +223,19 @@ function resetBoard(keepClock = false): void {
   }
   st.running = true;
   conflictCache = findConflicts(st.grid);
-  $('result')!.textContent = i18nT('mg.sg_pick_first');
+  pickFirstText = i18nT('mg.sg_pick_first');
+  $('result')!.textContent = pickFirstText;
 }
 
 /* 对局 chrome 的字典文案集中在此：字典就绪前 startRound() 会写入裸 key，
-   由 onI18nChange 整块重画（RULES-FE-E.md #136/#137 同族：接了 key ≠ 画对了）。 */
+   由 onI18nChange 整块重画（RULES-FE-E.md #136/#137 同族：接了 key ≠ 画对了）。
+   🔴 P2-5（2026-10-27 审计）：仅在 result 还空、还是裸 key、或仍显示「选格」初始文案时才重写 ——
+   字典就绪晚于玩家操作 / 切语言时，不得把 hint 输出、落子提示冲回初始文案。 */
 function renderMatchChrome(): void {
-  $('result')!.textContent = i18nT('mg.sg_pick_first');
+  const cur = $('result')!.textContent ?? '';
+  if (cur && !/^(mg|ml)\./.test(cur) && cur !== pickFirstText) return;
+  pickFirstText = i18nT('mg.sg_pick_first');
+  $('result')!.textContent = pickFirstText;
 }
 
 /* ═══ 计时 ═══ */
@@ -353,6 +361,9 @@ function renderBoard(): void {
       html = `<div class="n9">${cells}</div>`;
     } else html = '';
     if (c.innerHTML !== html) c.innerHTML = html;
+    // P2-6：读屏可用 —— 数值/空态同步到 aria-label（纯格式，不新增词典键）
+    const aria = v ? `R${rowOf(i) + 1}C${colOf(i) + 1}=${v}` : `R${rowOf(i) + 1}C${colOf(i) + 1}`;
+    if (c.getAttribute('aria-label') !== aria) c.setAttribute('aria-label', aria);
   });
   updateSideStats();
 }

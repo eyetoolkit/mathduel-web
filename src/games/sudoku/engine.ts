@@ -18,8 +18,6 @@ export const HOLES_BY_DIFF: Record<Difficulty, number> = {
   standard: 81 - CLUES_BY_DIFF.standard,
   hard: 81 - CLUES_BY_DIFF.hard,
 };
-/** Duel bot 每格平均耗时（秒） */
-export const BOT_PACE: Record<Difficulty, number> = { easy: 7, standard: 5, hard: 3.8 };
 
 export const idx = (r: number, c: number): number => r * N + c;
 export const rowOf = (i: number): number => Math.floor(i / N);

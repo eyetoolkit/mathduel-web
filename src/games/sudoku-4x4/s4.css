@@ -168,3 +168,8 @@ body.arena:not(.skin-paper) .s4-board {
   cursor: not-allowed;
   pointer-events: none;
 }
+
+/* 通用 lives 心形点：侧栏 Grid status 共用（与 9×9 sudoku.css 同款） */
+.lives { display: inline-flex; gap: 5px; }
+.lives i { width: 9px; height: 9px; border-radius: 50%; background: var(--teal, #2fc4c9); }
+.lives i.off { background: var(--border); }

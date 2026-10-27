@@ -202,7 +202,7 @@ export function createSudokuAdapter(opts: SudokuAdapterOpts): MpAdapter {
     renderRound(payload: any, _ctx: RoundCtx, boardEl: HTMLElement, shell: MpShell) {
       practiceMode = !!(payload && payload.practice);
       if (payload && payload.waiting) {
-        boardEl.innerHTML = '<p style="color:#6B7280;text-align:center;padding:40px 0">Host is generating puzzle…</p>';
+        boardEl.innerHTML = `<p style="color:#6B7280;text-align:center;padding:40px 0">${i18nT('mg.mp_sudoku_waiting_host')}</p>`;
         return;
       }
       puzzle = (payload.puzzle && payload.puzzle.flat) ? payload.puzzle.flat() : (Array.isArray(payload.puzzle) ? payload.puzzle : new Array(opts.size * opts.size).fill(0));
@@ -219,14 +219,10 @@ export function createSudokuAdapter(opts: SudokuAdapterOpts): MpAdapter {
       render(boardEl, shell, opts.size, cages);
     },
     onMessage(msg: any, _shell: MpShell): boolean {
-      if (msg.type === 'sudoku_new_game') {
-        // 由外壳 handleRoundMsg 兜底渲染；这里返回 false 让外壳处理
-        return false;
-      }
       if (msg.type === 'sudoku_new_game' || msg.type === 'sudoku_new_round') {
-        // 新一盘：重置本盘统计
+        // 新一盘：重置本盘统计；返回 false 让外壳 handleRoundMsg 兜底渲染
         clsRight = 0; clsWrong = 0; clsStart = Date.now();
-        return false;   // 交给外壳兜底渲染
+        return false;
       }
       if (msg.type === 'sudoku_placed') {
         const i = msg.index ?? (msg.row != null && msg.col != null ? msg.row * opts.size + msg.col : -1);
@@ -254,12 +250,16 @@ export function createSudokuAdapter(opts: SudokuAdapterOpts): MpAdapter {
         const wrong = Number(msg.wrong || 0);
         notifyPractice(_shell,
           solved
-            ? '\u2705 Board ' + Number(msg.round || 1) + '/' + Number(msg.maxRounds || 0)
-              + ' solved in ' + fmtMs(msg.timeMs)
-              + (wrong ? ' \u00b7 ' + wrong + ' wrong' : '')
-              + ' \u2014 loading your next board\u2026'
-            : '\u23f1 Board ' + Number(msg.round || 1) + '/' + Number(msg.maxRounds || 0)
-              + ' time up \u2014 loading your next board\u2026',
+            ? i18nT('mg.mp_sudoku_board_done', {
+              round: Number(msg.round || 1),
+              max: Number(msg.maxRounds || 0),
+              time: fmtMs(msg.timeMs),
+              wrong: wrong ? i18nT('mg.mp_sudoku_board_wrong', { n: wrong }) : '',
+            })
+            : i18nT('mg.mp_sudoku_board_timeout', {
+              round: Number(msg.round || 1),
+              max: Number(msg.maxRounds || 0),
+            }),
           solved ? 'ok' : 'warn');
         if (isClassroom() && (_shell as any).room) {
           reportRound(String((_shell as any).room), {
@@ -276,8 +276,7 @@ export function createSudokuAdapter(opts: SudokuAdapterOpts): MpAdapter {
 
       /* 本人已做完全部盘 —— 房间还没结束（同学在继续），提示等待即可 */
       if (msg.type === 'sudoku_all_done') {
-        notifyPractice(_shell,
-          '\ud83c\udf89 All boards finished \u2014 waiting for the rest of the class\u2026', 'ok');
+        notifyPractice(_shell, i18nT('mg.mp_sudoku_all_done'), 'ok');
         return true;
       }
 

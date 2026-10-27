@@ -10,8 +10,6 @@ export type Difficulty = 'easy' | 'standard' | 'hard';
 
 export const N = 6;
 export const HOLES_BY_DIFF: Record<Difficulty, number> = { easy: 6, standard: 10, hard: 14 };
-/** Duel bot 每格平均耗时（秒） */
-export const BOT_PACE: Record<Difficulty, number> = { easy: 4.6, standard: 3.4, hard: 2.5 };
 
 export const idx = (r: number, c: number): number => r * N + c;
 export const rowOf = (i: number): number => Math.floor(i / N);

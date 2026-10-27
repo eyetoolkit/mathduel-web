@@ -86,7 +86,6 @@ body.arena:not(.skin-paper) .s6-board {
 /* cell 状态（hero element） */
 .s6-board .c6cell.given { background: var(--sd-given-bg); color: var(--sd-given-text); font-weight: 700; cursor: default; }
 .s6-board .c6cell.entry { color: var(--sd-entry-text); }
-.s6-board .c6cell.bot { color: var(--teal, #2fc4c9); }
 .s6-board .c6cell.sel {
   background: var(--sd-selected-bg); color: var(--sd-entry-text);
 }
@@ -95,16 +94,6 @@ body.arena:not(.skin-paper) .s6-board {
 .s6-board .c6cell.conflict {
   background: var(--sd-conflict-bg); color: var(--sd-conflict-text);
 }
-.s6-board .c6cell.lock { cursor: pointer; }
-/* 「ember corner」：duel 中我方可填格右上角的 ember 三角（banner 承诺的视觉标记） */
-.s6-board .c6cell:not(.given):not(.bot) { position: relative; }
-.s6-board .c6cell.lock::after {
-  content: ''; position: absolute; top: 0; right: 0; width: 0; height: 0;
-  border-top: 10px solid var(--brand);
-  border-left: 10px solid transparent;
-}
-/* duel 自由格（解锁后才能填）整格置灰，与自己的格子一眼区分 */
-.s6-board .c6cell.free { opacity: 0.45; cursor: not-allowed; }
 
 /* 落子 pop / 冲突 shake（对照 24 点 cardFlash 的一次性动效） */
 .s6-board .c6cell.pop span { animation: s6pop 0.28s var(--ease-spring, cubic-bezier(0.34, 1.56, 0.64, 1)); }
@@ -176,48 +165,6 @@ body.arena:not(.skin-paper) .s6-board {
 .s6-board .c6cell .n6 i.on { color: var(--a-ember-dim, #ff8b66); opacity: 0.7; }
 
 .s6-padtools { display: flex; justify-content: center; gap: 10px; margin-top: 10px; }
-
-/* ─── Duel 上下条（teal 对手 / ember 自己）─── */
-.s6-opp-head {
-  display: flex; align-items: center; justify-content: space-between; gap: 12px;
-  padding-bottom: 14px; border-bottom: 1px solid var(--border); margin-bottom: 16px;
-}
-.s6-you-head {
-  display: flex; align-items: center; justify-content: space-between; gap: 12px;
-  margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border);
-}
-.s6-opp-head .player, .s6-you-head .player { display: flex; align-items: center; gap: 11px; }
-.s6-opp-head .pn, .s6-you-head .pn { font-weight: 600; font-size: 0.92rem; display: flex; align-items: center; gap: 8px; }
-.s6-opp-head .ps, .s6-you-head .ps { font-size: 0.74rem; color: var(--text-muted); }
-
-.side-tag {
-  display: inline-flex; align-items: center; gap: 6px; font-size: 0.72rem; font-weight: 600;
-  border-radius: 999px; padding: 3px 9px;
-}
-.side-tag .d { width: 7px; height: 7px; border-radius: 50%; }
-.side-tag.you { background: var(--brand-subtle); color: var(--brand-text); }
-.side-tag.you .d { background: var(--brand); }
-.side-tag.opp { background: rgba(47, 196, 201, 0.14); color: var(--teal, #2fc4c9); }
-.side-tag.opp .d { background: var(--teal, #2fc4c9); }
-
-.status { font-size: 0.8rem; display: inline-flex; align-items: center; gap: 7px; color: var(--text-muted); }
-.status .d { width: 8px; height: 8px; border-radius: 50%; background: var(--teal, #2fc4c9); }
-.status.thinking .d { animation: s6pulse 1s infinite; }
-.status.done .d { background: var(--teal, #2fc4c9); }
-@keyframes s6pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
-
-/* 速度环（复用 24 点 .speed-ring 布局，环色 ember / 低时告警） */
-.s6-you-head .speed-ring { margin-left: auto; }
-.speed-ring .sr-fill { stroke: var(--brand); transition: stroke-dashoffset 0.15s linear; }
-.speed-ring .sr-fill.low { stroke: var(--teal, #2fc4c9); }
-
-/* ─── Duel 聊天（bot）─── */
-.s6-chatlog { display: flex; flex-direction: column; gap: 8px; max-height: 150px; overflow-y: auto; }
-.chat-dock .bub { max-width: 80%; padding: 7px 12px; border-radius: 14px; font-size: 0.85rem; }
-.chat-dock .bub.opp {
-  align-self: flex-start; background: var(--surface-raised);
-  border: 1px solid var(--border); border-bottom-left-radius: 4px;
-}
 
 /* ─── 结算 ─── */
 .s6-verdict { font-family: var(--font-display); font-weight: 800; font-size: 1.7rem; color: var(--brand-text); }

@@ -76,8 +76,11 @@ const st = {
 };
 
 let conflictCache: Set<number> = new Set();
+/** 「选格」初始文案跟踪：resetBoard 写入，renderMatchChrome 判定是否重写（P2-5，9×9/6×6 同款） */
+let pickFirstText = '';
 
 const LS_BEST = 's4_best_v1';
+const LS_DAILY = 's4_daily_v1';
 const readJSON = <T>(k: string, fb: T): T => {
   try {
     const v = localStorage.getItem(k);
@@ -172,6 +175,7 @@ function startRound(): void {
 onI18nChange(() => {
   renderModeBanner();
   renderSide();
+  renderMatchChrome();
 });
 
 let roundNonce = 0;
@@ -196,7 +200,17 @@ function resetBoard(keepClock = false): void {
   }
   st.running = true;
   conflictCache = findConflicts(st.grid);
-  $('result')!.textContent = i18nT('mg.sg_pick_first');
+  pickFirstText = i18nT('mg.sg_pick_first');
+  $('result')!.textContent = pickFirstText;
+}
+
+/** P2-5：仅在 result 还空、还是裸 key、或仍显示「选格」初始文案时才重写 ——
+ *  字典就绪晚于玩家操作 / 切语言时，不得把 hint 输出、落子提示冲回初始文案。 */
+function renderMatchChrome(): void {
+  const cur = $('result')!.textContent ?? '';
+  if (cur && !/^(mg|ml)\./.test(cur) && cur !== pickFirstText) return;
+  pickFirstText = i18nT('mg.sg_pick_first');
+  $('result')!.textContent = pickFirstText;
 }
 
 /* ═══ 计时 ═══ */
@@ -265,6 +279,9 @@ function renderBoard(): void {
       html = `<div class="n4">${cells}</div>`;
     } else html = '';
     if (c.innerHTML !== html) c.innerHTML = html;
+    // P2-6：读屏可用 —— 数值/空态同步到 aria-label（纯格式，不新增词典键）
+    const aria = v ? `R${rowOf(i) + 1}C${colOf(i) + 1}=${v}` : `R${rowOf(i) + 1}C${colOf(i) + 1}`;
+    if (c.getAttribute('aria-label') !== aria) c.setAttribute('aria-label', aria);
   });
   updateSideStats();
 }
@@ -492,7 +509,19 @@ function winSolo(): void {
     writeJSON(LS_BEST, b);
     extra = `<div class="s4-newbest">${escHtml(i18nT('mg.sd_newbest'))}</div>`;
   }
-  if (st.mode === 'daily') recordDaily('sudoku-4x4', { durationSec: t });
+  if (st.mode === 'daily') {
+    // 每日一次口径（对齐 6×6/9×9）：同日重复通关不重复上报 recordDaily，防跨游戏统计污染
+    const dk = shanghaiDateKey();
+    const d = readJSON<Record<string, number>>(LS_DAILY, {});
+    if (!d[dk]) {
+      d[dk] = Math.round(t * 10) / 10;
+      writeJSON(LS_DAILY, d);
+      recordDaily('sudoku-4x4', { durationSec: t });
+      extra = `<div class="s4-newbest">${escHtml(i18nT('mg.sd_daily_logged'))}</div>`;
+    } else {
+      extra = `<div class="s4-newbest">${escHtml(i18nT('mg.sd_daily_already'))}</div>`;
+    }
+  }
   $('result')!.innerHTML = `${i18nT('mg.sd_solved_in_html', { time: escHtml(fmt(t)) })}${extra}`;
   showModal(
     `<div class="s4-verdict">${escHtml(i18nT('mg.sd_verdict_complete'))}</div>` +
@@ -741,11 +770,22 @@ function giveHint(): void {
   st.sel = best;
   renderBoard();
   flashCell(best, 'pulse', 900);
+  // 提示文案走字典 toast（与 6×6 / 9×9 同款键），不得裸英文 innerHTML
   const n = cands[0];
-  $('result')!.innerHTML =
-    cands.length === 1
-      ? `💡 Row ${rowOf(best) + 1}, Col ${colOf(best) + 1} must be <b>${n}</b> — ${nakedReason(best, n)}`
-      : `💡 Row ${rowOf(best) + 1}, Col ${colOf(best) + 1}: only ${cands.join(' or ')} fit there`;
+  if (cands.length === 1) {
+    toast(i18nT('mg.sd_hint_must_be', {
+      row: rowOf(best) + 1,
+      col: colOf(best) + 1,
+      value: n,
+      reason: nakedReason(best, n),
+    }));
+  } else {
+    toast(i18nT('mg.sd_hint_only_fit', {
+      row: rowOf(best) + 1,
+      col: colOf(best) + 1,
+      cands: cands.join(' / '),
+    }));
+  }
 }
 
 /* ═══ boot：深链 ?mode= ═══ */
