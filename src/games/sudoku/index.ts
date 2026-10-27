@@ -829,7 +829,21 @@ function giveHint(): void {
       }
     }
   }
-  // 3) 兜底：玩家错格污染候选（极少见）→ 直接给解
+  // 诚实护栏（2026-10-28 审计 P2）：候选首值不等于唯一解（玩家错格污染候选，
+  // 极少见）时，优先改找一个「单候选且等于解」的真格；找不到则交给下方兜底
+  // 直接给解（解恒正确，绝不指向错误数字）。9×9 此前缺此护栏，可能在污染
+  // 局面下 hint 出错误数字。4×4 已于 10-27 先行补齐，此处对齐三款。
+  if (best >= 0 && cands.length && cands[0] !== st.puzzle.solution[best]) {
+    const honest = empties.find((i) => {
+      const c = candidatesOf(i);
+      return c.length === 1 && c[0] === st.puzzle!.solution[i];
+    });
+    if (honest !== undefined) {
+      best = honest;
+      cands = [st.puzzle.solution[best]];
+    }
+  }
+  // 3) 兜底：玩家错格污染候选（极少见）→ 直接给解（解恒正确）
   if (best < 0) {
     best = empties[Math.floor(Math.random() * empties.length)];
     cands = [st.puzzle.solution[best]];
