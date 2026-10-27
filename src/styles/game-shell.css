@@ -403,22 +403,30 @@ body.arena :where([hidden]) { display: none !important; }
   }
   /* ── 等式金字塔：main.ep-arena 也必须是「吃剩余高度」的 flex 项，
      否则它按内容自然高度生长，ep-grid 永远拿不到可收缩的空间 ── */
-  :is(body.arena, body.has-papergames-shell).in-match main.ep-arena { flex: 1 1 auto; min-height: 0; gap: 10px; }
-  /* ep chrome 紧凑化（360×640 solo 实测 chrome 637px / 棋盘仅剩保底 120px） */
-  :is(body.arena, body.has-papergames-shell).in-match .ep-strip { margin-top: 0; padding: 10px 12px; gap: 6px; }
+  :is(body.arena, body.has-papergames-shell).in-match main.ep-arena { flex: 1 1 auto; min-height: 0; gap: 8px; }
+  /* ep chrome 紧凑化（360×640 solo 实测 chrome 637px / 棋盘仅剩保底 120px；
+     2026-10-27 大格子回滚后再压一轮：m390 需回收 ~26px 让工具条回屏） */
+  :is(body.arena, body.has-papergames-shell).in-match .ep-strip { margin-top: 0; padding: 7px 12px; gap: 6px; }
   :is(body.arena, body.has-papergames-shell).in-match .ep-slot { min-width: 42px; height: 42px; }
-  :is(body.arena, body.has-papergames-shell).in-match .ep-hud { gap: 6px; }
-  :is(body.arena, body.has-papergames-shell).in-match .ep-hud-cell { padding: 6px 8px; }
+  :is(body.arena, body.has-papergames-shell).in-match .ep-hud { gap: 5px; }
+  :is(body.arena, body.has-papergames-shell).in-match .ep-hud-cell { padding: 4px 8px; }
   :is(body.arena, body.has-papergames-shell).in-match .ep-tools { gap: 6px; }
-  :is(body.arena, body.has-papergames-shell).in-match .ep-tool { min-height: 38px; padding: 0 12px; }
-  :is(body.arena, body.has-papergames-shell).in-match :is(.ep-opp, .ep-you) { padding: 8px 12px; }
+  :is(body.arena, body.has-papergames-shell).in-match .ep-tool { min-height: 34px; padding: 0 12px; }
+  :is(body.arena, body.has-papergames-shell).in-match :is(.ep-opp, .ep-you) { padding: 6px 12px; }
   /* ── 等式金字塔：格子尺寸回滚（2026-10-27 刘哥实机两轮反馈，最终拍板）──
      10-24 起的 container-type:size + 100cqb 方案与同日 JS 实测方案，在真机上
      都把格子压小（高度基准被 chrome 吃掉）、运算符压在数字上（用户截图两次：
-     第一次数字叠罗汉、第二次小圆片挤在一起）。本区对 .ep-board/.ep-grid/.epc
-     的全部尺寸覆盖撤场：格子一律回到基础版纯宽度驱动 (100%-3g)/4
-     （390px 手机 ≈85px），大而清晰；短屏极端情况页面自然滚动兜底。
-     仅保留对局 chrome 紧凑化与字号 clamp（下方两条，10-24 的字号修复史见 git）。 */
+     第一次数字叠罗汉、第二次小圆片挤在一起）。拍板：格子回到纯宽度驱动、
+     大而清晰（390 手机 ≈84px）；360×640 极矮屏放不下时页面自然滚动
+     （门禁按「设计取舍」放行，硬判据不豁免）。
+     84px 设计上限：宽度基准在桌面可达 102px，超此尺寸不增可读性，
+     反而把工具条顶出一屏（check-inmatch-geometry padBelowFold）。 */
+  :is(body.arena, body.has-papergames-shell).in-match .epc {
+    width: min(calc((100% - 3 * var(--ep-gap)) / 4), 84px);
+  }
+  /* 棋盘禁止被 flex 沉浸布局压缩（flex-shrink 默认 1 会把格子压小——
+     刘哥真机小圆片的真正机制）。放不下时让页面滚，格子不动。 */
+  :is(body.arena, body.has-papergames-shell).in-match .ep-board { flex-shrink: 0; }
   /* 金字塔格内文字：纯 vw+px clamp，不随容器/模式漂移，且与 40~100px 格宽兼容 */
   :is(body.arena, body.has-papergames-shell).in-match .epc .ep-num { font-size: clamp(1.4rem, 4.5vw, 1.7rem); }
   :is(body.arena, body.has-papergames-shell).in-match .epc .ep-op { font-size: clamp(0.9rem, 3vw, 1.08rem); }

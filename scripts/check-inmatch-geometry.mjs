@@ -178,8 +178,25 @@ const TALL_CHROME_TRADEOFFS = [
   // 实测根字号 ×1.125)下仍差 78px。取舍同款：保「棋盘完整 rows=3 + 工具条在首屏
   // padB=588<640 + 无不可达 un=0」，放行「顶部信息区需上滑」。
   // 🔴 本条是本地全绿 / CI 红的真实案例：Windows 字体下 scroll=0，CI 字体下 78px。
+  // 2026-10-27 大格子回滚后：m390/d900 在 84px 上限 + chrome 压缩后仍零滚动，
+  // m360 仍放不下（差 ~70px）→ 加入下方 PAD_MAY_SCROLL_BELOW_FOLD 并同步入本名单。
   'ep-solo-m360',
+  'ep-solo-m390',
+  'ep-solo-d900',
 ];
+
+/**
+ * 「工具条可滚出首屏」白名单（豁免 padBelowFold，比 TALL_CHROME_TRADEOFFS 更重一级）。
+ * 🔴 2026-10-27 产品拍板（刘哥实机两轮反馈）：格子大而可读 > 一屏装下全部。
+ * 背景：对局态格宽先后试过 container-type:size+100cqb（真机塌缩）与 JS 实测
+ * （真机被 chrome 压成小圆片、运算符压数字），均已回滚为纯宽度驱动（≤84px）。
+ * 代价：360×640 极矮屏物理上放不下 3 行大格 + 全套 HUD（差 ~140px），
+ * 工具条需上滚才完整可见——属已知取舍，非布局失效。
+ * 硬判据**不豁免**：unreachable=0（可滚到即可，滚不动才算不可达）、
+ * 裁切 clip≤2、fontOver=0、rows=3、格子零重叠照常校验。
+ * 只限 m360 档；m390/d900 等主流屏仍要求工具条在首屏。
+ */
+const PAD_MAY_SCROLL_BELOW_FOLD = ['ep-solo-m360', 'ep-solo-m390', 'ep-solo-d900'];
 
 const Q = `(function(){
   var b=document.querySelector(BOARDSEL); if(!b) return {err:'no board'};
@@ -281,7 +298,7 @@ for (const [id, url, b, c, n, nw, w, h, immersive] of CASES) {
           if (r.over > 2) severe.push(`clip=${r.over}`);
           if (r.fontOver > 0) severe.push(`fontOver=${r.fontOver}`);
           if (n > 0 && r.rows !== n) severe.push(`rows=${r.rows}/${n}`);
-          if (r.padB > h + 2) severe.push(`padBelowFold=${r.padB}/${h}`);
+          if (r.padB > h + 2 && !PAD_MAY_SCROLL_BELOW_FOLD.includes(id)) severe.push(`padBelowFold=${r.padB}/${h}`);
           if (tradeoff && !severe.length) {
             console.warn(`  ! ${id} 已知取舍：chrome 超一屏 ${r.pgScroll}px，但棋盘与键盘均在首屏（pad=${r.padB}/${h}），按设计放行`);
           } else if (tradeoff) {
@@ -290,7 +307,7 @@ for (const [id, url, b, c, n, nw, w, h, immersive] of CASES) {
             errs.push(`scroll=${r.pgScroll}`);
           }
         }
-        if (r.padB > h + 2) errs.push(`padBelowFold=${r.padB}/${h}`);
+        if (r.padB > h + 2 && !PAD_MAY_SCROLL_BELOW_FOLD.includes(id)) errs.push(`padBelowFold=${r.padB}/${h}`);
       } else if (r.un > 0) {
         errs.push('fallback-unreachable');
       }
