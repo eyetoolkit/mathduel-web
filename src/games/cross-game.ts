@@ -359,7 +359,7 @@ function ensureCardStyles(): void {
 
 /** 每日挑战的分享深链（同一种子 = 同一套题） */
 export function challengeLink(gameId: GameId): string {
-  return `https://numeriduel.com/games/${gameId}/?mode=daily`;
+  return `https://www.numeriduel.com/games/${gameId}/?mode=daily`;
 }
 
 export interface DailyResult {

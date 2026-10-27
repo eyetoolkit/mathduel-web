@@ -23,7 +23,7 @@ import { fileURLToPath } from 'node:url';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const root = resolve(here, '..');
-const ORIGIN = 'https://numeriduel.com';
+const ORIGIN = 'https://www.numeriduel.com';
 
 /* ── 不进 sitemap 的页面 ──────────────────────────────────────────────
  * me：个人化页面（"Your journey, your device"），每个用户看到的内容不同，
