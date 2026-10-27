@@ -412,8 +412,17 @@ body.arena :where([hidden]) { display: none !important; }
   :is(body.arena, body.has-papergames-shell).in-match .ep-tools { gap: 6px; }
   :is(body.arena, body.has-papergames-shell).in-match .ep-tool { min-height: 38px; padding: 0 12px; }
   :is(body.arena, body.has-papergames-shell).in-match :is(.ep-opp, .ep-you) { padding: 8px 12px; }
-  /* 金字塔：ep-board 吃剩余高度；.ep-grid 做 size 容器。
-     🔴 2026-10-24 修复：原字号 min(clamp, calc(var(--ep-cell)*0.42)) 中 --ep-cell 是无单位
+  /* 金字塔：ep-board 吃剩余高度。
+     🔴 2026-10-27 再修（手机端格子塌缩成「数字叠罗汉」，用户实机截图复现）：
+     原方案 .ep-grid 用 container-type:size + .epc 用 100cqb 高基准，在部分
+     国产壳/旧内核（ArkWeb 类）上 min-height 保底失效 → 容器高度解析≈0 →
+     格宽≈0 → 数字溢出叠罗汉。容器查询在此处自 10-24 起已连续烧三轮修复，
+     彻底移除 cq 依赖：格宽 = var(--ep-cell-px, 宽基准)。--ep-cell-px 由
+     eqpyr index.ts 的 ResizeObserver 实测 .ep-board 可用宽高后写入
+     （= min(宽基准, 高基准)，与原 cq 语义等价），规范浏览器视觉不变、
+     旧内核按构造正确。CSS 侧保留宽基准作无 JS 兜底。
+     —— 以下保留 2026-10-24 的字号修复史，字号本就不依赖容器基准：
+     原字号 min(clamp, calc(var(--ep-cell)*0.42)) 中 --ep-cell 是无单位
      像素数值，calc 产出无单位数字，font-size 不接受 → 整条声明无效 → 数字字号塌缩为 0
      （9 格数字全部不可见）。第一次误修成 calc(var(--s9-size)/4*.45) 仍塌缩为 1.8px：
      自定义属性 --s9-size 存的是字面量 min(440px,100%)，在 font-size 的 calc() 里 100%
@@ -426,9 +435,10 @@ body.arena :where([hidden]) { display: none !important; }
      会把格宽压到 33px（非正方形塌缩）。160px 保底后高基准 ≥ 40px，
      格宽与宽度基准（~54px）不再冲突，棋盘保持正方形。 */
   :is(body.arena, body.has-papergames-shell).in-match .ep-board { flex: 1 1 auto; min-height: 160px; }
+  /* 不设 grid min-height：格子尺寸已由 JS 按实测份额分配（见 index.ts sizeBoardCells），
+     盲目保底会让 grid 盒子高于内容 → 操作条顶进末行（360×640/桌面实测复现）。 */
   :is(body.arena, body.has-papergames-shell).in-match .ep-grid {
-    flex: 1 1 auto; min-height: 160px;
-    container-type: size;
+    flex: 1 1 auto;
     justify-content: center;
   }
   /* 格宽：宽度基准（底行 4 格铺满 ep-board）为主，再用 100cqb 高基准封顶防裁切。
@@ -440,7 +450,7 @@ body.arena :where([hidden]) { display: none !important; }
      格被撑高、3 行总高超出容器剩余高度 → clip，d900 实测 41px）。
      两基准：宽度 (100%-3g)/4；高度 3 行装进容器 → 单格 ≈ (100cqb - 2g)/3。 */
   :is(body.arena, body.has-papergames-shell).in-match .epc {
-    width: min(calc((100% - 3 * var(--ep-gap)) / 4), calc((100cqb - 2 * var(--ep-gap)) / 3));
+    width: var(--ep-cell-px, calc((100% - 3 * var(--ep-gap)) / 4));
   }
   /* 金字塔格内文字：纯 vw+px clamp，不随容器/模式漂移，且与 40~100px 格宽兼容 */
   :is(body.arena, body.has-papergames-shell).in-match .epc .ep-num { font-size: clamp(1.4rem, 4.5vw, 1.7rem); }

@@ -159,6 +159,53 @@ function enterMode(m: Mode): void {
   playSfx('start');
 }
 
+/* 🔴 2026-10-27 手机端棋盘塌缩根治（用户实机截图：格宽≈0、数字叠罗汉）：
+   原对局态格宽走 CSS 容器查询（container-type:size + 100cqb 高基准），在部分
+   国产壳/旧内核上 min-height 保底失效 → 容器高度解析≈0。此处改为 JS 实测：
+   --ep-cell-px = min(宽基准 (W-3g)/4, 高基准 (H-2g)/3)，与原 cq 语义等价，
+   全引擎按构造正确（详见 game-shell.css 同日注释）。仅对局态生效；
+   非对局移除变量、走 CSS 宽基准（原非对局布局本就纯宽驱动）。 */
+function sizeBoardCells(): void {
+  const grid = $('epgrid');
+  const board = $('epboard');
+  if (!grid || !board) return;
+  if (!document.body.classList.contains('in-match')) {
+    grid.style.removeProperty('--ep-cell-px');
+    return;
+  }
+  const gcs = getComputedStyle(grid);
+  const gap = parseFloat(gcs.getPropertyValue('--ep-gap')) || 10;
+  const bcs = getComputedStyle(board);
+  const padV = (parseFloat(bcs.paddingTop) || 0) + (parseFloat(bcs.paddingBottom) || 0);
+  let othersH = 0; // board 内 grid 以外的兄弟（target 胶囊）
+  for (const child of Array.from(board.children)) {
+    if (child === grid) continue;
+    const ccs = getComputedStyle(child);
+    othersH += child.getBoundingClientRect().height + (parseFloat(ccs.marginTop) || 0) + (parseFloat(ccs.marginBottom) || 0);
+  }
+  const availW = grid.clientWidth;
+  const availH = board.clientHeight - padV - othersH;
+  if (!(availW > 0) || !(availH > 0)) return; // 布局未就绪，保住 CSS 宽基准兜底
+  // 与原 cq 语义严格等价：纯 min，无拍数下限（下限会让内容超出实测份额 → 压条）
+  const cell = Math.min((availW - 3 * gap) / 4, (availH - 2 * gap) / 3);
+  if (!(cell > 0)) return;
+  const next = cell.toFixed(1) + 'px';
+  if (grid.style.getPropertyValue('--ep-cell-px') !== next) grid.style.setProperty('--ep-cell-px', next);
+}
+let boardRoInit = false;
+function initBoardSizing(): void {
+  if (boardRoInit) return;
+  boardRoInit = true;
+  const board = $('epboard');
+  if (!board) return;
+  if (typeof ResizeObserver !== 'undefined') {
+    new ResizeObserver(sizeBoardCells).observe(board);
+  } else {
+    window.addEventListener('resize', sizeBoardCells);
+  }
+  sizeBoardCells();
+}
+
 function stopAll(): void {
   if (st.timer) window.clearInterval(st.timer);
   if (st.oppTimer) window.clearTimeout(st.oppTimer);
@@ -303,6 +350,7 @@ function renderTarget(): void {
 }
 
 function renderBoard(): void {
+  sizeBoardCells(); // 对局态格宽实测（含 RO 未及触发的首帧）
   const el = $('epgrid')!;
   const b = st.board;
   if (!el.dataset.built) {
@@ -766,6 +814,7 @@ $('backLobby')!.addEventListener('click', () => exitMatchToLobby(MATCH_GUARD_OPT
 $('overlay')!.addEventListener('click', (e) => { if (e.target === $('overlay')!) hideModal(); });
 
 /* ═══ init ═══ */
+initBoardSizing();
 const isMode = (m: string): m is Mode => m === 'solo' || m === 'daily' || m === 'timed' || m === 'duel';
 const isT = (x: string): x is Tier => x === 'warmup' || x === 'standard' || x === 'tricky';
 const qs = new URLSearchParams(location.search);

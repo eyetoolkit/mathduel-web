@@ -179,6 +179,10 @@
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   color: var(--a-paper);
+  /* 行高归一：默认行高会把格子内容撑得高于 aspect-ratio 盒（45.5 > 41.9 实测），
+     累计三行后把末行顶进操作条（2026-10-27 棋盘塌缩修复配套） */
+  line-height: 1;
+  display: block;
 }
 /* pick 1（anchor）— 大色块、op 删除线但仍可见（设计稿「struck, not hidden」）*/
 .epc.p1 { background: var(--a-ember); border-color: var(--a-ember); }
