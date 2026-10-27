@@ -2176,6 +2176,13 @@ onI18nChange(() => {
   if (csIdle && !csIdle.getAttribute('data-live')) {
     csIdle.textContent = i18nT('mg.g24_room_idle');
   }
+  // 🔴 2026-10-27：首屏 deal() 早于字典 async fetch，初始提示 mg.g24_pick_first 被 i18nT 回落成
+  // 裸 key，且因是 JS textContent（非 data-i18n）不被 applyToDOM 补译 → 永久残留（运营前复验发现，
+  // en/ja 均复现）。此处字典就绪 / 切语言时若结果区仍是该裸 key，重译成当前语言。仅命中坏状态，
+  // 不污染对局中文本。
+  if (resultEl && resultEl.textContent === 'mg.g24_pick_first') {
+    resultEl.textContent = i18nT('mg.g24_pick_first');
+  }
   // 🔴 2026-10-25：每日挑战 banner 同样是 innerHTML 拼接（diff-chip/diffLabel），
   // 首渲若早于字典 async fetch 完成，diffLabel 回落 key 本身且无人重渲——
   // 实测线上「difficulty.easy/standard/hard」裸 key 常驻面板（report: daily24.png）。
