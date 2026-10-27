@@ -4,8 +4,10 @@ import { recordDaily } from '../cross-game';
 import { createSudokuAdapter } from "../_shared/mp-adapters/sudoku";
 /**
  * 6×6 数独 · UI 编排（beta 版：全部本地，无 API 依赖）
- * 模式：solo（3 难度）/ daily（seeded 每日一题）/ timed（45s 连解）/ duel（vs 本地 bot 竞速）
- * 视觉：24 ARENA 同款 token（body.arena remap），ember=你、teal=bot/冲突、paper=固定线索
+ * 模式：solo（3 难度）/ daily（seeded 每日一题）/ timed（45s 连解）
+ * 🔴 2026-10-27 用户拍板：Duel Bot（本地机器人对战）已整体删除（scheduleBot/finishDuel/
+ *    bot 聊天/owner 分格/速度环等）。对战需求由 ?mode=battle 在线竞赛（mp-client）承接。
+ * 视觉：24 ARENA 同款 token（body.arena remap），ember=你、teal=冲突、paper=固定线索
  */
 
 import '@tri-sites/design-system/styles';
@@ -18,14 +20,12 @@ import {
   candidates,
   colOf,
   dailyPuzzle,
-  duelDeal,
   findConflicts,
   generatePuzzle,
   boxOf,
   rowOf,
   shanghaiDateKey,
   mulberry32,
-  hashString,
   type Difficulty,
   type Grid,
   type Puzzle,
@@ -49,13 +49,9 @@ mountHeader(($('header') as HTMLElement | null) ?? document.createElement('div')
     ],
 });
 
-type Mode = 'solo' | 'daily' | 'timed' | 'duel';
+type Mode = 'solo' | 'daily' | 'timed';
 
 const TIMED_LIMIT = 45;
-const DUEL_PENALTY = 2.5; // 填错罚时（秒）
-const DUEL_PAR = 34; // 速度环满环时间（秒）
-const RING_R = 20;
-const RING_C = 2 * Math.PI * RING_R;
 
 // 🔴 难度名走字典：原来硬编码英文，切 de/es/fr 时最佳成绩面板与每日横幅会漏英文
 const diffLabel = (d: Difficulty): string => i18nT(`difficulty.${d}`);
@@ -66,22 +62,13 @@ const st = {
   mode: 'solo' as Mode,
   diff: 'standard' as Difficulty,
   puzzle: null as Puzzle | null,
-  grid: new Array(36).fill(0) as Grid, // 当前值（含玩家+bot 填入）
-  owner: new Array(36).fill(0) as number[], // 0 公共 / 1 玩家格 / 2 bot 格（duel）
-  filledBy: new Array(36).fill(0) as number[], // 1 玩家填 / 2 bot 填（着色）
+  grid: new Array(36).fill(0) as Grid, // 当前值
+  filledBy: new Array(36).fill(0) as number[], // 1 玩家填（撤销恢复用）
   sel: -1,
   running: false,
   startTs: 0,
   elapsed: 0,
-  penalty: 0,
   timer: null as number | null,
-  // duel
-  mineTotal: 0,
-  mineDone: 0,
-  botTotal: 0,
-  botDone: 0,
-  botTimer: null as number | null,
-  botNext: 0,
   // timed
   timedSolved: 0,
   timedDealt: 0, // 本轮共发过几盘（solved 与 dealt 之差 = unsolved）
@@ -131,14 +118,9 @@ function enterMode(m: Mode): void {
   st.view = 'play';
   st.mode = m;
   document.querySelectorAll<HTMLButtonElement>('#tabs .tab').forEach((t) => t.classList.toggle('active', t.dataset.mode === m));
-  const duel = m === 'duel';
-  $('oppHead')!.classList.toggle('hidden', !duel);
-  $('youHead')!.classList.toggle('hidden', !duel);
-  $('chatDock')!.classList.toggle('hidden', !duel);
   $('diffPick')!.style.display = m === 'daily' ? 'none' : '';
   $('padTools')!.classList.toggle('hidden', m === 'daily');
   $('hintBtn')!.style.display = '';
-  if (duel) botTrashTalk('hello');
   startRound();
   // 进对局统一入口
   enterMatchMode(MATCH_GUARD_OPTS);
@@ -147,9 +129,7 @@ function enterMode(m: Mode): void {
 
 function stopAll(): void {
   if (st.timer) window.clearInterval(st.timer);
-  if (st.botTimer) window.clearTimeout(st.botTimer);
   st.timer = null;
-  st.botTimer = null;
   st.running = false;
 }
 
@@ -167,13 +147,6 @@ function renderModeBanner(): void {
     wrap(
       `<div class="b-title">🌐 ${escHtml(i18nT('ml.mt_s6_daily'))} #${escHtml(shanghaiDateKey())}</div>`
       + `<div class="b-sub">${escHtml(i18nT('mg.sd_banner_daily_world'))}</div>`,
-    );
-    return;
-  }
-  if (m === 'duel') {
-    wrap(
-      `<div class="b-title">${escHtml(i18nT('mg.sd_banner_duel'))}</div>`
-      + `<div class="b-sub">${escHtml(i18nT('mg.sd_banner_duel_sub', { penalty: DUEL_PENALTY }))}</div>`,
     );
     return;
   }
@@ -202,9 +175,6 @@ function startRound(): void {
   }
   if (st.mode === 'daily') {
     st.puzzle = dailyPuzzle(shanghaiDateKey());
-  } else if (st.mode === 'duel') {
-    const rng = mulberry32((Date.now() ^ hashString(String(performance.now()))) >>> 0);
-    st.puzzle = duelDeal(st.diff, rng) as Puzzle;
   } else {
     st.puzzle = newRoundPuzzle();
   }
@@ -213,7 +183,6 @@ function startRound(): void {
   renderBoard();
   renderSide();
   beginTimer();
-  if (st.mode === 'duel') scheduleBot();
 }
 
 /* 🔴 字典就绪前 startRound() 已经把裸 key 写进 #modeBanner 了，这里补一次重画。 */
@@ -233,13 +202,11 @@ function newRoundPuzzle(): Puzzle {
 function resetBoard(keepClock = false): void {
   const p = st.puzzle!;
   st.grid = p.puzzle.slice();
-  st.owner = new Array(36).fill(0);
   st.filledBy = new Array(36).fill(0);
   st.marks = Array.from({ length: 36 }, () => new Set<number>());
   st.notes = false;
   $('notesBtn')?.classList.remove('on');
   st.sel = -1;
-  st.penalty = 0;
   // 错误计数必须无条件复位：限时连盘走 resetBoard(true)，
   // 若跟着 keepClock 一起跳过，errors 会跨盘累加（4x4/9x9 早已放在 if 外面）。
   st.mistakes = 0;
@@ -249,42 +216,13 @@ function resetBoard(keepClock = false): void {
   }
   st.running = true;
   conflictCache = findConflicts(st.grid);
-  st.mineDone = 0;
-  st.botDone = 0;
-  if (st.mode === 'duel') {
-    const d = st.puzzle as Puzzle & { mine: Set<number>; bots: Set<number> };
-    for (const i of d.mine) st.owner[i] = 1;
-    for (const i of d.bots) st.owner[i] = 2;
-    st.mineTotal = d.mine.size;
-    st.botTotal = d.bots.size;
-    $('youSub')!.textContent = i18nT('mg.sg_duel_mycells', { n: st.mineTotal });
-    $('oppSub')!.textContent = botPaceText();
-    renderOppStatus();
-  }
-  $('result')!.textContent = st.mode === 'duel' ? i18nT('mg.sg_duel_first') : i18nT('mg.sg_pick_first');
+  $('result')!.textContent = i18nT('mg.sg_pick_first');
 }
 
 /* 对局 chrome 的字典文案集中在此：字典就绪前 startRound() 会写入裸 key，
    由 onI18nChange 整块重画（9×9 同款修复，2026-10-16）。 */
 function renderMatchChrome(): void {
-  if (st.mode === 'duel') {
-    $('youSub')!.textContent = i18nT('mg.sg_duel_mycells', { n: st.mineTotal });
-    $('oppSub')!.textContent = botPaceText();
-    renderOppStatus();
-  }
-  $('result')!.textContent = st.mode === 'duel' ? i18nT('mg.sg_duel_first') : i18nT('mg.sg_pick_first');
-}
-
-/** 6×6：对手每格耗时（与难度绑定，随 st.diff 变化） */
-const BOT_PACE_SEC: Record<string, number> = { easy: 4.6, standard: 3.4, hard: 2.5 };
-const botPaceText = (): string =>
-  i18nT(`mg.s6_pace_${st.diff}`, { s: BOT_PACE_SEC[st.diff] ?? 3.4 });
-
-/** 我负责的格子里已填对的个数（动态统计，erase/改数后仍准确） */
-function correctMine(): number {
-  let n = 0;
-  for (let i = 0; i < 36; i++) if (st.owner[i] === 1 && st.grid[i] && st.grid[i] === st.puzzle!.solution[i]) n++;
-  return n;
+  $('result')!.textContent = i18nT('mg.sg_pick_first');
 }
 
 /* ═══ 计时 ═══ */
@@ -295,7 +233,7 @@ function beginTimer(): void {
 }
 
 function effElapsed(): number {
-  return (Date.now() - st.startTs) / 1000 + st.penalty;
+  return (Date.now() - st.startTs) / 1000;
 }
 
 function tick(): void {
@@ -309,13 +247,6 @@ function tick(): void {
     const tmsk = $('tmStreak');
     if (tmsk) tmsk.textContent = String(st.timedStreak);
     if (left <= 0) endTimed();
-  } else if (st.mode === 'duel') {
-    $('stMain')!.innerHTML = `⏱ <b>${st.elapsed.toFixed(1)}s</b>`;
-    const frac = Math.min(1, st.elapsed / DUEL_PAR);
-    const ring = $('speedRingFill')!;
-    ring.style.strokeDashoffset = String(RING_C * frac);
-    ring.classList.toggle('low', frac > 0.75);
-    $('speedRingTxt')!.textContent = st.elapsed.toFixed(0) + 's';
   } else {
     $('stMain')!.innerHTML = `⏱ <b>${st.elapsed.toFixed(1)}s</b>`;
   }
@@ -328,12 +259,9 @@ function cellClass(i: number): string {
   if (colOf(i) === 2) cls.push('bx-c');
   if (rowOf(i) % 2 === 1) cls.push('bx-r');
   if (st.puzzle!.puzzle[i]) cls.push('given');
-  else if (st.filledBy[i] === 2) cls.push('bot');
   else if (st.grid[i]) cls.push('entry');
   if (st.sel === i) cls.push('sel');
   if (conflictCache.has(i)) cls.push('conflict');
-  if (st.mode === 'duel' && st.owner[i] === 1 && !st.grid[i]) cls.push('lock');
-  if (st.mode === 'duel' && st.owner[i] === 0 && !st.grid[i] && !st.puzzle!.puzzle[i]) cls.push('free');
   if (!st.grid[i] && st.marks[i].size) cls.push('marks');
   if (st.sel >= 0 && st.grid[st.sel]) {
     if (i !== st.sel && (rowOf(i) === rowOf(st.sel) || colOf(i) === colOf(st.sel) || boxOf(i) === boxOf(st.sel))) cls.push('peer');
@@ -357,7 +285,7 @@ function renderBoard(): void {
   conflictCache = findConflicts(st.grid);
   [...el.children].forEach((cell, i) => {
     const c = cell as HTMLElement;
-    if (!c.classList.contains('c6cell')) return; // 跳过 SVG 覆盖层等非 cell 子元素（#15：修复 Duel 崩溃）
+    if (!c.classList.contains('c6cell')) return; // 跳过 SVG 覆盖层等非 cell 子元素（#15）
     const v = st.grid[i];
     const cls = cellClass(i);
     if (c.className !== cls) c.className = cls;
@@ -459,10 +387,6 @@ function updatePad(): void {
 
 function selectCell(i: number): void {
   if (!st.running) return;
-  if (st.mode === 'duel' && st.owner[i] === 2) {
-    toast(i18nT('mg.sg_bot_cell'));
-    return;
-  }
   if (st.puzzle!.puzzle[i]) {
     st.sel = i; // given 也允许选中做 peer/same 高亮
     renderBoard();
@@ -494,7 +418,6 @@ function nextClaimable(from: number): number {
   for (let k = 1; k <= 36; k++) {
     const i = (from + k) % 36;
     if (st.grid[i] || st.puzzle!.puzzle[i]) continue;
-    if (st.mode === 'duel' && st.owner[i] !== 1) continue;
     return i;
   }
   return -1;
@@ -547,10 +470,6 @@ function place(v: number): void {
     toast(i18nT('mg.sg_clue_fixed'));
     return;
   }
-  if (st.mode === 'duel' && st.owner[i] !== 1) {
-    toast(i18nT('mg.sg_free_unlock'));
-    return;
-  }
   // notes 模式：仅 toggle 候选数字（不写入真实数字）
   if (st.notes && !st.grid[i]) {
     pushUndo(i);
@@ -566,8 +485,6 @@ function place(v: number): void {
   const conflicts = findConflicts(st.grid);
   if (conflicts.has(i)) {
     st.mistakes++;
-    st.penalty += st.mode === 'duel' ? DUEL_PENALTY : 0;
-    if (st.mode === 'duel') toast(i18nT('mg.sd_toast_conflict', { penalty: DUEL_PENALTY }));
     st.sel = i;
     renderBoard();
     flashCell(i, 'shake', 400);
@@ -579,10 +496,6 @@ function place(v: number): void {
       }
     }, 650);
     return;
-  }
-  if (st.mode === 'duel') {
-    renderOppStatus();
-    botTrashTalk('playerFill');
   }
   const nx = nextClaimable(i);
   st.sel = nx >= 0 ? nx : i; // 填对后自动跳到下一空格，连解提速
@@ -598,7 +511,7 @@ function erase(): void {
     return;
   }
   const i = st.sel;
-  if (st.puzzle!.puzzle[i] || st.filledBy[i] === 2) return;
+  if (st.puzzle!.puzzle[i]) return;
   // 数字 + marks 全清；notes 模式下清空更彻底（玩家可能 toggle 错）
   pushUndo(i);
   st.grid[i] = 0;
@@ -610,15 +523,6 @@ function erase(): void {
 /* ═══ 胜负 ═══ */
 function checkWin(): void {
   if (!st.puzzle) return;
-  if (st.mode === 'duel') {
-    // duel：自己负责的格子全部填对（错格 650ms 后弹回 / 可改）即胜
-    if (correctMine() >= st.mineTotal) {
-      st.running = false;
-      if (st.timer) window.clearInterval(st.timer);
-      finishDuel(true);
-    }
-    return;
-  }
   const complete = st.grid.every((v, i) => v === st.puzzle!.solution[i]);
   if (!complete) return;
   st.running = false;
@@ -717,125 +621,6 @@ function endTimed(): void {
   );
 }
 
-/* ═══ Duel bot ═══ */
-function scheduleBot(): void {
-  const pace = { easy: 4600, standard: 3400, hard: 2500 }[st.diff];
-  const jitter = () => pace * (0.6 + Math.random() * 0.9);
-  const step = (): void => {
-    if (!st.running || st.mode !== 'duel') return;
-    const d = st.puzzle as Puzzle & { bots: Set<number> };
-    const remaining = [...d.bots].filter((i) => !st.grid[i]);
-    if (!remaining.length) {
-      finishDuel(false);
-      return;
-    }
-    const i = remaining[Math.floor(Math.random() * remaining.length)];
-    st.grid[i] = st.puzzle!.solution[i];
-    st.filledBy[i] = 2;
-    st.botDone++;
-    renderOppStatus();
-    renderBoard();
-    botTrashTalk('botFill');
-    if (st.botDone >= st.botTotal) {
-      finishDuel(false);
-      return;
-    }
-    st.botTimer = window.setTimeout(step, jitter());
-  };
-  st.botTimer = window.setTimeout(step, 1800);
-}
-
-function renderOppStatus(): void {
-  const s = $('oppStatus')!;
-  s.innerHTML = `<span class="d"></span>${escHtml(i18nT('mg.sd_bot_cells', { done: st.botDone, total: st.botTotal }))}`;
-  s.classList.toggle('done', st.botDone >= st.botTotal);
-  const you = $('youSub')!;
-  if (you) you.textContent = i18nT('mg.sg_duel_mycells', { n: `${correctMine()}/${st.mineTotal}` });
-}
-
-function finishDuel(playerWon: boolean): void {
-  stopAll();
-  const t = st.elapsed;
-  const verdict = playerWon ? i18nT('mg.sd_verdict_you_win') : i18nT('mg.sd_verdict_bot_wins');
-  const mine = playerWon ? fmt(t) : `${correctMine()}/${st.mineTotal}`;
-  const bots = playerWon ? `${st.botDone}/${st.botTotal}` : fmt(t);
-  $('result')!.innerHTML = playerWon
-    ? i18nT('mg.sd_duel_you_win_html', { time: escHtml(fmt(t)), done: st.botDone, total: st.botTotal })
-    : i18nT('mg.sd_duel_bot_win_html', { time: escHtml(fmt(t)), done: correctMine(), total: st.mineTotal });
-  showModal(
-    `<div class="s6-verdict">${escHtml(verdict)}</div>` +
-      `<div class="s6-scores"><div class="me num">${escHtml(mine)}<small>${escHtml(i18nT('mg.sd_lbl_you'))}</small></div>`
-      + `<div class="op num">${escHtml(bots)}<small>GridBot</small></div></div>` +
-      `<div class="s6-acts"><button class="btn primary" id="mAgain">${escHtml(i18nT('mg.sd_btn_rematch'))}</button>`
-      + `<button class="btn ghost" id="mLobby">${escHtml(i18nT('mg.shared_lobby'))}</button></div>`,
-    () => {
-      $('mAgain')!.onclick = () => {
-        hideModal();
-        startRound();
-      };
-      $('mLobby')!.onclick = () => {
-        hideModal();
-        goLobby();
-      };
-    },
-  );
-}
-
-/* bot 聊天台词（DEMO）—— 走字典，玩家在「对战聊天」里直接读得到 */
-const BOT_LINE_KEYS = {
-  hello: ['mg.sg_bot_hello_1', 'mg.sg_bot_hello_2', 'mg.sg_bot_hello_3'] as const,
-  playerFill: ['mg.sg_bot_playerfill_1', 'mg.sg_bot_playerfill_2', 'mg.sg_bot_playerfill_3'] as const,
-  botFill: ['mg.sg_bot_botfill_1', 'mg.sg_bot_botfill_2', 'mg.sg_bot_botfill_3', 'mg.sg_bot_botfill_4'] as const,
-  losing: ['mg.sg_bot_losing_1', 'mg.sg_bot_losing_2'] as const,
-  winning: ['mg.sg_bot_winning_1', 'mg.sg_bot_winning_2'] as const,
-} as const;
-
-/** 取当前语言下的台词表。字典未就绪时 i18nT() 回落到 key，botSay 会过滤掉。 */
-function botLines(): Record<BotLineEvent, readonly string[]> {
-  const out2 = {} as Record<BotLineEvent, readonly string[]>;
-  for (const k of Object.keys(BOT_LINE_KEYS) as BotLineEvent[]) {
-    out2[k] = BOT_LINE_KEYS[k].map((key) => i18nT(key));
-  }
-  return out2;
-}
-
-type BotLineEvent = keyof typeof BOT_LINE_KEYS;
-
-/** 随机取一条；过滤掉「还没拿到字典」的裸 key，保证聊天框不显示 mg.sg_bot_* */
-function pickBotLine(ev: BotLineEvent): string {
-  const arr = botLines()[ev].filter((s) => s && !/^mg\./.test(s));
-  if (!arr.length) return "";
-  return arr[Math.floor(Math.random() * arr.length)];
-}
-let lastLine = '';
-function botSay(text: string): void {
-  if (text === lastLine) return;
-  lastLine = text;
-  const dock = $('chatDock')!;
-  if (!dock.dataset.built) {
-    dock.dataset.built = '1';
-    dock.innerHTML =
-      `<div class="ctitle"><span>${escHtml(i18nT('mg.sd_chat_title'))}</span>`
-      + `<span>${escHtml(i18nT('mg.sd_chat_beta'))}</span></div>`
-      + '<div class="s6-chatlog" id="s6chat"></div>';
-  }
-  const log = $('s6chat')!;
-  const div = document.createElement('div');
-  div.className = 'bub opp';
-  div.textContent = text;
-  log.appendChild(div);
-  log.scrollTop = log.scrollHeight;
-  while (log.children.length > 6) log.removeChild(log.firstChild!);
-}
-
-let botTalkBudget = 0;
-function botTrashTalk(event: BotLineEvent): void {
-  botTalkBudget++;
-  if (event !== 'hello' && Math.random() > 0.22 && botTalkBudget % 4 !== 0) return;
-  const lines = botLines()[event].filter((s) => s && !/^mg\./.test(s));
-  botSay(lines[Math.floor(Math.random() * lines.length)]);
-}
-
 /* ═══ 侧栏 / 大厅 ═══ */
 function renderSide(): void {
   const el = $('side')!;
@@ -889,7 +674,7 @@ document.querySelectorAll<HTMLButtonElement>('#diffPick button').forEach((b) => 
   b.addEventListener('click', () => {
     st.diff = b.dataset.d as Difficulty;
     document.querySelectorAll<HTMLButtonElement>('#diffPick button').forEach((x) => x.classList.toggle('active', x === b));
-    if (st.mode === 'solo' || st.mode === 'duel') startRound();
+    if (st.mode === 'solo') startRound();
   });
 });
 
@@ -904,7 +689,7 @@ $('s6pad')!.addEventListener('click', (e) => {
   } else if (b.dataset.v) place(Number(b.dataset.v));
 });
 
-/** 方向键在棋盘上移动选格（环绕；duel 跳过 bot 格） */
+/** 方向键在棋盘上移动选格（环绕） */
 function moveSel(dr: number, dc: number): void {
   let r = st.sel >= 0 ? rowOf(st.sel) : 0;
   let c = st.sel >= 0 ? colOf(st.sel) : 0;
@@ -912,7 +697,6 @@ function moveSel(dr: number, dc: number): void {
     r = (r + dr + 6) % 6;
     c = (c + dc + 6) % 6;
     const i = r * 6 + c;
-    if (st.mode === 'duel' && st.owner[i] === 2) continue;
     st.sel = i;
     renderBoard();
     return;
@@ -972,7 +756,7 @@ function nakedReason(i: number, n: number): string {
 function giveHint(): void {
   if (!st.running || !st.puzzle) return;
   const empties = [...Array(36).keys()].filter(
-    (i) => !st.grid[i] && !st.puzzle!.puzzle[i] && (st.mode !== 'duel' || st.owner[i] === 1),
+    (i) => !st.grid[i] && !st.puzzle!.puzzle[i],
   );
   if (!empties.length) return;
   // 1) 先找 naked single（唯一候选格）——最像「逻辑推理」的提示
@@ -1026,9 +810,9 @@ $('overlay')!.addEventListener('click', (e) => {
 });
 
 /* ═══ init ═══ */
-// 深链契约：?mode=solo|daily|timed|duel —— 由模式选择页的模式卡链接进来。
+// 深链契约：?mode=solo|daily|timed —— 由模式选择页的模式卡链接进来。
 // 不带 mode 直达牌桌时回落到模式选择页，与 24 点「lobby → card table」的两段式保持一致。
-const isMode = (m: string): m is Mode => m === 'solo' || m === 'daily' || m === 'timed' || m === 'duel';
+const isMode = (m: string): m is Mode => m === 'solo' || m === 'daily' || m === 'timed';
 const modeFromUrl = new URLSearchParams(location.search).get('mode') || '';
 if (modeFromUrl === "battle" || modeFromUrl === "random" || (new URLSearchParams(location.search).get('room') || '').trim()) {
   mountCompetition({
@@ -1044,4 +828,3 @@ if (modeFromUrl === "battle" || modeFromUrl === "random" || (new URLSearchParams
 }
 
 renderSide();
-botSay(pickBotLine('hello'));

@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en" data-site="numeriduel">
 <head>
-  <script>window.__I18N_CONFIG__={supported:["en","zh","ja","es","fr","de"],dictVersion:67,fallback:"en"};</script>
+  <script>window.__I18N_CONFIG__={supported:["en","zh","ja","es","fr","de"],dictVersion:68,fallback:"en"};</script>
   <script src="/i18n/i18n.js?v=42"></script>
   <meta charset="utf-8" />
   <script>
@@ -22,7 +22,7 @@
   <meta name="apple-mobile-web-app-title" content="NumeriDuel" />
   <meta name="theme-color" content="#F4F5F9" />
   <title>Sudoku 9×9 — Fill the Grid First | NumeriDuel</title>
-  <meta name="description" content="The classic 9×9 logic grid with a full difficulty ladder and a daily seeded puzzle. Pencil in candidates, race a bot, or beat the clock." />
+  <meta name="description" content="The classic 9×9 logic grid with a full difficulty ladder and a daily seeded puzzle. Pencil in candidates, or beat the clock." />
   <link rel="canonical" href="https://numeriduel.com/games/sudoku/" />
   <!-- PWA + favicons -->
   <link rel="icon" href="/favicon.ico" sizes="any" />
@@ -203,21 +203,11 @@
           <button class="tab" data-mode="solo" data-i18n="mg.shared_tab_solo">Solo</button>
           <button class="tab" data-mode="daily" data-i18n="ml.mt_sd_daily">Daily Grid</button>
           <button class="tab" data-mode="timed" data-i18n="mg.shared_tab_timed">Timed</button>
-          <button class="tab" data-mode="duel" data-i18n="mg.shared_tab_duel">Duel Bot</button>
         </nav>
         <div class="top-stats">
           <span class="chip" id="stMain">Ready</span>
           <button class="icon-btn" id="backLobby" title="Back to lobby" data-i18n-title="mg.shared_lobby" data-i18n="mg.shared_lobby">🏠 Lobby</button>
         </div>
-      </div>
-
-      <!-- 对局头（仅 Duel）：对手条（teal） -->
-      <div id="oppHead" class="s9-opp-head hidden">
-        <div class="player">
-          <span class="md-av">🤖</span>
-          <div><div class="pn">GridBot <span class="side-tag opp"><span class="d"></span>Bot</span></div><div class="ps" id="oppSub">standard pace</div></div>
-        </div>
-        <div class="status thinking" id="oppStatus"><span class="d"></span>Filled 0/0</div>
       </div>
 
       <div id="modeBanner"></div>
@@ -265,19 +255,6 @@
       </div>
 
       <div class="result" id="result" role="status" data-i18n="mg.sg_pick_first">Pick a cell, then a number</div>
-
-      <!-- 我方条（仅 Duel）：进度 HUD（替代速度环） -->
-      <div id="youHead" class="s9-you-head hidden">
-        <div class="s9-hud">
-          <div class="hud-row"><span>You</span><b class="num" id="youFilled">0/0</b></div>
-          <div class="hud-row"><span>GridBot</span><b class="num" id="oppFilled">0/0</b></div>
-          <div class="hud-row"><span>Mistakes</span><span class="lives" id="lives"><i></i><i></i><i></i></span></div>
-          <div class="hud-row"><span>Time</span><b class="num" id="duelTime">0:00</b></div>
-        </div>
-      </div>
-
-    <!-- Duel bot 聊天 -->
-    <div class="chat-dock hidden" id="chatDock" aria-label="Match chat"></div>
   </section>
 
   <aside class="side" id="side"></aside>

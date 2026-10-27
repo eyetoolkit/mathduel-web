@@ -129,8 +129,9 @@ async function withTimeout(p, ms, label) {
 // nRows：行数断言值；0 = 跳过（24 点发牌随机，牌面位数不同会导致 wrap 行数在 1/3 间抖动，
 //       布局本身稳定 bw/bh 恒定，行数判据对它不成立 —— 2026-10-16 实测确认）
 // nWait：渲染就绪所需格子数
-// 场景挑选原则：覆盖 3 款数独 × solo/duel × 手机/桌面 + 金字塔 + 24 点回归 + 横屏回退，
+// 场景挑选原则：覆盖 3 款数独 × solo × 手机/桌面 + 金字塔 + 24 点回归 + 横屏回退，
 // 每个维度取最能复现历史 bug 的极端视口（最小手机 360 / 主流手机 390 / 矮桌面 900 / 大桌面 1080）。
+// 🔴 2026-10-27：Duel Bot 已全站删除（用户拍板），原 9x9-duel-* 三场景及豁免同步移除。
 //
 // 🔴 2026-10-16 复盘后补（详见 _复盘-棋盘与按键事故-20261016.md 闸 2）：
 //   `.tabs` 是**跨 4 款游戏共用**的类（grep games/ 实测 24-game/sudoku/sudoku-4x4/sudoku-6x6
@@ -144,10 +145,7 @@ const CASES = [
   ['9x9-solo-m320',  '/games/sudoku/?mode=solo',            '.s9-board', '.c9cell', 9, 81, 320, 780, true],
   ['9x9-solo-m360',  '/games/sudoku/?mode=solo',            '.s9-board', '.c9cell', 9, 81, 360, 640, true],
   ['9x9-solo-m390',  '/games/sudoku/?mode=solo',            '.s9-board', '.c9cell', 9, 81, 390, 844, true],
-  ['9x9-duel-m360',  '/games/sudoku/?mode=duel',            '.s9-board', '.c9cell', 9, 81, 360, 640, true],
-  ['9x9-duel-m390',  '/games/sudoku/?mode=duel',            '.s9-board', '.c9cell', 9, 81, 390, 844, true],
   ['9x9-solo-d900',  '/games/sudoku/?mode=solo',            '.s9-board', '.c9cell', 9, 81, 1280, 900, true],
-  ['9x9-duel-d900',  '/games/sudoku/?mode=duel',            '.s9-board', '.c9cell', 9, 81, 1280, 900, true],
   ['9x9-solo-d1080', '/games/sudoku/?mode=solo',            '.s9-board', '.c9cell', 9, 81, 1920, 1080, true],
   ['6x6-solo-m360',  '/games/sudoku-6x6/?mode=solo',        '.s6-board', '.c6cell', 6, 36, 360, 640, true],
   ['6x6-solo-m390',  '/games/sudoku-6x6/?mode=solo',        '.s6-board', '.c6cell', 6, 36, 390, 844, true],
@@ -170,11 +168,7 @@ const CASES = [
  * 新增条目前先答：①这是有意取舍还是没来得及修的 bug？②若是取舍，产品文档里有吗？
  */
 const TALL_CHROME_TRADEOFFS = [
-  // 9×9 对战 @360×640：对手条 + 我方 2×2 HUD ≈ 736px > 640px。
-  // 取舍：保「棋盘完整 + 数字键盘在首屏」（实测 rows=9 / padB=593<640 / un=0），
-  // 放行「对手信息条需上滑才完整可见」。不改则键盘被挤掉，比上滑更伤可玩性。
-  '9x9-duel-m360',
-  // 等式金字塔 @360×640：把等式行 + 目标条 + 工具条压到一屏以下后在 CI(Linux 字体更宽，
+  // 等式金字塔 @360×640：把等式行 + 目标条 + 工具条压到一屏以下后在 CI(Linux 字体更宽,
   // 实测根字号 ×1.125)下仍差 78px。取舍同款：保「棋盘完整 rows=3 + 工具条在首屏
   // padB=588<640 + 无不可达 un=0」，放行「顶部信息区需上滑」。
   // 🔴 本条是本地全绿 / CI 红的真实案例：Windows 字体下 scroll=0，CI 字体下 78px。
