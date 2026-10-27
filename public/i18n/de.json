@@ -1189,7 +1189,14 @@
     "g24_share_text_daily": "Ich habe {n} / {t} in der täglichen 24-Challenge gelöst!",
     "g24_share_text_comp": "Ich habe es im Mathe-Wettbewerb auf Platz {r} geschafft!",
     "g24_share_text_score": "Mein 24-Punkte-Ergebnis",
-    "g24_share_text_invite": "Spiele mit mir 24"
+    "g24_share_text_invite": "Spiele mit mir 24",
+    "g24_hint_try": "Versuch zuerst:",
+    "g24_hint_from": "Setz hier an:",
+    "g24_daily_empty": "Sei die erste Person, die die heutige Challenge meistert!",
+    "g24_board_failed": "Globales Leaderboard konnte nicht geladen werden",
+    "g24_copy_code_title": "Raumcode kopieren",
+    "g24_leave_comp_title": "Wettbewerb verlassen",
+    "g24_room_chat_aria": "Raum-Chat"
   },
   "tn": {
     "title": "NumeriDuel · Lehrer-Dashboard",

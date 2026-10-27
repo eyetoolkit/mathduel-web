@@ -1234,7 +1234,14 @@
     "g24_share_text_daily": "今日の24点チャレンジで {n} / {t} 問解きました！",
     "g24_share_text_comp": "数学コンペティションで {r} 位に入賞！",
     "g24_share_text_score": "私の24点スコア",
-    "g24_share_text_invite": "一緒に24点をやりましょう"
+    "g24_share_text_invite": "一緒に24点をやりましょう",
+    "g24_hint_try": "まずは：",
+    "g24_hint_from": "ここから：",
+    "g24_daily_empty": "今日のチャレンジを最初にクリアしよう！",
+    "g24_board_failed": "グローバルランキングの読み込みに失敗しました",
+    "g24_copy_code_title": "ルームコードをコピー",
+    "g24_leave_comp_title": "競技を退出",
+    "g24_room_chat_aria": "ルームチャット"
   },
   "tn": {
     "title": "NumeriDuel · 教師ダッシュボード",

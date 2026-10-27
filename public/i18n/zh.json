@@ -1234,7 +1234,14 @@
     "g24_share_text_daily": "我在今日 24 点挑战中解出了 {n} / {t} 题！",
     "g24_share_text_comp": "我在数学竞赛中排名第 {r}！",
     "g24_share_text_score": "我的 24 点成绩",
-    "g24_share_text_invite": "来玩一局 24 点吧"
+    "g24_share_text_invite": "来玩一局 24 点吧",
+    "g24_hint_try": "先试试：",
+    "g24_hint_from": "从这里入手：",
+    "g24_daily_empty": "成为第一个通关今日挑战的人！",
+    "g24_board_failed": "全球排行榜加载失败",
+    "g24_copy_code_title": "复制房间码",
+    "g24_leave_comp_title": "退出竞赛",
+    "g24_room_chat_aria": "房间聊天"
   },
   "tn": {
     "title": "NumeriDuel · 教师端",

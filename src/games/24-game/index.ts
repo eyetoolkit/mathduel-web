@@ -471,8 +471,8 @@ function giveHint(): void {
     const v = safeEval(step.replace(/[×]/g, '*').replace(/[÷]/g, '/').replace(/[−]/g, '-'));
     approx = ` → ~${Math.round(v)}`;
   } catch { /* 拆不出来也不强算 */ }
-  const kind = difficulty === 'easy' ? 'Try first:' : difficulty === 'hard' ? 'From here:' : 'Try first:';
-  toast(`${kind} ${step.replace(/\*/g, '×').replace(/\//g, '÷').replace(/-/g, '−')}${approx}`);
+  const kindKey = difficulty === 'hard' ? 'mg.g24_hint_from' : 'mg.g24_hint_try';
+  toast(`${i18nT(kindKey)} ${step.replace(/\*/g, '×').replace(/\//g, '÷').replace(/-/g, '−')}${approx}`);
 }
 
 function showAnswer(): void {
@@ -858,7 +858,7 @@ async function dailyTimeUp(): Promise<void> {
   if (ans) {
     let p = ans[1];
     if (p.startsWith('(') && p.endsWith(')')) p = p.slice(1, -1);
-    toast('Answer: ' + p.replace(/\*/g, '×').replace(/\//g, '÷').replace(/-/g, '−'));
+    toast(i18nT('mg.g24_answer', { formula: p.replace(/\*/g, '×').replace(/\//g, '÷').replace(/-/g, '−') }));
   }
   // 必须主动告知服务端本题超时（空公式 → 服务端判 timedOut 记满窗并推进），否则对局卡死在本题
   if (daily.canSubmit) await submitDailyAnswer(q, '');
@@ -985,7 +985,7 @@ async function loadDailyBoard(): Promise<void> {
   const el = $('dailyBoard');
   if (!el) return;
   if (!daily.canSubmit) {
-    el.innerHTML = '<div class="race-empty">🌐 Offline — not connected to global board</div>';
+    el.innerHTML = `<div class="race-empty">🌐 ${i18nT('mg.gs_offline_board')}</div>`;
     return;
   }
   try {
@@ -994,7 +994,7 @@ async function loadDailyBoard(): Promise<void> {
     const data = await res.json();
     const top: DailyRankRow[] = Array.isArray(data.top) ? data.top : [];
     if (!top.length) {
-      el.innerHTML = '<div class="race-empty">Be the first to clear today’s challenge!</div>';
+      el.innerHTML = `<div class="race-empty">${i18nT('mg.g24_daily_empty')}</div>`;
       return;
     }
     let html = top
@@ -1015,7 +1015,7 @@ async function loadDailyBoard(): Promise<void> {
       html += dailyRow(String(me.rank), 'You', dailyScoreText(me.times, me.total), 'me', avatarIcon(profile.avatar), dailySpeedBadge(me.total));
     el.innerHTML = html;
   } catch {
-    el.innerHTML = '<div class="race-empty">🌐 Global leaderboard failed to load</div>';
+    el.innerHTML = `<div class="race-empty">🌐 ${i18nT('mg.g24_board_failed')}</div>`;
   }
 }
 
@@ -1131,7 +1131,7 @@ function timedTimeUp(): void {
   if (ans) {
     let p = ans[1];
     if (p.startsWith('(') && p.endsWith(')')) p = p.slice(1, -1);
-    toast('Answer: ' + p.replace(/\*/g, '×').replace(/\//g, '÷').replace(/-/g, '−'));
+    toast(i18nT('mg.g24_answer', { formula: p.replace(/\*/g, '×').replace(/\//g, '÷').replace(/-/g, '−') }));
   }
   window.setTimeout(() => {
     if (!timed.active) return;
@@ -1568,7 +1568,7 @@ function renderRaceProgress(d: { doneCount?: number; total?: number; done?: Race
   const useDone = !!(d.done && d.done.length);
   const rows = useDone ? d.done! : [];
   if (!rows.length) {
-    list.innerHTML = '<div class="race-empty">No submissions yet — be first!</div>';
+    list.innerHTML = `<div class="race-empty">${i18nT('mg.g24_side_no_sub')}</div>`;
     return;
   }
   let html = '';

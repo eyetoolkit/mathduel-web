@@ -1234,7 +1234,14 @@
     "g24_share_text_daily": "I solved {n} / {t} in today's 24 Daily Challenge!",
     "g24_share_text_comp": "I ranked #{r} in the Math Competition!",
     "g24_share_text_score": "My 24 score",
-    "g24_share_text_invite": "Come play Make 24"
+    "g24_share_text_invite": "Come play Make 24",
+    "g24_hint_try": "Try first:",
+    "g24_hint_from": "From here:",
+    "g24_daily_empty": "Be the first to clear today’s challenge!",
+    "g24_board_failed": "Global leaderboard failed to load",
+    "g24_copy_code_title": "Copy room code",
+    "g24_leave_comp_title": "Leave competition",
+    "g24_room_chat_aria": "Room chat"
   },
   "tn": {
     "title": "NumeriDuel · Teacher dashboard",

@@ -45,12 +45,119 @@ export function solve(nums: Node24[]): [number, string] | null {
 }
 
 /** 当前牌面共有多少种不同解法 */
+/**
+ * countSolutions 语义：统计「数学本质不同的解法数」。
+ * 原始表达式按字符串去重会把 (a+b)+c 与 a+(b+c)、a*b*c 的不同结合顺序算成多个，
+ * 实际是同一个解。这里把表达式解析为 AST 后对 +/* 做结合律扁平化 + 交换律排序，
+ * 得到规范串再入 Set，消除等价重复计数（展示口径更准，不影响判题）。
+ */
+type CSNode =
+  | { t: 'num'; n: number }
+  | { t: '+' | '*'; c: CSNode[] }
+  | { t: '-' | '/'; l: CSNode; r: CSNode };
+
+function parseExpr(s: string): CSNode {
+  let i = 0;
+  const peek = () => s[i];
+  const ws = () => { while (s[i] === ' ') i++; };
+  const num = (): CSNode => {
+    ws();
+    const st = i;
+    while (i < s.length && ((s[i] >= '0' && s[i] <= '9') || s[i] === '.')) i++;
+    return { t: 'num', n: parseFloat(s.slice(st, i)) };
+  };
+  const factor = (): CSNode => {
+    ws();
+    if (peek() === '(') {
+      i++;
+      const e = expr();
+      ws();
+      if (peek() === ')') i++;
+      return e;
+    }
+    return num();
+  };
+  const collect = (n: CSNode, op: '+' | '*'): CSNode[] => (n.t === op ? n.c : [n]);
+  const term = (): CSNode => {
+    let v = factor();
+    for (;;) {
+      ws();
+      const o = peek();
+      if (o === '*' || o === '/') {
+        i++;
+        const r = factor();
+        v = o === '*' ? { t: '*', c: collect(v, '*').concat(collect(r, '*')) } : { t: '/', l: v, r };
+      } else break;
+    }
+    return v;
+  };
+  const expr = (): CSNode => {
+    let v = term();
+    for (;;) {
+      ws();
+      const o = peek();
+      if (o === '+' || o === '-') {
+        i++;
+        const r = term();
+        v = o === '+' ? { t: '+', c: collect(v, '+').concat(collect(r, '+')) } : { t: '-', l: v, r };
+      } else break;
+    }
+    return v;
+  };
+  return expr();
+}
+
+const serNode = (n: CSNode): string => {
+  switch (n.t) {
+    case 'num':
+      return String(n.n);
+    case '+':
+    case '*':
+      return '(' + n.c.map(serNode).join(n.t) + ')';
+    case '-':
+    case '/':
+      return '(' + serNode(n.l) + n.t + serNode(n.r) + ')';
+    default:
+      return '';
+  }
+};
+
+const cmpNode = (a: CSNode, b: CSNode): number => {
+  if (a.t === 'num' && b.t !== 'num') return -1;
+  if (a.t !== 'num' && b.t === 'num') return 1;
+  if (a.t === 'num' && b.t === 'num') return a.n - b.n;
+  return serNode(a).localeCompare(serNode(b));
+};
+
+const canonNode = (n: CSNode): CSNode => {
+  switch (n.t) {
+    case 'num':
+      return n;
+    case '+':
+    case '*':
+      return { t: n.t, c: n.c.map(canonNode).sort(cmpNode) };
+    case '-':
+    case '/':
+      return { t: n.t, l: canonNode(n.l), r: canonNode(n.r) };
+    default:
+      return n;
+  }
+};
+
+/** 当前牌面共有多少种不同解法（按数学等价去重） */
 export function countSolutions(numbers: number[]): number {
   const sols = new Set<string>();
   const init: Node24[] = numbers.map((n) => ({ value: n, expr: String(n) }));
   (function find(ns: Node24[]) {
     if (ns.length === 1) {
-      if (Math.abs(ns[0].value - 24) < 0.0001) sols.add(ns[0].expr);
+      if (Math.abs(ns[0].value - 24) < 0.0001) {
+        // 规范化表达式后再去重，消除 (a+b)+c / a+(b+c) 这类等价变体
+        try {
+          sols.add(serNode(canonNode(parseExpr(ns[0].expr))));
+        } catch {
+          sols.add(ns[0].expr);
+        }
+      }
       return;
     }
     for (let i = 0; i < ns.length; i++) {

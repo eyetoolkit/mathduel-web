@@ -1234,7 +1234,14 @@
     "g24_share_text_daily": "J'ai résolu {n} / {t} au défi 24 du jour !",
     "g24_share_text_comp": "Je me suis classé #{r} au concours de mathématiques !",
     "g24_share_text_score": "Mon score 24",
-    "g24_share_text_invite": "Venez jouer au Make 24"
+    "g24_share_text_invite": "Venez jouer au Make 24",
+    "g24_hint_try": "Essayez d'abord :",
+    "g24_hint_from": "Partez d'ici :",
+    "g24_daily_empty": "Soyez le premier à réussir le défi du jour !",
+    "g24_board_failed": "Échec du chargement du classement mondial",
+    "g24_copy_code_title": "Copier le code de salle",
+    "g24_leave_comp_title": "Quitter la compétition",
+    "g24_room_chat_aria": "Chat de salle"
   },
   "tn": {
     "title": "NumeriDuel · Tableau de bord enseignant",
