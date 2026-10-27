@@ -49,10 +49,17 @@ mountHeader(($('header') as HTMLElement | null) ?? document.createElement('div')
 
 /* ===================== 状态 ===================== */
 const SUITS = ['♠', '♥', '♦', '♣'];
+// 🔴 修复 (2026-10-28 审计 P2)：牌面 1–13 原样显示成数字，10–13 应为 A/J/Q/K（K=13）。
+// 仅作用于牌面与读屏 aria-label；公式区仍展示真实数字参与运算，不受影响。
+const cardLabel = (v: number): string =>
+  v === 1 ? 'A' : v === 11 ? 'J' : v === 12 ? 'Q' : v === 13 ? 'K' : String(v);
 let difficulty: Difficulty = (localStorage.getItem('24_diff') as Difficulty) || 'standard';
 let numbers: number[] = [];
 let formula = '';
 let historyStack: string[] = [];
+// 🔴 修复 (2026-10-28 审计 P3)：撤销栈原无上限，极端交互可无限增长占用内存。
+// 单点最长 37 tokens，理论栈长不限；cap 64 足够覆盖任何真实操作序列。
+const MAX_HISTORY = 64;
 const usedCardIndices = new Set<number>();
 let timer = 0;
 let interval: number | null = null;
@@ -247,9 +254,9 @@ function render(): void {
       const delay = dealing ? ` style="animation-delay:${i * 70}ms"` : '';
       return (
         `<div class="card ${used ? 'used' : ''} ${red ? 'red' : ''} ${dealCls} ${selCls}" data-i="${i}"` +
-        ` role="button" tabindex="0" aria-label="${i18nT('mg.g24_card_aria', { n })}"${delay}>` +
+        ` role="button" tabindex="0" aria-label="${i18nT('mg.g24_card_aria', { n: cardLabel(n) })}"${delay}>` +
         `<div class="suit">${SUITS[i]}</div>` +
-        `<div class="num">${n}</div>` +
+        `<div class="num">${cardLabel(n)}</div>` +
         `<div class="suit br">${SUITS[i]}</div></div>`
       );
     })
@@ -298,6 +305,7 @@ function computeUsedIndices(): void {
 
 function append(text: string): void {
   historyStack.push(formula);
+  if (historyStack.length > MAX_HISTORY) historyStack.shift();
   formula += text;
   computeUsedIndices();
   render();
@@ -324,6 +332,7 @@ function appendOp(op: string): void {
   if (!formula || formula.endsWith('(')) return;
   if (endsWithOp(formula)) {
     historyStack.push(formula);
+    if (historyStack.length > MAX_HISTORY) historyStack.shift();
     formula = formula.slice(0, -1) + op;
     computeUsedIndices();
     render();

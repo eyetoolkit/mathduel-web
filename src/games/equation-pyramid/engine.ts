@@ -88,7 +88,12 @@ export function evalTriple(a: number, op1: Op, b: number, op2: Op, c: number): n
     else if (op === '-') acc = acc - right;
     else return null;
   }
-  return Number.isInteger(acc) ? acc : null;
+  // 🔴 修复 (2026-10-28 审计 P3)：原 `Number.isInteger(acc)` 对浮点误差零容忍，
+  // 导致 `1÷3×3` 这类「中间非整数但结果恰好为整数」的合法解被误判无效
+  // （JS 里 1/3*3 = 0.9999… 不通过整数判定）。用 1e-9 容差吸收纯浮点误差，
+  // 仍会拒绝真正的非整数结果（如 1÷3 = 0.333…），不改变难度分级口径。
+  const rounded = Math.round(acc * 1e9) / 1e9;
+  return Number.isInteger(rounded) ? rounded : null;
 }
 
 /** 解去重：同 3 格（任意点击顺序）视为同一解。

@@ -486,6 +486,12 @@ body.arena :where([hidden]) { display: none !important; }
     flex: 1 1 auto; min-height: 0;
     display: flex; flex-direction: column;
     overflow: visible;
+    /* 🔴 2026-10-28：列 flex 的交叉尺寸（宽度）默认由子项 max-content 决定，
+       而本块为保「内容放不下时可滚」故意留 overflow:visible —— 于是子项比容器宽时
+       容器**不会**把宽度压回 100%，整块被 body.arena.in-match{overflow:hidden} 裁掉
+       且无法滚动（24 点 375/414 视口 #board 恒 451px 即此，P0）。
+       显式钉宽度 = 容器宽度，交叉尺寸回归容器语义。 */
+    width: 100%; min-width: 0;
     /* 中和各游戏 base 的桌面居中规则（如金字塔 main{max-width:720px;margin:0 auto}），
        否则 margin:auto 会吃掉 flex 自由空间、让 flex-grow 失效 → 棋盘被挤窄并居中 */
     margin: 0 !important; max-width: none !important;

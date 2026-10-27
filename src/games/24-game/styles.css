@@ -628,6 +628,15 @@ body.arena.answer-revealed .formula { opacity: 0.5; font-style: italic; }
     display: flex; flex-direction: column;
     padding: 10px 12px;
     border-radius: 0; border: none; box-shadow: none; background: transparent;
+    /* 🔴 修复 (2026-10-28)：移动端 in-match 横向溢出（P0）
+       根因：`.pg-main > main` 在 ≤1119px 沉浸块里是 `overflow:visible` 的列 flex，
+       section.board 作为 flex 项靠 align-self:stretch 取宽，但**弹性行的交叉尺寸由
+       子项 max-content 决定**（4 个模式 tab 不换行 ≈ 450px），不是容器宽度 →
+       375/414 视口下 #board 恒 ~451px，右侧 82px 被 body{position:fixed;overflow:hidden}
+       永久裁掉：第 4 张牌只剩花色角标、÷ 键、Show Answer 全不可达且**无法滚动**。
+       消融实验（隐藏全部子元素后 #board 仍 451px）已排除卡片本身。
+       修法：给 board 显式宽度约束，让 stretch 落到容器宽度而不是内容宽度。 */
+    width: 100%; max-width: 100%; min-width: 0;
   }
   body.arena.in-match .board::before { display: none; }  /* 关掉 radial-gradient */
 

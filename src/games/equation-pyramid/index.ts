@@ -242,6 +242,8 @@ onI18nChange(() => {
       : '—';
   }
   rerenderResult();
+  const ah = $('anchorHint');
+  if (ah) ah.textContent = i18nT('ml.pyr_rules_2');
 });
 
 function resetBoard(): void {
@@ -257,6 +259,8 @@ function resetBoard(): void {
   st.running = true;
   st.timedLeft = TIMED_LIMIT;
   $('result')!.textContent = i18nT('mg.pyr_pick_first');
+  const ah = $('anchorHint');
+  if (ah) ah.textContent = i18nT('ml.pyr_rules_2');
 }
 
 /* ═══ 计时 ═══ */

@@ -109,6 +109,12 @@ body.arena:not(.skin-paper) .s6-board {
   75% { transform: translateX(-2px); }
 }
 
+/* 通用 lives 点阵：侧栏 Grid status 共用（与 9×9 sudoku.css / 4×4 s4.css 同款）
+   🔴 6×6 原本没有生命值 UI（2026-10-28 审计 P1 补齐 MAX_MISTAKES 结算时同步加） */
+.lives { display: inline-flex; gap: 5px; }
+.lives i { width: 9px; height: 9px; border-radius: 50%; background: var(--teal, #2fc4c9); }
+.lives i.off { background: var(--border); }
+
 /* ─── 数字键盘 ─── */
 .s6-pad { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; max-width: 380px; margin: 16px auto 0; }
 .s6-pad .pk {

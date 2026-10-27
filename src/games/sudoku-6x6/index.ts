@@ -52,6 +52,9 @@ mountHeader(($('header') as HTMLElement | null) ?? document.createElement('div')
 type Mode = 'solo' | 'daily' | 'timed';
 
 const TIMED_LIMIT = 45;
+// 🔴 修复 (2026-10-28 审计 P1)：6×6 原本既无此常量也无失败结算，st.mistakes 只是
+// 一个没有后果的装饰数字；9×9 / 4×4 都是「累计 3 次错误即负」。补齐以对齐口径。
+const MAX_MISTAKES = 3;
 
 // 🔴 难度名走字典：原来硬编码英文，切 de/es/fr 时最佳成绩面板与每日横幅会漏英文
 const diffLabel = (d: Difficulty): string => i18nT(`difficulty.${d}`);
@@ -157,7 +160,7 @@ function renderModeBanner(): void {
       `<div class="b-title">${escHtml(i18nT('mg.sd_banner_timed', { limit: TIMED_LIMIT }))}</div>`
       + `<div class="b-sub">${escHtml(i18nT('mg.pyr_lbl_solved'))} <b id="tmSolved">${st.timedSolved}</b> · `
       + `${escHtml(i18nT('mg.pyr_lbl_streak'))} <b id="tmStreak">${st.timedStreak}</b> · `
-      + `${escHtml(i18nT('mg.sd_mistakes_flash'))}</div>`,
+      +       `${escHtml(i18nT('mg.sd_mistakes_end', { max: MAX_MISTAKES }))}</div>`,
       'banner daily timed',
     );
     return;
@@ -377,8 +380,14 @@ function buildGridLines(board: HTMLElement): void {
 function updateGridStats(): void {
   const filled = $('statFilled');
   if (filled) filled.textContent = `${st.grid.filter((v) => v).length}/36`;
-  const m = $('statMistakes');
-  if (m) m.textContent = String(st.mistakes);
+  // 🔴 修复 (2026-10-28 审计 P1)：生命值点阵（与 9×9 / 4×4 同款）。
+  // 原来只把 mistakes 当数字印出来，玩家看不出「还剩几条命」。
+  const lives = $('sideLives');
+  if (lives) {
+    [...lives.children].forEach((dot, k) => {
+      dot.className = st.mistakes > k ? 'off' : '';
+    });
+  }
   updatePad();
 }
 
@@ -489,16 +498,23 @@ function place(v: number): void {
     renderBoard();
     return;
   }
+  // 🔴 修复 (2026-10-28 审计 P1)：原来只查「与当前盘的冲突」、从不与 solution 比对，
+  // 于是「不与当前盘冲突但 ≠ 解」的数字会被永久写在盘上（6×6 是唯一解谜题），
+  // 后续必然矛盾，而 checkWin 要求 grid 全等 solution → 玩家填满也不算赢的死局，
+  // 且因为不冲突，全程零反馈（不标红、无提示）。9×9/4×4 早已是 solution 比对口径。
+  // 现与另两款对齐：先判对错，再按对错分支处理。
+  const correct = v === st.puzzle!.solution[i];
   pushUndo(i);
   st.grid[i] = v;
   st.filledBy[i] = 1;
-  st.marks[i].clear(); // 写入真实数字时清空 marks
-  const conflicts = findConflicts(st.grid);
-  if (conflicts.has(i)) {
+  if (!correct) {
     st.mistakes++;
     st.sel = i;
     renderBoard();
     flashCell(i, 'shake', 400);
+    if (st.mistakes >= MAX_MISTAKES) {
+      window.setTimeout(() => endMistakes(), 500);
+    }
     window.setTimeout(() => {
       if (st.grid[i] === v) {
         st.grid[i] = 0;
@@ -508,6 +524,9 @@ function place(v: number): void {
     }, 650);
     return;
   }
+  // 正确落子才清 marks：错值分支不清，避免玩家辛苦记的笔记被一次误触吞掉
+  // （9×9 / 4×4 同款；原实现在分支前无条件 clear）。
+  st.marks[i].clear();
   const nx = nextClaimable(i);
   st.sel = nx >= 0 ? nx : i; // 填对后自动跳到下一空格，连解提速
   renderBoard();
@@ -571,6 +590,30 @@ function winSoloDaily(): void {
       `<div class="s6-scores"><div class="me num">${fmt(t)}<small>${escHtml(i18nT('mg.sd_lbl_your_time'))}</small></div></div>` +
       extra +
       `<div class="s6-acts"><button class="btn primary" id="mAgain">${escHtml(i18nT('mg.shared_new_grid'))}</button>`
+      + `<button class="btn ghost" id="mLobby">${escHtml(i18nT('mg.shared_lobby'))}</button></div>`,
+    () => {
+      $('mAgain')!.onclick = () => {
+        hideModal();
+        startRound();
+      };
+      $('mLobby')!.onclick = () => {
+        hideModal();
+        goLobby();
+      };
+    },
+  );
+}
+
+/* 🔴 修复 (2026-10-28 审计 P1)：三次错负结算。原本 6×6 只有「错数 +1」没有失败出口，
+   mistakes 累积到多少都不结束；9×9（endMistakes）与 4×4 同款已有。 */
+function endMistakes(): void {
+  if (!st.running) return;
+  stopAll();
+  $('stMain')!.innerHTML = i18nT('mg.sg_too_many_mistakes');
+  showModal(
+    `<div class="s6-verdict">${escHtml(i18nT('mg.sd_verdict_out_of_lives'))}</div>` +
+      `<div class="s6-scores"><div class="op num">${MAX_MISTAKES}<small>${escHtml(i18nT('mg.sd_lbl_mistakes'))}</small></div></div>` +
+      `<div class="s6-acts"><button class="btn primary" id="mAgain">${escHtml(i18nT('mg.sd_btn_try_again'))}</button>`
       + `<button class="btn ghost" id="mLobby">${escHtml(i18nT('mg.shared_lobby'))}</button></div>`,
     () => {
       $('mAgain')!.onclick = () => {
@@ -654,7 +697,7 @@ function renderSide(): void {
   el.innerHTML =
     `<div class="panel"><h3>${escHtml(i18nT('mg.sd_panel_grid_status'))}</h3>` +
     `<div class="stat-row"><span>${escHtml(i18nT('mg.sd_lbl_cells_filled'))}</span><b id="statFilled">${filled}/36</b></div>` +
-    `<div class="stat-row"><span>${escHtml(i18nT('mg.sd_lbl_mistakes'))}</span><b id="statMistakes">${st.mistakes}</b></div>` +
+    `<div class="stat-row"><span>${escHtml(i18nT('mg.sd_lbl_mistakes'))}</span><span class="lives" id="sideLives"><i class="${st.mistakes < 1 ? '' : 'off'}"></i><i class="${st.mistakes < 2 ? '' : 'off'}"></i><i class="${st.mistakes < 3 ? '' : 'off'}"></i></span></div>` +
     `<div class="stat-row"><span>${escHtml(i18nT('mg.sd_lbl_empty'))}</span><b>${holes}</b></div>` +
     `<div class="stat-row"><span>${escHtml(i18nT('mg.shared_lbl_difficulty'))}</span><b>${escHtml(st.mode === 'daily' ? i18nT('mg.shared_daily_fixed') : diffLabel(st.diff))}</b></div>` +
     `<div class="hint-step"><b>·</b><span>${escHtml(i18nT('mg.sd_hint_click6'))}</span></div></div>` +
@@ -824,8 +867,22 @@ $('overlay')!.addEventListener('click', (e) => {
 // 深链契约：?mode=solo|daily|timed —— 由模式选择页的模式卡链接进来。
 // 不带 mode 直达牌桌时回落到模式选择页，与 24 点「lobby → card table」的两段式保持一致。
 const isMode = (m: string): m is Mode => m === 'solo' || m === 'daily' || m === 'timed';
-const modeFromUrl = new URLSearchParams(location.search).get('mode') || '';
-if (modeFromUrl === "battle" || modeFromUrl === "random" || (new URLSearchParams(location.search).get('room') || '').trim()) {
+const qs = new URLSearchParams(location.search);
+const modeFromUrl = qs.get('mode') || '';
+
+// 🔴 修复 (2026-10-28 审计 P1)：6×6 的 lobby 会把 ?mode=solo&d=hard 写进模式卡 href，
+// 但牌桌端从不读 `d` → 从 lobby 选的难度按钮**完全无效**（永远发默认 standard 盘）。
+// 9×9 早已支持；照抄同一口径（必须早于 enterMode，否则先发牌再被覆盖）。
+const isDiff = (x: string): x is Difficulty => x === 'easy' || x === 'standard' || x === 'hard';
+const dFromUrl = qs.get('d') || '';
+if (isDiff(dFromUrl)) {
+  st.diff = dFromUrl;
+  document.querySelectorAll<HTMLButtonElement>('#diffPick button').forEach((b) => {
+    b.classList.toggle('active', b.dataset.d === dFromUrl);
+  });
+}
+
+if (modeFromUrl === "battle" || modeFromUrl === "random" || (qs.get('room') || '').trim()) {
   mountCompetition({
     adapter: createSudokuAdapter({ gameType: 'sudoku-6x6', label: 'Sudoku 6x6', size: 6, difficulty: st.diff, rounds: 3, timeLimit: 240 }),
     tabsEl: document.querySelector("#tabs") as HTMLElement | null,

@@ -10,9 +10,9 @@
 import './shop.css';
 import { i18nT, onI18nChange } from '../games/_shared/i18n-t';
 import {
-  shopCatalog, shopBuy, shopActivate,
+  shopCatalog, shopBuy, shopActivate, coinsMe,
   boosterMe, boosterBuy, boosterActivate,
-  type ShopItem, type ShopCatalogData, type BoosterMeData, type BoosterCat,
+  type ShopItem, type ShopCatalogData, type BoosterMeData, type BoosterCat, type CoinsMe,
   CoinsError,
 } from '../shared/coins';
 
@@ -24,19 +24,18 @@ function esc(s: unknown): string {
 }
 
 /* ─── 状态 ───
- * catalog 为 null 前，购买/激活按钮一律 disabled（避免匿名误点打到 401）。
- * authed：catalog.balance>0 或服务端返回了非空 active → 视为登录态可操作。 */
+ * catalog 为 null 前，购买/激活按钮一律 disabled（避免匿名误点打到 401）。 */
 let catalog: ShopCatalogData | null = null;
 let boosterData: BoosterMeData | null = null;
 let boosterTimerId: number | null = null;
 let busyId: string | null = null;
+/* 🔴 修复 (2026-10-28 审计 P1)：登录态原先用「balance>0 或有已激活物」反推 ——
+   刚注册/花光金币的登录用户被判成匿名，免费默认头像与购买按钮一律 disabled，
+   页面永远停在「登录解锁」。改为以服务端权威字段 /api/coins/me 的 authenticated 为准。 */
+let authed = false;
 
 function isAuthed(): boolean {
-  if (!catalog) return false;
-  // catalog 匿名态 balance:0 + active:null；登录态通常有余额或已激活物
-  const hasBalance = typeof catalog.balance === 'number' && catalog.balance > 0;
-  const hasActive = catalog.active != null && Boolean(catalog.active.avatar || catalog.active.emoji);
-  return hasBalance || hasActive;
+  return authed;
 }
 
 function ownedSet(): Set<string> {
@@ -107,8 +106,14 @@ async function loadCatalog(): Promise<void> {
   off.hidden = true;
 
   try {
-    const data = await shopCatalog();
+    // 登录态与目录并行取：服务端对两者都是 200（匿名也不抛 401），
+    // 失败一律降级为匿名，绝不因为取不到 me 就把商店卡死。
+    const [data, me] = await Promise.all([
+      shopCatalog(),
+      coinsMe().catch(() => ({ authenticated: false }) as CoinsMe),
+    ]);
     catalog = data;
+    authed = me?.authenticated === true;
     balEl.textContent = String(data.balance ?? 0);
 
     if (isAuthed()) {

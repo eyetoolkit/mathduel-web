@@ -27,6 +27,12 @@ export interface SudokuAdapterOpts {
 }
 
 const MAX_BY_SIZE: Record<number, number> = { 9: 9, 6: 6, 4: 4 };
+/* 宫形状（行 × 列）：4×4 = 2×2，6×6 = 2×3，9×9 = 3×3 */
+const BOX_SHAPE: Record<number, { r: number; c: number }> = {
+  4: { r: 2, c: 2 },
+  6: { r: 2, c: 3 },
+  9: { r: 3, c: 3 },
+};
 
 export function createSudokuAdapter(opts: SudokuAdapterOpts): MpAdapter {
   let grid: number[] = [];
@@ -37,7 +43,13 @@ export function createSudokuAdapter(opts: SudokuAdapterOpts): MpAdapter {
 
   const render = (boardEl: HTMLElement, shell: MpShell, size: number, cages?: any) => {
     const max = MAX_BY_SIZE[size] || 9;
-    const box = size === 4 ? 2 : size === 6 ? 2 : 3;
+    /* 🔴 修复 (2026-10-28 审计 P1)：宫形状不能只用一个数字描述。
+       6×6 引擎的宫是 **2 行 × 3 列**（sudoku-6x6/engine.ts: boxOf = floor(r/2)*2 + floor(c/3)），
+       原实现按 2×2 处理 → ① 漏判同宫冲突（如 (0,2) 与 (1,0) 真实同宫却检测不到），
+       非房主可能拿非法盘交卷；② 宫线画在第 1/3 列后（正确应只在第 2 列后）。
+       9×9 = 3×3，4×4 = 2×2。 */
+    const shape = BOX_SHAPE[size] || BOX_SHAPE[9];
+    const boxR = shape.r, boxC = shape.c;
     const wrap = document.createElement('div');
     wrap.style.cssText = 'display:grid;grid-template-columns:repeat(' + size + ',1fr);gap:2px;width:min(420px,86vw);background:#E5E7EB;padding:4px;border-radius:10px';
     cells = [];
@@ -59,7 +71,7 @@ export function createSudokuAdapter(opts: SudokuAdapterOpts): MpAdapter {
       }
       shell.relaySubmit();
     };
-    /* 行/列/宫无重复检查（box 为宫宽高） */
+    /* 行/列/宫无重复检查（宫按 boxR × boxC 形状遍历） */
     const hasConflict = () => {
       for (let r = 0; r < size; r++) {
         const seen = new Set<number>();
@@ -69,10 +81,10 @@ export function createSudokuAdapter(opts: SudokuAdapterOpts): MpAdapter {
         const seen = new Set<number>();
         for (let r = 0; r < size; r++) { const v = grid[r * size + c]; if (!v) continue; if (seen.has(v)) return true; seen.add(v); }
       }
-      for (let br = 0; br < size; br += box) {
-        for (let bc = 0; bc < size; bc += box) {
+      for (let br = 0; br < size; br += boxR) {
+        for (let bc = 0; bc < size; bc += boxC) {
           const seen = new Set<number>();
-          for (let r = br; r < br + box; r++) for (let c = bc; c < bc + box; c++) { const v = grid[r * size + c]; if (!v) continue; if (seen.has(v)) return true; seen.add(v); }
+          for (let r = br; r < br + boxR; r++) for (let c = bc; c < bc + boxC; c++) { const v = grid[r * size + c]; if (!v) continue; if (seen.has(v)) return true; seen.add(v); }
         }
       }
       return false;
@@ -80,8 +92,8 @@ export function createSudokuAdapter(opts: SudokuAdapterOpts): MpAdapter {
     for (let i = 0; i < size * size; i++) {
       const cell = document.createElement('div');
       const r = Math.floor(i / size), c = i % size;
-      const br = c % box === box - 1 && c !== size - 1;
-      const bb = r % box === box - 1 && r !== size - 1;
+      const br = c % boxC === boxC - 1 && c !== size - 1;
+      const bb = r % boxR === boxR - 1 && r !== size - 1;
       cell.style.cssText = 'aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:' + (size === 4 ? 28 : size === 6 ? 22 : 18) + 'px;font-weight:700;border-radius:5px;' +
         (br ? 'border-right:2px solid #9CA3AF;' : '') + (bb ? 'border-bottom:2px solid #9CA3AF;' : '') +
         (puzzle[i] ? 'background:#F3F4F6;color:#9CA3AF;' : 'background:#F9FAFB;color:#B45309;cursor:pointer;');

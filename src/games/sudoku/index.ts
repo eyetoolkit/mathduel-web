@@ -732,7 +732,9 @@ $('s9pad')!.addEventListener('click', (e) => {
   else if (b.dataset.v) place(Number(b.dataset.v));
 });
 
-$('backLobby')!.addEventListener('click', goLobby);
+// 🔴 修复 (2026-10-28 审计 P2)：原本这里又给 #backLobby 绑了一次 goLobby（硬跳转 location.href），
+// 与上方第 124 行的 exitMatchToLobby（带二次确认守卫）形成「一次点击两个 handler」竞争，
+// 硬跳转先执行 → 退出守卫的二次确认永远不弹。删掉这行，只保留带守卫的退出出口。
 $('newBtn')!.addEventListener('click', () => startRound());
 $('autoBtn')!.addEventListener('click', autoMarks);
 $('hintBtn')!.addEventListener('click', giveHint);

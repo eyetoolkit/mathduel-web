@@ -47,7 +47,17 @@ for await (const file of walk(distDir)) {
   if (!site) problems.push(`${rel}: 缺 data-site`);
   else if (site[1] !== SITE) problems.push(`${rel}: data-site="${site[1]}"（应为 ${SITE}）`);
 
-  if (/MathDuel/.test(html)) problems.push(`${rel}: 含 MathDuel 品牌残留`);
+  /* 🔴 修复 (2026-10-28 审计 P1)：原判据只有字面量 /MathDuel/，
+     而品牌 logo 是**拆成两个内联标签**写的（`<b>Math</b><i>Duel</i>`），
+     浏览器拼出来正好是 "MathDuel"，正则却永远命中不了 —— 于是 shop / me /
+     worksheets / daily / join / teacher 六处旧品牌长期静默上线（线上实测可见）。
+     现在先剥标签再判字面量，并额外匹配拆标签写法。 */
+  const textOnly = html.replace(/<[^>]*>/g, '');
+  if (/MathDuel/i.test(textOnly) || /MathDuel/i.test(html)) {
+    problems.push(`${rel}: 含 MathDuel 品牌残留（含 <b>Math</b><i>Duel</i> 拆分写法）`);
+  } else if (/<b>Math<\/b>\s*<i>Duel<\/i>/i.test(html)) {
+    problems.push(`${rel}: 含拆分式 MathDuel 品牌残留`);
+  }
 
   const og = /<meta property="og:image" content="([^"]*)"/.exec(html);
   if (og && /\.svg(\?|$)/.test(og[1])) problems.push(`${rel}: og:image 用 SVG（${og[1]}）`);

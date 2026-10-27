@@ -525,9 +525,9 @@ function winSolo(): void {
   $('result')!.innerHTML = `${i18nT('mg.sd_solved_in_html', { time: escHtml(fmt(t)) })}${extra}`;
   showModal(
     `<div class="s4-verdict">${escHtml(i18nT('mg.sd_verdict_complete'))}</div>` +
-      `<div class="s9-scores"><div class="me num">${fmt(t)}<small>${escHtml(i18nT('mg.sd_lbl_your_time'))}</small></div></div>` +
+      `<div class="s4-scores"><div class="me num">${fmt(t)}<small>${escHtml(i18nT('mg.sd_lbl_your_time'))}</small></div></div>` +
       extra +
-      `<div class="s9-acts"><button class="btn primary" id="mAgain">${escHtml(i18nT('mg.shared_new_grid'))}</button>`
+      `<div class="s4-acts"><button class="btn primary" id="mAgain">${escHtml(i18nT('mg.shared_new_grid'))}</button>`
       + `<button class="btn ghost" id="mLobby">${escHtml(i18nT('mg.shared_lobby'))}</button></div>`,
     () => {
       $('mAgain')!.onclick = () => {
@@ -548,8 +548,8 @@ function endMistakes(): void {
   $('stMain')!.innerHTML = i18nT('mg.sg_too_many_mistakes');
   showModal(
     `<div class="s4-verdict">${escHtml(i18nT('mg.sd_verdict_out_of_lives'))}</div>` +
-      `<div class="s9-scores"><div class="op num">${MAX_MISTAKES}<small>${escHtml(i18nT('mg.sd_lbl_mistakes'))}</small></div></div>` +
-      `<div class="s9-acts"><button class="btn primary" id="mAgain">${escHtml(i18nT('mg.sd_btn_try_again'))}</button>`
+      `<div class="s4-scores"><div class="op num">${MAX_MISTAKES}<small>${escHtml(i18nT('mg.sd_lbl_mistakes'))}</small></div></div>` +
+      `<div class="s4-acts"><button class="btn primary" id="mAgain">${escHtml(i18nT('mg.sd_btn_try_again'))}</button>`
       + `<button class="btn ghost" id="mLobby">${escHtml(i18nT('mg.shared_lobby'))}</button></div>`,
     () => {
       $('mAgain')!.onclick = () => {
@@ -591,10 +591,10 @@ function endTimed(): void {
   const unsolved = Math.max(0, st.timedDealt - st.timedSolved);
   showModal(
     `<div class="s4-verdict">${escHtml(i18nT('mg.sd_verdict_timeup'))}</div>` +
-      `<div class="s9-scores"><div class="me num">${st.timedSolved}<small>${escHtml(i18nT('mg.sd_lbl_solved'))}</small></div>` +
+      `<div class="s4-scores"><div class="me num">${st.timedSolved}<small>${escHtml(i18nT('mg.sd_lbl_solved'))}</small></div>` +
       `<div class="op num">${st.timedStreak}<small>${escHtml(i18nT('mg.sd_lbl_best_streak'))}</small></div>` +
       `<div class="op num">${unsolved}<small>${escHtml(i18nT('mg.sd_lbl_unsolved'))}</small></div></div>` +
-      `<div class="s9-acts"><button class="btn primary" id="mAgain">${escHtml(i18nT('mg.sd_btn_run_again'))}</button>`
+      `<div class="s4-acts"><button class="btn primary" id="mAgain">${escHtml(i18nT('mg.sd_btn_run_again'))}</button>`
       + `<button class="btn ghost" id="mLobby">${escHtml(i18nT('mg.shared_lobby'))}</button></div>`,
     () => {
       $('mAgain')!.onclick = () => {

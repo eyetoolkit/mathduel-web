@@ -185,7 +185,10 @@ export function generatePuzzle(diff: Difficulty, rng: () => number): Puzzle {
   const puzzle = solution.slice();
   const target = HOLES_BY_DIFF[diff];
   const holes: number[] = [];
-  let budget = 2500; // countSolutions 调用上限，约束最坏耗时
+  // 🔴 修复 (2026-10-28 审计 P2)：hard 档实测同步生成 avg 89ms / max 318ms（点 New Grid 时界面冻结）。
+  // budget 是 countSolutions 调用上限，原 2500 在最坏排列下拖到数百 ms。降到 1000 把最坏耗时压到 ~120ms 量级，
+  // 配合下方 guard<8 多轮兜底仍能挖到目标洞数（挖不动会自动停止，不会无限循环）。
+  let budget = 1000; // countSolutions 调用上限，约束最坏耗时
 
   const tryPass = (): void => {
     const order = shuffle([...Array(81).keys()], rng);

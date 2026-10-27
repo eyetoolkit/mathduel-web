@@ -452,6 +452,17 @@
 
 /* 结果横幅：空内容不占位 */
 .ep-result-msg:empty { display: none; }
+/* 🔴 2026-10-28 审计 P1：对局内常驻解释「第 1 格运算符是 anchor 不参与运算」——
+   此前仅 lobby 有说明，对局页零解释，新手必困惑。复用 mg.pyr_rules_2（六语已存在）。 */
+.ep-anchor-hint {
+  margin: 2px auto 0;
+  max-width: 360px;
+  text-align: center;
+  font-size: 0.74rem;
+  line-height: 1.35;
+  color: var(--a-muted, #64748b);
+  min-height: 1.1em;
+}
 
 /* 动效：bank 成功 epop / 判错 eshake（一次性挂 class） */
 @keyframes epop {
