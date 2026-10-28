@@ -45,7 +45,7 @@ body.arena {
   --s4-accent-soft: #ede9fe;
   --s4-user-ink: #4f46e5;
   --s4-conflict: #dc2626;
-  display: grid; grid-template-columns: repeat(4, 1fr);
+  display: flex; flex-direction: column;
   width: min(420px, 100%); margin: 0 auto;
   background: var(--s4-cell-bg); border-radius: 16px; padding: 0;
   /* 外框 = 三级线最粗一级 */
@@ -53,6 +53,8 @@ body.arena {
   box-sizing: border-box;
   user-select: none; position: relative; overflow: hidden;
 }
+/* role=row 包裹层：每行为独立的 4 列网格，保持单元格方形与宫线对齐 */
+.s4-board .s4-row { display: grid; grid-template-columns: repeat(4, 1fr); }
 /* 暗色主题（body.arena 不带 skin-paper）——当前对局页恒浅色，token 休眠备用 */
 body.arena:not(.skin-paper) .s4-board {
   --s4-cell-bg: #0f172a;

@@ -33,7 +33,7 @@
   --sd-conflict-bg: #fee2e2;
   --sd-conflict-text: #dc2626;
   --sd-border: #1e1b39;
-  display: grid; grid-template-columns: repeat(6, 1fr);
+  display: flex; flex-direction: column;
   width: min(380px, 100%); margin: 0 auto;
   background: var(--sd-cell-bg); border-radius: 14px;
   padding: 0;
@@ -42,6 +42,8 @@
   user-select: none; position: relative;
   overflow: hidden;
 }
+/* role=row 包裹层：每行为独立的 6 列网格，保持单元格方形与宫线对齐 */
+.s6-board .s6-row { display: grid; grid-template-columns: repeat(6, 1fr); }
 /* 暗色主题（body.arena 不带 skin-paper 或 prefers-color-scheme: dark） */
 body.arena:not(.skin-paper) .s6-board {
   --sd-bg: #0f172a;
@@ -91,8 +93,10 @@ body.arena:not(.skin-paper) .s6-board {
 }
 .s6-board .c6cell.peer { background: var(--sd-peer-bg); }
 .s6-board .c6cell.same { background: var(--sd-same-bg); }
+/* 冲突：左侧红条 + 红数字（对齐 9×9 / 4×4，利于色弱、不破坏 given/entry 底色） */
 .s6-board .c6cell.conflict {
-  background: var(--sd-conflict-bg); color: var(--sd-conflict-text);
+  color: var(--sd-conflict-text);
+  box-shadow: inset 3px 0 0 0 var(--sd-conflict-text);
 }
 
 /* 落子 pop / 冲突 shake（对照 24 点 cardFlash 的一次性动效） */

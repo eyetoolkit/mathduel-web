@@ -1,6 +1,7 @@
 /* My Journey（/me/）—— 复用 Daily Hub 的骨架变量，页面级样式独立 */
+@import './brand-tokens.css';
 :root {
-  --ink: #10142A; --indigo: #3730A3; --amber: #F59E0B;
+  --ink: #10142A; --indigo: var(--indigo-deep);
   --paper: #F6F5EF; --card: #FFFFFF; --line: #E3E7F0; --muted: #6B7290;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }

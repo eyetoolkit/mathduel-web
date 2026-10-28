@@ -1,9 +1,10 @@
 /* ═══════════════════════════════════════════════════════════════
    NumeriDuel Daily Hub 样式（papergame 纸感，与首页同一套 token）
    ═══════════════════════════════════════════════════════════════ */
+@import './brand-tokens.css';
 :root {
   --ink: #1E1B39; --mute: #5B6079; --line: #E3E6F0; --line2: #C7CBEE;
-  --white: #FFFFFF; --indigo: #3730A3; --amber: #F59E0B; --paper: #F4F5F9;
+  --white: #FFFFFF; --indigo: var(--indigo-deep); --paper: #F4F5F9;
   --good: #15803D;
   --ui: 'Space Grotesk', 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif;
   --disp: 'Sora', 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif;

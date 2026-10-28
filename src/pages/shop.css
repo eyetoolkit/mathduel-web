@@ -1,6 +1,7 @@
 /* Coin Shop（/shop/）—— 复用 Me Hub 骨架变量，页面级样式独立（与 me.css 同 token 体系） */
+@import './brand-tokens.css';
 :root {
-  --ink: #10142A; --indigo: #3730A3; --amber: #F59E0B;
+  --ink: #10142A; --indigo: var(--indigo-deep);
   --paper: #F6F5EF; --card: #FFFFFF; --line: #E3E7F0; --muted: #6B7290;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }

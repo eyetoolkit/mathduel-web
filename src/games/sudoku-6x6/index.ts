@@ -284,7 +284,16 @@ function cellClass(i: number): string {
 function renderBoard(): void {
   const el = $('s6board')!;
   if (!el.dataset.built) {
-    el.innerHTML = [...Array(36)].map((_, i) => `<div class="c6cell" data-i="${i}" role="gridcell"></div>`).join('');
+    let html = '';
+    for (let r = 0; r < 6; r++) {
+      html += `<div class="s6-row" role="row" aria-rowindex="${r + 1}">`;
+      for (let c = 0; c < 6; c++) {
+        const i = r * 6 + c;
+        html += `<div class="c6cell" data-i="${i}" role="gridcell" tabindex="-1" aria-colindex="${c + 1}"></div>`;
+      }
+      html += `</div>`;
+    }
+    el.innerHTML = html;
     el.dataset.built = '1';
     el.addEventListener('click', (e) => {
       const t = (e.target as HTMLElement).closest<HTMLElement>('[data-i]');
@@ -294,15 +303,13 @@ function renderBoard(): void {
     buildGridLines(el);
   }
   conflictCache = findConflicts(st.grid);
-  [...el.children].forEach((cell, i) => {
-    const c = cell as HTMLElement;
-    if (!c.classList.contains('c6cell')) return; // 跳过 SVG 覆盖层等非 cell 子元素（#15）
-    const v = st.grid[i];
+  el.querySelectorAll<HTMLElement>('.c6cell').forEach((c) => {
+    const i = Number(c.dataset.i);
     const cls = cellClass(i);
     if (c.className !== cls) c.className = cls;
     let html: string;
-    if (v) {
-      html = `<span>${v}</span>`;
+    if (st.grid[i]) {
+      html = `<span>${st.grid[i]}</span>`;
     } else if (st.marks[i].size) {
       let cells = '';
       for (let n = 1; n <= 6; n++) cells += `<i class="${st.marks[i].has(n) ? 'on' : ''}">${n}</i>`;
@@ -311,9 +318,10 @@ function renderBoard(): void {
       html = '';
     }
     if (c.innerHTML !== html) c.innerHTML = html;
-    // P2-6：读屏可用 —— 数值/空态同步到 aria-label（纯格式，不新增词典键）
-    const aria = v ? `R${rowOf(i) + 1}C${colOf(i) + 1}=${v}` : `R${rowOf(i) + 1}C${colOf(i) + 1}`;
+    // 读屏可用 —— 数值/空态同步到 aria-label（纯格式，不新增词典键）
+    const aria = st.grid[i] ? `R${rowOf(i) + 1}C${colOf(i) + 1}=${st.grid[i]}` : `R${rowOf(i) + 1}C${colOf(i) + 1}`;
     if (c.getAttribute('aria-label') !== aria) c.setAttribute('aria-label', aria);
+    if (c.tabIndex !== (i === st.sel ? 0 : -1)) c.tabIndex = i === st.sel ? 0 : -1;
   });
   updateGridStats();
 }
@@ -427,7 +435,7 @@ function nudgePick(): void {
 
 /** 落子/冲突的一次性动效（直接挂 class，下一次 renderBoard 自然移除） */
 function flashCell(i: number, cls: string, ms: number): void {
-  const el = $('s6board')!.children[i] as HTMLElement | undefined;
+  const el = $('s6board')!.querySelector<HTMLElement>(`.c6cell[data-i="${i}"]`);
   if (!el) return;
   el.classList.add(cls);
   window.setTimeout(() => el.classList.remove(cls), ms);
@@ -737,11 +745,15 @@ $('s6pad')!.addEventListener('click', (e) => {
   if (!b) return;
   if (b.dataset.act === 'undo') undo();
   else if (b.dataset.act === 'erase') erase();
-  else if (b.dataset.act === 'notes') {
-    st.notes = !st.notes;
-    $('notesBtn')!.classList.toggle('on', st.notes);
-  } else if (b.dataset.v) place(Number(b.dataset.v));
+  else if (b.dataset.act === 'notes') toggleNotes();
+  else if (b.dataset.v) place(Number(b.dataset.v));
 });
+
+/** 切换笔记模式（键盘 N / 笔记按钮共用，对齐 9×9 / 4×4） */
+function toggleNotes(): void {
+  st.notes = !st.notes;
+  $('notesBtn')!.classList.toggle('on', st.notes);
+}
 
 /** 方向键在棋盘上移动选格（环绕） */
 function moveSel(dr: number, dc: number): void {
@@ -761,6 +773,7 @@ window.addEventListener('keydown', (e) => {
   if (st.view !== 'play') return;
   if (e.key >= '1' && e.key <= '6') place(Number(e.key));
   else if (e.key === 'Backspace' || e.key === 'Delete') erase();
+  else if (e.key === 'n' || e.key === 'N') toggleNotes();
   else if (e.key === 'ArrowUp' || e.key === 'ArrowDown' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
     e.preventDefault(); // 阻止页面滚动
     moveSel(

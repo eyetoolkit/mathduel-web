@@ -54,7 +54,7 @@ body.arena {
   --s9-user-ink: #4f46e5;
   --s9-notes: #94a3b8;
   --s9-conflict: #dc2626;
-  display: grid; grid-template-columns: repeat(9, 1fr);
+  display: flex; flex-direction: column;
   width: min(540px, 100%); margin: 0 auto;
   background: var(--s9-cell-bg); border-radius: 14px; padding: 0;
   /* 外框 = 三级线最粗一级，颜色取 --line-outer（最深的靛蓝墨） */
@@ -62,6 +62,8 @@ body.arena {
   box-sizing: border-box;
   user-select: none; position: relative; overflow: hidden;
 }
+/* role=row 包裹层：每行为独立的 9 列网格，保持单元格方形与宫线对齐 */
+.s9-board .s9-row { display: grid; grid-template-columns: repeat(9, 1fr); }
 /* 暗色主题（body.arena 不带 skin-paper） */
 body.arena:not(.skin-paper) .s9-board {
   --s9-cell-bg: #0f172a;
