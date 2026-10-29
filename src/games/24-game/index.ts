@@ -1509,7 +1509,18 @@ function roomInviteUrl(): string {
 function renderRoomQr(): void {
   const img = $<HTMLImageElement>('roomQr');
   if (!img || !comp.room) return;
-  renderQR(img, roomInviteUrl());
+  /* 2026-10-29：二维码改走服务端 /api/qr（SVG，可缓存，免前端现场算），
+     与 boardduel /api/qr、memoryduel /api/md/qr 三站范式归一。
+     拉取失败（离线 / worker 抖动）时 onerror 回退前端 qrcode.min.js，
+     行为与旧版完全一致 —— 零回归。 */
+  img.onload = () => { delete img.dataset.fallback; };
+  img.onerror = () => {
+    if (img.dataset.fallback) return; // 兜底也失败，不再循环
+    img.dataset.fallback = '1';
+    renderQR(img, roomInviteUrl());
+  };
+  delete img.dataset.fallback;
+  img.src = '/api/qr?game=24&code=' + encodeURIComponent(comp.room) + '&size=220&cb=' + Date.now();
 }
 
 function showRoomView(): void {
