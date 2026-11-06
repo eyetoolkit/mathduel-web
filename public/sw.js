@@ -8,7 +8,7 @@
    4. 其余同源静态（/shared/、图标等）：stale-while-revalidate
    换版本：V 常量升级即弃旧缓存。
    ═══════════════════════════════════════════════════════════════ */
-const V = 'mdsw-v1';
+const V = 'mdsw-v2';
 const ASSET_RE = /^\/(assets|fonts)\//;
 const ICON_RE = /^\/(icon\.svg|favicon\.ico|apple-touch-icon\.png|og-image\.svg|manifest\.webmanifest)$/;
 
