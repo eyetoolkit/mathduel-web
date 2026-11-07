@@ -63,6 +63,10 @@ function isVisibleText(s) {
 const JS_OVERRIDDEN = [
   '#lobbyTitle', '#lobbyDesc',   // 24 点竞赛大厅：setLobbyView() 按视图切换
   '#oppSub', '#youSub',         // 数独对战条：botPaceText() / sg_duel_mycells
+  // 24-game：结果条 / 竞赛状态条——index.ts 全程 i18nT() 写 textContent
+  // （mg.g24_pick_first / mg.g24_room_idle，6 语齐备）。挂 data-i18n 会被
+  // applyToDOM 冲回静态文案（L240 事故 8fb2c89 教训），故故意不绑定。
+  '#result', '#compStatus',
 ];
 
 function scanFile(rel) {
@@ -137,3 +141,13 @@ for (const f of HTML_FILES) {
   total += hits.length;
 }
 console.log(`\n═══ HTML 可见英文未绑定 data-i18n：${total} 处 ═══\n`);
+// 判定（P1-2 修复，2026-11-07）：此前只 console 报告、恒 RC=0，漏绑英文照样上主线。
+// 白名单（ALLOW / JS_OVERRIDDEN / seo-shell / data-i18n-html 内部）内的命中不算；
+// 剩下的任何命中 = 真漏翻，必须让 build 挂掉，推修了再放行。
+if (total > 0) {
+  console.error('🔴 未通过：上方命中未绑定 data-i18n。修法二选一：');
+  console.error('   ① 补 i18n key + 绑 data-i18n（首选）');
+  console.error('   ② 运行时由 JS 覆盖的节点（index.ts 有 i18nT() 赋值）→ 加进 JS_OVERRIDDEN 白名单并注释原因');
+  process.exit(1);
+}
+console.log('✅ 全部 HTML 可见英文均已绑定或列入白名单。');
