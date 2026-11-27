@@ -1324,5 +1324,11 @@
     "src_daily": "Tagesrätsel",
     "src_purchase": "Kauf",
     "src_invite": "Freund eingeladen"
+  },
+  "consent": {
+    "aria": "Cookie-Einwilligung",
+    "text": "Wir verwenden Cookies für anonyme Analysen zur Verbesserung der Website. Ohne Ihre Einwilligung wird nichts erfasst.",
+    "reject": "Ablehnen",
+    "accept": "Akzeptieren"
   }
 }

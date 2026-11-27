@@ -1324,5 +1324,11 @@
     "cross_ttl": "Découvrez les autres sites Duel",
     "cross_bd": "Échecs · Gomoku · Puissance 4 · Othello · Morpion · tableau de classe en direct + CSV",
     "cross_md": "Duels 1v1 de connaissances en vocabulaire / histoire / sciences"
+  },
+  "consent": {
+    "aria": "Consentement aux cookies",
+    "text": "Nous utilisons des cookies pour des analyses anonymes afin d'améliorer le site. Rien n'est suivi sans votre consentement.",
+    "reject": "Refuser",
+    "accept": "Accepter"
   }
 }

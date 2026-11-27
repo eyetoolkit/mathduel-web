@@ -1324,5 +1324,11 @@
     "cross_ttl": "Prueba las otras webs de la familia Duel",
     "cross_bd": "Ajedrez · Gomoku · Connect 4 · Othello · Tres en raya · tablero en vivo + CSV",
     "cross_md": "Duelos 1v1 de conocimiento en vocabulario / historia / ciencia"
+  },
+  "consent": {
+    "aria": "Consentimiento de cookies",
+    "text": "Usamos cookies para análisis anónimos y mejorar el sitio. No se rastrea nada sin tu consentimiento.",
+    "reject": "Rechazar",
+    "accept": "Aceptar"
   }
 }

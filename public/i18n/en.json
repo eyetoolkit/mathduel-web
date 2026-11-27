@@ -1324,5 +1324,11 @@
     "cross_ttl": "Try the other Duel family sites",
     "cross_bd": "Chess · Gomoku · Connect 4 · Othello · Tic-Tac-Toe · live class board + CSV",
     "cross_md": "1v1 knowledge duels for vocabulary / history / science classrooms"
+  },
+  "consent": {
+    "aria": "Cookie consent",
+    "text": "We use cookies for anonymous analytics to improve the site. Nothing is tracked without your consent.",
+    "reject": "Reject",
+    "accept": "Accept"
   }
 }
