@@ -16,3 +16,11 @@ dist_old_*/
 .probe-dist/
 .probe-gate/
 .smoke-gate/
+
+# 容器本地元数据（cf-deploy 生成，2026-11-27 补齐，勿提交）
+.cf-branch
+.cf-build-env
+.cf-project
+.pnpm-store/
+.wtest
+CLAUDE.md
